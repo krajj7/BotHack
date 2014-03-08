@@ -2,7 +2,6 @@
 /classes
 /checkouts
 pom.xml
-*.jar
 /lib/
 /classes/
 /targets/
