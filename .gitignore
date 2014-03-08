@@ -1,6 +1,13 @@
+/target
+/classes
+/checkouts
 pom.xml
-*jar
+*.jar
 /lib/
 /classes/
 /targets/
 .lein-deps-sum
+pom.xml.asc
+*.class
+/.lein-*
+/.nrepl-port
