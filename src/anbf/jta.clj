@@ -2,27 +2,26 @@
 ; pro zacatek se budu zabyvat jen spojenim pres Telnet
 
 (ns anbf.jta
-  (:import (de.mud.jta PluginLoader))
-  (:import (de.mud.jta.event SocketRequest OnlineStatusListener))
+  (:import anbf.NHTerminal)
+  (:import (de.mud.jta PluginLoader Plugin)
+           (de.mud.jta.event SocketRequest OnlineStatusListener))
   (:import (java.util Vector)))
 
-; obalovak pro JTA knihovnu - vsechno je mutable
-(deftype JTA
-  [pl ; JTA plugin loader
-   protocol ; protocol filter plugin (Telnet/SSH/Shell)
-   terminal ; topmost JTA filter plugin - terminal emulator
+; JTA library wrapper
+(defrecord jta
+  [^PluginLoader pl ; JTA plugin loader
+   ^Plugin protocol ; protocol filter plugin (Telnet/SSH/Shell)
+   ^NHTerminal terminal ; topmost JTA filter plugin - terminal emulator
    ])
 
-(defn new-telnet-JTA "vrati JTA instanci s Telnet backendem" []
-  ;                                 cesty kde hleda pluginy
+(defn new-telnet-jta "vrati JTA instanci s Telnet backendem" []
+  ;                        seznam package kde to hleda pluginy
   (let [pl (PluginLoader. (Vector. ["de.mud.jta.plugin" "anbf"]))]
     (.addPlugin pl "Socket" "socket")
-    (JTA. pl (.addPlugin pl "Telnet" "telnet") (.addPlugin pl "NHTerminal" "terminal"))))
+    (jta. pl (.addPlugin pl "Telnet" "telnet") (.addPlugin pl "NHTerminal" "terminal"))))
 
-(defn start-JTA [jta host port]
-  (.broadcast (.pl jta) (SocketRequest. host port)) ; connect
-  jta)
+(defn start-jta [jta host port]
+  (.broadcast (:pl jta) (SocketRequest. host port))) ; connect
 
-(defn stop-JTA [jta]
-  (.broadcast (.pl jta) (SocketRequest.)) ; disconnect
-  jta)
+(defn stop-jta [jta]
+  (.broadcast (:pl jta) (SocketRequest.))) ; disconnect
