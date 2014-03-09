@@ -4,4 +4,4 @@
   :license {:name "GPLv2"}
   :dependencies [[org.clojure/clojure "1.5.1"]]
   :resource-paths ["resources/jta26.jar"]
-  :main anbf.core)
+  :main anbf.main)
