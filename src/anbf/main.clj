@@ -3,46 +3,51 @@
   (:import (de.mud.jta.event OnlineStatusListener))
   (:gen-class))
 
-; instance celeho frameworku
-(defrecord ANBF 
+(defrecord anbf
   [jta
+   config
    ; ...
   ])
 
-(def host "nethack.alt.org")
-(def port 23)
-;(def host "rainmaker.wunderground.com")
-;(def port 3000)
+(defn new-anbf []
+  (anbf. (new-telnet-jta) (atom nil)))
 
-(defn new-system []
-  (ANBF. (new-telnet-JTA)))
+(defn- load-config
+  ([]
+   (load-config "anbf-config.clj"))
+  ([fname]
+   (binding [*read-eval* false]
+     (read-string (slurp fname)))))
 
 (defn start
   ([]
-   (def s (new-system)) ; "defaultni" instance pro REPL
+   (def s (new-anbf)) ; "default" instance for the REPL
    (start s))
-  ([system]
-   (.registerPluginListener (.pl (:jta system)) (reify OnlineStatusListener
-                                 (online [_] (println "online"))
-                                 (offline [_] (println "offline"))))
-   (start-JTA (:jta system) host port)))
+  ([anbf]
+   (reset! (:config anbf) (load-config))
+   (.registerPluginListener (:pl (:jta anbf))
+                            (reify OnlineStatusListener
+                              (online [_] (println "online"))
+                              (offline [_] (println "offline"))))
+   (let [config @(:config anbf)]
+     (start-jta (:jta anbf) (:host config) (:port config)))))
 
 (defn stop
   ([]
    (stop s))
-  ([system]
-   (stop-JTA (:jta system))))
+  ([anbf]
+   (stop-jta (:jta anbf))))
 
 (defn -main [& args] []
-  (let [anbf (new-system)]
+  (let [anbf (new-anbf)]
     (println "loaded plugins:")
-    (println (.getPlugins (.pl (:jta anbf))))
+    (println (.getPlugins (:pl (:jta anbf))))
 
     (start anbf)
     (println "bezi")
 
     #_ (let [buffer (byte-array 5000)
-          proto (.terminal (:jta anbf))]
+          proto (:terminal (:jta anbf))]
       (println (.read proto buffer))
       (println (.read proto buffer))
       (println (.read proto buffer))
