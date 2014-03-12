@@ -21,7 +21,9 @@
     (jta. pl (.addPlugin pl "Telnet" "telnet") (.addPlugin pl "NHTerminal" "terminal"))))
 
 (defn start-jta [jta host port]
-  (.broadcast (:pl jta) (SocketRequest. host port))) ; connect
+  (.broadcast (:pl jta) (SocketRequest. host port)) ; connect
+  jta)
 
 (defn stop-jta [jta]
-  (.broadcast (:pl jta) (SocketRequest.))) ; disconnect
+  (.broadcast (:pl jta) (SocketRequest.)) ; disconnect
+  jta)

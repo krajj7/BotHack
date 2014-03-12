@@ -3,14 +3,15 @@
   (:import (de.mud.jta.event OnlineStatusListener))
   (:gen-class))
 
+;(set! *warn-on-reflection* true)
+
 (defrecord anbf
-  [jta
-   config
-   ; ...
-  ])
+  [config
+   jta])
+;  ...
 
 (defn new-anbf []
-  (anbf. (new-telnet-jta) (atom nil)))
+  (anbf. (atom nil) (new-telnet-jta)))
 
 (defn- load-config
   ([]
@@ -25,29 +26,33 @@
    (start s))
   ([anbf]
    (reset! (:config anbf) (load-config))
-   (.registerPluginListener (:pl (:jta anbf))
+   #_ (.registerPluginListener (:pl (:jta anbf))
                             (reify OnlineStatusListener
-                              (online [_] (println "online"))
-                              (offline [_] (println "offline"))))
+                              (online [_] (println "main: online"))
+                              (offline [_] (println "main: offline"))))
    (let [config @(:config anbf)]
-     (start-jta (:jta anbf) (:host config) (:port config)))))
+     (start-jta (:jta anbf) (:host config) (:port config)))
+   anbf))
 
 (defn stop
   ([]
    (stop s))
   ([anbf]
-   (stop-jta (:jta anbf))))
+   (stop-jta (:jta anbf))
+   anbf))
 
 (defn -main [& args] []
-  (let [anbf (new-anbf)]
+  (def s (new-anbf))
+  (let [jta (:jta s)]
     (println "loaded plugins:")
-    (println (.getPlugins (:pl (:jta anbf))))
+    (println (.getPlugins (:pl jta)))
 
-    (start anbf)
+    (start s)
     (println "bezi")
+    (println "id terminalu:" (.getTerminalID (:emulation @(.state (:terminal jta)))))
 
     #_ (let [buffer (byte-array 5000)
-          proto (:terminal (:jta anbf))]
+          proto (:terminal jta)]
       (println (.read proto buffer))
       (println (.read proto buffer))
       (println (.read proto buffer))
@@ -58,4 +63,4 @@
       (println (String. buffer))
     )
 
-    (stop anbf)))
+    (stop s)))
