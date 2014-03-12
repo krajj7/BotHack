@@ -1,0 +1,273 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.73C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.0 i686) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Plugins</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: Plugins</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="../index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">Plugins</font></h2></center>
+The JTA uses a pugin scheme to allow easy addition
+of software modules to the whole framework. These plugins may either be
+used to work on the data streams, display additional information to the
+user or be bywork. A few standard plugins are provided with the package.
+These plugins are desribed here. J<a href="#PLUGINLIST">ump down to the
+list.</a>
+<p>In contrast to the old version we have introduced a new scheme for loading
+plugins. It is now possible to have <b>two or more plugins</b> of the same
+name <b>with several different configurations</b> used in one application.
+The <b>order</b> of the plugins <b>is important</b>!
+<p>To accomplish that we have introduced identifier for the plugins. A
+normal plugin list would look like:
+<p><tt>plugins = Socket,Telnet,ButtonBar,Terminal</tt>
+<p><tt>If you wanted to set up another button bar you are in trouble because
+it would read the same options twice. So when setting up two plugins of
+the same name you do as follows:</tt>
+<p><tt>plugins = Socket,Telnet,ButtonBar(one),ButtonBar(two),Terminal</tt>
+<p>You give both plugins a unique name (<tt>one</tt> and <tt>two</tt>)
+and use this name in any following configuration properties:
+<p><tt>layout.ButtonBar(one) = North</tt>
+<br><tt>layout.ButtonBar(two) = South</tt>
+<br><tt>ButtonBar(one).setup = http://server/one.conf</tt>
+<br><tt>ButtonBar(two).setup = http://server/two.conf</tt>
+<p>And that is it! If you define properties without the unique name they
+will be used as fallback values in case a needed property is not set for
+a specific plugin.&nbsp;
+<p>Have a look at the <a href="../../html/index.html">example page</a>
+and the <a href="../../html/applet.conf">applet.conf </a>used there.
+<p>
+<b>Note:</b>If you are using the 'Script' plugin, note that it must be <b>between</b> the Telnet/SSH and Terminal plugin to get at the datastream.
+<br><a NAME="PLUGINLIST"></a>
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Plugin</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Remarks</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" BGCOLOR="#999999" NOSAVE>
+<center><b><font color="#FFFFFF">Basic Plugins</font></b></center>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER NOSAVE><b><a href="Socket.html">Socket</a></b></td>
+
+<td NOSAVE>A most basic plugin used for low level communication with remote
+hosts. It almost always needed.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER NOSAVE><b><a href="Telnet.html">Telnet</a></b></td>
+
+<td>This is the actual handler for telnet type communications. It filters
+the data streams and handles all telnet options.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER NOSAVE><b><a href="SSH.html">SSH</a></b></td>
+
+<td>For more secure communication you would rather use SSH instead of the
+Telnet plugin as it provides a way for secure communication over insecure
+networks.</td>
+</tr>
+
+<tr>
+<td>
+<center><b>Shell</b></center>
+</td>
+
+<td>A shell plugin for use with local command shells. <i>Not really useful
+right now.</i></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER NOSAVE><b><a href="Terminal.html">Terminal</a></b></td>
+
+<td>This is a very important plugin as it is the actual terminal so you
+can see what you do. It implements an ANSI/VT320 compatible terminal emulation.</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" BGCOLOR="#999999" NOSAVE>
+<center><b><font color="#FFFFFF">Add-On</font></b></center>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER NOSAVE><b><a href="Status.html">Status</a></b></td>
+
+<td>An example how to write a listener plugin and display information.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="Timeout.html">Timeout</a></b></center>
+</td>
+
+<td>A useful plugin for Applet users. It will allow you to define an idle
+timeout to close the connection.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="ButtonBar.html">ButtonBar</a></b></center>
+</td>
+
+<td>The new implemenation of our well known button bar module. With new
+configuration options and better look than ever.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="Script.html">Script</a></b></center>
+</td>
+
+<td>The script plugin may be used to automate login procedures for guest
+accounts.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="Sink.html">Sink</a></b></center>
+</td>
+
+<td>The Sink plugin is a replacement of the Terminal plugin, which just
+reads and discard data. Useful if you do not want output.</td>
+</tr>
+
+<tr>
+<td>
+<center><b><a href="URLFilter.html">URLFilter</a></b></center>
+</td>
+
+<td>Filters URLs out of the incoming data and displays a list to open them
+in a web browser (Applet)</td>
+</tr>
+
+<tr>
+<td>
+<center><b>MudConnector</b></center>
+</td>
+
+<td>A special plugin for <a href="www.mudconnector.com">www.mudconnector.com</a>
+to display a list of muds to connect to.</td>
+</tr>
+
+<tr>
+<td>
+<center><b>BSX plugin</b></center>
+</td>
+
+<td>A third party plugin for use with BSX enabled MUDs. It is contained
+in the <a href="../../jar/contrib.jar">contrib.jar</a> package.</td>
+</tr>
+</table></center>
+</td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">If
+you would like to write your own plugins you should refer to the following
+documentation:&nbsp;</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="../source/de/mud/jta/package-summary.html">de.mud.jta</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>This package&nbsp; is the main package and contains information about
+the plugin system, applet and application.</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../source/de/mud/jta/plugin/package-summary.html">de.mud.jta.plugin</a></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>All the standard plugins are documented here.</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../source/de/mud/jta/event/package-summary.html">de.mud.jta.event</a></font></b></td>
+</tr>
+
+<tr>
+<td>The plugins use some sort of event system to communicate. Look what
+evens are implemented already.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: index.html 500 2005-10-07 09:15:07Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

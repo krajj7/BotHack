@@ -1,0 +1,67 @@
+#
+# keyCodes.at386 contributed by Selwyn Rosenstein (SelwynR@scas.com)
+#
+# AT-386 ANSI Terminal keyCodes definition file for Java Terminal Applet with
+#  Terminal.id = at386
+#  Terminal.IBM = true
+#  Terminal.colorSet = /de/mud/terminal/colorSet.conf (default)
+#
+# This configuration file should be compatible with most ANSI monitors
+# monitors running under most versions of UNIX.
+#
+# F1 thru F10
+#
+F1=\\eOP
+F2=\\eOQ
+F3=\\eOR
+F4=\\eOS
+F5=\\eOT
+F6=\\eOU
+F7=\\eOV
+F8=\\eOW
+F9=\\eOX
+F10=\\eOY
+F11=\\eOZ
+F12=\\eOA
+#
+# Shift F1 thru F10
+#
+SF1=\\eOp
+SF2=\\eOq
+SF3=\\eOr
+SF4=\\eOs
+SF5=\\eOt
+SF6=\\eOu
+SF7=\\eOv
+SF8=\\eOw
+SF9=\\eOx
+SF10=\\eOy
+SF11=\\eOz
+SF12=\\eOa
+#
+# Other cursor movement keys
+#
+UP=\\e[A
+DOWN=\\e[B
+RIGHT=\\e[C
+LEFT=\\e[D
+#
+INSERT=\\e[@
+# REMOVE=\\177  #( hex 7F  /  Decimal 127  /  Octal  177  /  DEL Key)
+#
+HOME=\\e[H
+PGDOWN=\\e[U
+PGUP=\\e[V
+END=\\e[Y
+#
+#
+# The following may be usefull to someone wishing to know the correct escape
+# sequences to send to the terminal to change display modes
+#
+# LOW-INTENSITY=\\e[0m
+# HIGH-INTENSITY=\\e[1m
+# REVERSE=\\e[7m
+# RESET=\\e[0m
+#
+# COLOR-SEQ=\\e[3%d;4%dm
+# COLOR-8=1

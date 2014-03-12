@@ -1,0 +1,397 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.16 i686) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Applet</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: Applet</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+
+<tr BGCOLOR="#FFFFFF" NOSAVE>
+<td COLSPAN="5" NOSAVE>
+<center><table BORDER=0 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF"><a href="#QUICKSTART">Quickstart</a></font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><a href="#PARAMS">Applet
+Parameters</a></font></font></b></td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h1>
+<font color="#CC0000">The Applet</font></h1></center>
+<font color="#000000">The applet is for those people that provide <b>terminal
+based services</b> and would like to add <b>web capabilities </b>to it.
+The applet is the perfect way to make the transition from a terminal based
+system to a more sophisticated web based framework easier. To bring the
+terminal based application on the web one need to allow telnet or ssh access
+to it (which usually already exists) and then set up the Applet on a page
+on their web server. A second interesting usage is to set the applet up
+on your private home page and use it to be able to <b>log in from remote
+locations</b> without the need for any communication programs except a
+Java capable web browser.</font>
+<h3>
+<a NAME="QUICKSTART"></a>Quickstart</h3>
+<font color="#000000">To quickly have the applet up and running following
+the steps below:</font>
+<ol>
+<li>
+<font color="#000000"><b>Copy</b> one of the examples in the <tt><a href="../html/index.html">html</a></tt>
+directory (<b><tt><a href="../html/AppletTest.html">AppletTest.html</a></tt></b>
+or <b><tt><a href="../html/AppletEnhanced.html">AppletEnhanced.html</a></tt></b>)
+to the directory on your web server where you would like to install the
+applet.</font></li>
+
+<li>
+<font color="#000000"><b>Copy</b> the <b><tt><a href="../jar/jta20.jar">jta20.jar</a></tt></b>
+file to the same directory on your web server.</font></li>
+
+<li>
+<font color="#000000"><b>Edit</b> the file you copied in step number <b>one</b>!
+Look for the <b><tt>applet</tt></b> tag, set the <b><tt>CODEBASE</tt></b>
+to
+<tt>"." </tt>and <b>remove</b> the <tt>jar/</tt> from the archive file
+name.</font></li>
+
+<br><i><font color="#000000">Make sure it looks like the following piece
+of HTML text:</font></i>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=3 BGCOLOR="#CCCCCC" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE><tt>&lt;applet CODEBASE="."</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARCHIVE="jta20.jar"</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CODE="de.mud.jta.Applet"&nbsp;</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WIDTH=590 HEIGHT=360></tt>
+<br><tt>&nbsp;&nbsp;&nbsp; </tt>... <i>some more configurations but not
+essential now ...</i>
+<br><tt>&lt;/applet></tt></td>
+</tr>
+</table>
+
+<li>
+<font color="#000000"><b>Important:</b> There is a problem with Netscape
+that forces you to put the <a href="../default.conf">default.conf</a> file
+in the same directory as the jar and the html file. Simply download <a href="../default.conf">default.conf</a>
+and put it there.</font></li>
+
+<li>
+<font color="#000000"><b>Verify</b> that all files (html and jar) are readable
+for all users, so that the web server can handle them.</font></li>
+
+<li>
+<font color="#000000">Go to the page <b><tt>AppletTest.html</tt></b> on
+your web server. It should load the applet and prompt you with your telnet
+login. </font><font color="#CC0000">If you have a problem check the files
+again and have a look at the Java console of your web browser to find out
+what the problem is. In case you still do not understand what is going
+wrong have a look at our <a href="FAQ.html">FAQ</a> and next <a href="mailto:jta@mud.de">write
+to us</a>, but <b>include</b> a copy of your <b>java console</b> contents.</font></li>
+</ol>
+
+<h3>
+<a NAME="PARAMS"></a><font color="#000000">Applet Parameters</font></h3>
+The new version of the software tries to reduce the amount of parameters
+that you have to change to make the applet work. Instead of using these
+applet parameters it uses a configuration file now. Which file to use is
+determined by a parameter however.
+<p>Before we go into more detail on the applet parameters lets take a look
+at the <tt>&lt;applet></tt> tag in general. The example files (see <a href="index.html">documentation</a>)
+usually contain a piece of html text like the following:
+<ol>
+<li>
+<tt><font color="#000000">&lt;applet CODEBASE="../"&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ARCHIVE="jar/jta20.jar"</font></tt></li>
+
+<li>
+<tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CODE="de.mud.jta.Applet"&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WIDTH=590
+HEIGHT=360></font></tt></li>
+
+<li>
+<tt><font color="#000000">&nbsp; &lt;PARAM NAME="config" VALUE="applet.conf"></font></tt></li>
+
+<li>
+<tt><font color="#000000">&nbsp; </font><font color="#CC0000">&lt;!--&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Make sure
+the config file is in the same directory.</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The file
+<a href="../html/applet.conf">applet.conf</a>
+looks just like <a href="../default.conf">default.conf.</a></font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; applet.conf
+overrides settings in default.conf!&nbsp;</font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp;&nbsp; --></font></tt></li>
+
+<li>
+<tt><font color="#CC0000">&nbsp; </font><font color="#000000">&lt;/applet></font></tt></li>
+</ol>
+
+<dt>
+<b><tt><font color="#000000">&lt;applet CODEBASE="../"</font></tt></b></dt>
+
+<dd>
+<font color="#000000">The first line contains the <tt>CODEBASE</tt> attribute
+which points to the directory where the jar archives are located. This
+is necessary as the example html files are in a different location. So
+if you put the jar files in the same directory as your applet html file
+you may set this to <tt>"."</tt> or simply remove the whole attribute.</font></dd>
+
+<dt>
+<b><tt><font color="#000000">ARCHIVE="jar/jta20.jar"</font></tt></b></dt>
+
+<dd>
+<font color="#000000">The next line contains the actual archive that is
+used to get the classes from. Using a jar archive drastically reduces the
+download time for the applet. In our example the jar archive rests in a
+directory <tt>jar/</tt> and you need to remove that directory part if you
+placed the jar file in the same directory as the html file.</font></dd>
+
+<br><b><tt><font color="#000000">CODE="de.mud.jta.Applet"</font></tt></b>
+<dd>
+<font color="#000000">The third line tells the browser which class to load
+as the applet. You do not need to change anything here.</font></dd>
+
+<dt>
+<b><tt><font color="#000000">WIDTH=590 HEIGHT=360></font></tt></b></dt>
+
+<dd>
+<font color="#000000">The last line of the opening <tt>&lt;applet></tt>
+tag tells the browser how big to make the applet. In our example it has
+a width of 590 pixels and a height of 360 pixels. Adapt this according
+to your needs. In general the applet adapts its font size to match the
+size of the applet.</font></dd>
+
+<br>&nbsp;
+<p>&nbsp;
+<p>Everything else will be explained below and finally you need to close
+the applet definition using the <tt>&lt;/applet></tt> tag.
+<p>The parameter format is <tt>&lt;PARAM NAME="</tt><i>name</i><tt>" VALUE="</tt><i>value</i><tt>"></tt>
+and has to appear within the <tt>&lt;applet></tt> and <tt>&lt;/applet></tt>
+tags.
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Parameter</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE><tt>NAME="config"</tt>
+<br><tt>VALUE="</tt><i>configuration file</i><tt>"</tt></td>
+
+<td>The parameter points to the configuration file for the applet. It may
+be either a path relative to the <tt>CODEBASE</tt> or a fully qualified
+URL. You can also set the configurations as PARAMS: <a href="#PARAMINFO">see
+below</a></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>Detach the actual terminal display and its components from the browser
+window and run in a separate window. Use with care.
+<br>The <i>boolean</i> value may either be <tt>true</tt> or <tt>false</tt>.
+S<i>ee below!</i></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.fullscreen"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>When detaching make the resulting
+window fill the whole screen. This might be useful for systems where people
+have to remote login and should get the biggest font that is possible on
+their screen.</tt></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.title"</tt>
+<br><tt>VALUE="</tt><i>string</i><tt>"</tt></td>
+
+<td ALIGN=LEFT VALIGN=TOP NOSAVE>Sets the window title of the detached
+applet.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.disconnect"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>If set to <tt>true</tt>, the applet will disconnect from the remote
+host if you leave the web page. If <tt>false</tt>, the applet will stay
+connected and allows the user to continue the session.</td>
+</tr>
+
+<tr>
+<td><tt>NAME="Applet.disconnect.closeWindow"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>Closes the detached window if the connection is lost. If you want to
+disable this feature set it to <b>false</b>.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.immediately"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>This parameter is usually set to false and determines if the applet
+should detach immediately and run if set to <i>true</i> or simply display
+the button and wait until it is pressed if <i>false</i>.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.startText"</tt>
+<br><tt>VALUE=</tt>"<i>string</i>"</td>
+
+<td>Set this parameter if you want to use a start button to detach the
+applet. The default value is "Connect".</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.stopText"</tt>
+<br><tt>VALUE="</tt><i>string</i><tt>"</tt></td>
+
+<td>The value set here will appear as the label of the button if the applet
+is in detached mode and running. The default value is "Disconnect".</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>NAME="Applet.detach.menuBar"</tt>
+<br><tt>VALUE="</tt><i>boolean</i><tt>"</tt></td>
+
+<td>Use this parameter if you want to disable the menubar in a detached
+applet. Usually that menubar is visible in a detached window but can be
+removed setting this parameter to <i>false</i>.</td>
+</tr>
+</table></center>
+
+<p><a NAME="PARAMINFO"></a><font color="#CC0000">Important: </font><font color="#000000">Any
+configuration options you can specify in the configuration file (<a href="../html/applet.conf">applet.conf</a>
+or <a href="../de/mud/jta/default.conf">default.conf</a>) can also appear
+as an applet's tag:&nbsp;</font>
+<blockquote><font color="#000000"><tt>&lt;PARAM NAME="</tt><i>parameter</i><tt>"
+VALUE="</tt>value<tt>"></tt></font></blockquote>
+<font color="#000000">The only drawback is, before it is recognized a <b>default
+value</b> of that parameter must have appeared <b>in</b> one of the configuration
+<b>files</b>!</font></td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">To
+use the applet keep in mind, a few of the following hints:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000">Java
+Security</font></font></b></td>
+</tr>
+
+<tr>
+<td>Java Applet are only allowed to connect back to the server, where the
+classes where loaded from. So you need a web server on the computer where
+you want to log in. However, using our <a href="tools/relayd.html">relayd</a>
+program on your web server you can log into other hosts as well.
+<p>Additionally you can use the <b>Applet.Netscape.privilege</b> property
+in <i>applet.conf</i>. It can be set to one of the <a href="http://developer.netscape.com/docs/manuals/signedobj/targets/index.htm">security
+targets</a> defined by Netscape. Most useful is the <b>UniversalClipboardAccess</b>
+or <b>UniversalConnect</b>.&nbsp;
+<p><font color="#CC0000">Read about the <i>CODEBASE&nbsp;principals</i>
+in the <a href="http://developer.netscape.com/docs/manuals/signedobj/capabilities/index.html">Overview
+of the Capabilities API.</a></font></td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">Without a
+Web Server</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>People sometimes try to load the html pages without a web server
+from their local hard disk. This may work or it may not, as some security
+manager implementations do not accept local hard disks as a secure source
+for classes.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: Applet.html 499 2005-09-29 08:24:54Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

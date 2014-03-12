@@ -10,3 +10,4 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
+/jta26/doc/source/

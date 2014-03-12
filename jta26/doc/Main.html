@@ -1,0 +1,391 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Test Page</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: Main</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
+<br>Available under <a href="../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+
+<tr BGCOLOR="#FFFFFF" NOSAVE>
+<td COLSPAN="5" NOSAVE>
+<center><table BORDER=0 COLS=3 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF"><a href="#QUICKSTART">Quickstart</a></font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><a href="#COMMANDLINE">Command
+Line Options</a></font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF"><a href="#MENUS">Application
+Menu</a></font></font></b></td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">The Application (Main)</font></h2></center>
+<font color="#000000">&nbsp;There are two ways to operate the program.
+One is to simply start it and to configure everything within the application
+or to give arguments, like host and port, on the command line. The first
+way may be the least complicated as the menu entries are self descriptive.
+You need to have installed a java runtime environment or java development
+kit to run the application. On Microsoft Windows systems an installed Internet
+Explorer with Java support should suffice though.</font>
+<h3>
+<a NAME="QUICKSTART"></a>Quickstart</h3>
+<font color="#000000">Make sure either the program <tt>java</tt> (JRE,
+JDK) or <tt>jview</tt> (Windows IE) is in your path. Optionally you may
+set the environment variable <tt>CLASSPATH</tt> to point to the file
+<tt>jta20.jar</tt>
+(see the box to the right for more information). Then try the following
+command:</font>
+<br>&nbsp;
+<dt>
+<b><font color="#000000">JRE or JDK on UNIX or Windows (for Windows and
+IE installed, use jview instead)</font></b></dt>
+
+<dd>
+<tt><font color="#000000">java de.mud.jta.Main</font></tt></dd>
+
+<dd>
+<i><font color="#000000">alternative:</font></i></dd>
+
+<dd>
+<i><font color="#000000">java -jar jta20.jar&nbsp;</font></i></dd>
+
+<dd>
+<i><font color="#000000">Now you should see the following output:</font></i></dd>
+
+<dd>
+<tt><font color="#000000">** JTA - Telnet/SSH for the JAVA(tm) platformn</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">** Version 2.0 for Java 1.1.x and Java 2</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">** Copyright (c) 1996-2000 Matthias L. Jugel,
+Marcus Meissner</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">** Build: 20000627-1208</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">jta: loading plugin 'Status' ...</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">jta: loading plugin 'Socket' ...</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">jta: loading plugin 'Telnet' ...</font></tt></dd>
+
+<dd>
+<tt><font color="#000000">jta: loading plugin 'Terminal' ...</font></tt></dd>
+
+<dd>
+</dd>
+
+<br><font color="#000000">Some other messages might appear, but unless
+you see an <tt>Exception</tt> a window should appear on your screen and
+prompt you for login into your local host. If you are running on windows
+you will probably see an error message and should append the target host
+you want to connect to to the command line above.</font>
+<h3>
+<a NAME="COMMANDLINE"></a><font color="#000000">Command Line Options</font></h3>
+<font color="#000000">The application understand several command line arguments
+to configure the way it looks and where to initially connect to. The following
+command line arguments are possible:</font>
+<p><tt><font color="#000000">de.mud.jta.Main [-plugins pluginlist]</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[-addplugin plugin]</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[-config file]</font></tt>
+<br><tt><font color="#000000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[host [port]]</font></tt>
+<br><font color="#000000"><font size=-1>(Options enclosed in brackets are
+optional and may be left out.)</font></font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Option</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE><tt>-plugins</tt> <i>pluginlist</i></td>
+
+<td NOSAVE>Use this option to define a different list of plugins to be
+loaded on startup of the application. Plugins are always added from back
+to front and are separated by comma:&nbsp;
+<p><tt>&nbsp;&nbsp; Socket,Telnet,Terminal</tt>
+<p>The above <i>pluginlist</i> is the default.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>-addplugin </tt><i>plugin</i></td>
+
+<td>Add a plugin to the list of standard plugins.</td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP NOSAVE><tt>-config </tt>file</td>
+
+<td>You can specify a configuration file here. See <a href="../de/mud/jta/default.conf">default.conf</a>
+for an example how it looks like.</td>
+</tr>
+
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE><i>host</i></td>
+
+<td>The host where you would like to open the connection to. This must
+be the second last entry on the command line, unless you leave out the
+port.
+<p>You can either give the symbolic name of the host or the IP address.</td>
+</tr>
+
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE><i>port</i></td>
+
+<td>If you want to connect to a different port that the default telnet
+port (23) you need to enter the port number as the last entry on the command
+line.</td>
+</tr>
+</table></center>
+
+<h3>
+<a NAME="MENUS"></a>Working with the Menu</h3>
+After you startet the application as explained above you can change setting,
+connect, disconnect or exit the application using the menus provided. The
+default menus will be explained here, but some <a href="plugins/index.html">plugins</a>
+may provide their own menu and you will have to look at their own documentation
+for further help.
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">File</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>
+<center><table BORDER=0 CELLSPACING=2 CELLPADDING=2 WIDTH="90%" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#666666" NOSAVE>
+<td ALIGN=LEFT NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Connect</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE> (DOES NOT WORK CURRENTLY) Opens a dialog to select a new host and port to connect to.
+By simply pressing Enter or clicking on the connect button will connect
+to the default host and port that is shown in the editable text fields
+on that dialog.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Disconnect</font></font></b></td>
+</tr>
+
+<tr>
+<td>Disconnect from the host you are currently connected to. This option
+is not available of you are not connected.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Close</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>Closes the current application window. If that window is the
+last one the application exits as would happen if you selected the next
+menu entry <b>Exit</b> below. An open connection in that window will be
+closed by this operation.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Exit</font></font></b></td>
+</tr>
+
+<tr>
+<td>Close all connections, all windows and exit the application.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+
+<tr BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Edit</font></font></b></td>
+</tr>
+
+<tr>
+<td>
+<center><table BORDER=0 CELLSPACING=2 CELLPADDING=2 WIDTH="90%" NOSAVE >
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Copy</font></font></b></td>
+</tr>
+
+<tr>
+<td>Copy the currently selected text on the terminal to the clipboard.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Paste</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>Paste text in the clipboard to the terminal.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Select
+All</font></font></b></td>
+</tr>
+
+<tr>
+<td>Select the complete terminal window and all text that is in the scrollback
+buffer.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+
+<tr BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Help</font></font></b></td>
+</tr>
+
+<tr>
+<td>
+<center><table BORDER=0 CELLSPACING=2 CELLPADDING=2 WIDTH="90%" NOSAVE >
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Plugins</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>This will give you a short introduction on plugins and will
+explain how to use them or add/remove plugins from the software. Other
+help entries may appear if the plugins provide their own help menus.</td>
+</tr>
+
+<tr BGCOLOR="#666666" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">About</font></font></b></td>
+</tr>
+
+<tr>
+<td>Selecting the help about the <b>Java<sup>tm</sup> Telnet Application</b>
+gives you a dialog showing the names of the authors, some explanation on
+<a href="../license/COPYING">licensing</a>
+and a link to the <a href="http://www.mud.de/se/jta">home page</a> of the
+software.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table></center>
+</td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">There
+are some differences in how to invoke the java interpreter for either Java
+1.1.x or Java 2:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000">Java
+1.1.x</font></font></b></td>
+</tr>
+
+<tr>
+<td><font color="#000000">It is generally advicable to set the environment
+variable <tt>CLASSPATH</tt> to point to the <tt>jta20.jar</tt> file. Examples
+are shown below:</font>
+<p><b><font color="#000000">UNIX:</font></b>
+<br><tt><font color="#000000">CLASSPATH=/java/jta20.jar</font></tt>
+<p><b><font color="#000000">Windows:</font></b>
+<br><tt><font color="#000000">CLASSPATH=C:\java\jta20.jar</font></tt>
+<br>&nbsp;</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">Java 2</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>In <b>Java 2</b> it is much easier to run the application as
+you can simply use the command line parameter <tt>-cp</tt> to add the jar
+file to the class path:
+<p><b>UNIX:</b>
+<br><tt>java -cp /java/jta20.jar</tt>
+<p><b>Windows:</b>
+<br><tt>java -cp C:\java\jta20.jar&nbsp;</tt></td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: Main.html 499 2005-09-29 08:24:54Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

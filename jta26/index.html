@@ -1,0 +1,191 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (X11; I; Linux 2.2.14 i586) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><i><font face="Arial,Helvetica">Homepage</font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/index.html">Applet Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/download.html">Download</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="doc/index.html">Documentation</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="html/users.html">Users / Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h1>
+<font color="#CC0000">Final Version 2.0&nbsp;</font></h1></center>
+<font color="#000000">The software has been rewritten and comes with a
+complete new base system. Apart from changes to the event handling in our
+<b>terminal
+emulation</b> the base parts have only been portet to Java 2 to retain
+the efficiency and speed of our well known terminal emulation. Both the
+terminal emulation and the <b>telnet protocol handler </b>have been taken
+out of the software to be available as standalone packages to be used by
+other programmers. The new bus/event system that connects the plugins ensures
+ease of use and allows the addition of self-written plugins. Features include:</font>
+<ul>
+<li>
+<font color="#000000">full <b>Java 2</b> compatibility (works with <b>Java
+1.1.x</b>! for now)</font></li>
+
+<li>
+<font color="#000000">currently <b>11 <a href="doc/plugins/">plugins</a></b></font></li>
+
+<li>
+<font color="#000000">application menu bar for plugin menus</font></li>
+
+<li>
+<font color="#000000">configuration file</font></li>
+
+<li>
+<font color="#000000">configurable foreground and background color</font></li>
+
+<li>
+<font color="#000000"><b>telnet</b> and <b>ssh</b> support</font></li>
+
+<li>
+<font color="#CC0000"><a href="http://www.systems.to/telnet.html">PersonalJava<sup>tm</sup> edition</a> quickly ported by <i>Michael Andreasen</i> for his Nokia 9210</font> </li>
+</ul>
+<font color="#000000">This version should <i>run with all runtime environments</i>
+that are at least Java 1.1.x compatible. If you are working with an older
+Java runtime environment (e.g. 1.0) please go to the <b><a href="http://www.first.gmd.de/persons/leo/java/Telnet/">old
+Java 1 version</a></b> that will work with most currently available browsers.</font>
+<center>
+<h3>
+<a NAME="STATUS"></a><font color="#CC0000">Comments About this Release</font></h3></center>
+Most of the requests we got have been included but some of it is more difficult
+than imagined and sometimes difficult to achieve, like printing in applets.&nbsp;
+<p>It turned out that the pass-through printing will not really work in
+applets and so we have left it out for now. The stubs are in the code,
+but it will come in a later release eventually.
+<p>We have also as for now decided not to move on to a Swing based framework.
+Most browsers around have a Java 1.1 compliant runtime and we don't want
+to forces users to install the Java 2 plugin. It is planned for the next
+release to move on and provide full Swing support.<i></i>
+<p><i>Last but not least we would like to say "Thank you!" to everyone
+who sent us comments, questions and bug reports and thus helped to make
+the software better.&nbsp;</i>
+<br><i></i>&nbsp;</td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Did
+you <a href="html/download.html">download</a> the latest version? Have
+a look at the timestamp:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">Package Timestamp</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td ALIGN=CENTER VALIGN=CENTER NOSAVE><!-- DATE -->
+<br><a href="CHANGES">CHANGELOG</a></td>
+</tr>
+</table></center>
+
+<p><i><font color="#CC0000">What is ...</font></i>
+<br>&nbsp;
+<table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica">JTA - Telnet/SSH for the JAVA(tm) platform</font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>... is a fully featured <b>telnet</b> implementation coupled
+with a very sophisticated terminal emulation for <b>VT</b> and <b>ANSI</b>
+terminals.
+<p>Telnet was one of the first protocols to be developed during the early
+stages of the ARPANET that later became the Internet. telnet allows you
+to login to another Internet location to gain access to databases, library
+catalogs, and interactive environments.&nbsp;
+<p>Despite its name, his software works either as <i>applet</i> or as
+<i>application</i>.
+The former is quite useful for service providers such as libraries or stock
+tickers who would like to allow access to terminal driven applications
+via the World Wide Web.&nbsp;
+<p>End users may find the application mode interesting as it provides a
+fast and reliable telnet implementation to login to other workstations
+or text-based online games, such as MUDs.</td>
+</tr>
+</table>
+
+<p>&nbsp;</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a>
+<br/>
+<b><a href="http://java.sun.com/">Java</a></b> and <b>PersonalJava</b> are a trademarks of <a href="http://www.sun.com/">Sun Microsystems Inc.</a><br/>
+Any names mentioned on this site are copyright of their respective owners.
+</td>
+
+<td valign="top">
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: index.html 499 2005-09-29 08:24:54Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+<center>
+<p>Member Of <a href="http://members.tripod.com/~mpTOOLS/ring.html">The
+Open Source Java Web-Ring</a>
+<br>[<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;id=130;sprev" target="_top">Skip
+Prev</a>] [<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;id=130;prev" target="_top">Prev</a>]
+[<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;id=130;next" target="_top">Next</a>]
+[<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;id=130;skip" target="_top">Skip
+Next</a>] [<a href="http://www.webring.org/cgi-bin/webring?random;ring=osj123" target="_top">Random</a>]
+[<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;id=130;next5" target="_top">Next
+5</a>] [<a href="http://www.webring.org/cgi-bin/webring?ring=osj123;list" target="_top">List
+Sites</a>]</center>
+
+</body>
+</html>

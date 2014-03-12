@@ -1,0 +1,565 @@
+<!DOCTYPE html PUBLIC "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+    
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    
+  <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+    
+  <meta name="GENERATOR" content="Mozilla/4.77C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.13-ac7 i686) [Netscape]">
+    
+  <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+    
+  <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+  <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Script Plugin</title>
+</head>
+  <body text="#000000" bgcolor="#ffffff" link="#0000ef" vlink="#51188e" alink="#ff0000">
+ &nbsp; 
+<center>
+<table border="0" cellspacing="0" cellpadding="5" cols="1" width="100%" height="20%" bgcolor="#000000" nosave="">
+ <tbody>
+    <tr nosave="">
+ <td align="Right" valign="Bottom" nosave=""> 
+      <table border="0" cellpadding="5" cols="5" width="100%" height="100%" bgcolor="#ffffff" nosave="">
+ <tbody>
+          <tr nosave="">
+ <td align="Right" valign="Bottom" colspan="5" nosave=""> 
+            <div align="Right"> 
+            <h1> <font face="Arial,Helvetica"><font color="#000099">JTA - Telnet/SSH for the JAVA(tm) platform: Terminal Plugin</font></font></h1>
+            </div>
+ <i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and 
+            <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></i> 
+            <p><b>Version 2.0 / Java 2 and 1.1.x</b> <br>
+Available under <a href="../../license/COPYING">GNU General Public License</a></p>
+            </td>
+ </tr>
+  <tr align="Center" valign="CENTER" nosave="">
+ <td nosave=""><b><font face="Arial,Helvetica"><a href="../../index.html">
+Homepage</a></font></b></td>
+  <td><b><font face="Arial,Helvetica"><a href="../../html/index.html">Applet 
+Test</a></font></b></td>
+  <td><b><font face="Arial,Helvetica"><a href="../../html/download.html">
+Download</a></font></b></td>
+  <td><b><i><font face="Arial,Helvetica"><a href="../index.html">Documentation</a></font></i></b></td>
+  <td><b><font face="Arial,Helvetica"><a href="../../html/users.html">Users 
+/ Opinions</a></font></b></td>
+ </tr>
+ 
+        </tbody>
+      </table>
+ </td>
+ </tr>
+ 
+  </tbody>
+</table>
+</center>
+  
+<table border="0" cellspacing="5" cellpadding="5" cols="2" width="100%" nosave="">
+ <tbody>
+    <tr nosave="">
+ <td align="Left" valign="Top" width="70%" bgcolor="#ffffff" nosave=""> 
+      <center> 
+      <h2> <font color="#cc0000">Terminal (ANSI/vt320) Plugin</font></h2>
+      </center>
+ The terminal plugin is a visual software component that acts as the front 
+end. It displays the data that is transmitted by the remote host and translates 
+keystrokes to be sent to the remote host. It implements an <b>ANSI</b>, <b>
+vt320/vt220/vt100</b> and <b>SCOANSI</b> compliant terminal. 
+      <p>Most of the features of the terminal emulation can be configured
+using the properties explained below. Additionally it provides a plugin menu 
+that can be operated if a menu bar is available. </p>
+      <p>You can configure the plugin using the following properties: <br>
+&nbsp; </p>
+      <center>
+      <table border="0" cellspacing="3" cellpadding="3" cols="2" width="100%" bgcolor="#cccccc" nosave="">
+ <tbody>
+          <tr align="Center" valign="CENTER" bgcolor="#000000" nosave="">
+ <td nosave=""><b><font face="Arial,Helvetica"><font color="#ffffff">Property</font></font></b></td>
+  <td><b><font face="Arial,Helvetica"><font color="#ffffff">Documentation</font></font></b></td>
+ </tr>
+  <tr nosave="">
+ <td colspan="2" bgcolor="#999999" nosave=""> 
+            <center><b><font face="Arial,Helvetica"><font color="#ffffff">
+General Properties</font></font></b></center>
+ </td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><tt>Terminal.foreground</tt></td>
+  <td>Set the foreground color of the terminal. You can use 24 but hexadecimal 
+values: <br>
+            <b><tt>#ffffff</tt></b> is white and <b><tt>#000000</tt></b>
+is black. This is just like the encoding you use in HTML.</td>
+ </tr>
+  <tr nosave="">
+ <td nosave=""><tt>Terminal.background</tt></td>
+  <td>Set the background color of the terminal. You can use 24 but hexadecimal 
+values: <br>
+            <b><tt>#ffffff</tt></b> is white and <b><tt>#000000</tt></b>
+is black. This is just like the encoding you use in HTML.</td>
+ </tr>
+  <tr nosave="">
+ <td><tt>Terminal.cursor.foreground</tt></td>
+  <td align="Left" valign="Top" nosave="">Set the cursor foreground color.
+If unset this is the inverted current foreground.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.cursor.background</tt></td>
+  <td>Set the cursor background color. If unset this is the inverted current 
+background.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.localecho</tt></td>
+  <td>While both SSH and Telnet client part detect localechostate automatically, 
+it can be overridden using this option. This is only recommended if you really
+need it. <br>
+Set to <b>true</b> for always localecho and <b>false</b> for never.</td>
+ </tr>
+  <tr>
+ <td><tt>&nbsp;Terminal.print.color</tt></td>
+  <td>Set to <b><tt>true</tt></b> to print the terminal in full color. The 
+default setting <b><tt>false</tt></b> will force the Terminal to print black
+&amp; white only.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.colorSet</tt></td>
+  <td>Use this property to define a complete color set for the terminal. A
+color set contains eight colors as defined by the ANSI standard. 
+            <p>The colorset should be in a file that is referenced by this
+property as either a file name relative to the jar file or a complete URL. 
+            </p>
+            <p>The default value is <i>/de/mud/terminal/colorSet.conf</i>
+. </p>
+            <p>The file contains a line for each color: </p>
+            <p><tt>color0 = color</tt> <br>
+            <tt>color1 = color</tt> <br>
+            <tt>...</tt> <br>
+            <tt>color7 = color<br>
+bold = color<br>
+invert = color<br>
+            </tt> </p>
+            <p><tt>color</tt> can be either a name or a number similar to
+the foreground and background above. The keywords bold and invert will set
+a color instead of the actual attribute for display. Bold text will be displayed
+using the color and inverted text will show up with a background color that
+is set.</p>
+            </td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.border</tt></td>
+  <td>Declare the size of the border that will sourround the terminal.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.borderRaised</tt></td>
+  <td>This property has no effect if <tt>Terminal.border</tt> is not set or
+zero. It may be set to "<b><tt>true</tt></b>" or "<b><tt>false</tt></b>".</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.scrollBar</tt></td>
+  <td>Adds a scroll bar to the terminal using the direction set in the property. 
+Possible directions are "<b><tt>East</tt></b>" and "<b><tt>West</tt></b>". 
+Using a "<b><tt>none</tt></b>" removes the scrollbar completely.</td>
+ </tr>
+  <tr nosave="">
+ <td><tt>Terminal.beep</tt></td>
+  <td align="Left" valign="Top" nosave="">If this property points to a fully
+qualified URL of a sound file this will be played in case of a terminal <b>
+bell</b> signal. This works for applets only. <br>
+Note: Some browsers (Netscape 4, IE 5.5 or earlier) sometimes can only play
+.au files here. In IE the sound needs to be on the same server as the applet
+or you get a security exception.</td>
+ </tr>
+  <tr nosave="">
+ <td colspan="2" bgcolor="#999999" nosave=""> 
+            <center><b><font face="Arial,Helvetica"><font color="#ffffff">
+Terminal Emulation Properties</font></font></b></center>
+ </td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.id</tt></td>
+  <td>Used to identify the type of the terminal. This is the string that is
+sent to the remote host. Default is "<b>vt320</b>" but you may use any string,
+like "<tt>vt100</tt>", "<tt>vt220</tt>" or "<tt>xterm</tt>" if it suits you. 
+            <p>If you change it to <b>scoansi</b>, it will change the linedrawing
+characters to match the <b>scoansi</b> ones.</p>
+            </td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.answerback</tt></td>
+  <td>The string the terminal sents back when it gets an 'ENQ' code. You can
+set it to anything you want or what your local environment requires. (The
+default is just a pointer to this config option.)</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.buffer</tt></td>
+  <td>This sets the size of the scroll back buffer the terminal uses. The 
+buffer is allocated dynamically until it reaches this size. You cannot set
+the scrollback buffer to a value smaller than the amount of lines on the
+screen.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.size</tt></td>
+  <td>Set the size of the terminal in terms of rows and lines. The value has
+to be given in the following format: 
+            <blockquote><b><tt>[</tt></b>width<b><tt>,</tt></b><i>height</i><b><tt>
+]</tt></b></blockquote>
+ Whitespaces are allowed within the brackets and just before and after the 
+comma. The standard is "<b><tt>[80,24]</tt></b>"</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.resize</tt></td>
+  <td>This property defines the method that is applied when the terminal window
+is resized. It may be either "<b><tt>font</tt></b>" - to resize the font
+to match the window size or "<b><tt>screen</tt></b>" - to change the amount
+of lines and columns displayed or "<b><tt>none</tt></b>" - to do nothing.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.font</tt></td>
+  <td>Tells the terminal which font to use for the display of characters. 
+This is usually "<b><tt>Monospaced</tt></b>" as any other font name might 
+not be available on the client host.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.fontStyle</tt></td>
+  <td>The font style to be used when looking up the font. The font style may
+be "<b><tt>plain</tt></b>", "<b><tt>bold</tt></b>" or "<b><tt>italic</tt></b>
+". The default is "<tt>plain</tt>".</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.fontSize</tt></td>
+  <td>The size of the font to be used. If you use automatic font resize this 
+will be used as the initial font size.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.keyCodes</tt></td>
+  <td>This should be set to the URL of a property file that contains the key
+codes&nbsp; you would like to use. The file is first tried using the resource
+loading mechanism, which looks in the CLASSPATH and then as a URL. Have a
+look at the file format for the <a href="#KEYCODES">key codes definition</a>
+.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.VMS</tt></td>
+  <td>Set this property to "<b><tt>true</tt></b>" if you are connecting to 
+a VMS system.</td>
+ </tr>
+  <tr>
+ <td><tt>Terminal.IBM</tt></td>
+  <td>Set this to "<b><tt>true</tt></b>" if you would like to use PC ANSI 
+graphics characters as used by some BBS's.</td>
+ </tr>
+  <tr>
+ <td>Terminal.encoding</td>
+  <td>Use this property if you have real UNICODE fonts installed on your system
+or at least fonts that include the characters you would like to display.
+The default setting it <b>ISO8859_1</b> but it may be used to make the terminal
+aware of special characters like in the japanese (i.e. <b>SJIS</b>) or chinese
+region.</td>
+ </tr>
+ 
+          </tbody>
+        </table>
+        </center>
+  
+        <h3> <a name="KEYCODES"></a><font color="#cc0000">Definition of Key
+Codes</font></h3>
+ <font color="#000000">The definition of key codes should only be done if 
+your application uses a very different keyboard layout than the standard vt320.
+The definition of almost all special keys is possible and follows rules described
+below:</font> 
+        <blockquote><tt><font color="#000000"># here is the rule</font></tt>
+ <br>
+          <tt><font color="#000000">[<b>SCA</b>]</font></tt><font color="#000000"><i>
+KEY</i><b><tt>=</tt></b><i>STRING</i></font></blockquote>
+ <font color="#000000">The characters enclosed in <tt>[</tt> and <tt>]</tt>
+ are optional and only one of the characters '<b><tt>S</tt></b>' (Shift), 
+'<b><tt>C</tt></b>' (Control) or '<b><tt>A</tt></b>' (Alt) may appear before 
+the <i>KEY</i>, which is a textual representation (F1, PGUP etc) of the key
+you would like to redefine.</font> 
+          <p><font color="#000000">The new <i>STRING</i> you define to be
+sent when pressing the key should come after the equal sign (<b><tt>=</tt></b>
+). Hash marks (<tt>#</tt>) in the file declare a line as comment and will 
+be ignored. Some examples explain the syntax:</font> <br>
+&nbsp; </p>
+          <dt> <font color="#000000">Send the string "test" when pressing
+the <tt>F1</tt> key:</font></dt>
+  <dd> <tt><font color="#000000">F1 = test</font></tt></dd>
+  <dt> <font color="#000000">On pressing <tt>Control + PGUP</tt> send the
+string "pgup pressed":</font></dt>
+  <dd> <tt><font color="#000000">CPGUP = pgup pressed</font></tt></dd>
+  <dt> <font color="#000000">Redefine the key <tt>Alt + F12</tt> to send
+an escape character:</font></dt>
+  <dd> <tt><font color="#000000">AF12 = \\e</font></tt></dd>
+  <br>
+&nbsp; 
+                      <p>&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; <br>
+&nbsp; </p>
+                      <p><font color="#000000">As you can see the string
+you can define may contain special characters which may be escaped using
+the backslash (\). Allowed special characters follow in the table below:</font>
+ </p>
+                      <p><font color="#cc0000"><font size="-1">(<b>Important</b>
+: for some of the escape codes you need two backslashes as these are our
+own definitions and not known by the Java Property mechanism)</font></font>
+ <br>
+&nbsp; </p>
+                      <center>
+                      <table border="0" cellspacing="3" cellpadding="3" cols="2" bgcolor="#cccccc" nosave="">
+ <tbody>
+                          <tr align="Center" valign="CENTER" bgcolor="#000000" nosave="">
+ <td><b><font face="Arial,Helvetica"><font color="#ffffff">Special Character</font></font></b></td>
+  <td nosave=""><b><font face="Arial,Helvetica"><font color="#ffffff">Explanation</font></font></b></td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\\b</tt></td>
+  <td><i>Backspace</i>, this character is usually sent by the <tt>&lt;-</tt>
+key (not the cursor left key!).</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\\e</tt></td>
+  <td><i>Escape</i>, this character is usually sent by the <tt>Esc</tt> key.</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\n</tt> <br>
+                            <tt><font color="#cc0000"><font size="-1">(only
+one backslash)</font></font></tt></td>
+  <td><i>Newline</i>, this character will move the cursor to a new line. On
+UNIX systems it is equivalent to carriage return + newline. Usually the <tt>
+Enter</tt> key send this character.</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\r</tt> <br>
+                            <tt><font color="#cc0000"><font size="-1">(only
+one backslash)</font></font></tt></td>
+  <td nosave=""><i>Carriage Return</i>, this key moves the cursor to the
+beginning of the line. In conjunction with <i>Newline</i> it moves the cursor
+to the beginning of a new line.</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\t</tt> <br>
+                            <tt><font color="#cc0000"><font size="-1">(only
+one backslash)</font></font></tt></td>
+  <td><i>Tabulator</i>, the tab character is sent by the <tt>-&gt;|</tt>
+key and moves the cursor to the next tab stop defined by the terminal.</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\\v</tt></td>
+  <td><i>Vertical Tabulator</i>, sends a vertical tabulator character.</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\\a</tt></td>
+  <td><i>Bell</i>, sends a terminal bell character which should make the terminal
+sound its bell, but the implementation is a silent one ;-)</td>
+ </tr>
+  <tr nosave="">
+ <td align="Center" valign="CENTER" nosave=""><tt>\\</tt><i>number</i></td>
+  <td>Inserts the character that is defined by this <i>number</i> in the ISO
+Latin1 character set. The <i>number</i> should be a decimal value.</td>
+ </tr>
+ 
+                        </tbody>
+                      </table>
+                      </center>
+  
+                      <p><font color="#000000">The following table explains
+which key may be redefined. As explained above each of the keys may be prefixed
+by a character defining the redefinition that occures if it is pressed in
+conjunction with the shift, control or alt keys.</font> <br>
+&nbsp; </p>
+                      <center>
+                      <table border="0" cellspacing="3" cellpadding="3" cols="2" width="100%" bgcolor="#cccccc" nosave="">
+ <tbody>
+                          <tr align="Center" valign="CENTER" bgcolor="#000000" nosave="">
+ <td><b><font face="Arial,Helvetica"><font color="#ffffff">Key Representation</font></font></b></td>
+  <td nosave=""><b><font face="Arial,Helvetica"><font color="#ffffff">Remarks</font></font></b></td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>F1 - F20</tt></center>
+ </td>
+  <td>The function key, F1, F2 ... up to F20.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>PGUP</tt></center>
+ </td>
+  <td>The Page Up key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>PGDOWN</tt></center>
+ </td>
+  <td>The Page Down key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>END</tt></center>
+ </td>
+  <td>The End key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>HOME</tt></center>
+ </td>
+  <td>The Home (Pos 1) key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>INSERT</tt></center>
+ </td>
+  <td>The Insert key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>REMOVE</tt></center>
+ </td>
+  <td>The Remove key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>UP</tt></center>
+ </td>
+  <td>The Cursor Up key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>DOWN</tt></center>
+ </td>
+  <td>The Cursor Down key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>LEFT</tt></center>
+ </td>
+  <td>The Cursor Left key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center><tt>RIGHT</tt></center>
+ </td>
+  <td>The Cursor right key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center>NUMPAD0 - NUMPAD9</center>
+ </td>
+  <td>The numbered Numpad keys.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center>ESCAPE</center>
+ </td>
+  <td>The ESCAPE key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center>BACKSPACE</center>
+ </td>
+  <td>The backspace key.</td>
+ </tr>
+  <tr>
+ <td> 
+                            <center>TAB</center>
+ </td>
+  <td>The tabulator key.</td>
+ </tr>
+ 
+                        </tbody>
+                      </table>
+                      </center>
+ </td>
+  <td align="Left" valign="Top" bgcolor="#cccccc" nosave=""><font color="#cc0000">
+Additional Programmer Documentation is available:</font> <br>
+&nbsp; 
+                      <center>
+                      <table border="0" cellspacing="3" cellpadding="3" cols="1" width="100%" nosave="">
+ <tbody>
+                          <tr nosave="">
+ <td bgcolor="#ffffff" nosave=""><b><font face="Arial,Helvetica"><font color="#000000"><a href="../source/de/mud/jta/plugin/Terminal.html">
+de.mud.jta.plugin.Terminal</a></font></font></b></td>
+ </tr>
+  <tr>
+ <td>This is the programmer documentation for the plugin. Use it as an example 
+if you want to write your own back end plugins.</td>
+ </tr>
+  <tr nosave="">
+ <td bgcolor="#ffffff" nosave=""><b><font face="Arial,Helvetica"><a href="../source/de/mud/jta/event/package-summary.html">
+de.mud.jta.event</a></font></b></td>
+ </tr>
+  <tr>
+ <td>This plugins uses some of the events and listeners described here.</td>
+ </tr>
+  <tr nosave="">
+ <td bgcolor="#ffffff" nosave=""><b><font face="Arial,Helvetica"><a href="../source/de/mud/terminal/package-summary.html">
+de.mud.terminal</a></font></b></td>
+ </tr>
+  <tr>
+ <td>Have a look here for the underlying terminal emulation package.</td>
+ </tr>
+ 
+                        </tbody>
+                      </table>
+                      </center>
+  
+                      <p><font color="#cc0000">If you produced <a href="#KEYCODES">
+keyCode definition</a> files you'd like to share with others <a href="mailto:jta@mud.de">
+send them to us</a> and we will publish them here.</font> <br>
+&nbsp; <br>
+&nbsp; 
+                      <table border="0" cellspacing="3" cellpadding="3" cols="1" width="100%" nosave="">
+ <tbody>
+                          <tr nosave="">
+ <td bgcolor="#ffffff" nosave=""><b><font face="Arial,Helvetica"><a href="keyCodes.at386">
+AT 386 Terminal</a></font></b></td>
+ </tr>
+  <tr nosave="">
+ <td nosave="">A key code definition file for an AT-386 Terminal. It should 
+work with ANSI and most version of UNIX. More info is in the file.</td>
+ </tr>
+ 
+                        </tbody>
+                      </table>
+ </p>
+                      </td>
+ </tr>
+ 
+                  </tbody>
+                </table>
+  
+                <center>
+                <table border="0" cellspacing="0" cellpadding="5" cols="1" width="100%" bgcolor="#000000" nosave="">
+ <tbody>
+                    <tr nosave="">
+ <td nosave=""> 
+                      <table border="0" cellspacing="3" cellpadding="5" cols="2" width="100%" height="100%" bgcolor="#ffffff" nosave="">
+ <tbody>
+                          <tr nosave="">
+ <td nosave="">Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L. 
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+  <td> 
+                            <div align="Right"><b><i>Get the <a href="http://www.mud.de/se/jta">
+latest version here</a>!</i></b></div>
+ </td>
+ </tr>
+  <tr nosave="">
+ <td colspan="2" nosave=""> 
+                            <div align="Right">$Id: Terminal.html,v 1.9 2000/03/19
+10:51:48 marcus Exp $</div>
+ </td>
+ </tr>
+ 
+                        </tbody>
+                      </table>
+ </td>
+ </tr>
+ 
+                  </tbody>
+                </table>
+                </center>
+  
+                </body>
+                </html>

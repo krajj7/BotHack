@@ -1,0 +1,221 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Test Page</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: FAQ</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
+<br>Available under <a href="../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">Frequently Asked Questions</font></h2></center>
+
+<ul>
+<li>
+<b><font face="Arial,Helvetica"><a href="#GENERAL">General questions</a></font></b></li>
+
+<ul>
+<li>
+<a href="#G.1">What is telnet?</a></li>
+
+<li>
+<a href="#G.2">What is SSH?</a></li>
+
+<li>
+<a href="#G.3">Will the software be ported to use Swing?</a></li>
+</ul>
+
+<li>
+<b><font face="Arial,Helvetica"><a href="#NETWORK">Network related questions</a></font></b></li>
+
+<ul>
+<li>
+<a href="#N.1">I am behind a firwall, can I use the applet?</a></li>
+
+<li>
+<a href="#N.2">Can I tunnel a telnet connection through the http (80) port?</a></li>
+</ul>
+
+<li>
+<b><font face="Arial,Helvetica"><a href="#PROBLEM">Problem related questions:</a></font></b></li>
+
+<ul>
+<li>
+<a href="#P.1">The applet will not load.</a></li>
+
+<li>
+<a href="#P.2">I can't get a connection!</a></li>
+</ul>
+</ul>
+
+<table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#000000" NOSAVE><a NAME="GENERAL"></a><b><font face="Arial,Helvetica"><font color="#FFFFFF">General
+Questions</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE>
+<dt>
+<a NAME="G.1"></a><b>What is telnet?</b></dt>
+
+<blockquote>The telnet protocol was developed durin the early stages of
+the Internet. Actually it was developed by people who set up the ARPA net.
+It is a protocol to allow a user to remotely log into another computer
+and perform tasks there as if he would be sitting on a terminal connected
+to that computer.</blockquote>
+<a NAME="G.2"></a><b>What is SSH?</b>
+<blockquote>SSH or Secure SHell is just like the telnet protocol, but it
+provided a secure way to log into that remote host. All communication is
+encrypted, which makes it much harder for third parties to tamper with
+the information you send over the network or to sniff out your password.</blockquote>
+<a NAME="G.3"></a><b>Will the software be ported to use Swing?</b>
+<blockquote>Good question. The software is ready to be ported to use Swing
+components instead of the AWT components. But in favor of size and portability
+we have decided not to use Swing. To support Swing on browsers that are
+using Java 1.1 only you would have to provide the swing.jar as a separate
+download and that would increase the download time dramatically. As soon
+as Swing is supported by all browsers we will make use of those components.</blockquote>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#000000" NOSAVE><a NAME="NETWORK"></a><b><font face="Arial,Helvetica"><font color="#FFFFFF">Network
+related questions</font></font></b></td>
+</tr>
+
+<tr>
+<td><a NAME="N.1"></a><b>I am behind a firewall, can I use the applet?</b>
+<blockquote>If you try to use an applet that is located outside your firewall
+you will not be able to use it. This is due to the fact that the applet
+tries to open a normal connection from your client to the remote host and
+the firewall is simply in the way. The applet is not firewall enabled!</blockquote>
+<a NAME="N.2"></a><b>Can I tunnel a telnet connection through the http
+(80) port?</b>
+<blockquote>Even though there are proxy applications that allow such tunneling
+we do not actively support this. First it breaks the security a firewall
+establishes and second the http port is not usually thought for tunneling
+other connections. In contrast to http, telnet is connection oriented,
+means it holds the connection open for the time of you doing work. http
+does not!</blockquote>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#000000" NOSAVE><a NAME="PROBLEM"></a><b><font face="Arial,Helvetica"><font color="#FFFFFF">Problem
+related questions</font></font></b></td>
+</tr>
+
+<tr>
+<td><a NAME="P.1"></a><b>The applet will not load.</b>
+<blockquote>First, have a look at the Java console of your browser and
+try to interpret the error message that appears there. Most commen cause
+for problems with the loading of the applet are:
+<ul>
+<li>
+insufficient rights of the files (web browser can't read them)</li>
+
+<li>
+missing file (make sure all files you need are there)</li>
+
+<li>
+wrong path names (the CODEBASE and other tag attributes)</li>
+</ul>
+</blockquote>
+<a NAME="P.2"></a><b>I can't get a connection!</b>
+<blockquote>It may happen that you do not see the login prompt. This may
+have several reasons. First of all the target host may have telnet disabled.
+<br>Secondly if you are behind a firewall you will not be able to connect
+to the remote host as the firewall usually prevents that. The applet is
+a normal telnet implementation and can't cross firewalls!</blockquote>
+</td>
+</tr>
+</table>
+</td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">The
+FAQ does only answer questions directly related to the JTA. However, you
+might also have a look at the following related FAQ's and RFC's:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="http://java.sun.com/sfaq/index.html">Java
+Applet Security FAQ</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>Read this if you have questions about the Java security model for Applets.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: FAQ.html 499 2005-09-29 08:24:54Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

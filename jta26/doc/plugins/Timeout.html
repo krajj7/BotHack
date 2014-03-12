@@ -1,0 +1,151 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; Linux 2.2.12 i586) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Timeout Plugin</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: Timeout Plugin</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
+<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="../index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">Timeout Plugin</font></h2></center>
+<font color="#000000">The timeout plugin can be used to make sure a connection
+is only open as long as there is data beeing sent or received. You can
+define the time the connection may be open until it will be closed by the
+software. As some hosts may have difficulties with connections that simply
+close the connection this plugin allows you to define a graceful logout
+command.</font><font color="#000000"></font>
+<p><font color="#000000">The timeout will be reset every time something
+happens and after a disconnection and reconnect it will start again automatically.</font><font color="#000000"></font>
+<p><font color="#000000">To use the plugin put it in your plugin list,
+preferrably between the <a href="Terminal.html">Terminal</a> and the <a href="Telnet.html">Telnet</a>
+or <a href="SSH.html">SSH</a> plugin.</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Property</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td><tt>Timeout.seconds</tt></td>
+
+<td>The seconds the connection may be open without data transmitted between
+client and server.</td>
+</tr>
+
+<tr>
+<td><tt>Timeout.command</tt></td>
+
+<td>The graceful logout command to be used to close the connection from
+server side. You may want to use "<tt>logout</tt>" or "<tt>exit</tt>" for
+most UNIX systems. Make sure you put a newline (<tt>\n</tt>) at the end.
+<p>Example: <tt>logout\n</tt></td>
+</tr>
+
+<tr>
+<td><tt>Timeout.warning</tt></td>
+
+<td>A warning message to be displayed on screen to tell the user that his
+connection will be closed. <i><font color="#CC0000">Not implemented yet.</font></i></td>
+</tr>
+</table></center>
+</td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Additional
+Programmer Documentation is available:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="../source/de/mud/jta/plugin/Timeout.html">de.mud.jta.plugin.Timeout</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>This is the programmer documentation for the timeout plugin.&nbsp;</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../source/de/mud/jta/event/package-summary.html">de.mud.jta.event</a></font></b></td>
+</tr>
+
+<tr>
+<td>This plugins uses some of the events and listeners described here.
+Especially
+<br>the <a href="source/de/mud/jta/event/SocketListener.html">SocketListener</a>
+and <a href="source/de/mud/jta/event/SocketRequest.html">SocketRequest</a>
+is important.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: Timeout.html 501 2005-10-07 09:32:42Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

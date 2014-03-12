@@ -1,0 +1,255 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.77C-CCK-MCD Caldera Systems OpenLinux [en] (X11; U; Linux 2.4.13-ac7 i686) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: ButtonBar Plugin</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: ButtonBar Plugin</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 / Java 2 and 1.1.x</b>
+<br>Available under <a href="../../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../../index.html">Homepage</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/index.html">Applet
+Test</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/download.html">Download</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica"><a href="../index.html">Documentation</a></font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../../html/users.html">Users
+/ Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">ButtonBar Plugin</font></h2></center>
+<font color="#000000">The button bar plugin is very useful to provide short
+cuts to common keystrokes and to define the unique look and feel of your
+installation.</font>
+<p><font color="#000000">To use this plugin simply set the property as
+defined below in the configuration file (applet.conf) and write a button
+definition file. How the buttons are defined is described in the lower
+part of this page.</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Property</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td><tt>ButtonBar.setup</tt></td>
+
+<td>The URL of the configuration file for the button bar. The file contains
+the definitions for look and function of the buttons and input fields.</td>
+</tr>
+
+<tr>
+<td><tt>ButtonBar.clearFields</tt></td>
+
+<td>If set to <b>true</b> the input fields will be cleared after return
+or pressing a button that reads the field.</td>
+</tr>
+</table></center>
+
+<center>
+<h1>
+<font color="#CC0000">ButtonBar Setup</font></h1></center>
+<font color="#000000">The setup file contains definitions for buttons,
+input fields and keywords for the layout of the components. Possible keywords
+are:</font>
+<br><font color="#000000">the buttons are defined is described in the lower
+part of this page.</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Keyword</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Description</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td><tt>button </tt><i>text</i><tt> </tt><i>command</i></td>
+
+<td>Create a new button with the displayed <i>text</i> that sends the <i>command</i>
+upon pressing that button. The command can be a simple piece of text or
+a function call as described below this table.
+<br>If the <i>command</i> contains whitespace characters enclose it in
+quotation characters (").</td>
+</tr>
+
+<tr>
+<td>label <i>text</i></td>
+
+<td>Create a new textlabel with the displayed <i>text</i>. The text needs
+to be enclosed with quotation characters (") if it contains whitespace.</td>
+</tr>
+
+<tr>
+<td><tt>input</tt> <i>name</i> <i>length</i> <i>command</i> <i>text</i></td>
+
+<td>Create a new input field with the specified <i>name</i> and <i>length</i>.
+Optionally you can provide a <i>command</i> and an initial <i>text</i>
+that is used to initialize the input field. If the <i>text</i> contains
+whitespace characters enclose it in quotation characters ("). You can leave
+the command out. Then the input field will not allow pressing return to
+send its text!</td>
+</tr>
+
+<tr>
+<td>break</td>
+
+<td>If that keyword appears just after a button or input field that field
+will stretch the rest of the line and the next button or input field will
+be placed in the next line.</td>
+</tr>
+
+<tr>
+<td>stretch</td>
+
+<td>If that keyword appears just after a button or input field it will
+cause that button or input field to take as much space in that line as
+it can get.</td>
+</tr>
+
+<tr>
+<td>choice <i>label1 value1 label2 value2 ...</i></td>
+
+<td>This keyword starts the definition of a choicebox selector. It is followed
+by label/value pairs where the label is put into the options list of the
+choicebox and the value will be sent as text (or executed as command) if
+the item is selected.
+<br>It is best if the first label / value pair is left, since you cannot
+easily select it.</td>
+</tr>
+</table></center>
+
+<p>Buttons can contains function calls as command to issue commands like,
+connect, disconnect or to exit the application. A function call looks like:
+<p>To connect to the remote host on pressing a button you would define
+<br>the following button
+<blockquote><tt>button Connect "\\$connect(\\@host@,\\@port@)"</tt>
+<br><tt>input&nbsp; host 20 "myhost.mydomain.com"</tt>
+<br><tt>input&nbsp; port 4&nbsp; "23"</tt></blockquote>
+<tt>This will create a button labeled "Connect" which will call the</tt>
+<br><tt>function connect with the arguments taken from the input fields</tt>
+<br><tt>"host" and "port". If you do not encluse the command in quotation
+characters you do not have to type two backspaces (\\).</tt>
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=2 WIDTH="100%" BGCOLOR="#CCCCCC" NOSAVE >
+<tr ALIGN=CENTER VALIGN=CENTER BGCOLOR="#000000" NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><font color="#FFFFFF">Function</font></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><font color="#FFFFFF">Documentation</font></font></b></td>
+</tr>
+
+<tr NOSAVE>
+<td NOSAVE><tt>\\$connect(\\@host@,\\@port@)</tt></td>
+
+<td>Connect the applet to <b>host</b> and <b>port</b>.</td>
+</tr>
+
+<tr>
+<td>\\$disconnect()</td>
+
+<td>Disconnect the applet.</td>
+</tr>
+
+<tr>
+<td>\\$exit()</td>
+
+<td>Exit the application. <font color="#FF0000">Applets cannot exit the
+application (due to security reasons).</font></td>
+</tr>
+
+<tr>
+<td>\\$break()</td>
+
+<td>Send a TELNET IAC BREAK command. This is usually needed&nbsp; by telnet
+controllable embedded devices, like CISCO routers and similar.</td>
+</tr>
+</table></center>
+
+<p><font color="#000000">If you want to have a look at an <b>example</b>
+look at the <a href="../../html/b1.conf">b1.conf</a> or <a href="../../html/b2.conf">b2.conf</a></font>
+<br><font color="#000000">from our examples.</font></td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE><font color="#CC0000">Additional
+Programmer Documentation is available:</font>
+<br>&nbsp;
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="../source/de/mud/jta/plugin/Timeout.html">de.mud.jta.plugin.ButtonBar</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>This is the programmer documentation for the timeout plugin.&nbsp;</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="../source/de/mud/jta/event/package-summary.html">de.mud.jta.event</a></font></b></td>
+</tr>
+
+<tr>
+<td>This plugins uses some of the events and listeners described here.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: ButtonBar.html,v 1.1 2000/01/26 15:34:05 leo Exp
+$</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+#! /bin/sh
+plugins="Status,Socket,SSH,Terminal"
+cdir=`pwd`
+java -classpath $CLASSPATH:$cdir de.mud.jta.Main -plugins $plugins $* 22

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * This file is part of "JTA - Telnet/SSH for the JAVA(tm) platform".
+ *
+ * (c) Matthias L. Jugel, Marcus Meißner 1996-2005. All Rights Reserved.
+ *
+ * Please visit http://javatelnet.org/ for updates and contact.
+ *
+ * LICENSE NOTICE
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+-->
+
+<project name="jta" basedir="." default="build">
+
+  <target name="init">
+    <property name="name" value="jta"/>
+    <property name="version" value="26"/>
+    <property name="target.dir" value="jar"/>
+    <property name="debug" value="true"/>
+    <tstamp>
+      <format property="BUILD" pattern="yyyyMMdd-hhmm" locale="en"/>
+    </tstamp>
+  </target>
+
+  <target name="all" depends="build,doc,bin-jar,src-jar"/>
+
+  <target name="dist" depends="clean,version,all" description="builds a distribution"/>
+
+  <target name="build" depends="compile" description="build binaries"/>
+
+  <target name="version" depends="init">
+    <filter token="date" value="${BUILD}"/>
+    <delete file="de/mud/jta/Build.java"/>
+    <copy file="de/mud/jta/Build.java.tmpl" tofile="de/mud/jta/Build.java" filtering="true"/>
+  </target>
+
+  <target name="compile">
+    <javac srcdir="." includes="de/mud/**" excludes="de/mud/flash/**" debug="${debug}"/>
+  </target>
+
+  <target name="compile-contrib">
+    <javac srcdir="contrib" includes="**" debug="${debug}">
+      <classpath>
+        <pathelement location="."/>
+        <pathelement location="jar/gnu-regexp-1.0.8.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean" depends="init" description="clean up">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="doc/source/**"/>
+    </delete>
+    <delete dir="${name}${version}"/>
+  </target>
+
+  <target name="doc" depends="init" description="create java documentation">
+    <javadoc sourcepath="." destdir="doc/source" packagenames="de.*"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="JTA - Telnet/SSH for the JAVA(tm) platform (${name}${version})"/>
+  </target>
+
+  <target name="bin-jar" depends="init,build" description="package binaries">
+    <jar jarfile="${target.dir}/${name}${version}.jar"
+      manifest="jta.manifest">
+      <fileset dir="." includes="de/**/*.class"/>
+      <fileset dir="." includes="de/**/*.conf"/>
+      <fileset dir="." includes="license/**" excludes="license/CVS"/>
+    </jar>
+  </target>
+
+  <target name="src-jar" depends="init,clean" description="package the sources">
+    <mkdir dir="${name}${version}"/>
+    <!-- copy sources -->
+    <copy todir="${name}${version}">
+      <fileset dir=".">
+        <exclude name="**/*.class"/>
+        <exclude name="**/CVS"/>
+        <exclude name="**/.*"/>
+        <exclude name="jar/**"/>
+        <exclude name="tmp/**"/>
+        <exclude name="bin/dist.sh"/>
+        <exclude name="${name}${version}"/>
+      </fileset>
+    </copy>
+    <!-- copy changes, ignore errors -->
+    <exec executable="rcs2log" failonerror="false" 
+          output="${name}${version}/CHANGES"/>
+    <!-- package sources -->
+    <jar basedir="." includes="${name}${version}/**" jarfile="${target.dir}/jta${version}-src.jar"/>
+    <delete dir="${name}${version}"/>
+  </target>
+
+
+</project>

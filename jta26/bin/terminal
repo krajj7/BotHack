@@ -1,0 +1,4 @@
+#! /bin/sh
+plugins="Shell,Terminal"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/jar
+java -classpath $CLASSPATH:.:jar: de.mud.jta.Main -plugins $plugins $* 22

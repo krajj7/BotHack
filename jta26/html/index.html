@@ -1,0 +1,155 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Matthias L. Jugel, Marcus Meissner">
+   <meta name="GENERATOR" content="Mozilla/4.61 [en] (X11; U; Linux 2.2.11 i586) [Netscape]">
+   <meta name="Description" content="Java Telnet Applet is a fully features Telnet and Terminal Emulation implementation for Java.">
+   <meta name="Keywords" content="java telnet applet application bbs terminal emulation">
+   <title>JTA - Telnet/SSH for the JAVA(tm) platform v2.0: Test Page</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EF" vlink="#51188E" alink="#FF0000">
+&nbsp;
+<center><table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" HEIGHT="20%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM NOSAVE>
+<table BORDER=0 CELLPADDING=5 COLS=5 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=RIGHT VALIGN=BOTTOM COLSPAN="5" NOSAVE>
+<div ALIGN=right>
+<h1>
+<font face="Arial,Helvetica"><font color="#000099">
+JTA - Telnet/SSH for the JAVA(tm) platform: Test Page</font></font></h1></div>
+<i>&copy; 1996-2000 <a href="mailto:leo@mud.de">Matthias L. Jugel </a>and
+<a href="mailto:marcus@mud.de">Marcus
+Mei&szlig;ner</a></i>
+<p><b>Version 2.0 <i> </i>/ Java 2 and 1.1.x</b>
+<br>Available under <a href="../license/COPYING">GNU General Public License</a></td>
+</tr>
+
+<tr ALIGN=CENTER VALIGN=CENTER NOSAVE>
+<td NOSAVE><b><font face="Arial,Helvetica"><a href="../index.html">Homepage</a></font></b></td>
+
+<td><b><i><font face="Arial,Helvetica">Applet Test</font></i></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="download.html">Download</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="../doc/index.html">Documentation</a></font></b></td>
+
+<td><b><font face="Arial,Helvetica"><a href="users.html">Users / Opinions</a></font></b></td>
+</tr>
+</table>
+</td>
+</tr>
+</table></center>
+
+<table BORDER=0 CELLSPACING=5 CELLPADDING=5 COLS=2 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td ALIGN=LEFT VALIGN=TOP WIDTH="70%" BGCOLOR="#FFFFFF" NOSAVE>
+<center>
+<h2>
+<font color="#CC0000">How to test the Java<sup>tm</sup> Telnet Application</font></h2></center>
+<font color="#000000">It is not easy to provide a good test suite to let
+you check out how the <b>Java<sup>tm </sup>JTA - Telnet/SSH for the JAVA(tm) platform</b>
+works. In general if you select one of the&nbsp; links in the box on the
+right side of your browser window you will be directed to a page with an
+applet embedded. If you see some sort of login prompt you have come so
+far as to know that the applet works. However, you will <i>not be able
+to log onto our system</i>! To see if it works for you you should download
+the package and try it on your own web server.</font>
+<p><font color="#000000">This version should <i>run with all runtime environments</i>
+that are at least Java 1.1.x compatible. If you are working with an older
+Java runtime environment (e.g. 1.0) please go to the<a href="http://www.first.gmd.de/persons/leo/java/Telnet/">
+old Java 1 version</a> that will work with most currently available browsers.</font>
+<p><font color="#000000">If you have problems and you do not see any applet
+at all or just a gray space or if no login prompt appears then check if
+the following requirements are satisfied:</font>
+<ul>
+<li>
+<font color="#000000">You are <b>not</b> behind a <b>firewall</b>. The
+applet simply cannot connect through a firewall as it works just like any
+other native telnet implementation!</font></li>
+
+<li>
+<font color="#000000">Your browser has a <b>Java</b> Runtime (JRE) environment
+with a version number greater than <b>1.1</b>. This is the new JTA version
+and it will not run with a JRE 1.0 or less!</font></li>
+</ul>
+<font color="#000000">In case you still have problems take a look at the
+Java console window all browsers provide. You may have to open it first
+using some arbitrary menu command. Scroll to the very bottom of the Java
+console and see if there is an error message, which in Java is called an
+<b>Exception</b>.
+Unless it makes sense to you, copy the contents of the Java console window
+into an <a href="mailto:jta@mud.de">Email</a> and send it to us so we can
+have a look what might have caused the error.</font></td>
+
+<td ALIGN=LEFT VALIGN=TOP BGCOLOR="#CCCCCC" NOSAVE>
+<center><i><font color="#CC0000">Please read the text to the left before
+you go to the test stage.</font></i></center>
+
+<p><br>
+<center><table BORDER=0 CELLSPACING=3 CELLPADDING=3 COLS=1 WIDTH="100%" NOSAVE >
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="AppletTest.html">Telnet
+Example Applet</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>This is an example for a simple telnet client applet. It does not utilize
+any extra plugins except the <b><a href="../doc/plugins/Socket.html">Socket</a></b>,
+<b><a href="../doc/plugins/Telnet.html">Telnet</a></b>
+and <b><a href="../doc/plugins/Terminal.html">Terminal</a></b>.</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><font color="#000000"><a href="AppletEnhanced.html">Enhanced
+Telnet Example</a></font></font></b></td>
+</tr>
+
+<tr>
+<td>Like the above example, but this example loads the <b><a href="../doc/plugins/Status.html">Status</a></b>
+plugin, which informs the user about the current status of the connection
+and to what host it is connected to.</td>
+</tr>
+
+<tr NOSAVE>
+<td BGCOLOR="#FFFFFF" NOSAVE><b><font face="Arial,Helvetica"><a href="SSHTest.html">SSH
+Applet Example</a></font></b></td>
+</tr>
+
+<tr>
+<td>In this example we have exchanged the Telnet plugin by the <b><a href="../doc/plugins/SSH.html">SSH</a></b>
+plugin. Everything else is just like the very first example.</td>
+</tr>
+</table></center>
+</td>
+</tr>
+</table>
+
+<table BORDER=0 CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#000000" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>
+<table BORDER=0 CELLSPACING=3 CELLPADDING=5 COLS=2 WIDTH="100%" HEIGHT="100%" BGCOLOR="#FFFFFF" NOSAVE >
+<tr NOSAVE>
+<td NOSAVE>Copyright 1996-2000 <a href="mailto:leo@mud.de">Matthias L.
+Jugel</a>, <a href="mailto:marcus@mud.de">Marcus Mei&szlig;ner</a></td>
+
+<td>
+<div align=right><b><i>Get the <a href="http://www.mud.de/se/jta">latest
+version here</a>!</i></b></div>
+</td>
+</tr>
+
+<tr NOSAVE>
+<td COLSPAN="2" NOSAVE>
+<div align=right>$Id: index.html 499 2005-09-29 08:24:54Z leo $</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>
