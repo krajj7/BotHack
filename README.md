@@ -7,7 +7,7 @@ An attempt at an implementation of a NetHack bot framework as a base for my mast
 
 Written in Clojure and expected to be accessible for AI plugins written in Java.  No game modifications will be used to make the game more accessible for a bot.
 
-Inspired by previous bots and bot frameworks, in particular TAEB ( http://taeb-nethack.blogspot.com/ ) and Pogamut ( http://pogamut.cuni.cz/ ).
+Inspired by previous bots and bot frameworks, in particular TAEB ( http://taeb.github.io/ ) and Pogamut ( http://pogamut.cuni.cz/ ).
 
 ## First milestones reached
 
