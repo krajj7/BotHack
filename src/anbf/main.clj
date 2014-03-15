@@ -3,15 +3,13 @@
   (:import (de.mud.jta.event OnlineStatusListener))
   (:gen-class))
 
-;(set! *warn-on-reflection* true)
-
-(defrecord anbf
+(defrecord ANBF
   [config
    jta])
 ;  ...
 
 (defn new-anbf []
-  (anbf. (atom nil) (new-telnet-jta)))
+  (ANBF. (atom nil) (new-telnet-jta)))
 
 (defn- load-config
   ([]
@@ -26,10 +24,6 @@
    (start s))
   ([anbf]
    (reset! (:config anbf) (load-config))
-   #_ (.registerPluginListener (:pl (:jta anbf))
-                            (reify OnlineStatusListener
-                              (online [_] (println "main: online"))
-                              (offline [_] (println "main: offline"))))
    (let [config @(:config anbf)]
      (start-jta (:jta anbf) (:host config) (:port config)))
    anbf))
@@ -41,6 +35,11 @@
    (stop-jta (:jta anbf))
    anbf))
 
+(defn raw-command
+  "Sends a raw string to the NetHack terminal as if typed."
+  [anbf ch]
+  (write (:jta anbf) ch))
+
 (defn -main [& args] []
   (def s (new-anbf))
   (let [jta (:jta s)]
@@ -49,18 +48,7 @@
 
     (start s)
     (println "bezi")
-    (println "id terminalu:" (.getTerminalID (:emulation @(.state (:terminal jta)))))
+    (println "id terminalu:" (-> jta :terminal .state deref :emulation .getTerminalID))
 
-    #_ (let [buffer (byte-array 5000)
-          proto (:terminal jta)]
-      (println (.read proto buffer))
-      (println (.read proto buffer))
-      (println (.read proto buffer))
-      (println (.read proto buffer))
-      (println (.write proto (.getBytes "q")))
-      (println (.write proto (.getBytes "\n")))
-      (println (.read proto buffer))
-      (println (String. buffer))
-    )
-
-    (stop s)))
+    ;(stop s)
+    ))

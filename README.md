@@ -9,14 +9,15 @@ Written in Clojure and expected to be accessible for AI plugins written in Java.
 
 Inspired by previous bots and bot frameworks, in particular TAEB ( http://taeb-nethack.blogspot.com/ ) and Pogamut ( http://pogamut.cuni.cz/ ).
 
-## First milestones to reach
+## First milestones reached
 
-- Connect to nethack.alt.org via telnet, interact with the menu.
+A basic GUI-less virtual terminal emulator is now working, implemented using the JTA Telnet/SSH/Terminal library ( http://www.javatelnet.org/ ).
+Manual interaction with a remote telnet terminal is possible via the emulator, current frame for the terminal can be accessed programatically and displayed.
 
-First task: implement a GUI-less virtual terminal emulation using the JTA Telnet/SSH/Terminal library ( http://www.javatelnet.org/ ).
+## Milestones to reach
 
-- Connect to nethack.alt.org via telnet, start and quit a game.
-- Start a local game and quit.
-- Interact meaningfully with the game.
+- Interact with the game menu programmatically.
+- Start and quit a game programmatically.
+- Start interacting meaningfully with the game.
 
 First rather difficult problem to solve: synchronization.  Discussed here: http://taeb-nethack.blogspot.cz/2009/06/synchronizing-with-nethack.html

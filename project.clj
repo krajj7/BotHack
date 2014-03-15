@@ -4,4 +4,5 @@
   :license {:name "GPLv2"}
   :dependencies [[org.clojure/clojure "1.5.1"]]
   :resource-paths ["jta26/jar/jta26.jar"]
+  ;:global-vars {*warn-on-reflection* true}
   :main anbf.main)
