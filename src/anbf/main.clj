@@ -42,13 +42,4 @@
 
 (defn -main [& args] []
   (def s (new-anbf))
-  (let [jta (:jta s)]
-    (println "loaded plugins:")
-    (println (.getPlugins (:pl jta)))
-
-    (start s)
-    (println "bezi")
-    (println "id terminalu:" (-> jta :terminal .state deref :emulation .getTerminalID))
-
-    ;(stop s)
-    ))
+  (start s))
