@@ -41,5 +41,4 @@
   (write (:jta anbf) ch))
 
 (defn -main [& args] []
-  (def s (new-anbf))
-  (start s))
+  (start))

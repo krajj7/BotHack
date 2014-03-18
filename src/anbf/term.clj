@@ -33,24 +33,13 @@
 ; an immutable representation of a terminal window contents
 ; character attributes underline or blink etc. are not represented, only the foreground colors (affected by boldness) are important for NetHack
 (defrecord Frame
-  [colors ; vector of 24 vectors where each element represents the FG color for the corresponding character (80 per line)
-   lines ; vector of 24 Strings representing text on each row of the terminal
+  [lines ; vector of 24 Strings representing text on each row of the terminal
+   colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
    cursor-x ; cursor position
    cursor-y])
 
 (def colors [nil :red :green :brown :blue :magenta :cyan :gray ; non-bold
              :bold :orange :bright-green :yellow :bright-blue :bright-magenta :bright-cyan :white]) ; bold
-
-(defn print-frame [f]
-  (println "==============")
-  (println "Colors:")
-  (doall (map #(if (every? nil? %1)
-                 (println nil)
-                 (println %1))
-              (:colors f)))
-  (println "Chars:")
-  (pprint (:lines f))
-  (println "Cursor:" (:cursor-x f) (:cursor-y f)))
 
 (def ^:private fg-color-mask 0x1e0)
 (def ^:private boldness-mask 0x1)
@@ -65,27 +54,59 @@
               (colors bits))
        (take 80 attrs)))
 
+(defn- unpack-line
+  "Turns char[] of possibly null values into a String where the nulls are replaced by spaces."
+  [line]
+  (apply str (replace {(char 0) \space} line)))
+
 (defn frame-from-buffer
   "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
   [buf]
-  (Frame. (vec (map unpack-colors
-                    (take-last 24 (.charAttributes buf))))
-  ; turns char[][] into a vector of Strings with null bytes replaced by spaces
-          (vec (map #(apply str (replace {(char 0) \space} %))
+  ;(println "Terminal: drawing whole new frame")
+  (Frame. (vec (map unpack-line ; turns char[][] into a vector of Strings
                     (take-last 24 (.charArray buf))))
+          (vec (map unpack-colors
+                    (take-last 24 (.charAttributes buf))))
           (.getCursorColumn buf)
           (.getCursorRow buf)))
 
+(defn changed-rows
+  "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
+  [update]
+  (filter #(->> % inc (nth update) true?)
+          (range 24)))
+
 (defn update-frame
-  "Returns an updated frame snapshot as modified by a redraw."
-  [f newbuf update]
-  nil) ; TODO
+  "Returns an updated frame snapshot as modified by a redraw (only some rows may need to update, as specified by update[])."
+  [f newbuf]
+  (if (nth (.update newbuf) 0) ; if update[0] == true, all rows need to update
+    (frame-from-buffer newbuf)
+    (Frame. (reduce #(assoc %1 %2 (-> newbuf .charArray (nth %2) unpack-line))
+                    (:lines f)
+                    (changed-rows (.update newbuf)))
+            (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
+                    (:colors f)
+                    (changed-rows (.update newbuf)))
+            (.getCursorColumn newbuf)
+            (.getCursorRow newbuf))))
+
+(defn print-frame [f]
+  (println "==============")
+  ;(println "Colors:")
+  ;(doall (map #(if (every? nil? %1)
+  ;               (println nil)
+  ;               (println %1))
+  ;            (:colors f)))
+  (println "Lines:")
+  (pprint (:lines f))
+  (println "Cursor:" (:cursor-x f) (:cursor-y f)))
 
 (defn -init [bus id]
   [[bus id] (atom
               {:source nil ; source FilterPlugin
                :emulation nil ; vt320/VDUBuffer/VDUInput
-               :display nil})]) ; VDUDisplay
+               :display nil ; VDUDisplay
+               :frame nil})]) ; the last (current) display frame
 
 (defn -run [this]
   (println "Terminal: reader started")
@@ -117,23 +138,26 @@
         display (reify VDUDisplay
                   (redraw [this-display]
                     ;(println "Terminal: redraw called")
-                    ; TODO if all lines updated, start with a new frame
                     ; TODO predavat vysledne framy nahoru do frameworku
                     (def x emulation)
-                    (def y (frame-from-buffer emulation))
+                    (println "Rows to update:" (changed-rows (.update emulation)))
+                  (def y (:frame
+                    (swap! state update-in [:frame] update-frame emulation)
+                  ))
                     (println "new frame:")
-                    (print-frame y))
+                    (print-frame y)
+                    (java.util.Arrays/fill (.update emulation) false))
                   (updateScrollBar [_]
                     nil)
                   (setVDUBuffer [this-display buffer]
-                    ;(println "Terminal: set buffer + display")
                     (.setDisplay buffer this-display))
                   (getVDUBuffer [this-display]
                     (:emulation @state)))]
     (.setVDUBuffer display emulation)
     (swap! state
            into {:emulation emulation
-                 :display display})
+                 :display display
+                 :frame (frame-from-buffer emulation)})
     (doto bus
       (.registerPluginListener (reify TerminalTypeListener
                                  (getTerminalType [_]
