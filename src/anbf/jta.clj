@@ -3,9 +3,11 @@
 ; For now only Telnet is supported
 
 (ns anbf.jta
+  (:require [anbf.delegator :refer :all]
+            [anbf.term :refer [set-delegator]])
   (:import anbf.NHTerminal)
   (:import (de.mud.jta PluginLoader Plugin)
-           (de.mud.jta.event SocketRequest))
+           (de.mud.jta.event SocketRequest OnlineStatusListener))
   (:import (java.util Vector)))
 
 ; JTA library wrapper
@@ -14,11 +16,22 @@
    protocol ; protocol filter plugin (Telnet/SSH/Shell)
    terminal]) ; topmost JTA filter plugin - terminal emulator
 
-(defn new-telnet-jta "vrati JTA instanci s Telnet backendem" []
+(defn new-telnet-jta 
+  [delegator]
+  "returns a JTA instance with basic plugins set up (using the Telnet plugin as protocol handler)"
   ;                       list of packages JTA searches for plugins
-  (let [pl (PluginLoader. (Vector. ["de.mud.jta.plugin" "anbf"]))]
-    (.addPlugin pl "Socket" "socket")
-    (JTA. pl (.addPlugin pl "Telnet" "telnet") (.addPlugin pl "NHTerminal" "terminal"))))
+  (let [pl (PluginLoader. (Vector. ["de.mud.jta.plugin" "anbf"]))
+        _ (.addPlugin pl "Socket" "socket")
+        protocol (.addPlugin pl "Telnet" "protocol")
+        terminal (.addPlugin pl "NHTerminal" "terminal")]
+    (set-delegator terminal delegator)
+    ; translate the JTA event for ANBF:
+    (.registerPluginListener pl (reify OnlineStatusListener
+                                  (offline [_]
+                                    (offline @delegator))
+                                  (online [_]
+                                    (online @delegator))))
+    (JTA. pl protocol terminal)))
 
 (defn start-jta [jta host port]
   (.broadcast (:pl jta) (SocketRequest. host port)) ; connect

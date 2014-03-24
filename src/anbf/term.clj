@@ -4,6 +4,7 @@
 
 (ns anbf.term
   (:require [clojure.pprint :refer [pprint]])
+  (:require [anbf.delegator :refer :all])
   (:import (de.mud.jta FilterPlugin PluginBus)
            (de.mud.terminal vt320 VDUDisplay VDUBuffer)
            (de.mud.jta.event TelnetCommandRequest SetWindowSizeRequest
@@ -18,11 +19,15 @@
     :init init
     :post-init post-init))
 
+; this class is instantiated by the JTA framework so the delegator has to be injected later
+(defn set-delegator [this delegator]
+  (swap! (.state this) assoc :delegator delegator))
+
 (defn -getFilterSource [this source]
   (:source @(.state this)))
 
 (defn -setFilterSource [this source]
-  (swap! (.state this) into {:source source}))
+  (swap! (.state this) assoc :source source))
 
 (defn -read [this b]
   (.read (:source @(.state this)) b))
@@ -59,7 +64,7 @@
   [line]
   (apply str (replace {(char 0) \space} line)))
 
-(defn frame-from-buffer
+(defn- frame-from-buffer
   "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
   [buf]
   ;(println "Terminal: drawing whole new frame")
@@ -70,43 +75,46 @@
           (.getCursorColumn buf)
           (.getCursorRow buf)))
 
-(defn changed-rows
+(defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
   [update]
   (filter #(->> % inc (nth update) true?)
           (range 24)))
 
-(defn update-frame
+(defn- update-frame
   "Returns an updated frame snapshot as modified by a redraw (only some rows may need to update, as specified by update[])."
-  [f newbuf]
+  [f newbuf updated-rows]
   (if (nth (.update newbuf) 0) ; if update[0] == true, all rows need to update
     (frame-from-buffer newbuf)
     (Frame. (reduce #(assoc %1 %2 (-> newbuf .charArray (nth %2) unpack-line))
                     (:lines f)
-                    (changed-rows (.update newbuf)))
+                    updated-rows)
             (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
                     (:colors f)
-                    (changed-rows (.update newbuf)))
+                    updated-rows)
             (.getCursorColumn newbuf)
             (.getCursorRow newbuf))))
 
 (defn print-frame [f]
   (println "==============")
-  ;(println "Colors:")
-  ;(doall (map #(if (every? nil? %1)
-  ;               (println nil)
-  ;               (println %1))
-  ;            (:colors f)))
   (println "Lines:")
   (pprint (:lines f))
   (println "Cursor:" (:cursor-x f) (:cursor-y f)))
+
+(defn print-colors [f]
+  (println "Colors:")
+  (doall (map #(if (every? nil? %1)
+                 (println nil)
+                 (println %1))
+              (:colors f))))
 
 (defn -init [bus id]
   [[bus id] (atom
               {:source nil ; source FilterPlugin
                :emulation nil ; vt320/VDUBuffer/VDUInput
                :display nil ; VDUDisplay
-               :frame nil})]) ; the last (current) display frame
+               :frame nil ; the last (current) display frame
+               :delegator nil})]) ; ANBF delegator for event propagation
 
 (defn -run [this]
   (println "Terminal: reader started")
@@ -128,24 +136,23 @@
 (defn -post-init [this-terminal bus id]
   (let [state (.state this-terminal)
         emulation (proxy [vt320] []
+                    ; ignore setWindowSize()
+                    ; ignore beep()
                     (write [b]
                       (-write this-terminal b))
                     (sendTelnetCommand [cmd]
-                      (.broadcast bus (TelnetCommandRequest. cmd)))
-                    ; ignore setWindowSize()
-                    ; ignore beep()
-                    )
+                      (.broadcast bus (TelnetCommandRequest. cmd))))
         display (reify VDUDisplay
                   (redraw [this-display]
                     ;(println "Terminal: redraw called")
-                    ; TODO predavat vysledne framy nahoru do frameworku
-                    (def x emulation)
-                    (println "Rows to update:" (changed-rows (.update emulation)))
-                  (def y (:frame
-                    (swap! state update-in [:frame] update-frame emulation)
-                  ))
-                    (println "new frame:")
-                    (print-frame y)
+                    ;(def x emulation)
+                    ;(println "Rows to update:" (changed-rows (.update emulation)))
+                    (let [updated-rows (changed-rows (.update emulation))
+                          old-frame (:frame @state)
+                          new-frame (:frame (swap! state update-in [:frame]
+                                                   update-frame emulation
+                                                   updated-rows))]
+                      (redraw @(:delegator @state) old-frame new-frame))
                     (java.util.Arrays/fill (.update emulation) false))
                   (updateScrollBar [_]
                     nil)
@@ -155,9 +162,9 @@
                     (:emulation @state)))]
     (.setVDUBuffer display emulation)
     (swap! state
-           into {:emulation emulation
+           assoc :emulation emulation
                  :display display
-                 :frame (frame-from-buffer emulation)})
+                 :frame (frame-from-buffer emulation))
     (doto bus
       (.registerPluginListener (reify TerminalTypeListener
                                  (getTerminalType [_]
@@ -168,7 +175,8 @@
       (.registerPluginListener (reify OnlineStatusListener
                          ; the reader thread is going to stop itself on IO error
                                  (offline [_]
-                                   (println "Terminal: offline"))
+                                   ;(println "Terminal: offline")
+                                   nil)
                                  (online [_]
-                                   (println "Terminal: online")
+                                   ;(println "Terminal: online")
                                    (.start (Thread. this-terminal))))))))
