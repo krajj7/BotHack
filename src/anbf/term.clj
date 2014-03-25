@@ -3,8 +3,9 @@
 ; Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff
 
 (ns anbf.term
-  (:require [clojure.pprint :refer [pprint]])
-  (:require [anbf.delegator :refer :all])
+  (:require [clojure.pprint :refer [pprint]]
+            [anbf.delegator :refer :all]
+            [clojure.tools.logging :as log])
   (:import (de.mud.jta FilterPlugin PluginBus)
            (de.mud.terminal vt320 VDUDisplay VDUBuffer)
            (de.mud.jta.event TelnetCommandRequest SetWindowSizeRequest
@@ -117,7 +118,7 @@
                :delegator nil})]) ; ANBF delegator for event propagation
 
 (defn -run [this]
-  (println "Terminal: reader started")
+  (log/debug "Terminal: reader started")
   (let [state @(.state this)
         buffer (byte-array 256)]
     (try 
@@ -130,8 +131,9 @@
           (if-not (neg? n) ; -1 would mean the stream is dead
             (recur))))
       (catch IOException e
-        (println "Terminal: reader IOException"))))
-  (println "Terminal: reader broke out of loop, ending"))
+        ;(println "Terminal: reader IOException")
+        )))
+  (log/debug "Terminal: reader broke out of loop, ending"))
 
 (defn -post-init [this-terminal bus id]
   (let [state (.state this-terminal)
@@ -147,15 +149,12 @@
                     ;(println "Terminal: redraw called")
                     ;(def x emulation)
                     ;(println "Rows to update:" (changed-rows (.update emulation)))
-                    (let [updated-rows (changed-rows (.update emulation))
-                          old-frame (:frame @state)
-                          new-frame (:frame (swap! state update-in [:frame]
-                                                   update-frame emulation
-                                                   updated-rows))]
-                      (redraw @(:delegator @state) old-frame new-frame))
+                    (redraw @(:delegator @state)
+                            (:frame (swap! state update-in [:frame]
+                                           update-frame emulation
+                                           (changed-rows (.update emulation)))))
                     (java.util.Arrays/fill (.update emulation) false))
-                  (updateScrollBar [_]
-                    nil)
+                  (updateScrollBar [_])
                   (setVDUBuffer [this-display buffer]
                     (.setDisplay buffer this-display))
                   (getVDUBuffer [this-display]
@@ -175,8 +174,7 @@
       (.registerPluginListener (reify OnlineStatusListener
                          ; the reader thread is going to stop itself on IO error
                                  (offline [_]
-                                   ;(println "Terminal: offline")
-                                   nil)
+                                   (log/debug "Terminal: offline"))
                                  (online [_]
-                                   ;(println "Terminal: online")
+                                   (log/debug "Terminal: online")
                                    (.start (Thread. this-terminal))))))))

@@ -1,45 +1,77 @@
-; The delegator delegates event invocations to all registered handlers (which implement the handler protocol/interface for event types they are interested in).  It is supposed to process event invocations synchronously and strictly sequentially (even if they come from different threads, hence the locking).
+; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  It is supposed to process event invocations synchronously and sequentially, even if they come from different threads.
 
-(ns anbf.delegator)
+(ns anbf.delegator
+  (:require [flatland.ordered.set :refer [ordered-set]]
+            [clojure.tools.logging :as log]))
 
-; event types
+; event protocols
 
-(defprotocol OnlineStatusHandler
+(defprotocol ConnectionStatusHandler
   (online [handler])
   (offline [handler]))
 
-(defprotocol RedrawEventHandler
-  (redraw [handler old-frame new-frame]))
+(defprotocol RedrawHandler
+  (redraw [handler frame]))
 
-; end event types
+(defprotocol GameStateHandler
+  (started [handler])
+  (ended [handler]))
 
-(defn- invoke-single [protocol method handler & args]
+; end event protocols
+
+; command protocols
+
+; TODO game action requests, prompt/menu reponders
+
+; end command protocols
+
+(defn- invoke-handler [protocol method handler & args]
   (if (satisfies? protocol handler)
-    (apply method handler args)
-    handler))
+    (apply method handler args)))
 
-(defn- invoke-all-synchronized [lockobj protocol method handlers & args]
+(defn- invoke-event [lockobj protocol method handlers & args]
+  "Events are propagated to all handlers satisfying the protocol in the order of their registration."
   (locking lockobj
-    (doall (map #(apply invoke-single protocol method % args)
-                handlers))))
+    (try
+      (doall (map #(apply invoke-handler protocol method % args)
+                  handlers))
+      (catch Exception e
+        (log/error e "Delegator caught handler exception")))))
+
+(defn- invoke-command [lockobj protocol method handlers & args]
+  "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a non-null value."
+  (locking lockobj
+    ; TODO rseq
+    (throw (UnsupportedOperationException. "not implemented yet"))))
 
 ; TODO macro?
 (defrecord Delegator [handlers lockobj]
-  OnlineStatusHandler
+  ConnectionStatusHandler
   (online [_]
-    (invoke-all-synchronized
-      lockobj OnlineStatusHandler online handlers))
+    (invoke-event
+      lockobj ConnectionStatusHandler online handlers))
   (offline [_]
-    (invoke-all-synchronized
-      lockobj OnlineStatusHandler offline handlers))
-  RedrawEventHandler
-  (redraw [_ old-frame new-frame]
-    (invoke-all-synchronized
-      lockobj RedrawEventHandler redraw handlers old-frame new-frame)))
+    (invoke-event
+      lockobj ConnectionStatusHandler offline handlers))
+  RedrawHandler
+  (redraw [_ frame]
+    (invoke-event
+      lockobj RedrawHandler redraw handlers frame))
+  GameStateHandler
+  (started [_]
+    (invoke-event
+      lockobj GameStateHandler started handlers))
+  (ended [_]
+    (invoke-event
+      lockobj GameStateHandler ended handlers)))
 
 (defn new-delegator []
-  (Delegator. [] (Object.)))
+  (Delegator. (ordered-set) (Object.)))
 
 (defn register [delegator handler]
   (Delegator. (conj (:handlers delegator) handler)
+              (:lockobj delegator)))
+
+(defn deregister [delegator handler]
+  (Delegator. (disj (:handlers delegator) handler)
               (:lockobj delegator)))
