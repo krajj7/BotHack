@@ -14,7 +14,7 @@ Inspired by previous bots and bot frameworks, in particular TAEB ( http://taeb.g
 A basic GUI-less virtual terminal emulator is now working, implemented using the JTA Telnet/SSH/Terminal library ( http://www.javatelnet.org/ ).
 Manual interaction with a remote telnet terminal is possible via the emulator, current frame for the terminal can be accessed programatically and displayed.
 
-A simple event-driven script (src/bot/nao\_menu.clj) can now interact with the nethack.alt.org game menu and start a game.
+A simple event-driven script (src/anbf/bot/nao\_menu.clj) can now interact with the nethack.alt.org game menu and start a game.
 
 ## Milestones to reach
 
