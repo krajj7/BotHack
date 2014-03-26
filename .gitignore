@@ -12,3 +12,4 @@ pom.xml.asc
 /.nrepl-port
 /jta26/doc/source/
 /anbf.log
+/jta26/jni/linux/libjtapty.so

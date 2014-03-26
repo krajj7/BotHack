@@ -22,7 +22,8 @@
 
 ; this class is instantiated by the JTA framework so the delegator has to be injected later
 (defn set-delegator [this delegator]
-  (swap! (.state this) assoc :delegator delegator))
+  (swap! (.state this) assoc :delegator delegator)
+  this)
 
 (defn -getFilterSource [this source]
   (:source @(.state this)))

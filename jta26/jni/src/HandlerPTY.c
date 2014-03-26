@@ -72,7 +72,7 @@ Java_de_mud_jta_plugin_HandlerPTY_start
 	}
 	if (rc == 0) {	/* child */
 		char *eargv[] = { NULL, NULL };
-		char *eenvp[] = { NULL };
+		char *eenvp[] = { "TERM=xterm" };
 		eargv[0] = ncmd;
 		execve(ncmd, eargv, eenvp);
 		fprintf(stderr, "HandlerPTY.start: execve(%s) failed: %s\n",

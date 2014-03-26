@@ -26,9 +26,11 @@
    (new-anbf "anbf-config.clj"))
   ([fname]
    (let [delegator (atom (new-delegator))
-         anbf (ANBF. (atom (load-config fname))
+         config (load-config fname)
+         anbf (ANBF. (atom config)
                      delegator
-                     (new-telnet-jta delegator)
+                     (new-telnet-jta delegator) ; TODO konfigurace
+                     ;(new-shell-jta delegator (:nh-command config))
                      (atom nil))]
      (-> anbf
          (register-handler (reify ConnectionStatusHandler
