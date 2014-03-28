@@ -3,8 +3,7 @@
             [anbf.util :refer :all]
             [anbf.jta :refer :all]
             [anbf.delegator :refer :all]
-            [anbf.term :refer :all]
-            [anbf.bot.nao-menu :as nao-menu])
+            [anbf.term :refer :all])
   (:gen-class))
 
 (defrecord ANBF
@@ -21,16 +20,21 @@
   (binding [*read-eval* false]
     (read-string (slurp fname))))
 
+(defn init-jta [delegator config]
+  (case (:interface config)
+    :telnet (new-telnet-jta delegator)
+    :shell (new-shell-jta delegator (:nh-command config))
+    (throw (IllegalArgumentException. "Invalid interface configuration"))))
+
 (defn new-anbf
   ([]
    (new-anbf "anbf-config.clj"))
   ([fname]
    (let [delegator (atom (new-delegator))
          config (load-config fname)
-         anbf (ANBF. (atom config)
+         anbf (ANBF. config
                      delegator
-                     (new-telnet-jta delegator) ; TODO konfigurace
-                     ;(new-shell-jta delegator (:nh-command config))
+                     (init-jta delegator config)
                      (atom nil))]
      (-> anbf
          (register-handler (reify ConnectionStatusHandler
@@ -43,15 +47,27 @@
                                (reset! (:frame anbf) frame)
                                (print-frame frame))))))))
 
+(defn- start-bot [anbf bot-ns]
+  "Dynamically loads the given namespace of a bot and runs its start function"
+  (require bot-ns)
+  (if-let [bot-start (ns-resolve bot-ns 'start)]
+    (bot-start anbf)  
+    (throw (ClassNotFoundException. (format "Failed to resolve start in bot %s"
+                                            bot-ns)))))
+
+(defn- start-menubot [anbf]
+  (if-let [menubot-ns (-> anbf :config :menubot)]
+    (start-bot anbf (symbol menubot-ns))
+    (log/info "No menubot configured")))
+
 (defn start
   ([]
    (def s (new-anbf)) ; "default" instance for the REPL
    (start s))
-  ([anbf]
+  ([{:keys [config] :as anbf}]
    (log/info "ANBF instance started")
-   (let [config @(:config anbf)]
-     (start-jta (:jta anbf) (:host config) (:port config))
-     (nao-menu/run-menubot anbf)) ; TODO by config
+   (start-menubot anbf)
+   (start-jta (:jta anbf) (:host config) (:port config))
    anbf))
 
 (defn stop

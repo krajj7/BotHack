@@ -27,16 +27,16 @@
 
 (defn- invoke-handler [protocol method handler & args]
   (if (satisfies? protocol handler)
-    (apply method handler args)))
+    (try
+      (apply method handler args)
+      (catch Exception e
+        (log/error e "Delegator caught handler exception")))))
 
 (defn- invoke-event [lockobj protocol method handlers & args]
   "Events are propagated to all handlers satisfying the protocol in the order of their registration."
   (locking lockobj
-    (try
-      (doall (map #(apply invoke-handler protocol method % args)
-                  handlers))
-      (catch Exception e
-        (log/error e "Delegator caught handler exception")))))
+    (doall (map #(apply invoke-handler protocol method % args)
+                handlers))))
 
 (defn- invoke-command [lockobj protocol method handlers & args]
   "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a non-null value."

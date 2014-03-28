@@ -1,4 +1,7 @@
 {
+ ;:interface :shell
+ :interface :telnet
+ :menubot "anbf.bot.nao-menu"
  ; for remote (telnet) game
  :host "nethack.alt.org"
  :port 23

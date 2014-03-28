@@ -14,6 +14,14 @@
   (swap! (:delegator anbf) deregister handler)
   anbf)
 
+(defn replace-handler
+  "Deregister a handler and register a different one"
+  [anbf handler-old handler-new]
+  (swap! (:delegator anbf) #(-> %
+                                (deregister handler-old)
+                                (register handler-new)))
+  anbf)
+
 (defn raw-write
   "Sends a raw string to the NetHack terminal as if typed."
   [anbf ch]

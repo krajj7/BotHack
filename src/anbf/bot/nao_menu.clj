@@ -17,33 +17,27 @@
 (defn- logged-in? [frame]
   (some #(.contains % "Logged in as: ") (:lines frame)))
 
-(defn run-menubot [anbf]
-  (let [config @(:config anbf)
-        login (:nao-login config)
-        pass (:nao-pass config)
-        logged-in (reify RedrawHandler
+(defn start [{:keys [config] :as anbf}]
+  (let [logged-in (reify RedrawHandler
                     (redraw [this frame]
                       (when (menu-drawn? frame)
+                        (deregister-handler anbf this)
                         (if-not (logged-in? frame)
                           (throw (IllegalStateException. "Failed to login"))
-                          (do
-                            (deregister-handler anbf this)
-                            (log/debug "NAO menubot finished")
-                            (raw-write anbf "p") ; play!
-                            (started @(:delegator anbf)))))))
+                          (raw-write anbf "p")) ; play!
+                        (log/info "NAO menubot finished"))))
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (pass-prompt? frame)
-                          (deregister-handler anbf this)
                           ; set up the final handler
-                          (register-handler anbf logged-in))))
-        start-handler (reify RedrawHandler
-                (redraw [this frame]
-                  (when (menu-drawn? frame)
-                    (log/debug "logging in")
-                    (deregister-handler anbf this)
-                    ; set up the followup handler
-                    (register-handler anbf pass-prompt)
-                    (raw-write anbf (login-sequence login pass)))))]
-    (register-handler anbf start-handler))
-  (log/debug "Waiting for NAO menu to draw"))
+                          (replace-handler anbf this logged-in))))
+        trigger (reify RedrawHandler
+                  (redraw [this frame]
+                    (when (menu-drawn? frame)
+                      (log/info "logging in")
+                      ; set up the followup handler
+                      (replace-handler anbf this pass-prompt)
+                      (raw-write anbf (login-sequence (:nao-login config)
+                                                      (:nao-pass config))))))]
+    (register-handler anbf trigger))
+  (log/info "Waiting for NAO menu to draw"))
