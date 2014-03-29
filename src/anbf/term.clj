@@ -105,9 +105,9 @@
 
 (defn print-colors [f]
   (println "Colors:")
-  (doall (map #(if (every? nil? %1)
+  (doall (map #(if (every? nil? %)
                  (println nil)
-                 (println %1))
+                 (println %))
               (:colors f))))
 
 (defn -init [bus id]
