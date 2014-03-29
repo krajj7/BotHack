@@ -58,10 +58,6 @@
   (online [handler])
   (offline [handler]))
 
-(defeventhandler ConnectionStatusHandler
-  (online [handler])
-  (offline [handler]))
-
 (defeventhandler RedrawHandler
   (redraw [handler frame]))
 
