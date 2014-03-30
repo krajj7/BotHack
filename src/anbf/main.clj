@@ -45,7 +45,7 @@
          (register-handler (reify RedrawHandler
                              (redraw [_ frame]
                                (reset! (:frame anbf) frame)
-                               (print-frame frame))))))))
+                               (println frame))))))))
 
 (defn- start-bot [anbf bot-ns]
   "Dynamically loads the given namespace of a bot and runs its start function"

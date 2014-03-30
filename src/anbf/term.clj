@@ -3,7 +3,7 @@
 ; Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff
 
 (ns anbf.term
-  (:require [clojure.pprint :refer [pprint]]
+  (:require [clojure.pprint :as pprint]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log])
   (:import (de.mud.jta FilterPlugin PluginBus)
@@ -97,18 +97,18 @@
             (.getCursorColumn newbuf)
             (.getCursorRow newbuf))))
 
-(defn print-frame [f]
-  (println "==============")
-  (println "Lines:")
-  (pprint (:lines f))
-  (println "Cursor:" (:cursor-x f) (:cursor-y f)))
-
 (defn print-colors [f]
   (println "Colors:")
   (doall (map #(if (every? nil? %)
                  (println nil)
                  (println %))
               (:colors f))))
+
+(defmethod print-method Frame [f w]
+  (.write w "==== <Frame> ====\n")
+  (pprint/write (:lines f) :stream w)
+  (.write w (format "\nCursor: %s %s\n" (:cursor-x f) (:cursor-y f)))
+  (.write w "=================\n"))
 
 (defn -init [bus id]
   [[bus id] (atom
