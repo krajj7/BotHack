@@ -26,3 +26,16 @@
   "Sends a raw string to the NetHack terminal as if typed."
   [anbf ch]
   (write (:jta anbf) ch))
+
+(defn config-get-direct
+  [config key]
+  (or (get config key)
+      (throw (IllegalStateException.
+               (str "Configuration missing key: " key)))))
+
+(defn config-get
+  "Get a configuration key or return the default, without a default throw an exception if the key is not present."
+  ([anbf key]
+   (config-get-direct (:config anbf) key))
+  ([anbf key default]
+   (get (:config anbf) key default)))

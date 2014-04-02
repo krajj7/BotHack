@@ -17,15 +17,16 @@
 (defn- logged-in? [frame]
   (some #(.contains % "Logged in as: ") (:lines frame)))
 
-(defn start [{:keys [config] :as anbf}]
+(defn init [anbf]
   (let [logged-in (reify RedrawHandler
                     (redraw [this frame]
                       (when (menu-drawn? frame)
                         (deregister-handler anbf this)
                         (if-not (logged-in? frame)
-                          (throw (IllegalStateException. "Failed to login"))
-                          (raw-write anbf "p")) ; play!
-                        (log/info "NAO menubot finished"))))
+                          (throw (IllegalStateException. "Failed to login")))
+                        (log/info "NAO menubot finished")
+                        (started @(:delegator anbf))
+                        (raw-write anbf "p")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (pass-prompt? frame)
@@ -37,7 +38,8 @@
                       (log/info "logging in")
                       ; set up the followup handler
                       (replace-handler anbf this pass-prompt)
-                      (raw-write anbf (login-sequence (:nao-login config)
-                                                      (:nao-pass config))))))]
+                      (raw-write anbf (login-sequence
+                                        (config-get anbf :nao-login)
+                                        (config-get anbf :nao-pass))))))]
     (register-handler anbf trigger))
   (log/info "Waiting for NAO menu to draw"))
