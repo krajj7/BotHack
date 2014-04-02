@@ -1,4 +1,4 @@
-; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  It is supposed to process event invocations synchronously and sequentially, even if they come from different threads.
+; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  For commands it writes responses back to the terminal.  It is supposed to process event invocations synchronously and sequentially, even if they come from different threads.
 
 (ns anbf.delegator
   (:require [flatland.ordered.set :refer [ordered-set]]
@@ -38,7 +38,7 @@
                        (:on-interface protocol))))))))
 
 (defn- respond-prompt [protocol method delegator & args]
-  ((:writer delegator) (apply invoke-command protocol method delegator args)))
+  (write delegator (apply invoke-command protocol method delegator args)))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -57,6 +57,14 @@
 
 (defmacro ^:private defprompthandler [protocol & proto-methods]
   `(defprotocol-delegated respond-prompt ~protocol ~@proto-methods))
+
+(defprotocol NetHackWriter
+  (write [this cmd] "Write a string to the NetHack terminal as if typed."))
+(extend-type Delegator
+  NetHackWriter
+  (write [this cmd]
+    (locking (:lock this)
+      ((:writer this) cmd))))
 
 ; event protocols:
 

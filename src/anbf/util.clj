@@ -1,6 +1,5 @@
 (ns anbf.util
-  (:require [anbf.delegator :refer [register deregister]]
-            [anbf.jta :refer [write]]))
+  (:require [anbf.delegator :refer [register deregister]]))
 
 (defn register-handler
   "Register a handler implementing command/event protocols it is interested in to the delegator"
@@ -21,11 +20,6 @@
                                 (deregister handler-old)
                                 (register handler-new)))
   anbf)
-
-(defn raw-write
-  "Sends a raw string to the NetHack terminal as if typed."
-  [anbf ch]
-  (write (:jta anbf) ch))
 
 (defn config-get-direct
   [config key]

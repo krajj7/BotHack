@@ -2,7 +2,6 @@
 
 (ns anbf.scraper
   (:require [clojure.tools.logging :as log]
-            [anbf.util :refer :all]
             [anbf.delegator :refer :all]))
 
 (defn- nth-line
@@ -35,7 +34,7 @@
         ;(println "cursor line:" (cursor-line frame))
         (condp #(.startsWith %2 %1) (cursor-line frame)
           "There is already a game in progress under your name."
-          (raw-write anbf "y\n") ; destroy old game
+          (write @delegator "y\n") ; destroy old game
           "Shall I pick a character"
           (choose-character @delegator)
           nil)))))

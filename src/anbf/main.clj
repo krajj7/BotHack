@@ -26,7 +26,7 @@
                (format "Failed to load configuration from %s: %s" fname
                        (.getMessage e)))))))
 
-(defn init-jta [delegator config]
+(defn- init-jta [delegator config]
   (case (config-get-direct config :interface)
     :telnet (new-telnet-jta delegator)
     :shell (new-shell-jta delegator (config-get-direct config :nh-command))
@@ -56,7 +56,7 @@
          jta (init-jta delegator config)
          anbf (ANBF. config delegator jta (atom nil))
          scraper (scraper anbf)]
-     (reset! delegator (new-delegator (partial raw-write anbf)))
+     (reset! delegator (new-delegator (partial raw-write jta)))
      (-> anbf
          (register-handler (reify ConnectionStatusHandler
                              (online [_]
@@ -96,6 +96,13 @@
    (stop-jta (:jta anbf))
    (log/info "ANBF instance stopped")
    anbf))
+
+(def esc (str (char 27)))
+
+(defn- w
+  [ch]
+  "Helper write function for the REPL"
+  (write @(:delegator s) ch))
 
 (defn -main [& args] []
   (let [anbf (new-anbf)] ; TODO config fname from args

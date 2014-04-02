@@ -57,8 +57,7 @@
   (.broadcast (:pl jta) (SocketRequest.)) ; disconnect
   jta)
 
-(defn write
+(defn raw-write
   "Writes a string to the terminal back-end"
   [jta ch]
-  (.write (:terminal jta) (byte-array (map byte ch)))
-  jta)
+  (.write (:terminal jta) (byte-array (map byte ch))))

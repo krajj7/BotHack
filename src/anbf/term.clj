@@ -149,7 +149,7 @@
                   (redraw [this-display]
                     ;(println "Terminal: redraw called")
                     ;(def x emulation)
-                    ;(println "Rows to update:" (changed-rows (.update emulation)))
+                    (log/debug "redrawing rows:" (changed-rows (.update emulation)))
                     (redraw @(:delegator @state)
                             (:frame (swap! state update-in [:frame]
                                            update-frame emulation
