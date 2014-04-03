@@ -4,10 +4,24 @@
   (:require [flatland.ordered.set :refer [ordered-set]]
             [clojure.tools.logging :as log]))
 
-(defrecord Delegator [writer handlers lock])
+(defrecord Delegator [writer handlers inhibited lock])
+
+(defprotocol NetHackWriter
+  (write [this cmd] "Write a string to the NetHack terminal as if typed. Returns true."))
+(extend-type Delegator
+  NetHackWriter
+  (write [this cmd]
+    (if-not (:inhibited this)
+      (locking (:lock this)
+        ((:writer this) cmd)))
+    true))
 
 (defn new-delegator [writer]
-  (Delegator. writer (ordered-set) (Object.)))
+  (Delegator. writer (ordered-set) false (Object.)))
+
+(defn inhibition [delegator state]
+  "When inhibited the delegator keeps delegating events but doesn't delegate any commands."
+  (assoc-in delegator [:inhibited] state))
 
 (defn register [delegator handler]
   (update-in delegator [:handlers] conj handler))
@@ -29,16 +43,18 @@
 
 (defn- invoke-command [protocol method delegator & args]
   "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a truthy value."
-  (loop [[handler & more-handlers] (rseq (:handlers delegator))]
-    (or (apply invoke-handler protocol method handler args)
-        (if (seq more-handlers)
-          (recur more-handlers)
-          (throw (IllegalStateException.
-                  (str "No handler responded to command of "
-                       (:on-interface protocol))))))))
+  (if-not (:inhibited delegator)
+    (loop [[handler & more-handlers] (rseq (:handlers delegator))]
+      (or (apply invoke-handler protocol method handler args)
+          (if (seq more-handlers)
+            (recur more-handlers)
+            (throw (IllegalStateException.
+                     (str "No handler responded to command of "
+                          (:on-interface protocol)))))))))
 
 (defn- respond-prompt [protocol method delegator & args]
-  (write delegator (apply invoke-command protocol method delegator args)))
+  (if-let [response (apply invoke-command protocol method delegator args)]
+    (write delegator response)))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -58,14 +74,6 @@
 (defmacro ^:private defprompthandler [protocol & proto-methods]
   `(defprotocol-delegated respond-prompt ~protocol ~@proto-methods))
 
-(defprotocol NetHackWriter
-  (write [this cmd] "Write a string to the NetHack terminal as if typed."))
-(extend-type Delegator
-  NetHackWriter
-  (write [this cmd]
-    (locking (:lock this)
-      ((:writer this) cmd))))
-
 ; event protocols:
 
 (defeventhandler ConnectionStatusHandler
@@ -78,6 +86,9 @@
 (defeventhandler GameStateHandler
   (started [handler])
   (ended [handler]))
+
+(defeventhandler ToplineMessageHandler
+  (message [handler text]))
 
 ; command protocols:
 

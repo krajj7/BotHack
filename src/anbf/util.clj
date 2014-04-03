@@ -1,5 +1,5 @@
 (ns anbf.util
-  (:require [anbf.delegator :refer [register deregister]]))
+  (:require [anbf.delegator :refer :all]))
 
 (defn register-handler
   "Register a handler implementing command/event protocols it is interested in to the delegator"
@@ -21,6 +21,12 @@
                                 (register handler-new)))
   anbf)
 
+(defn pause [anbf]
+  (swap! (:delegator anbf) inhibition true))
+
+(defn unpause [anbf]
+  (redraw (swap! (:delegator anbf) inhibition false) @(:frame anbf)))
+
 (defn config-get-direct
   [config key]
   (or (get config key)
@@ -33,3 +39,7 @@
    (config-get-direct (:config anbf) key))
   ([anbf key default]
    (get (:config anbf) key default)))
+
+(defn ctrl [ch]
+  "Returns a char representing CTRL+<ch>"
+  (char (- (int ch) 96)))
