@@ -60,4 +60,4 @@
 (defn raw-write
   "Writes a string to the terminal back-end"
   [jta ch]
-  (.write (:terminal jta) (byte-array (map byte ch))))
+  (.write (:terminal jta) (->> ch str (map byte) byte-array)))
