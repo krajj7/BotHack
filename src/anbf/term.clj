@@ -45,20 +45,32 @@
    cursor-x ; cursor position
    cursor-y])
 
-(def colors [nil :red :green :brown :blue :magenta :cyan :gray ; non-bold
-             :bold :orange :bright-green :yellow :bright-blue :bright-magenta :bright-cyan :white]) ; bold
+(def colormap
+  [nil :red :green :brown :blue ; non-bold
+   :magenta :cyan :gray
+   :bold :orange :bright-green :yellow ; bold
+   :bright-blue :bright-magenta :bright-cyan :white
+   :inverse :inv-red :inv-green :inv-brown ; inverse
+   :inv-blue :inv-magenta :inv-cyan :inv-gray
+   :inv-bold :inv-orange :inv-bright-green :inv-yellow ; inverse+bold
+   :inv-bright-blue :inv-bright-magenta :inv-bright-cyan :inv-white])
 
 (def ^:private fg-color-mask 0x1e0)
+(def ^:private bg-color-mask 0x1e00)
 (def ^:private boldness-mask 0x1)
+(def ^:private inverse-mask 0x4)
 
 (defn- unpack-colors
-  "for an int[] (row) of JTA attributes make a vector of FG colors (represented by keywords or nil for black)"
+  "for an int[] (row) of JTA character attributes make a vector of color indices"
   [attrs]
-  (map #(as-> % bits
-              (bit-and fg-color-mask bits)
-              (if (zero? bits) 0 (dec (bit-shift-right bits 5)))
-              (+ bits (* 8 (bit-and boldness-mask %))) ; modify by boldness
-              (colors bits))
+  (map #(let [[mask shift] (if (zero? (bit-and inverse-mask %))
+                             [fg-color-mask 5]
+                             [bg-color-mask 9])]
+          (as-> % bits
+            (bit-and mask bits)
+            (if (zero? bits) 0 (dec (bit-shift-right bits shift)))
+            (+ bits (* (bit-and boldness-mask %) 8) ; modify by boldness
+                    (* (bit-and inverse-mask %) 4)))) ; modify by inversion
        (take 80 attrs)))
 
 (defn- unpack-line
@@ -99,9 +111,9 @@
 
 (defn print-colors [f]
   (println "Colors:")
-  (doall (map #(if (every? nil? %)
+  (doall (map #(if (every? zero? %)
                  (println nil)
-                 (println %))
+                 (println (map colormap %)))
               (:colors f))))
 
 (defmethod print-method Frame [f w]
