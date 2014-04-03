@@ -11,6 +11,7 @@
   [config
    delegator
    jta
+   scraper
    frame])
 ;  ...
 
@@ -54,7 +55,7 @@
          config (load-config fname)
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
-         anbf (ANBF. config delegator jta (atom nil))
+         anbf (ANBF. config delegator jta (atom nil) (atom nil))
          scraper (scraper anbf)]
      (reset! delegator (new-delegator (partial raw-write jta)))
      (-> anbf
@@ -70,11 +71,11 @@
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Ending scraper")
-                               (deregister-handler anbf scraper))
+                               (deregister-handler anbf @(:scraper anbf)))
                              (started [_]
                                (log/info "Starting scraper and bot")
                                (start-bot anbf bot)
-                               (register-handler anbf scraper))))))))
+                               (replace-scraper anbf scraper))))))))
 
 (defn start
   ([]
