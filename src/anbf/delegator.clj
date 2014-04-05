@@ -56,6 +56,10 @@
   (if-let [response (apply invoke-command protocol method delegator args)]
     (write delegator response)))
 
+(defn- respond-action [protocol method delegator & args]
+  ; TODO
+  (log/info "<<< invoke bot logic >>>"))
+
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
             (locking (:lock ~delegator)
@@ -74,6 +78,9 @@
 (defmacro ^:private defprompthandler [protocol & proto-methods]
   `(defprotocol-delegated respond-prompt ~protocol ~@proto-methods))
 
+(defmacro ^:private defactionhandler [protocol & proto-methods]
+  `(defprotocol-delegated respond-action ~protocol ~@proto-methods))
+
 ; event protocols:
 
 (defeventhandler ConnectionStatusHandler
@@ -82,6 +89,10 @@
 
 (defeventhandler RedrawHandler
   (redraw [handler frame]))
+
+; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn.
+(defeventhandler FullFrameHandler
+  (full-frame [handler frame]))
 
 (defeventhandler GameStateHandler
   (started [handler])
@@ -92,12 +103,13 @@
 
 ; command protocols:
 
-(defprompthandler ChooseCharacterHandler
-  (choose-character [handler]))
-
 ; defprompthandler (=> String)
 ; defactionhandler (=> Action)
 ; defmenuhandler (=> MenuOption?)
 ; deflocationhandler (=> x y)
 
-; TODO game action requests, prompt/menu reponders
+(defprompthandler ChooseCharacterHandler
+  (choose-character [handler]))
+
+(defactionhandler ActionHandler
+  (choose-action [handler]))
