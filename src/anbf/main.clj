@@ -56,7 +56,7 @@
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
          anbf (ANBF. config delegator jta (atom nil) (atom nil))
-         scraper (scraper anbf)]
+         scraper (scraper-handler anbf)]
      (reset! delegator (new-delegator (partial raw-write jta)))
      (-> anbf
          (register-handler (reify ConnectionStatusHandler
@@ -68,14 +68,17 @@
                              (redraw [_ frame]
                                (reset! (:frame anbf) frame)
                                (println frame))))
+         (register-handler (reify ToplineMessageHandler
+                             (message [_ text]
+                               (log/info (str "Topline message: " text)))))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Ending scraper")
-                               (deregister-handler anbf @(:scraper anbf)))
+                               (deregister-handler anbf scraper))
                              (started [_]
                                (log/info "Starting scraper and bot")
-                               (start-bot anbf bot)
-                               (replace-scraper anbf scraper))))))))
+                               (register-handler anbf scraper)
+                               (start-bot anbf bot))))))))
 
 (defn start
   ([]
@@ -98,12 +101,25 @@
    (log/info "ANBF instance stopped")
    anbf))
 
-(def esc (str (char 27)))
+(defn pause [anbf]
+  (swap! (:delegator anbf) inhibition true)
+  anbf)
+
+(defn unpause [anbf]
+  (reset! (:scraper anbf) nil)
+  (redraw (swap! (:delegator anbf) inhibition false) @(:frame anbf))
+  anbf)
 
 (defn- w
   [ch]
   "Helper write function for the REPL"
-  (write @(:delegator s) ch))
+  (raw-write (:jta s) ch))
+
+(defn- p []
+  (pause s))
+
+(defn- u []
+  (unpause s))
 
 (defn -main [& args] []
   (let [anbf (new-anbf)] ; TODO config fname from args

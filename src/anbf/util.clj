@@ -21,12 +21,6 @@
                                 (register handler-new)))
   anbf)
 
-(defn pause [anbf]
-  (swap! (:delegator anbf) inhibition true))
-
-(defn unpause [anbf]
-  (redraw (swap! (:delegator anbf) inhibition false) @(:frame anbf)))
-
 (defn config-get-direct
   [config key]
   (or (get config key)
@@ -43,3 +37,7 @@
 (defn ctrl [ch]
   "Returns a char representing CTRL+<ch>"
   (char (- (int ch) 96)))
+
+(def esc (str (char 27)))
+
+(def backspace (str (char 8)))
