@@ -1,5 +1,8 @@
 # slightly altered TAEB settings
 
+# more feedback!
+OPTIONS=msg_wall_hits
+
 OPTIONS=!sparkle
 OPTIONS=runmode:teleport
 OPTIONS=!timed_delay
