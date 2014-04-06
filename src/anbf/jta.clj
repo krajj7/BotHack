@@ -23,9 +23,9 @@
     ; translate the JTA event
     (.registerPluginListener (reify OnlineStatusListener
                                (offline [_]
-                                 (offline @delegator))
+                                 (send-off delegator offline))
                                (online [_]
-                                 (online @delegator))))))
+                                 (send-off delegator online))))))
 
 (defn- new-jta [pl protocol delegator]
   (JTA. pl protocol (-> pl
@@ -60,4 +60,5 @@
 (defn raw-write
   "Writes a string to the terminal back-end"
   [jta ch]
-  (.write (:terminal jta) (->> ch str (map byte) byte-array)))
+  (io! (.write (:terminal jta)
+               (->> ch str (map byte) byte-array))))

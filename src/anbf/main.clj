@@ -51,13 +51,13 @@
   ([]
    (new-anbf "anbf-config.clj"))
   ([fname]
-   (let [delegator (atom nil)
+   (let [delegator (agent (new-delegator nil))
          config (load-config fname)
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
-         anbf (ANBF. config delegator jta (atom nil) (atom nil))
+         anbf (ANBF. config delegator jta (ref nil) (atom nil))
          scraper (scraper-handler anbf)]
-     (reset! delegator (new-delegator (partial raw-write jta)))
+     (send-off delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (reify ConnectionStatusHandler
                              (online [_]
@@ -102,13 +102,15 @@
    anbf))
 
 (defn pause [anbf]
-  (swap! (:delegator anbf) inhibition true)
+  (send-off (:delegator anbf) inhibition true)
   anbf)
 
 (defn unpause [anbf]
-  (locking (:lock @(:delegator anbf))
-    (reset! (:scraper anbf) nil))
-  (redraw (swap! (:delegator anbf) inhibition false) @(:frame anbf))
+  (dosync
+    (ref-set (:scraper anbf) nil)
+    (-> (:delegator anbf)
+        (send-off inhibition false)
+        (send-off redraw @(:frame anbf))))
   anbf)
 
 (defn- w

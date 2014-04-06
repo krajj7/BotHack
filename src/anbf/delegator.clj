@@ -1,23 +1,22 @@
-; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  For commands it writes responses back to the terminal.  It is supposed to process event invocations synchronously and sequentially, even if they come from different threads.
+; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  For commands it writes responses back to the terminal.
 
 (ns anbf.delegator
   (:require [flatland.ordered.set :refer [ordered-set]]
             [clojure.tools.logging :as log]))
 
-(defrecord Delegator [writer handlers inhibited lock])
+(defrecord Delegator [writer handlers inhibited])
 
 (defprotocol NetHackWriter
-  (write [this cmd] "Write a string to the NetHack terminal as if typed. Returns true."))
+  (write [this cmd] "Write a string to the NetHack terminal as if typed."))
 (extend-type Delegator
   NetHackWriter
   (write [this cmd]
     (if-not (:inhibited this)
-      (locking (:lock this)
-        ((:writer this) cmd)))
-    true))
+      ((:writer this) cmd))
+    this))
 
 (defn new-delegator [writer]
-  (Delegator. writer (ordered-set) false (Object.)))
+  (Delegator. writer (ordered-set) false))
 
 (defn inhibition [delegator state]
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands."
@@ -28,6 +27,9 @@
 
 (defn deregister [delegator handler]
   (update-in delegator [:handlers] disj handler))
+
+(defn set-writer [delegator writer]
+  (assoc-in delegator [:writer] writer))
 
 (defn- invoke-handler [protocol method handler & args]
   (if (satisfies? protocol handler)
@@ -53,24 +55,21 @@
                           (:on-interface protocol)))))))))
 
 (defn- respond-prompt [protocol method delegator & args]
-  (if-let [response (apply invoke-command protocol method delegator args)]
-    (write delegator response)))
+  (write delegator (apply invoke-command protocol method delegator args)))
 
 (defn- respond-action [protocol method delegator & args]
-  ; TODO
-  (log/info "<<< invoke bot logic >>>"))
+  (log/info "<<< invoke bot logic >>>")); TODO
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
-            (locking (:lock ~delegator)
-              (~invoke-fn ~protocol ~method ~delegator ~@args))))
+            (~invoke-fn ~protocol ~method ~delegator ~@args)
+            ~delegator))
 
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
        (extend-type Delegator ~protocol
-         ~@(map (partial delegation-impl invoke-fn protocol)
-                proto-methods))))
+         ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
 (defmacro ^:private defeventhandler [protocol & proto-methods]
   `(defprotocol-delegated invoke-event ~protocol ~@proto-methods))

@@ -162,10 +162,11 @@
                     ;(println "Terminal: redraw called")
                     ;(def x emulation)
                     (log/debug "redrawing rows:" (changed-rows (.update emulation)))
-                    (redraw @(:delegator @state)
-                            (:frame (swap! state update-in [:frame]
-                                           update-frame emulation
-                                           (changed-rows (.update emulation)))))
+                    (send-off
+                      (:delegator @state) redraw
+                      (:frame (swap! state update-in [:frame]
+                                     update-frame emulation
+                                     (changed-rows (.update emulation)))))
                     (java.util.Arrays/fill (.update emulation) false))
                   (updateScrollBar [_])
                   (setVDUBuffer [this-display buffer]

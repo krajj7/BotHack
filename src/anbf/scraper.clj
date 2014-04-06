@@ -51,9 +51,9 @@
     (log/debug "Handling game start")
     (condp #(.startsWith %2 %1) (cursor-line frame)
       "There is already a game in progress under your name."
-      (write @delegator "y\n") ; destroy old game
+      (send-off delegator write "y\n") ; destroy old game
       "Shall I pick a character"
-      (choose-character @delegator)
+      (send-off delegator choose-character)
       true)))
 
 (defn- menu?
@@ -65,12 +65,13 @@
   [frame]
   "If there is a single-letter prompt active, return the prompt text, else nil."
   (if (<= (:cursor-y frame) 1)
-    (re-seq #"\? \[[^\]]\] " (before-cursor frame))))
+    (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
 
 (defn- handle-choice-prompt
   [frame delegator]
   (when-let [text (choice-prompt frame)]
     (log/debug "Handling choice prompt")
+    ; TODO maybe will need extra newline to push response away from ctrl-p message handler
     (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
 
 (defn- more-prompt
@@ -87,8 +88,9 @@
   (when-let [text (more-prompt frame)]
     (log/debug "Handling --More-- prompt")
     ; XXX TODO possibly update map and/or botl?
-    (message @delegator text)
-    (write @delegator " ")))
+    (-> delegator
+        (send-off message text)
+        (send-off write " "))))
 
 (defn- handle-menu
   [frame handler]
@@ -117,7 +119,7 @@
   [frame delegator]
   (let [msg (-> frame topline string/trim)]
     (when-not (= msg "# #'")
-      (message @delegator msg))))
+      (send-off delegator message msg))))
 
 (defn new-scraper [{:keys [delegator] :as anbf}]
   (letfn [(initial [frame]
@@ -125,12 +127,13 @@
             (or (handle-game-start frame delegator)
                 (handle-more frame delegator)
                 (handle-menu frame delegator)
+                (handle-choice-prompt frame delegator)
                 ;(handle-direction frame delegator) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
                 (handle-location frame delegator)
                 ; pokud je vykresleny status, nic z predchoziho nesmi nezotavitelne/nerozpoznatelne reagovat na "##"
                 (when (status-drawn? frame)
                   (log/debug "writing ##' mark")
-                  (write @delegator "##'")
+                  (send-off delegator write "##'")
                   marked)
                 (log/debug "expecting further redraw")))
           ; odeslal jsem marker, cekam jak se vykresli
@@ -140,9 +143,10 @@
             ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
             (or (handle-more frame delegator)
                 (handle-menu frame delegator)
+                (handle-choice-prompt frame delegator)
                 (when (and (= 0 (:cursor-y frame))
                            (before-cursor? frame "# #'"))
-                  (write @delegator (str backspace \newline \newline))
+                  (send-off delegator write (str backspace \newline \newline))
                   (log/debug "persisted mark")
                   lastmsg-clear)
                 ; TODO recognize prompt
@@ -154,14 +158,14 @@
             (log/debug "scanning for cancelled mark")
             (when (topline-empty? frame)
               (log/debug "ctrl+p ctrl+p")
-              (write @delegator (str (ctrl \p) (ctrl \p)))
+              (send-off delegator write (str (ctrl \p) (ctrl \p)))
               lastmsg-get))
           ; jakmile je vykresleno "# #" na topline, mam jistotu, ze po dalsim ctrl+p se vykresli posledni herni zprava (nebo "#", pokud zadna nebyla)
           (lastmsg-get [frame]
             (log/debug "scanning ctrl+p")
             (when (re-seq #"^# # +" (topline frame))
               (log/debug "got second ctrl+p, sending last ctrl+p")
-              (write @delegator (str (ctrl \p)))
+              (send-off delegator write (str (ctrl \p)))
               lastmsg+action))
           ; cekam na vysledek <ctrl+p>, bud # z predchoziho kola nebo presmahnuta message
           (lastmsg+action [frame]
@@ -169,26 +173,21 @@
             (or (when-not (or (= (:cursor-y frame) 0)
                               (topline-empty? frame))
                   (if-not (re-seq #"^# +" (topline frame))
-                    (message @delegator (string/trim (topline frame)))
+                    (send-off delegator message (string/trim (topline frame)))
                     (log/debug "no last message"))
                   (log/debug "publishing full frame")
-                  (full-frame @delegator frame)
-                  (choose-action @delegator)
+                  (-> delegator
+                      (send-off full-frame frame)
+                      (send-off choose-action))
                   initial)
                 (log/debug "lastmsg expecting further redraw")))]
     initial))
 
-(defn- switch-scraper [anbf current-scraper next-scraper]
-  (if-not (compare-and-set! (:scraper anbf)
-                            current-scraper next-scraper)
-    (throw (IllegalStateException. "scraper was changed by some other thread during a redraw event handling, this should never happen"))
-    next-scraper))
-
 (defn scraper-handler [anbf]
   (reify RedrawHandler
     (redraw [_ frame]
-      (let [current-scraper (or @(:scraper anbf)
-                                (switch-scraper anbf nil (new-scraper anbf)))
-            next-scraper (current-scraper frame)]
-        (if (fn? next-scraper)
-          (switch-scraper anbf current-scraper next-scraper))))))
+      (dosync
+        (let [current-scraper (or @(:scraper anbf) (new-scraper anbf))
+              next-scraper (current-scraper frame)]
+          (if (fn? next-scraper)
+            (ref-set (:scraper anbf) next-scraper)))))))
