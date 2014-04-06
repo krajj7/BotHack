@@ -178,11 +178,17 @@
                 (log/debug "lastmsg expecting further redraw")))]
     initial))
 
+(defn- switch-scraper [anbf current-scraper next-scraper]
+  (if-not (compare-and-set! (:scraper anbf)
+                            current-scraper next-scraper)
+    (throw (IllegalStateException. "scraper was changed by some other thread during a redraw event handling, this should never happen"))
+    next-scraper))
+
 (defn scraper-handler [anbf]
   (reify RedrawHandler
     (redraw [_ frame]
       (let [current-scraper (or @(:scraper anbf)
-                                (reset! (:scraper anbf) (new-scraper anbf)))
+                                (switch-scraper anbf nil (new-scraper anbf)))
             next-scraper (current-scraper frame)]
         (if (fn? next-scraper)
-          (reset! (:scraper anbf) next-scraper))))))
+          (switch-scraper anbf current-scraper next-scraper))))))

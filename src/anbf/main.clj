@@ -106,7 +106,8 @@
   anbf)
 
 (defn unpause [anbf]
-  (reset! (:scraper anbf) nil)
+  (locking (:lock @(:delegator anbf))
+    (reset! (:scraper anbf) nil))
   (redraw (swap! (:delegator anbf) inhibition false) @(:frame anbf))
   anbf)
 
