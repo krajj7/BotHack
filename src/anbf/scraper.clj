@@ -183,11 +183,14 @@
                 (log/debug "lastmsg expecting further redraw")))]
     initial))
 
+(defn- apply-scraper [current-scraper anbf frame]
+  "If the current scraper returns a function when applied to the frame, the functions becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
+  (let [next-scraper ((or current-scraper (new-scraper anbf)) frame)]
+    (if (fn? next-scraper)
+      next-scraper
+      current-scraper)))
+
 (defn scraper-handler [anbf]
   (reify RedrawHandler
     (redraw [_ frame]
-      (dosync
-        (let [current-scraper (or @(:scraper anbf) (new-scraper anbf))
-              next-scraper (current-scraper frame)]
-          (if (fn? next-scraper)
-            (ref-set (:scraper anbf) next-scraper)))))))
+      (dosync (alter (:scraper anbf) apply-scraper anbf frame)))))
