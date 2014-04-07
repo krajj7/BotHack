@@ -51,13 +51,15 @@
 
 (defn new-anbf
   ([]
-   (new-anbf "anbf-config.clj"))
+   (new-anbf "anbf-shell-config.clj"))
   ([fname]
    (let [delegator (agent (new-delegator nil))
          config (load-config fname)
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
-         anbf (ANBF. config delegator jta (ref nil) (atom nil))
+         initial-scraper (ref nil)
+         initial-frame (atom nil)
+         anbf (ANBF. config delegator jta initial-scraper initial-frame)
          scraper (scraper-handler anbf)]
      (send-off delegator set-writer (partial raw-write jta))
      (-> anbf
@@ -83,18 +85,15 @@
                                (register-handler anbf scraper)
                                (start-bot anbf bot))))))))
 
-(defn start
-  ([]
-   (def s (new-anbf)) ; "default" instance for the REPL
-   (start s))
-  ([anbf]
-   (log/info "ANBF instance started")
-   (if-not (start-menubot anbf)
-     (started @(:delegator anbf)))
-   (start-jta (:jta anbf)
-              (config-get anbf :host "localhost")
-              (config-get anbf :port 23))
-   anbf))
+(defn start [anbf]
+  (def s anbf) ; "default" instance for the REPL
+  (log/info "ANBF instance started")
+  (if-not (start-menubot anbf)
+    (started @(:delegator anbf)))
+  (start-jta (:jta anbf)
+             (config-get anbf :host "localhost")
+             (config-get anbf :port 23))
+  anbf)
 
 (defn stop
   ([]
@@ -128,6 +127,4 @@
   (unpause s))
 
 (defn -main [& args] []
-  (let [anbf (new-anbf)] ; TODO config fname from args
-    (def s anbf)
-    (start anbf)))
+  (->> (take 1 args) (apply new-anbf) start))
