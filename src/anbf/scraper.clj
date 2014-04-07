@@ -62,8 +62,8 @@
   (re-seq #"\(end\) $|\([0-9]+ of [0-9]+\)$" (before-cursor frame)))
 
 (defn- choice-prompt
-  [frame]
   "If there is a single-letter prompt active, return the prompt text, else nil."
+  [frame]
   (if (<= (:cursor-y frame) 1)
     (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
 
@@ -183,8 +183,9 @@
                 (log/debug "lastmsg expecting further redraw")))]
     initial))
 
-(defn- apply-scraper [current-scraper anbf frame]
+(defn- apply-scraper
   "If the current scraper returns a function when applied to the frame, the functions becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
+  [current-scraper anbf frame]
   (let [next-scraper ((or current-scraper (new-scraper anbf)) frame)]
     (if (fn? next-scraper)
       next-scraper

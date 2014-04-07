@@ -33,8 +33,8 @@
                         (set-delegator delegator))))
 
 (defn new-shell-jta 
+  "Returns a set up JTA instance using the Shell plugin as protocol handler, running the given command."
   [delegator command]
-  "returns a set up JTA instance using the Shell plugin as protocol handler, running the given command"
   (let [pl (plugin-loader delegator)
         protocol (.addPlugin pl "Shell" "protocol")]
     (.broadcast pl (ConfigurationRequest. 
@@ -43,8 +43,8 @@
     (new-jta pl protocol delegator)))
 
 (defn new-telnet-jta 
+  "Returns a set up JTA instance using the Telnet plugin as protocol handler."
   [delegator]
-  "returns a set up JTA instance using the Telnet plugin as protocol handler"
   (let [pl (plugin-loader delegator)]
     (.addPlugin pl "Socket" "socket")
     (new-jta pl (.addPlugin pl "Telnet" "protocol") delegator)))
@@ -58,7 +58,7 @@
   jta)
 
 (defn raw-write
-  "Writes a string to the terminal back-end"
+  "Writes a string to the terminal back-end."
   [jta ch]
   (io! (.write (:terminal jta)
                (->> ch str (map byte) byte-array))))

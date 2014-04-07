@@ -18,8 +18,9 @@
 (defn new-delegator [writer]
   (Delegator. writer (ordered-set) false))
 
-(defn inhibition [delegator state]
+(defn inhibition
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands or writes."
+  [delegator state]
   (assoc-in delegator [:inhibited] state))
 
 (defn register [delegator handler]

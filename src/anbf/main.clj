@@ -33,16 +33,18 @@
     :shell (new-shell-jta delegator (config-get-direct config :nh-command))
     (throw (IllegalArgumentException. "Invalid interface configuration"))))
 
-(defn- start-bot [anbf bot-ns]
+(defn- start-bot
   "Dynamically loads the given namespace of a bot and runs its init function"
+  [anbf bot-ns]
   (require bot-ns)
   (if-let [bot-init-fn (ns-resolve bot-ns 'init)]
     (bot-init-fn anbf)
     (throw (ClassNotFoundException. (str "Failed to resolve init in bot "
                                          bot-ns)))))
 
-(defn- start-menubot [anbf]
+(defn- start-menubot
   "The menubot is responsible for starting the game and letting the delegator know about it by calling 'started' on it when done.  If there is no menubot configured, the game is presumed to be started directly."
+  [anbf]
   (if-let [menubot-ns (config-get anbf :menubot nil)]
     (or (start-bot anbf (symbol menubot-ns)) true)
     (log/info "No menubot configured")))
@@ -115,8 +117,8 @@
   anbf)
 
 (defn- w
-  [ch]
   "Helper write function for the REPL"
+  [ch]
   (raw-write (:jta s) ch))
 
 (defn- p []
