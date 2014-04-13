@@ -4,11 +4,10 @@
   (:require [flatland.ordered.set :refer [ordered-set]]
             [clojure.tools.logging :as log]))
 
-(defrecord Delegator [writer handlers inhibited])
-
 (defprotocol NetHackWriter
   (write [this cmd] "Write a string to the NetHack terminal as if typed."))
-(extend-type Delegator
+
+(defrecord Delegator [writer handlers inhibited]
   NetHackWriter
   (write [this cmd]
     (if-not (:inhibited this)
@@ -18,7 +17,7 @@
 (defn new-delegator [writer]
   (Delegator. writer (ordered-set) false))
 
-(defn inhibition
+(defn set-inhibition
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands or writes."
   [delegator state]
   (assoc-in delegator [:inhibited] state))
@@ -39,13 +38,15 @@
       (catch Exception e
         (log/error e "Delegator caught handler exception")))))
 
-(defn- invoke-event [protocol method delegator & args]
+(defn- invoke-event
   "Events are propagated to all handlers satisfying the protocol in the order of their registration."
+  [protocol method delegator & args]
   (doall (map #(apply invoke-handler protocol method % args)
               (:handlers delegator))))
 
-(defn- invoke-command [protocol method delegator & args]
+(defn- invoke-command
   "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a truthy value."
+  [protocol method delegator & args]
   (if-not (:inhibited delegator)
     (loop [[handler & more-handlers] (rseq (:handlers delegator))]
       (or (apply invoke-handler protocol method handler args)
