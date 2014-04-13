@@ -184,7 +184,7 @@
     initial))
 
 (defn- apply-scraper
-  "If the current scraper returns a function when applied to the frame, the functions becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
+  "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
   [current-scraper anbf frame]
   (let [next-scraper ((or current-scraper (new-scraper anbf)) frame)]
     (if (fn? next-scraper)
