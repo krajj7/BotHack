@@ -104,14 +104,14 @@
    anbf))
 
 (defn pause [anbf]
-  (send-off (:delegator anbf) inhibition true)
+  (send-off (:delegator anbf) set-inhibition true)
   anbf)
 
 (defn unpause [anbf]
   (dosync
     (ref-set (:scraper anbf) nil)
     (-> (:delegator anbf)
-        (send-off inhibition false)
+        (send-off set-inhibition false)
         (send-off redraw @(:frame anbf))))
   anbf)
 
