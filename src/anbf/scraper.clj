@@ -55,10 +55,13 @@
   (if (<= (:cursor-y frame) 1)
     (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
 
+(defn- more-prompt? [frame]
+  (before-cursor? frame "--More--"))
+
 (defn- more-prompt
   "Returns the whole text before a --More-- prompt, or nil if there is none."
   [frame]
-  (when (before-cursor? frame "--More--")
+  (when (more-prompt? frame)
     (-> (:lines frame)
         (nth 0)
         string/trim
@@ -90,10 +93,22 @@
 ;    qr/^What class of monsters do you wish to genocide\?/ => 'genocide_class',
   )
 
+(defn- game-over? [frame]
+  (re-seq #"^Do you want your possessions identified\?|^Die\?|^Really quit\?|^Do you want to see what you had when you died\?"
+          (topline frame)))
+
+(defn- goodbye? [frame]
+  (and (more-prompt? frame)
+       (re-seq #"^(Fare thee well|Sayonara|Aloha|Farvel|Goodbye|Be seeing you) "
+               (topline frame))))
+
+(defn- game-beginning? [frame]
+  (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
+       (before-cursor? frame "] ")))
+
 (defn new-scraper [{:keys [delegator] :as anbf}]
   (letfn [(handle-game-start [frame]
-            (when (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
-                       (before-cursor? frame "] "))
+            (when (game-beginning? frame)
               (log/debug "Handling game start")
               (condp #(.startsWith %2 %1) (cursor-line frame)
                 "There is already a game in progress under your name."
@@ -135,12 +150,19 @@
                 (send-off delegator message msg))))
           (handle-prompt [frame]
             (when-let [msg (prompt frame)]
-              (send-off delegator write (str backspace backspace backspace))
+              (send-off delegator write (str (repeat 3 backspace)))
               (send-off delegator (prompt-fn msg) msg)))
+          (handle-game-end [frame]
+            ; TODO reg handler for escaping the inventory menu?
+            (cond (game-over? frame) (send-off delegator write \y)
+                  (goodbye? frame) (-> delegator
+                                       (send-off write \space)
+                                       (send-off ended))))
 
           (initial [frame]
             (log/debug "scraping frame")
             (or (handle-game-start frame)
+                (handle-game-end frame)
                 (handle-more frame)
                 (handle-menu frame)
                 (handle-choice-prompt frame)
@@ -157,7 +179,8 @@
             (log/debug "marked scraping frame")
             ; veci co se daji bezpecne potvrdit pomoci ## muzou byt jen tady, ve druhem to muze byt zkratka, kdyz se vykresleni stihne - pak se ale hur odladi spolehlivost tady
             ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
-            (or (handle-more frame)
+            (or (handle-game-end frame)
+                (handle-more frame)
                 (handle-menu frame)
                 (handle-choice-prompt frame)
                 (handle-prompt frame)

@@ -77,11 +77,11 @@
                                (log/info "Topline message: " text))))
          (register-handler (reify GameStateHandler
                              (ended [_]
-                               (log/info "Ending scraper")
+                               (log/info "Game ended")
                                (dosync (ref-set (:scraper anbf) nil))
                                (deregister-handler anbf scraper))
                              (started [_]
-                               (log/info "Starting scraper and bot")
+                               (log/info "Game started")
                                (register-handler anbf scraper)
                                (start-bot anbf bot))))))))
 
