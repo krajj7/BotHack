@@ -74,7 +74,7 @@
                                (println frame))))
          (register-handler (reify ToplineMessageHandler
                              (message [_ text]
-                               (log/info (str "Topline message: " text)))))
+                               (log/info "Topline message: " text))))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Ending scraper")

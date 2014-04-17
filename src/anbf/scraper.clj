@@ -44,18 +44,6 @@
              (not= \space (nth name-line 79))
              (re-seq #" S:[0-9]+" name-line)))))
 
-(defn- handle-game-start
-  [frame delegator]
-  (when (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
-             (before-cursor? frame "] "))
-    (log/debug "Handling game start")
-    (condp #(.startsWith %2 %1) (cursor-line frame)
-      "There is already a game in progress under your name."
-      (send-off delegator write "y\n") ; destroy old game
-      "Shall I pick a character"
-      (send-off delegator choose-character)
-      true)))
-
 (defn- menu?
   "Is there a menu drawn onscreen?"
   [frame]
@@ -67,13 +55,6 @@
   (if (<= (:cursor-y frame) 1)
     (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
 
-(defn- handle-choice-prompt
-  [frame delegator]
-  (when-let [text (choice-prompt frame)]
-    (log/debug "Handling choice prompt")
-    ; TODO maybe will need extra newline to push response away from ctrl-p message handler
-    (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
-
 (defn- more-prompt
   "Returns the whole text before a --More-- prompt, or nil if there is none."
   [frame]
@@ -83,53 +64,88 @@
         string/trim
         (string/replace-first #"--More--" ""))))
 
-(defn- handle-more
-  [frame delegator]
-  (when-let [text (more-prompt frame)]
-    (log/debug "Handling --More-- prompt")
-    ; XXX TODO possibly update map and/or botl?
-    (-> delegator
-        (send-off message text)
-        (send-off write " "))))
-
-(defn- handle-menu
-  [frame handler]
-  (when (menu? frame)
-    (log/debug "Handling menu")
-    (throw (UnsupportedOperationException. "TODO menu - implement me"))))
-
-(defn- handle-direction
-  [frame delegator]
-  (when (and (zero? (:cursor-y frame))
-             (before-cursor? frame "In what direction? "))
-    (log/debug "Handling direction")
-    (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
-
 (defn- location-prompt? [frame]
-  (re-seq #"(^ *|  ) (.*?)  \(For instructions type a \?\) *$"
-          (topline frame)))
+  (let [topline (topline frame)]
+    (or (re-seq #"^Unknown direction: ''' (use hjkl or \.)" topline)
+        (re-seq #"(^ *|  ) (.*?)  \(For instructions type a \?\) *$" topline))))
 
-(defn- handle-location
-  [frame delegator]
-  (when (location-prompt? frame)
-    (log/debug "Handling location")
-    (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
+(defn- prompt
+  [frame]
+  (when (and (<= (:cursor-y frame) 1)
+             (before-cursor? frame "##'"))
+    (let [prompt-end (subs (cursor-line frame) 0 (- (:cursor-x frame) 4))]
+      (if (pos? (:cursor-y frame))
+        (str (string/trim topline) " " prompt-end)
+        prompt-end))))
 
-(defn- handle-last-message
-  [frame delegator]
-  (let [msg (-> frame topline string/trim)]
-    (when-not (= msg "# #'")
-      (send-off delegator message msg))))
+(defn- prompt-fn
+  [msg]
+  (throw (UnsupportedOperationException. "TODO prompt-fn - implement me"))
+  ; TODO
+;    qr/^For what do you wish\?/         => 'wish',
+;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:     in|on|melted into) the (.*?) here\?/ => 'write_what',
+;    qr/^"Hello stranger, who are you\?"/ => 'vault_guard',
+;    qr/^How much will you offer\?/      => 'donate',
+;    qr/^What monster do you want to genocide\?/ => 'genocide_species',
+;    qr/^What class of monsters do you wish to genocide\?/ => 'genocide_class',
+  )
 
 (defn new-scraper [{:keys [delegator] :as anbf}]
-  (letfn [(initial [frame]
+  (letfn [(handle-game-start [frame]
+            (when (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
+                       (before-cursor? frame "] "))
+              (log/debug "Handling game start")
+              (condp #(.startsWith %2 %1) (cursor-line frame)
+                "There is already a game in progress under your name."
+                (send-off delegator write "y\n") ; destroy old game
+                "Shall I pick a character"
+                (send-off delegator choose-character)
+                true)))
+          (handle-choice-prompt [frame]
+            (when-let [text (choice-prompt frame)]
+              (log/debug "Handling choice prompt")
+              ; TODO maybe will need extra newline to push response away from ctrl-p message handler
+              ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX")
+              (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
+          (handle-more [frame]
+            (when-let [text (more-prompt frame)]
+              (log/debug "Handling --More-- prompt")
+              ; XXX TODO possibly update map and/or botl?
+              (let [res (if (= text "You don't have that object.")
+                          handle-choice-prompt
+                          (do (send-off delegator message text) initial))]
+                (send-off delegator write " ")
+                res)))
+          (handle-menu [frame]
+            (when (menu? frame)
+              (log/debug "Handling menu")
+              (throw (UnsupportedOperationException. "TODO menu - implement me"))))
+          (handle-direction [frame]
+            (when (and (zero? (:cursor-y frame))
+                       (before-cursor? frame "In what direction? "))
+              (log/debug "Handling direction")
+              (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
+          (handle-location [frame]
+            (when (location-prompt? frame)
+              (log/debug "Handling location")
+              (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
+          (handle-last-message [frame]
+            (let [msg (-> frame topline string/trim)]
+              (when-not (= msg "# #'")
+                (send-off delegator message msg))))
+          (handle-prompt [frame]
+            (when-let [msg (prompt frame)]
+              (send-off delegator write (str backspace backspace backspace))
+              (send-off delegator (prompt-fn msg) msg)))
+
+          (initial [frame]
             (log/debug "scraping frame")
-            (or (handle-game-start frame delegator)
-                (handle-more frame delegator)
-                (handle-menu frame delegator)
-                (handle-choice-prompt frame delegator)
-                ;(handle-direction frame delegator) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
-                (handle-location frame delegator)
+            (or (handle-game-start frame)
+                (handle-more frame)
+                (handle-menu frame)
+                (handle-choice-prompt frame)
+                ;(handle-direction frame) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
+                (handle-location frame)
                 ; pokud je vykresleny status, nic z predchoziho nesmi nezotavitelne/nerozpoznatelne reagovat na "##"
                 (when (status-drawn? frame)
                   (log/debug "writing ##' mark")
@@ -141,18 +157,15 @@
             (log/debug "marked scraping frame")
             ; veci co se daji bezpecne potvrdit pomoci ## muzou byt jen tady, ve druhem to muze byt zkratka, kdyz se vykresleni stihne - pak se ale hur odladi spolehlivost tady
             ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
-            (or (handle-more frame delegator)
-                (handle-menu frame delegator)
-                (handle-choice-prompt frame delegator)
+            (or (handle-more frame)
+                (handle-menu frame)
+                (handle-choice-prompt frame)
+                (handle-prompt frame)
                 (when (and (= 0 (:cursor-y frame))
                            (before-cursor? frame "# #'"))
                   (send-off delegator write (str backspace \newline \newline))
                   (log/debug "persisted mark")
                   lastmsg-clear)
-                ; TODO recognize prompt
-                ; moznosti: topl=" xxxxxx? ##'" => prompt
-                ;           You don't have that object.--More-- => choice
-                ;           "Unknown direction: ''' (use hjkl or .)." => location prompt
                 (log/debug "marked expecting further redraw")))
           (lastmsg-clear [frame]
             (log/debug "scanning for cancelled mark")
@@ -178,7 +191,7 @@
                   (log/debug "publishing full frame")
                   (-> delegator
                       (send-off full-frame frame)
-                      (send-off choose-action))
+                      (send-off choose-action anbf))
                   initial)
                 (log/debug "lastmsg expecting further redraw")))]
     initial))
@@ -194,4 +207,6 @@
 (defn scraper-handler [anbf]
   (reify RedrawHandler
     (redraw [_ frame]
-      (dosync (alter (:scraper anbf) apply-scraper anbf frame)))))
+      (->> (dosync (alter (:scraper anbf) apply-scraper anbf frame))
+           type
+           (log/debug "next scraper:")))))

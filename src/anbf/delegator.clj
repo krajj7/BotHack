@@ -2,6 +2,7 @@
 
 (ns anbf.delegator
   (:require [flatland.ordered.set :refer [ordered-set]]
+            [anbf.action :refer :all]
             [clojure.tools.logging :as log]))
 
 (defprotocol NetHackWriter
@@ -32,8 +33,10 @@
   (assoc-in delegator [:writer] writer))
 
 (defn- invoke-handler [protocol method handler & args]
+  ;(log/debug "testing handler" handler " for " protocol)
   (if (satisfies? protocol handler)
     (try
+      ;(log/debug "invoking handler" handler)
       (apply method handler args)
       (catch Exception e
         (log/error e "Delegator caught handler exception")))))
@@ -49,6 +52,7 @@
   [protocol method delegator & args]
   (if-not (:inhibited delegator)
     (loop [[handler & more-handlers] (rseq (:handlers delegator))]
+      ;(log/debug "invoking next command handler" handler)
       (or (apply invoke-handler protocol method handler args)
           (if (seq more-handlers)
             (recur more-handlers)
@@ -60,7 +64,11 @@
   (write delegator (apply invoke-command protocol method delegator args)))
 
 (defn- respond-action [protocol method delegator & args]
-  (log/info "<<< invoke bot logic >>>")); TODO
+  ; TODO PerformedAction event a podle nej se obcas treba vymeni scraper?
+  (log/info "<<< bot logic >>>")
+  (as-> (apply invoke-command protocol method delegator args) action
+    (apply perform action args)
+    (write delegator action)))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -113,4 +121,4 @@
   (choose-character [handler]))
 
 (defactionhandler ActionHandler
-  (choose-action [handler]))
+  (choose-action [handler anbf]))
