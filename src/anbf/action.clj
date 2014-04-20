@@ -7,18 +7,18 @@
            "Returns the string to write to NetHack to perform the action."))
 
 (def vi-directions
-  {1 \b
-   2 \j
-   3 \n
-   4 \h
-   6 \l
-   7 \y
-   8 \k
-   9 \u})
+  {7 \y 8 \k 9 \u
+   4 \h      6 \l
+   1 \b 2 \j 3 \n})
 
 (defrecord Move [dir]
   Action
   (perform [this anbf]
-    (str (or (vi-directions dir) 
-             (throw (IllegalArgumentException.
-                      (str "Invalid direction: " dir)))))))
+    (or (vi-directions dir)
+        (throw (IllegalArgumentException.
+                 (str "Invalid direction: " dir))))))
+
+(defrecord Pray []
+  Action
+  (perform [this anbf]
+    "#pray\n"))
