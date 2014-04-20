@@ -99,7 +99,7 @@
 (defeventhandler RedrawHandler
   (redraw [handler frame]))
 
-; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn.
+; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and a player action is expected.
 (defeventhandler FullFrameHandler
   (full-frame [handler frame]))
 
@@ -109,6 +109,12 @@
 
 (defeventhandler ToplineMessageHandler
   (message [handler text]))
+
+(defeventhandler BOTLHandler
+  (botl [handler frame]))
+
+(defeventhandler MapHandler
+  (map-drawn [handler frame]))
 
 ; command protocols:
 
@@ -121,4 +127,4 @@
   (choose-character [handler]))
 
 (defactionhandler ActionHandler
-  (choose-action [handler anbf]))
+  (choose-action [handler game]))
