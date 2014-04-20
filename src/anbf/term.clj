@@ -3,8 +3,8 @@
 ; Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff
 
 (ns anbf.term
-  (:require [clojure.pprint :as pprint]
-            [anbf.delegator :refer :all]
+  (:require [anbf.delegator :refer :all]
+            [anbf.frame :refer :all]
             [clojure.tools.logging :as log])
   (:import (de.mud.jta FilterPlugin PluginBus)
            (de.mud.terminal vt320 VDUDisplay VDUBuffer)
@@ -12,7 +12,7 @@
                              TerminalTypeListener LocalEchoListener
                              OnlineStatusListener)
            (java.io IOException))
-  (:gen-class 
+  (:gen-class
     :name anbf.NHTerminal
     :extends de.mud.jta.Plugin
     :implements [de.mud.jta.FilterPlugin Runnable]
@@ -36,24 +36,6 @@
 
 (defn -write [this b]
   (.write (:source @(.state this)) b))
-
-; an immutable representation of a terminal window contents
-; character attributes underline or blink etc. are not represented, only the foreground colors (affected by boldness) are important for NetHack
-(defrecord Frame
-  [lines ; vector of 24 Strings representing text on each row of the terminal
-   colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
-   cursor-x ; cursor position
-   cursor-y])
-
-(def colormap
-  [nil :red :green :brown :blue ; non-bold
-   :magenta :cyan :gray
-   :bold :orange :bright-green :yellow ; bold
-   :bright-blue :bright-magenta :bright-cyan :white
-   :inverse :inv-red :inv-green :inv-brown ; inverse
-   :inv-blue :inv-magenta :inv-cyan :inv-gray
-   :inv-bold :inv-orange :inv-bright-green :inv-yellow ; inverse+bold
-   :inv-bright-blue :inv-bright-magenta :inv-bright-cyan :inv-white])
 
 (def ^:private fg-color-mask 0x1e0)
 (def ^:private bg-color-mask 0x1e00)
@@ -82,12 +64,12 @@
   "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
   [buf]
   ;(println "Terminal: drawing whole new frame")
-  (Frame. (vec (map unpack-line ; turns char[][] into a vector of Strings
-                    (take-last 24 (.charArray buf))))
-          (vec (map unpack-colors
-                    (take-last 24 (.charAttributes buf))))
-          (.getCursorColumn buf)
-          (.getCursorRow buf)))
+  (->Frame (vec (map unpack-line ; turns char[][] into a vector of Strings
+                     (take-last 24 (.charArray buf))))
+           (vec (map unpack-colors
+                     (take-last 24 (.charAttributes buf))))
+           (.getCursorColumn buf)
+           (.getCursorRow buf)))
 
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
@@ -100,27 +82,14 @@
   [f newbuf updated-rows]
   (if (nth (.update newbuf) 0) ; if update[0] == true, all rows need to update
     (frame-from-buffer newbuf)
-    (Frame. (reduce #(assoc %1 %2 (-> newbuf .charArray (nth %2) unpack-line))
-                    (:lines f)
-                    updated-rows)
-            (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
-                    (:colors f)
-                    updated-rows)
-            (.getCursorColumn newbuf)
-            (.getCursorRow newbuf))))
-
-(defn print-colors [f]
-  (println "Colors:")
-  (doall (map #(if (every? zero? %)
-                 (println nil)
-                 (println (map colormap %)))
-              (:colors f))))
-
-(defmethod print-method Frame [f w]
-  (.write w "==== <Frame> ====\n")
-  (pprint/write (:lines f) :stream w)
-  (.write w (format "\nCursor: %s %s\n" (:cursor-x f) (:cursor-y f)))
-  (.write w "=================\n"))
+    (->Frame (reduce #(assoc %1 %2 (-> newbuf .charArray (nth %2) unpack-line))
+                     (:lines f)
+                     updated-rows)
+             (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
+                     (:colors f)
+                     updated-rows)
+             (.getCursorColumn newbuf)
+             (.getCursorRow newbuf))))
 
 (defn -init [bus id]
   [[bus id] (atom
@@ -134,7 +103,7 @@
   (log/debug "Terminal: reader started")
   (let [state @(.state this)
         buffer (byte-array 256)]
-    (try 
+    (try
       (loop []
         ;(println "Terminal: about to .read()")
         (let [n (.read (:source state) buffer)] ; blocking read
@@ -161,7 +130,7 @@
                   (redraw [this-display]
                     ;(println "Terminal: redraw called")
                     ;(def x emulation)
-                    (log/debug "redrawing rows:" (changed-rows (.update emulation)))
+                    ;(log/debug "redrawing rows:" (changed-rows (.update emulation)))
                     (send-off
                       (:delegator @state) redraw
                       (:frame (swap! state update-in [:frame]
