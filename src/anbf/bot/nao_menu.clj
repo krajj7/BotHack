@@ -25,8 +25,8 @@
                         (if-not (logged-in? frame)
                           (throw (IllegalStateException. "Failed to login")))
                         (log/info "NAO menubot finished")
-                        (send-off delegator started)
-                        (send-off delegator write "p")))) ; play!
+                        (send delegator started)
+                        (send delegator write "p")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (pass-prompt? frame)
@@ -38,9 +38,8 @@
                       (log/info "logging in")
                       ; set up the followup handler
                       (replace-handler anbf this pass-prompt)
-                      (send-off delegator write
-                                (login-sequence
-                                  (config-get anbf :nao-login)
-                                  (config-get anbf :nao-pass))))))]
+                      (send delegator write (login-sequence
+                                              (config-get anbf :nao-login)
+                                              (config-get anbf :nao-pass))))))]
     (register-handler anbf trigger))
   (log/info "Waiting for NAO menu to draw"))

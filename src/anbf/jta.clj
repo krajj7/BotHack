@@ -23,26 +23,26 @@
     ; translate the JTA event
     (.registerPluginListener (reify OnlineStatusListener
                                (offline [_]
-                                 (send-off delegator offline))
+                                 (send delegator offline))
                                (online [_]
-                                 (send-off delegator online))))))
+                                 (send delegator online))))))
 
 (defn- new-jta [pl protocol delegator]
   (JTA. pl protocol (-> pl
                         (.addPlugin "NHTerminal" "terminal")
                         (set-delegator delegator))))
 
-(defn new-shell-jta 
+(defn new-shell-jta
   "Returns a set up JTA instance using the Shell plugin as protocol handler, running the given command."
   [delegator command]
   (let [pl (plugin-loader delegator)
         protocol (.addPlugin pl "Shell" "protocol")]
-    (.broadcast pl (ConfigurationRequest. 
+    (.broadcast pl (ConfigurationRequest.
                      (doto (PluginConfig. (Properties.))
                        (.setProperty "Shell" "command" command))))
     (new-jta pl protocol delegator)))
 
-(defn new-telnet-jta 
+(defn new-telnet-jta
   "Returns a set up JTA instance using the Telnet plugin as protocol handler."
   [delegator]
   (let [pl (plugin-loader delegator)]

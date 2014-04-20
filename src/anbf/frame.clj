@@ -42,6 +42,9 @@
 (defn topline [frame]
   (nth-line frame 0))
 
+(defn botls [frame]
+  (subvec (:lines frame) 22))
+
 (defn cursor-line
   "Returns the line of text where the cursor is on the frame."
   [frame]

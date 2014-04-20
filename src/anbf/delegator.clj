@@ -50,25 +50,26 @@
 (defn- invoke-command
   "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a truthy value."
   [protocol method delegator & args]
-  (if-not (:inhibited delegator)
-    (loop [[handler & more-handlers] (rseq (:handlers delegator))]
-      ;(log/debug "invoking next command handler" handler)
-      (or (apply invoke-handler protocol method handler args)
-          (if (seq more-handlers)
-            (recur more-handlers)
-            (throw (IllegalStateException.
-                     (str "No handler responded to command of "
-                          (:on-interface protocol)))))))))
+  (loop [[handler & more-handlers] (rseq (:handlers delegator))]
+    ;(log/debug "invoking next command handler" handler)
+    (or (apply invoke-handler protocol method handler args)
+        (if (seq more-handlers)
+          (recur more-handlers)
+          (throw (IllegalStateException.
+                   (str "No handler responded to command of "
+                        (:on-interface protocol))))))))
 
 (defn- respond-prompt [protocol method delegator & args]
-  (write delegator (apply invoke-command protocol method delegator args)))
+  (if-not (:inhibited delegator)
+    (write delegator (apply invoke-command protocol method delegator args))))
 
 (defn- respond-action [protocol method delegator & args]
   ; TODO PerformedAction event a podle nej se obcas treba vymeni scraper?
-  (log/info "<<< bot logic >>>")
-  (as-> (apply invoke-command protocol method delegator args) action
-    (apply perform action args)
-    (write delegator action)))
+  (when-not (:inhibited delegator)
+    (log/info "<<< bot logic >>>")
+    (as-> (apply invoke-command protocol method delegator args) action
+      (apply perform action args)
+      (write delegator action))))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -99,7 +100,7 @@
 (defeventhandler RedrawHandler
   (redraw [handler frame]))
 
-; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and a player action is expected.
+; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and NetHack is waiting for input.
 (defeventhandler FullFrameHandler
   (full-frame [handler frame]))
 
@@ -111,7 +112,7 @@
   (message [handler text]))
 
 (defeventhandler BOTLHandler
-  (botl [handler frame]))
+  (botl [handler status]))
 
 (defeventhandler MapHandler
   (map-drawn [handler frame]))
@@ -127,4 +128,4 @@
   (choose-character [handler]))
 
 (defactionhandler ActionHandler
-  (choose-action [handler game]))
+  (choose-action [handler gamestate]))

@@ -58,23 +58,12 @@
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
          scraper-fn (ref nil)
-         initial-game (atom nil)
+         initial-game (atom (new-game))
          anbf (ANBF. config delegator jta scraper-fn initial-game)
          scraper (scraper-handler scraper-fn delegator)]
-     (send-off delegator set-writer (partial raw-write jta))
+     (send delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (game-handler initial-game delegator))
-         (register-handler (reify ConnectionStatusHandler
-                             (online [_]
-                               (log/info "Connection status: online"))
-                             (offline [_]
-                               (log/info "Connection status: offline"))))
-         (register-handler (reify RedrawHandler
-                             (redraw [_ frame]
-                               (println frame))))
-         (register-handler (reify ToplineMessageHandler
-                             (message [_ text]
-                               (log/info "Topline message: " text))))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
@@ -82,7 +71,22 @@
                              (started [_]
                                (log/info "Game started")
                                (register-handler anbf scraper)
-                               (start-bot anbf bot))))))))
+                               (start-bot anbf bot))))
+         (register-handler (reify
+                             ConnectionStatusHandler
+                             (online [_]
+                               (log/info "Connection status: online"))
+                             (offline [_]
+                               (log/info "Connection status: offline"))
+                             BOTLHandler
+                             (botl [_ status]
+                               (log/info "new botl status: " status))
+                             RedrawHandler
+                             (redraw [_ frame]
+                               (println frame))
+                             ToplineMessageHandler
+                             (message [_ text]
+                               (log/info "Topline message: " text))))))))
 
 (defn start [anbf]
   (def s anbf) ; "default" instance for the REPL
@@ -103,15 +107,17 @@
    anbf))
 
 (defn pause [anbf]
-  (send-off (:delegator anbf) set-inhibition true)
+  (send (:delegator anbf) set-inhibition true)
+  (log/info "pausing")
   anbf)
 
 (defn unpause [anbf]
+  (log/info "unpaused")
   (dosync
     (ref-set (:scraper anbf) nil)
     (-> (:delegator anbf)
-        (send-off set-inhibition false)
-        (send-off write (str esc esc))))
+        (send set-inhibition false)
+        (send write (str esc esc))))
   anbf)
 
 (defn- w
@@ -123,7 +129,7 @@
   (pause s))
 
 (defn- u []
-  (unpause s))
+  (if (:inhibited @(:delegator s)) (unpause s)))
 
 (defn -main [& args] []
   (->> (take 1 args) (apply new-anbf) start))

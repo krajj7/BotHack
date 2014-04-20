@@ -4,20 +4,20 @@
 (defn register-handler
   "Register a handler implementing command/event protocols it is interested in to the delegator"
   [anbf handler]
-  (send-off (:delegator anbf) register handler)
+  (send (:delegator anbf) register handler)
   anbf)
 
 (defn deregister-handler
   "Deregister the given handler from the delegator"
   [anbf handler]
-  (send-off (:delegator anbf) deregister handler)
+  (send (:delegator anbf) deregister handler)
   anbf)
 
 (defn replace-handler
   "Deregister a handler and register a different one"
   [anbf handler-old handler-new]
-  (send-off (:delegator anbf)
-            #(-> % (deregister handler-old) (register handler-new)))
+  (send (:delegator anbf)
+        #(-> % (deregister handler-old) (register handler-new)))
   anbf)
 
 (defn config-get-direct

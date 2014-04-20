@@ -7,12 +7,15 @@
             [anbf.delegator :refer :all]))
 
 (defrecord Game
-  [frame
+  [screen
    player
    dungeon
    level
    turn
    score])
+
+(defn new-game []
+  (Game. nil (new-player) nil nil 0 0))
 
 (defrecord Dungeon [])
 
@@ -22,20 +25,17 @@
 
 (defrecord Item [])
 
-(defn- update-player [player frame delegator]
-  (log/debug "TODO update player by botl"))
-
 (defn game-handler
   "Returns a handler that updates the game model according to various events and publishes other events."
   [game delegator]
   (reify
     RedrawHandler
     (redraw [_ frame]
-      (swap! game assoc-in [:frame] frame))
+      (swap! game assoc-in [:screen] frame))
     BOTLHandler
-    (botl [_ frame]
-      (swap! game update-in [:player] update-player frame delegator))
+    (botl [_ status]
+      (swap! game update-in [:player] update-player status delegator))
     FullFrameHandler
     (full-frame [_ frame]
       (log/debug "TODO update player location in level")
-      (send-off delegator choose-action @game))))
+      (send delegator choose-action @game))))
