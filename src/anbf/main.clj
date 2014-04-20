@@ -4,6 +4,7 @@
             [anbf.jta :refer :all]
             [anbf.delegator :refer :all]
             [anbf.term :refer :all]
+            [anbf.game :refer :all]
             [anbf.scraper :refer :all])
   (:gen-class))
 
@@ -12,8 +13,7 @@
    delegator
    jta
    scraper
-   frame])
-;  ...
+   game])
 
 (defmethod print-method ANBF [anbf w]
   (.write w "<ANBF instance>"))
@@ -57,12 +57,13 @@
          config (load-config fname)
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
-         initial-scraper (ref nil)
-         initial-frame (atom nil)
-         anbf (ANBF. config delegator jta initial-scraper initial-frame)
-         scraper (scraper-handler anbf)]
+         scraper-fn (ref nil)
+         initial-game (atom nil)
+         anbf (ANBF. config delegator jta scraper-fn initial-game)
+         scraper (scraper-handler scraper-fn delegator)]
      (send-off delegator set-writer (partial raw-write jta))
      (-> anbf
+         (register-handler (game-handler initial-game delegator))
          (register-handler (reify ConnectionStatusHandler
                              (online [_]
                                (log/info "Connection status: online"))
@@ -70,7 +71,6 @@
                                (log/info "Connection status: offline"))))
          (register-handler (reify RedrawHandler
                              (redraw [_ frame]
-                               (reset! (:frame anbf) frame)
                                (println frame))))
          (register-handler (reify ToplineMessageHandler
                              (message [_ text]
@@ -78,7 +78,6 @@
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
-                               (dosync (ref-set (:scraper anbf) nil))
                                (deregister-handler anbf scraper))
                              (started [_]
                                (log/info "Game started")
@@ -112,7 +111,7 @@
     (ref-set (:scraper anbf) nil)
     (-> (:delegator anbf)
         (send-off set-inhibition false)
-        (send-off redraw @(:frame anbf))))
+        (send-off write (str esc esc))))
   anbf)
 
 (defn- w
