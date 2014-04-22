@@ -5,11 +5,11 @@
 (ns anbf.jta
   (:require [anbf.delegator :refer :all]
             [anbf.term :refer [set-delegator]])
-  (:import anbf.NHTerminal)
-  (:import (de.mud.jta PluginLoader Plugin PluginConfig)
-           (de.mud.jta.event SocketRequest OnlineStatusListener
-                             ConfigurationRequest))
-  (:import (java.util Vector Properties)))
+  (:import [anbf.NHTerminal]
+           [de.mud.jta PluginLoader Plugin PluginConfig]
+           [de.mud.jta.event SocketRequest OnlineStatusListener
+                             ConfigurationRequest]
+           [java.util Vector Properties]))
 
 ; JTA library wrapper
 (defrecord JTA

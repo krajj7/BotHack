@@ -6,12 +6,12 @@
   (:require [anbf.delegator :refer :all]
             [anbf.frame :refer :all]
             [clojure.tools.logging :as log])
-  (:import (de.mud.jta FilterPlugin PluginBus)
-           (de.mud.terminal vt320 VDUDisplay VDUBuffer)
-           (de.mud.jta.event TelnetCommandRequest SetWindowSizeRequest
+  (:import [de.mud.jta FilterPlugin PluginBus]
+           [de.mud.terminal vt320 VDUDisplay VDUBuffer]
+           [de.mud.jta.event TelnetCommandRequest SetWindowSizeRequest
                              TerminalTypeListener LocalEchoListener
-                             OnlineStatusListener)
-           (java.io IOException))
+                             OnlineStatusListener]
+           [java.io IOException])
   (:gen-class
     :name anbf.NHTerminal
     :extends de.mud.jta.Plugin
