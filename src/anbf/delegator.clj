@@ -85,6 +85,7 @@
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
+       ; TODO also definterface IFooHandler, extend protocol to the interface
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
@@ -108,7 +109,7 @@
 
 ; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and NetHack is waiting for input.
 (defeventhandler FullFrameHandler
-  (full-frame [handler frame]))
+  (fullFrame [handler frame]))
 
 (defeventhandler GameStateHandler
   (started [handler])
@@ -121,7 +122,7 @@
   (botl [handler status]))
 
 (defeventhandler MapHandler
-  (map-drawn [handler frame]))
+  (mapDrawn [handler frame]))
 
 ; command protocols:
 
@@ -131,7 +132,7 @@
 ; deflocationhandler (=> x y)
 
 (defprompthandler ChooseCharacterHandler
-  (choose-character [handler]))
+  (chooseCharacter [handler]))
 
 (defactionhandler ActionHandler
-  (choose-action [handler gamestate]))
+  (chooseAction [handler gamestate]))

@@ -72,9 +72,8 @@
   )
 
 (defn- game-over? [frame]
-  (and (status-drawn? frame)
-       (re-seq #"^Do you want your possessions identified\?|^Die\?|^Really quit\?|^Do you want to see what you had when you died\?"
-               (topline frame))))
+  (re-seq #"^Do you want your possessions identified\?|^Die\?|^Really quit\?|^Do you want to see what you had when you died\?"
+          (topline frame)))
 
 (defn- goodbye? [frame]
   (and (more-prompt? frame)
@@ -116,7 +115,7 @@
                 "There is already a game in progress under your name."
                 (send delegator write "y\n") ; destroy old game
                 "Shall I pick a character"
-                (send delegator choose-character)
+                (send delegator chooseCharacter)
                 true)))
           (handle-choice-prompt [frame]
             (when-let [text (choice-prompt frame)]
@@ -144,13 +143,13 @@
                        (before-cursor? frame "In what direction? "))
               (log/debug "Handling direction")
               (emit-botl frame delegator)
-              (send delegator map-drawn frame)
+              (send delegator mapDrawn frame)
               (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
           (handle-location [frame]
             (when (location-prompt? frame)
               (log/debug "Handling location")
               (emit-botl frame delegator)
-              (send delegator map-drawn frame)
+              (send delegator mapDrawn frame)
               ; TODO new state to stop repeated botl/map updates while the prompt is active
               (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
           (handle-last-message [frame]
@@ -164,8 +163,7 @@
               (send delegator (prompt-fn msg) msg)))
           (handle-game-end [frame]
             ; TODO reg handler for escaping the inventory menu?
-            (cond (game-over? frame) (do (emit-botl frame delegator)
-                                         (send delegator write \y))
+            (cond (game-over? frame) (send delegator write \y)
                   (goodbye? frame) (-> delegator
                                        (send write \space)
                                        (send ended))))
@@ -224,8 +222,8 @@
                     (send delegator message (string/trim (topline frame)))
                     #_ (log/debug "no last message"))
                   (emit-botl frame delegator)
-                  (send delegator map-drawn frame)
-                  (send delegator full-frame frame)
+                  (send delegator mapDrawn frame)
+                  (send delegator fullFrame frame)
                   initial)
                 (log/debug "lastmsg expecting further redraw")))]
     initial))

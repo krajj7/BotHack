@@ -3,7 +3,7 @@
 (ns anbf.bots.sambot
   (:require [clojure.tools.logging :as log]
             [anbf.delegator :refer :all]
-            [anbf.bot :refer :all]
+            ;[anbf.bot :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]))
 
@@ -14,20 +14,20 @@
 (defn- circle-mover []
   (let [circle (atom circle-small)]
     (reify ActionHandler
-      (choose-action [_ _]
+      (chooseAction [_ _]
         (->Move (first (swap! circle next)))))))
 
 (defn- pray-for-food []
   (reify ActionHandler
-    (choose-action [_ game]
+    (chooseAction [_ game]
       (if (= :fainting (get-in game [:player :hunger]))
         (->Pray)))))
 
 (defn init [anbf]
   (-> anbf
-      (register-handler (reify ChooseCharacterHandler
-                          (choose-character [this]
-                            (deregister-handler anbf this)
+      (.registerHandler (reify ChooseCharacterHandler
+                          (chooseCharacter [this]
+                            (.deregisterHandler anbf this)
                             "nsm")))
-      (register-handler (circle-mover))
-      (register-handler (pray-for-food))))
+      (.registerHandler (circle-mover))
+      (.registerHandler (pray-for-food))))

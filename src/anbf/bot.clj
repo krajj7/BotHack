@@ -1,13 +1,18 @@
-; interface for bots
+; interfaces for bots
 
 (ns anbf.bot)
 
-(defprotocol IANBF
-  (register-handler [this handler] "Register a user handler implementing command/event protocols it is interested in to the delegator" )
-  (deregister-handler [this handler] "Deregister the given handler from the delegator" )
-  (replace-handler [this handler] "Deregister a handler and register a different user handler" )
-  (config-get [this key] "Get value for the configuration key, throw IllegalStateException if the key is not present." )
-  (game [this])
-  (frame [this])
-  (player [this])
-  (raw-write [this text]))
+(definterface IANBF
+  (^anbf.bot.IANBF registerHandler [handler] "Register a user handler implementing command/event protocols it is interested in to the delegator" )
+  (^anbf.bot.IANBF deregisterHandler [handler] "Deregister the given handler from the delegator" )
+  (^anbf.bot.IANBF replaceHandler [handler] "Deregister a handler and register a different user handler" )
+  (^anbf.bot.IGame game [])
+  (^anbf.bot.IANBF rawWrite [^String text]))
+
+(definterface IPlayer
+  (^boolean isHungry [])
+  (^boolean isWeak []))
+
+(definterface IGame
+  (frame [])
+  (^anbf.bot.IPlayer player []))

@@ -22,3 +22,5 @@
   Action
   (perform [this anbf]
     "#pray\n"))
+
+; TODO gen-class typed static factory functions for Java

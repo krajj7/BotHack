@@ -1,33 +1,62 @@
 (ns anbf.main
   (:require [clojure.tools.logging :as log]
-            [anbf.bot :as bot]
             [anbf.util :refer :all]
             [anbf.jta :refer :all]
             [anbf.delegator :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
             [anbf.scraper :refer :all])
+  (:import [anbf.bot IANBF])
   (:gen-class))
 
 (defrecord ANBF [config delegator jta scraper game]
-  bot/IANBF
-  (bot/register-handler [this handler]
+  IANBF
+  (registerHandler [this handler]
     (send (:delegator this) register-usr handler) this)
-  (bot/deregister-handler [this handler]
+  (deregisterHandler [this handler]
     (send (:delegator this) deregister handler) this)
-  (bot/replace-handler [this handler]
+  (replaceHandler [this handler]
     (-> (:delegator this)
         (send deregister handler)
         (send register-usr handler))
     this)
-  (bot/config-get [this key] (config-get this key))
-  (bot/game [this] (:game this))
-  (bot/frame [this] (-> this :game :frame))
-  (bot/player [this] (-> this :game :player))
-  (bot/raw-write [this text] (send (:delegator this) write text) this))
+  (game [this] (:game this))
+  (rawWrite [this text] (send (:delegator this) write text) this))
 
 (defmethod print-method ANBF [anbf w]
   (.write w "<ANBF instance>"))
+
+(defn register-handler
+  "Register a system handler implementing command/event protocols it is interested in to the delegator"
+  [anbf handler]
+  (send (:delegator anbf) register-sys handler)
+  anbf)
+
+(defn deregister-handler
+  "Deregister the given handler from the delegator"
+  [anbf handler]
+  (send (:delegator anbf) deregister handler)
+  anbf)
+
+(defn replace-handler
+  "Deregister a handler and register a different system handler"
+  [anbf handler-old handler-new]
+  (send (:delegator anbf)
+        #(-> % (deregister handler-old) (register-sys handler-new)))
+  anbf)
+
+(defn config-get-direct
+  [config key]
+  (or (get config key)
+      (throw (IllegalStateException.
+               (str "Configuration missing key: " key)))))
+
+(defn config-get
+  "Get a configuration key or return the default, without a default throw an exception if the key is not present."
+  ([anbf key]
+   (config-get-direct (:config anbf) key))
+  ([anbf key default]
+   (get (:config anbf) key default)))
 
 (defn- load-config [fname]
   (try
