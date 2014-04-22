@@ -1,5 +1,6 @@
 (ns anbf.main
   (:require [clojure.tools.logging :as log]
+            [anbf.bot :as bot]
             [anbf.util :refer :all]
             [anbf.jta :refer :all]
             [anbf.delegator :refer :all]
@@ -8,12 +9,22 @@
             [anbf.scraper :refer :all])
   (:gen-class))
 
-(defrecord ANBF
-  [config
-   delegator
-   jta
-   scraper
-   game])
+(defrecord ANBF [config delegator jta scraper game]
+  bot/IANBF
+  (bot/register-handler [this handler]
+    (send (:delegator this) register-usr handler) this)
+  (bot/deregister-handler [this handler]
+    (send (:delegator this) deregister handler) this)
+  (bot/replace-handler [this handler]
+    (-> (:delegator this)
+        (send deregister handler)
+        (send register-usr handler))
+    this)
+  (bot/config-get [this key] (config-get this key))
+  (bot/game [this] (:game this))
+  (bot/frame [this] (-> this :game :frame))
+  (bot/player [this] (-> this :game :player))
+  (bot/raw-write [this text] (send (:delegator this) write text) this))
 
 (defmethod print-method ANBF [anbf w]
   (.write w "<ANBF instance>"))
@@ -46,7 +57,7 @@
   "The menubot is responsible for starting the game and letting the delegator know about it by calling 'started' on it when done.  If there is no menubot configured, the game is presumed to be started directly."
   [anbf]
   (if-let [menubot-ns (config-get anbf :menubot nil)]
-    (or (start-bot anbf (symbol menubot-ns)) true)
+    (start-bot anbf (symbol menubot-ns))
     (log/info "No menubot configured")))
 
 (defn new-anbf
@@ -91,8 +102,8 @@
 (defn start [anbf]
   (def s anbf) ; "default" instance for the REPL
   (log/info "ANBF instance started")
-  (if-not (start-menubot anbf)
-    (started @(:delegator anbf)))
+  (start-menubot anbf)
+  (started @(:delegator anbf))
   (start-jta (:jta anbf)
              (config-get anbf :host "localhost")
              (config-get anbf :port 23))

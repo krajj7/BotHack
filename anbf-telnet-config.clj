@@ -1,7 +1,7 @@
 {
- :bot "anbf.bot.sambot"
+ :bot "anbf.bots.sambot"
  :interface :telnet
- :menubot "anbf.bot.nao-menu"
+ :menubot "anbf.bots.nao-menu"
  :host "nethack.alt.org"
  :port 23
  :nao-login "quitbot"

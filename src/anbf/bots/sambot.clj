@@ -1,11 +1,11 @@
 ; a dumb bot for the samurai class
 
-(ns anbf.bot.sambot
-  (:require [anbf.util :refer :all]
+(ns anbf.bots.sambot
+  (:require [clojure.tools.logging :as log]
             [anbf.delegator :refer :all]
+            [anbf.bot :refer :all]
             [anbf.action :refer :all]
-            [anbf.player :refer :all]
-            [clojure.tools.logging :as log]))
+            [anbf.player :refer :all]))
 
 (def ^:private circle-large (cycle [1 4 7 8 9 6 3 2]))
 
@@ -17,10 +17,10 @@
       (choose-action [_ _]
         (->Move (first (swap! circle next)))))))
 
-(defn- pray-if-weak []
+(defn- pray-for-food []
   (reify ActionHandler
     (choose-action [_ game]
-      (if (weak? (:player game))
+      (if (= :fainting (get-in game [:player :hunger]))
         (->Pray)))))
 
 (defn init [anbf]
@@ -30,4 +30,4 @@
                             (deregister-handler anbf this)
                             "nsm")))
       (register-handler (circle-mover))
-      (register-handler (pray-if-weak))))
+      (register-handler (pray-for-food))))
