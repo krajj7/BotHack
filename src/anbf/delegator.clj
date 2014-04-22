@@ -8,7 +8,7 @@
 (defprotocol NetHackWriter
   (write [this cmd] "Write a string to the NetHack terminal as if typed."))
 
-(defrecord Delegator [writer handlers inhibited]
+(defrecord Delegator [writer handlers-sys handlers-usr inhibited]
   NetHackWriter
   (write [this cmd]
     (if-not (:inhibited this)
@@ -16,18 +16,23 @@
     this))
 
 (defn new-delegator [writer]
-  (Delegator. writer (ordered-set) false))
+  (Delegator. writer (ordered-set) (ordered-set) false))
 
 (defn set-inhibition
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands or writes."
   [delegator state]
   (assoc-in delegator [:inhibited] state))
 
-(defn register [delegator handler]
-  (update-in delegator [:handlers] conj handler))
+(defn register-sys [delegator handler]
+  (update-in delegator [:handlers-sys] conj handler))
+
+(defn register-usr [delegator handler]
+  (update-in delegator [:handlers-usr] conj handler))
 
 (defn deregister [delegator handler]
-  (update-in delegator [:handlers] disj handler))
+  (-> delegator
+      (update-in [:handlers-usr] disj handler)
+      (update-in [:handlers-sys] disj handler)))
 
 (defn set-writer [delegator writer]
   (assoc-in delegator [:writer] writer))
@@ -42,15 +47,16 @@
         (log/error e "Delegator caught handler exception")))))
 
 (defn- invoke-event
-  "Events are propagated to all handlers satisfying the protocol in the order of their registration."
+  "Events are propagated first to system handlers, then to user handlers satisfying the protocol, in both cases in the order of their registration."
   [protocol method delegator & args]
   (doall (map #(apply invoke-handler protocol method % args)
-              (:handlers delegator))))
+              (concat (:handlers-sys delegator) (:handlers-usr delegator)))))
 
 (defn- invoke-command
-  "Commands are propagated to handlers in reverse order and only up to the first handler that satisfies the protocol and returns a truthy value."
+  "Commands are propagated first to all system handlers, then to user handlers each in reverse order of registration.  Propagation stops on the first handler that satisfies the protocol and returns a truthy value"
   [protocol method delegator & args]
-  (loop [[handler & more-handlers] (rseq (:handlers delegator))]
+  (loop [[handler & more-handlers] (concat (rseq (:handlers-sys delegator))
+                                           (rseq (:handlers-usr delegator)))]
     ;(log/debug "invoking next command handler" handler)
     (or (apply invoke-handler protocol method handler args)
         (if (seq more-handlers)
