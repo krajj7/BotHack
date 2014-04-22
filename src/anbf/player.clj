@@ -12,15 +12,19 @@
    ac
    xp
    xplvl
-   hunger
-   nutrition
+   hunger ; :fainting :weak :hungry :normal :satiated
    burden
    state ; stun/conf/hallu/blind/...
    stats
    alignment])
 
 (defn new-player []
-  (apply ->Player (repeat 14 nil)))
+  (apply ->Player (repeat 13 nil)))
+
+(defn hungry?
+  "Return true if hunger state is Hungry or worse"
+  [{:keys [hunger]}]
+  (not-any? #(= hunger %) [:normal :satiated]))
 
 (defn weak?
   "Return true if hunger state is Weak or worse"
