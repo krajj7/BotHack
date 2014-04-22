@@ -105,6 +105,9 @@
       " Fai" {:hunger :fainting}
       {:hunger :normal})))
 
+(defn- emit-botl [frame delegator]
+  (->> frame botls parse-botls (send delegator botl)))
+
 (defn new-scraper [delegator]
   (letfn [(handle-game-start [frame]
             (when (game-beginning? frame)
@@ -118,7 +121,7 @@
           (handle-choice-prompt [frame]
             (when-let [text (choice-prompt frame)]
               (log/debug "Handling choice prompt")
-              (handle-botl frame)
+              (emit-botl frame delegator)
               ; TODO maybe will need extra newline to push response away from ctrl-p message handler
               ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX")
               (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
@@ -140,13 +143,13 @@
             (when (and (zero? (:cursor-y frame))
                        (before-cursor? frame "In what direction? "))
               (log/debug "Handling direction")
-              (handle-botl frame)
+              (emit-botl frame delegator)
               (send delegator map-drawn frame)
               (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
           (handle-location [frame]
             (when (location-prompt? frame)
               (log/debug "Handling location")
-              (handle-botl frame)
+              (emit-botl frame delegator)
               (send delegator map-drawn frame)
               ; TODO new state to stop repeated botl/map updates while the prompt is active
               (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
@@ -156,18 +159,16 @@
                 (send delegator message msg))))
           (handle-prompt [frame]
             (when-let [msg (prompt frame)]
-              (handle-botl frame)
+              (emit-botl frame delegator)
               (send delegator write (str (repeat 3 backspace)))
               (send delegator (prompt-fn msg) msg)))
           (handle-game-end [frame]
             ; TODO reg handler for escaping the inventory menu?
-            (cond (game-over? frame) (do (handle-botl frame)
+            (cond (game-over? frame) (do (emit-botl frame delegator)
                                          (send delegator write \y))
                   (goodbye? frame) (-> delegator
                                        (send write \space)
                                        (send ended))))
-          (handle-botl [frame]
-            (->> frame botls parse-botls (send delegator botl)))
 
           (initial [frame]
             ;(log/debug "scraping frame")
@@ -217,11 +218,12 @@
           (lastmsg+action [frame]
             ;(log/debug "scanning for last message")
             (or (when-not (or (= (:cursor-y frame) 0)
-                              (topline-empty? frame))
+                              (topline-empty? frame)
+                              (.startsWith (topline frame) "# # "))
                   (if-not (re-seq #"^# +" (topline frame))
                     (send delegator message (string/trim (topline frame)))
                     #_ (log/debug "no last message"))
-                  (handle-botl frame)
+                  (emit-botl frame delegator)
                   (send delegator map-drawn frame)
                   (send delegator full-frame frame)
                   initial)
