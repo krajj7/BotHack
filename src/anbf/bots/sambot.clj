@@ -3,7 +3,6 @@
 (ns anbf.bots.sambot
   (:require [clojure.tools.logging :as log]
             [anbf.delegator :refer :all]
-            ;[anbf.bot :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]))
 
@@ -20,7 +19,7 @@
 (defn- pray-for-food []
   (reify ActionHandler
     (chooseAction [_ game]
-      (if (= :fainting (get-in game [:player :hunger]))
+      (if (= :fainting (-> game :player :hunger))
         (->Pray)))))
 
 (defn init [anbf]
