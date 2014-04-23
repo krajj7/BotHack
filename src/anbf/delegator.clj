@@ -3,6 +3,7 @@
 (ns anbf.delegator
   (:require [flatland.ordered.set :refer [ordered-set]]
             [anbf.action :refer :all]
+            [anbf.util :refer :all]
             [clojure.tools.logging :as log]))
 
 (defprotocol NetHackWriter
@@ -67,7 +68,11 @@
 
 (defn- respond-prompt [protocol method delegator & args]
   (if-not (:inhibited delegator)
-    (write delegator (apply invoke-command protocol method delegator args))))
+    (let [res (apply invoke-command protocol method delegator args)]
+      (if (seq res)
+        (write delegator res)
+        (do (log/info "Escaping prompt")
+            (write delegator esc))))))
 
 (defn- respond-action [protocol method delegator & args]
   ; TODO PerformedAction event a podle nej se obcas treba vymeni scraper?
