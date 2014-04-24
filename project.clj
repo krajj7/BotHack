@@ -11,5 +11,5 @@
                                                     com.sun.jmx/jmxri]]]
   :resource-paths ["jta26/jar/jta26.jar"]
   ;:global-vars {*warn-on-reflection* true}
-  :aot [anbf.term anbf.bot]
+  :aot [anbf.bot anbf.term anbf.delegator]
   :main anbf.main)

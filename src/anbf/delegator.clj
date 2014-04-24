@@ -87,21 +87,32 @@
             (~invoke-fn ~protocol ~method ~delegator ~@args)
             ~delegator))
 
+(defn- interface-sig [[method [_ & args]]]
+  `(~method [~@args]))
+
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
-       ; TODO also definterface IFooHandler, extend protocol to the interface
+       (definterface ~(symbol (str \I protocol))
+         ~@(map interface-sig proto-methods))
+       ; TODO extend protocol to the interface
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
+(defn- with-tags [tag specs]
+  (map (fn [[method args]] (list (with-meta method {:tag tag}) args)) specs))
+
 (defmacro ^:private defeventhandler [protocol & proto-methods]
-  `(defprotocol-delegated invoke-event ~protocol ~@proto-methods))
+  `(defprotocol-delegated invoke-event ~protocol
+     ~@(with-tags 'void proto-methods)))
 
 (defmacro ^:private defprompthandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-prompt ~protocol ~@proto-methods))
+  `(defprotocol-delegated respond-prompt ~protocol
+     ~@(with-tags String proto-methods)))
 
 (defmacro ^:private defactionhandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-action ~protocol ~@proto-methods))
+  `(defprotocol-delegated respond-action ~protocol
+     ~@(with-tags anbf.action.Action proto-methods)))
 
 ; event protocols:
 
@@ -110,34 +121,29 @@
   (offline [handler]))
 
 (defeventhandler RedrawHandler
-  (redraw [handler frame]))
+  (redraw [handler ^anbf.bot.IFrame frame]))
 
 ; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and NetHack is waiting for input.
 (defeventhandler FullFrameHandler
-  (fullFrame [handler frame]))
+  (fullFrame [handler ^anbf.bot.IFrame frame]))
 
 (defeventhandler GameStateHandler
   (started [handler])
   (ended [handler]))
 
 (defeventhandler ToplineMessageHandler
-  (message [handler text]))
+  (message [handler ^String text]))
 
 (defeventhandler BOTLHandler
-  (botl [handler status]))
+  (botl [handler ^clojure.lang.IPersistentMap status]))
 
 (defeventhandler MapHandler
-  (mapDrawn [handler frame]))
+  (mapDrawn [handler ^anbf.bot.IFrame frame]))
 
 ; command protocols:
-
-; defprompthandler (=> String)
-; defactionhandler (=> Action)
-; defmenuhandler (=> MenuOption?)
-; deflocationhandler (=> x y)
 
 (defprompthandler ChooseCharacterHandler
   (chooseCharacter [handler]))
 
 (defactionhandler ActionHandler
-  (chooseAction [handler gamestate]))
+  (chooseAction [handler ^anbf.bot.IGame gamestate]))

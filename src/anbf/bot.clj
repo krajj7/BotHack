@@ -16,3 +16,7 @@
 (definterface IGame
   (frame [])
   (^anbf.bot.IPlayer player []))
+
+(definterface IFrame
+  ; TODO
+  )
