@@ -16,7 +16,9 @@
    burden
    state ; stun/conf/hallu/blind/...
    stats
-   alignment])
+   alignment]
+  anbf.bot.IPlayer ; TODO implement
+  )
 
 (defn new-player []
   (apply ->Player (repeat 13 nil)))

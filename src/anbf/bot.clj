@@ -8,6 +8,7 @@
   (^anbf.bot.IANBF deregisterHandler [handler])
   (^anbf.bot.IANBF replaceHandler [handler-old handler-new])
   (^anbf.bot.IGame game [])
+  (^anbf.bot.IPlayer player [])
   (^anbf.bot.IANBF write [^String text]))
 
 (definterface IPlayer
@@ -15,7 +16,7 @@
   (^boolean isWeak []))
 
 (definterface IGame
-  (frame [])
+  (^anbf.bot.IFrame frame [])
   (^anbf.bot.IPlayer player []))
 
 (definterface IFrame

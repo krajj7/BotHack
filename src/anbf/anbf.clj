@@ -5,8 +5,7 @@
             [anbf.delegator :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
-            [anbf.scraper :refer :all])
-  (:import [anbf.bot IANBF]))
+            [anbf.scraper :refer :all]))
 
 (defn register-handler
   [anbf & args]
@@ -24,7 +23,7 @@
   anbf)
 
 (defrecord ANBF [config delegator jta scraper game]
-  IANBF
+  anbf.bot.IANBF
   (registerHandler [this handler]
     (register-handler this handler))
   (registerHandler [this priority handler]
@@ -33,14 +32,14 @@
     (deregister-handler this handler))
   (replaceHandler [this handler-old handler-new]
     (replace-handler this handler-old handler-new))
-  (game [this] (:game this))
+  (game [this] @(:game this))
+  (player [this] (:player @(:game this)))
   (write [this text] (send (:delegator this) write text) this))
 
 (defmethod print-method ANBF [anbf w]
   (.write w "<ANBF instance>"))
 
-(defn config-get-direct
-  [config key]
+(defn config-get-direct [config key]
   (or (get config key)
       (throw (IllegalStateException.
                (str "Configuration missing key: " key)))))

@@ -9,7 +9,8 @@
   [lines ; vector of 24 Strings representing text on each row of the terminal
    colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
    cursor-x ; cursor position
-   cursor-y])
+   cursor-y]
+  anbf.bot.IFrame)
 
 (defmethod print-method Frame [f w]
   (.write w "==== <Frame> ====\n")

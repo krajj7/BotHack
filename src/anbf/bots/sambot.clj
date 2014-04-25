@@ -3,8 +3,8 @@
 (ns anbf.bots.sambot
   (:require [clojure.tools.logging :as log]
             [anbf.delegator :refer :all]
-            [anbf.action :refer :all]
-            [anbf.player :refer :all]))
+            [anbf.action :refer :all])
+  (:import [anbf.delegator IActionHandler IChooseCharacterHandler]))
 
 (def ^:private circle-large (cycle [1 4 7 8 9 6 3 2]))
 
@@ -12,19 +12,19 @@
 
 (defn- circle-mover []
   (let [circle (atom circle-small)]
-    (reify ActionHandler
+    (reify IActionHandler ; use java interface
       (chooseAction [_ _]
         (->Move (first (swap! circle next)))))))
 
 (defn- pray-for-food []
-  (reify ActionHandler
+  (reify ActionHandler ; use protocol directly to test both
     (chooseAction [_ game]
       (if (= :fainting (-> game :player :hunger))
         (->Pray)))))
 
 (defn init [anbf]
   (-> anbf
-      (.registerHandler (reify ChooseCharacterHandler
+      (.registerHandler (reify IChooseCharacterHandler
                           (chooseCharacter [this]
                             (.deregisterHandler anbf this)
                             "nsm")))

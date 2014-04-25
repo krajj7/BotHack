@@ -7,12 +7,15 @@
             [anbf.delegator :refer :all]))
 
 (defrecord Game
-  [screen
+  [frame
    player
    dungeon
    level
    turn
-   score])
+   score]
+  anbf.bot.IGame
+  (frame [this] (:frame this))
+  (player [this] (:player this)))
 
 (defn new-game []
   (Game. nil (new-player) nil nil 0 0))
@@ -31,7 +34,7 @@
   (reify
     RedrawHandler
     (redraw [_ frame]
-      (swap! game assoc-in [:screen] frame))
+      (swap! game assoc-in [:frame] frame))
     BOTLHandler
     (botl [_ status]
       (swap! game update-in [:player] update-player status delegator))
