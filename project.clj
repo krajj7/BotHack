@@ -3,7 +3,7 @@
   :url "https://github.com/krajj7/ANBF"
   :license {:name "GPLv2"}
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.flatland/ordered "1.5.2"]
+                 [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms

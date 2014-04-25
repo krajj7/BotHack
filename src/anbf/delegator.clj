@@ -1,7 +1,7 @@
-; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event/command type.  For commands it writes responses back to the terminal.
+; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event type, or the first handler that implements the command protocol.  For commands it writes responses back to the terminal.  Handlers are invoked in order of their priority, for handlers of the same priority order of invocation is not specified.
 
 (ns anbf.delegator
-  (:require [flatland.ordered.set :refer [ordered-set]]
+  (:require [clojure.data.priority-map :refer [priority-map]]
             [anbf.action :refer :all]
             [anbf.util :refer :all]
             [clojure.tools.logging :as log]))
@@ -9,31 +9,42 @@
 (defprotocol NetHackWriter
   (write [this cmd] "Write a string to the NetHack terminal as if typed."))
 
-(defrecord Delegator [writer handlers-sys handlers-usr inhibited]
+(defrecord Delegator [writer handlers inhibited]
   NetHackWriter
-  (write [this cmd]
+  (write [this cmd] "Write a string to the NetHack terminal as if typed."
     (if-not (:inhibited this)
       ((:writer this) cmd))
     this))
 
 (defn new-delegator [writer]
-  (Delegator. writer (ordered-set) (ordered-set) false))
+  (Delegator. writer (priority-map) false))
 
 (defn set-inhibition
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands or writes."
   [delegator state]
   (assoc-in delegator [:inhibited] state))
 
-(defn register-sys [delegator handler]
-  (update-in delegator [:handlers-sys] conj handler))
+(def priority-default 0)
+; bots should not go beyond these (their interface specifies an int priority)
+(def priority-top (dec Integer/MIN_VALUE))
+(def priority-bottom (inc Integer/MAX_VALUE))
 
-(defn register-usr [delegator handler]
-  (update-in delegator [:handlers-usr] conj handler))
+(defn register
+  "Register an event/command handler."
+  ([delegator handler]
+   (register delegator priority-default handler))
+  ([delegator priority handler]
+   (update-in delegator [:handlers] assoc handler priority)))
 
 (defn deregister [delegator handler]
-  (-> delegator
-      (update-in [:handlers-usr] disj handler)
-      (update-in [:handlers-sys] disj handler)))
+  (update-in delegator [:handlers] dissoc handler))
+
+(defn switch [delegator handler-old handler-new]
+  (if-let [priority (get (:handlers delegator) handler-old)]
+    (-> delegator
+        (deregister handler-old)
+        (register priority handler-new))
+    (throw (IllegalArgumentException. "Handler to switch not present"))))
 
 (defn set-writer [delegator writer]
   (assoc-in delegator [:writer] writer))
@@ -48,16 +59,13 @@
         (log/error e "Delegator caught handler exception")))))
 
 (defn- invoke-event
-  "Events are propagated first to system handlers, then to user handlers satisfying the protocol, in both cases in the order of their registration."
   [protocol method delegator & args]
-  (doall (map #(apply invoke-handler protocol method % args)
-              (concat (:handlers-sys delegator) (:handlers-usr delegator)))))
+  (doall (map #(apply invoke-handler protocol method (first %) args)
+              (:handlers delegator))))
 
 (defn- invoke-command
-  "Commands are propagated first to all system handlers, then to user handlers each in reverse order of registration.  Propagation stops on the first handler that satisfies the protocol and returns a truthy value"
   [protocol method delegator & args]
-  (loop [[handler & more-handlers] (concat (rseq (:handlers-sys delegator))
-                                           (rseq (:handlers-usr delegator)))]
+  (loop [[[handler _] & more-handlers] (seq (:handlers delegator))]
     ;(log/debug "invoking next command handler" handler)
     (or (apply invoke-handler protocol method handler args)
         (if (seq more-handlers)
@@ -66,12 +74,12 @@
                    (str "No handler responded to command of "
                         (:on-interface protocol))))))))
 
-(defn- respond-prompt [protocol method delegator & args]
+(defn- respond-choice [protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [res (apply invoke-command protocol method delegator args)]
       (if (seq res)
         (write delegator res)
-        (do (log/info "Escaping prompt")
+        (do (log/info "Escaping choice")
             (write delegator esc))))))
 
 (defn- respond-action [protocol method delegator & args]
@@ -106,8 +114,11 @@
   `(defprotocol-delegated invoke-event ~protocol
      ~@(with-tags 'void proto-methods)))
 
-(defmacro ^:private defprompthandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-prompt ~protocol
+; TODO newline-terminated prompt handler, only write up to the first newline or add it
+; TODO menu handler, location handler
+
+(defmacro ^:private defchoicehandler [protocol & proto-methods]
+  `(defprotocol-delegated respond-choice ~protocol
      ~@(with-tags String proto-methods)))
 
 (defmacro ^:private defactionhandler [protocol & proto-methods]
@@ -142,7 +153,7 @@
 
 ; command protocols:
 
-(defprompthandler ChooseCharacterHandler
+(defchoicehandler ChooseCharacterHandler
   (chooseCharacter [handler]))
 
 (defactionhandler ActionHandler

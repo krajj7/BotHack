@@ -3,11 +3,12 @@
 (ns anbf.bot)
 
 (definterface IANBF
-  (^anbf.bot.IANBF registerHandler [handler] "Register a user handler implementing command/event protocols it is interested in to the delegator" )
-  (^anbf.bot.IANBF deregisterHandler [handler] "Deregister the given handler from the delegator" )
-  (^anbf.bot.IANBF replaceHandler [handler] "Deregister a handler and register a different user handler" )
+  (^anbf.bot.IANBF registerHandler [handler])
+  (^anbf.bot.IANBF registerHandler [^int priority handler])
+  (^anbf.bot.IANBF deregisterHandler [handler])
+  (^anbf.bot.IANBF replaceHandler [handler-old handler-new])
   (^anbf.bot.IGame game [])
-  (^anbf.bot.IANBF rawWrite [^String text]))
+  (^anbf.bot.IANBF write [^String text]))
 
 (definterface IPlayer
   (^boolean isHungry [])

@@ -9,41 +9,38 @@
   (:import [anbf.bot IANBF])
   (:gen-class))
 
-(defrecord ANBF [config delegator jta scraper game]
-  IANBF
-  (registerHandler [this handler]
-    (send (:delegator this) register-usr handler) this)
-  (deregisterHandler [this handler]
-    (send (:delegator this) deregister handler) this)
-  (replaceHandler [this handler]
-    (-> (:delegator this)
-        (send deregister handler)
-        (send register-usr handler))
-    this)
-  (game [this] (:game this))
-  (rawWrite [this text] (send (:delegator this) write text) this))
-
-(defmethod print-method ANBF [anbf w]
-  (.write w "<ANBF instance>"))
+; TODO split to anbf.anbf
 
 (defn register-handler
-  "Register a system handler implementing command/event protocols it is interested in to the delegator"
-  [anbf handler]
-  (send (:delegator anbf) register-sys handler)
+  [anbf & args]
+  (send (:delegator anbf) #(apply register % args))
   anbf)
 
 (defn deregister-handler
-  "Deregister the given handler from the delegator"
   [anbf handler]
   (send (:delegator anbf) deregister handler)
   anbf)
 
 (defn replace-handler
-  "Deregister a handler and register a different system handler"
   [anbf handler-old handler-new]
-  (send (:delegator anbf)
-        #(-> % (deregister handler-old) (register-sys handler-new)))
+  (send (:delegator anbf) switch handler-old handler-new)
   anbf)
+
+(defrecord ANBF [config delegator jta scraper game]
+  IANBF
+  (registerHandler [this handler]
+    (register-handler this handler))
+  (registerHandler [this priority handler]
+    (register-handler this priority handler))
+  (deregisterHandler [this handler]
+    (deregister-handler this handler))
+  (replaceHandler [this handler-old handler-new]
+    (replace-handler this handler-old handler-new))
+  (game [this] (:game this))
+  (write [this text] (send (:delegator this) write text) this))
+
+(defmethod print-method ANBF [anbf w]
+  (.write w "<ANBF instance>"))
 
 (defn config-get-direct
   [config key]
@@ -111,6 +108,7 @@
                              (started [_]
                                (log/info "Game started")
                                (register-handler anbf scraper)
+                               ; TODO register default do-nothing command handlers with bottom priority
                                (start-bot anbf bot))))
          (register-handler (reify
                              ConnectionStatusHandler

@@ -28,5 +28,5 @@
                           (chooseCharacter [this]
                             (.deregisterHandler anbf this)
                             "nsm")))
-      (.registerHandler (circle-mover))
-      (.registerHandler (pray-for-food))))
+      (.registerHandler 0 (pray-for-food))
+      (.registerHandler 1 (circle-mover))))
