@@ -98,12 +98,16 @@
 (defn- interface-sig [[method [_ & args]]]
   `(~method [~@args]))
 
+(defn- call-interface [[method [this & args]]]
+  `(~method [~this ~@args] (~(symbol (str \. method)) ~this ~@args)))
+
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
        (definterface ~(symbol (str \I protocol))
          ~@(map interface-sig proto-methods))
-       ; TODO extend protocol to the interface
+       (extend-type ~(symbol (str "anbf.delegator.I" protocol))
+         ~protocol ~@(map call-interface proto-methods))
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 

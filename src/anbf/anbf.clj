@@ -98,6 +98,7 @@
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (game-handler initial-game delegator))
+         ; TODO register default do-nothing command handlers with bottom priority
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
@@ -105,7 +106,6 @@
                              (started [_]
                                (log/info "Game started")
                                (register-handler anbf scraper)
-                               ; TODO register default do-nothing command handlers with bottom priority
                                (start-bot anbf bot))))
          (register-handler (reify
                              ConnectionStatusHandler
