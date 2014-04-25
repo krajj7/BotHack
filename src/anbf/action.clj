@@ -1,6 +1,5 @@
 (ns anbf.action
-  (:require [flatland.ordered.set :refer [ordered-set]]
-            [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]))
 
 (defprotocol Action
   (perform [this anbf]
