@@ -87,7 +87,7 @@
   ([]
    (new-anbf "anbf-shell-config.clj"))
   ([fname]
-   (let [delegator (agent (new-delegator nil))
+   (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
          config (load-config fname)
          bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
