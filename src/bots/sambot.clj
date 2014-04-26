@@ -1,6 +1,6 @@
 ; a dumb bot for the samurai class
 
-(ns anbf.bots.sambot
+(ns bots.sambot
   (:require [clojure.tools.logging :as log]
             [anbf.delegator :refer :all]
             [anbf.action :refer :all])
