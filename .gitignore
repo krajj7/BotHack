@@ -8,6 +8,7 @@ pom.xml
 .lein-deps-sum
 pom.xml.asc
 *.class
+*.jar
 /.lein-*
 /.nrepl-port
 /jta26/doc/source/
