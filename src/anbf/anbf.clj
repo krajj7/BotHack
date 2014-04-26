@@ -66,7 +66,7 @@
     :shell (new-shell-jta delegator (config-get-direct config :nh-command))
     (throw (IllegalArgumentException. "Invalid interface configuration"))))
 
-(defn- start-bot
+(defn- start-clj-bot
   "Dynamically loads the given namespace of a bot and runs its init function"
   [anbf bot-ns]
   (require bot-ns)
@@ -75,12 +75,27 @@
     (throw (ClassNotFoundException. (str "Failed to resolve init in bot "
                                          bot-ns)))))
 
+(defn- start-java-bot
+  "Loads a Java bot class and runs its constructor that accepts anbf.bot.IANBF as the only parameter."
+  [anbf bot-class]
+  (.newInstance (. (resolve bot-class)
+                   (getConstructor (into-array [anbf.bot.IANBF])))
+                (into-array [anbf])))
+
+(defn- start-bot [anbf]
+  (if-let [bot (config-get anbf :bot nil)]
+    (start-clj-bot anbf (symbol bot))
+    (if-let [javabot (config-get anbf :javabot nil)]
+      (start-java-bot anbf (symbol javabot))
+      (throw (IllegalStateException.
+               "Missing :bot or :javabot in configuration.")))))
+
 (defn- start-menubot
   "The menubot is responsible for starting the game and letting the delegator know about it by calling 'started' on it when done.  If there is no menubot configured, the game is presumed to be started directly."
   [anbf]
-  (if-let [menubot-ns (config-get anbf :menubot nil)]
-    (start-bot anbf (symbol menubot-ns))
-    (log/info "No menubot configured")))
+  (when-let [menubot-ns (config-get anbf :menubot nil)]
+    (start-clj-bot anbf (symbol menubot-ns))
+    true))
 
 (defn new-anbf
   ([]
@@ -88,7 +103,6 @@
   ([fname]
    (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
          config (load-config fname)
-         bot (symbol (config-get-direct config :bot))
          jta (init-jta delegator config)
          scraper-fn (ref nil)
          initial-game (atom (new-game))
@@ -97,7 +111,6 @@
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (game-handler initial-game delegator))
-         ; TODO register default do-nothing command handlers with bottom priority
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
@@ -105,7 +118,7 @@
                              (started [_]
                                (log/info "Game started")
                                (register-handler anbf scraper)
-                               (start-bot anbf bot))))
+                               (start-bot anbf))))
          (register-handler (reify
                              ConnectionStatusHandler
                              (online [_]
@@ -121,8 +134,8 @@
 
 (defn start [anbf]
   (log/info "ANBF instance started")
-  (start-menubot anbf)
-  (started @(:delegator anbf))
+  (if-not (start-menubot anbf)
+    (started @(:delegator anbf)))
   (start-jta (:jta anbf)
              (config-get anbf :host "localhost")
              (config-get anbf :port 23))

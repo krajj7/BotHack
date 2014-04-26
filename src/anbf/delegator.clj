@@ -88,10 +88,10 @@
 (defn- respond-action [protocol method delegator & args]
   ; TODO PerformedAction event a podle nej se obcas treba vymeni scraper?
   (when-not (:inhibited delegator)
-    (log/info "<<< bot logic >>>")
-    (as-> (apply invoke-command protocol method delegator args) action
-      (apply perform action args)
-      (write delegator action))))
+    (log/info "<<< bot action >>>")
+    (->> (apply invoke-command protocol method delegator args)
+         trigger
+         (write delegator))))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]

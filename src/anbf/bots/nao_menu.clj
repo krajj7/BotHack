@@ -1,6 +1,6 @@
 ; Navigation for nethack.alt.org dgamelaunch menu - to log in and start the game.
 
-(ns bots.nao-menu
+(ns anbf.bots.nao-menu
   (:require [anbf.anbf :refer :all]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))

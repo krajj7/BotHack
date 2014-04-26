@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]))
 
 (defprotocol Action
-  (perform [this anbf]
+  (trigger [this]
            "Returns the string to write to NetHack to perform the action."))
 
 (def vi-directions
@@ -10,16 +10,23 @@
    4 \h      6 \l
    1 \b 2 \j 3 \n})
 
-(defrecord Move [dir]
+(defmacro ^:private defaction [action args & impl]
+  `(do (defrecord ~action ~args ~@impl)
+       (defn ~(symbol (str \- action)) ~args
+         (~(symbol (str action \.)) ~@args))))
+
+(defaction Move [dir]
   Action
-  (perform [this anbf]
+  (trigger [this]
     (or (vi-directions dir)
         (throw (IllegalArgumentException.
                  (str "Invalid direction: " dir))))))
 
-(defrecord Pray []
+(defaction Pray []
   Action
-  (perform [this anbf]
+  (trigger [this]
     "#pray\n"))
 
-; TODO gen-class typed static factory functions for Java
+(gen-class :name anbf.action.Actions
+           :methods [^:static [Move [int] anbf.action.Action]
+                     ^:static [Pray [] anbf.action.Action]])

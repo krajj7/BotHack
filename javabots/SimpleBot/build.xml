@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="SimpleBot">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
+    <path id="SimpleBot.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="../../target/anbf-0.1.0-SNAPSHOT-standalone.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="SimpleBot.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="run">
+        <java classname="anbf.main" failonerror="true" fork="yes">
+            <env key="LD_LIBRARY_PATH" value="../../jta26/jni/linux/"/>
+            <arg line="../../anbf-shell-javabot-config.clj"/>
+            <classpath refid="SimpleBot.classpath"/>
+        </java>
+    </target>
+    <target name="jar" depends="build" description="package binaries">
+        <jar jarfile="../bot-jars/SimpleBot.jar">
+            <fileset dir="bin" includes="**/*.class"/>
+        </jar>
+    </target>
+</project>
