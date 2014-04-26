@@ -39,6 +39,6 @@
     (botl [_ status]
       (swap! game update-in [:player] update-player status delegator))
     FullFrameHandler
-    (fullFrame [_ frame]
+    (full-frame [_ frame]
       (log/debug "TODO update player location in level")
-      (send delegator chooseAction @game))))
+      (send delegator choose-action @game))))

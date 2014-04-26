@@ -4,6 +4,7 @@
   (:require [clojure.data.priority-map :refer [priority-map]]
             [anbf.action :refer :all]
             [anbf.util :refer :all]
+            [clojure.string :as string]
             [clojure.tools.logging :as log]))
 
 (defprotocol NetHackWriter
@@ -37,9 +38,11 @@
    (update-in delegator [:handlers] assoc handler priority)))
 
 (defn deregister [delegator handler]
+  "Deregister a handler from the delegator."
   (update-in delegator [:handlers] dissoc handler))
 
 (defn switch [delegator handler-old handler-new]
+  "Replace a command handler with another, keep the priority."
   (if-let [priority (get (:handlers delegator) handler-old)]
     (-> delegator
         (deregister handler-old)
@@ -95,11 +98,19 @@
             (~invoke-fn ~protocol ~method ~delegator ~@args)
             ~delegator))
 
-(defn- interface-sig [[method [_ & args]]]
-  `(~method [~@args]))
+(defn- declojurify "my-great-method => myGreatMethod" [sym]
+  (as-> (string/split (str sym) #"-") res
+    (->> (rest res)
+         (map #(apply str (->> % first Character/toUpperCase (conj (rest %)))))
+         (apply str (first res)))
+    (symbol res)
+    (with-meta res (meta sym))))
 
-(defn- call-interface [[method [this & args]]]
-  `(~method [~this ~@args] (~(symbol (str \. method)) ~this ~@args)))
+(defn- interface-sig [[method [_ & args]]]
+  `(~(symbol (declojurify method)) [~@args]))
+
+(defn- interface-call [[method [this & args]]]
+  `(~method [~this ~@args] (. ~this ~(declojurify method) ~@args)))
 
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
@@ -107,7 +118,7 @@
        (definterface ~(symbol (str \I protocol))
          ~@(map interface-sig proto-methods))
        (extend-type ~(symbol (str "anbf.delegator.I" protocol))
-         ~protocol ~@(map call-interface proto-methods))
+         ~protocol ~@(map interface-call proto-methods))
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
@@ -140,7 +151,7 @@
 
 ; called when the frame on screen is complete - the cursor is on the player, the map and status lines are completely drawn and NetHack is waiting for input.
 (defeventhandler FullFrameHandler
-  (fullFrame [handler ^anbf.bot.IFrame frame]))
+  (full-frame [handler ^anbf.bot.IFrame frame]))
 
 (defeventhandler GameStateHandler
   (started [handler])
@@ -153,12 +164,12 @@
   (botl [handler ^clojure.lang.IPersistentMap status]))
 
 (defeventhandler MapHandler
-  (mapDrawn [handler ^anbf.bot.IFrame frame]))
+  (map-drawn [handler ^anbf.bot.IFrame frame]))
 
 ; command protocols:
 
 (defchoicehandler ChooseCharacterHandler
-  (chooseCharacter [handler]))
+  (choose-character [handler]))
 
 (defactionhandler ActionHandler
-  (chooseAction [handler ^anbf.bot.IGame gamestate]))
+  (choose-action [handler ^anbf.bot.IGame gamestate]))

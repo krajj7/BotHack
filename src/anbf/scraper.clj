@@ -115,7 +115,7 @@
                 "There is already a game in progress under your name."
                 (send delegator write "y\n") ; destroy old game
                 "Shall I pick a character"
-                (send delegator chooseCharacter)
+                (send delegator choose-character)
                 true)))
           (handle-choice-prompt [frame]
             (when-let [text (choice-prompt frame)]
@@ -143,13 +143,13 @@
                        (before-cursor? frame "In what direction? "))
               (log/debug "Handling direction")
               (emit-botl frame delegator)
-              (send delegator mapDrawn frame)
+              (send delegator map-drawn frame)
               (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
           (handle-location [frame]
             (when (location-prompt? frame)
               (log/debug "Handling location")
               (emit-botl frame delegator)
-              (send delegator mapDrawn frame)
+              (send delegator map-drawn frame)
               ; TODO new state to stop repeated botl/map updates while the prompt is active
               (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
           (handle-last-message [frame]
@@ -222,8 +222,8 @@
                     (send delegator message (string/trim (topline frame)))
                     #_ (log/debug "no last message"))
                   (emit-botl frame delegator)
-                  (send delegator mapDrawn frame)
-                  (send delegator fullFrame frame)
+                  (send delegator map-drawn frame)
+                  (send delegator full-frame frame)
                   initial)
                 (log/debug "lastmsg expecting further redraw")))]
     initial))

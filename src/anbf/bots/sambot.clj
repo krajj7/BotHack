@@ -14,11 +14,11 @@
   (let [circle (atom circle-small)]
     (reify IActionHandler ; use java interface
       (chooseAction [_ _]
-        (->Move (first (swap! circle next)))))))
+        (->Move (first (swap! circle rest)))))))
 
 (defn- pray-for-food []
   (reify ActionHandler ; use protocol directly to test both
-    (chooseAction [_ game]
+    (choose-action [_ game]
       (if (= :fainting (-> game :player :hunger))
         (->Pray)))))
 
