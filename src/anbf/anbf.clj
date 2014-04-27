@@ -99,7 +99,7 @@
 
 (defn new-anbf
   ([]
-   (new-anbf "anbf-shell-config.clj"))
+   (new-anbf "config/shell-config.edn"))
   ([fname]
    (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
          config (load-config fname)
