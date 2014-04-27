@@ -112,12 +112,23 @@
 (defn- interface-call [[method [this & args]]]
   `(~method [~this ~@args] (. ~this ~(declojurify method) ~@args)))
 
+; rebinding *ns* for definterface didn't seem to work...
+(defmacro ^:private defnsinterface
+  [iname ins & sigs]
+  (let [tag (fn [x] (or (:tag (meta x)) Object))
+        psig (fn [[iname [& args]]]
+               (vector iname (vec (map tag args)) (tag iname) (map meta args)))
+        cname (with-meta (symbol (str ins "." iname)) (meta iname))]
+    `(let []
+       (gen-interface :name ~cname :methods ~(vec (map psig sigs)))
+       (import ~cname))))
+
 (defmacro ^:private defprotocol-delegated
   [invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
-       (definterface ~(symbol (str \I protocol))
+       (defnsinterface ~(symbol (str \I protocol)) "anbf.bot"
          ~@(map interface-sig proto-methods))
-       (extend-type ~(symbol (str "anbf.delegator.I" protocol))
+       (extend-type ~(symbol (str "anbf.bot.I" protocol))
          ~protocol ~@(map interface-call proto-methods))
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
@@ -138,7 +149,7 @@
 
 (defmacro ^:private defactionhandler [protocol & proto-methods]
   `(defprotocol-delegated respond-action ~protocol
-     ~@(with-tags anbf.action.Action proto-methods)))
+     ~@(with-tags anbf.bot.IAction proto-methods)))
 
 ; event protocols:
 

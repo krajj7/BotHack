@@ -2,6 +2,8 @@
 
 (ns anbf.bot)
 
+; note: delegator.clj generates additional handler interfaces in the anbf.bot package
+
 (definterface IANBF
   (^anbf.bot.IANBF registerHandler [handler])
   (^anbf.bot.IANBF registerHandler [^int priority handler])
@@ -10,6 +12,9 @@
   (^anbf.bot.IGame game [])
   (^anbf.bot.IPlayer player [])
   (^anbf.bot.IANBF write [^String text]))
+
+(definterface IAction
+  (^String trigger []))
 
 (definterface IPlayer
   (^boolean isHungry [])

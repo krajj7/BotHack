@@ -1,8 +1,6 @@
 package anbf.javabots;
 
-import anbf.action.*;
 import anbf.bot.*;
-import anbf.delegator.*;
 
 /** A dumb example bot.  Equivalent to simplebot.clj */
 public class SimpleBot {
@@ -13,7 +11,7 @@ public class SimpleBot {
 		int next = 0;
 		
 		@Override
-		public Action chooseAction(IGame game) {
+		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
 			return Actions.Move(smallCircle[next++]);
 		}
@@ -21,7 +19,7 @@ public class SimpleBot {
 	
 	class PrayForFood implements IActionHandler {
 		@Override
-		public Action chooseAction(IGame game) {
+		public IAction chooseAction(IGame game) {
 			if (game.player().isWeak())
 				return Actions.Pray();
 			else
