@@ -29,6 +29,7 @@
   (trigger [this]
     "#pray\n"))
 
+; factory functions for Java bots
 (gen-class :name anbf.bot.Actions
            :methods [^:static [Move [int] anbf.bot.IAction]
                      ^:static [Pray [] anbf.bot.IAction]])

@@ -2,7 +2,7 @@
 
 (ns anbf.bot)
 
-; note: delegator.clj generates additional handler interfaces in the anbf.bot package
+; note: delegator.clj and action.clj generate additional classes in the anbf.bot package
 
 (definterface IANBF
   (^anbf.bot.IANBF registerHandler [handler])
