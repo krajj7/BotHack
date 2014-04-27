@@ -13,5 +13,5 @@
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
   ;:global-vars {*warn-on-reflection* true}
-  :aot [anbf.bot anbf.delegator anbf.action anbf.main anbf.term]
+  :aot [anbf.bot anbf.delegator anbf.action anbf.term anbf.main]
   :main anbf.main)
