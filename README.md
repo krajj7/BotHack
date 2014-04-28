@@ -16,7 +16,7 @@ Manual interaction with a remote telnet terminal is possible via the emulator, c
 
 **25.3.2014**: A simple event-driven script (src/anbf/bot/nao\_menu.clj) can interact with the nethack.alt.org game menu and start a game.
 
-**17.4.2014**: A first trivial bot implementation can run around the first level blindly ~~until it starves~~ and prays for food until it gets smitten.  It can read game messages but doesn't yet understand any.  Synchronization with NetHack is solved in a way that is only hinted at on the TAEB blog (http://taeb-nethack.blogspot.cz/2009/06/synchronizing-with-nethack.html) – so far it seems very reliable, but it is at the cost of more round-trips to the server.
+**17.4.2014**: A first trivial bot implementation can run around the first level blindly ~~until it starves~~ and pray for food until it gets smitten.  It can read game messages but doesn't yet understand any.  Synchronization with NetHack is solved in a way that is only hinted at on the TAEB blog (http://taeb-nethack.blogspot.cz/2009/06/synchronizing-with-nethack.html) – so far it seems very reliable, but it is at the cost of more round-trips to the server.
 
 Code for the bot: https://github.com/krajj7/ANBF/blob/master/src/anbf/bots/simplebot.clj
 
@@ -49,5 +49,7 @@ Basic heuristic monster tracking.
 Utilities for shopping and price-identification of items.
 
 Utilities for solving sokoban.
+
+Utilities for trapping cross-aligned minetown priest.
 
 ...
