@@ -141,6 +141,7 @@
                     (.setDisplay buffer this-display))
                   (getVDUBuffer [this-display]
                     (:emulation @state)))]
+    (.setTerminalID emulation "xterm")
     (.setVDUBuffer display emulation)
     (swap! state
            assoc :emulation emulation

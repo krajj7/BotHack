@@ -113,7 +113,7 @@ public abstract class vt320 extends VDUBuffer implements VDUInput {
     super(width, height);
     setVMS(false);
     setIBMCharset(false);
-    setTerminalID("xterm");
+    setTerminalID("vt320");
     setBufferSize(100);
     //setBorder(2, false);
 
