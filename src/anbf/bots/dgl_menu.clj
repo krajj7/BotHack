@@ -1,6 +1,6 @@
-; Navigation for nethack.alt.org dgamelaunch menu - to log in and start the game.
+; Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and start the game.
 
-(ns anbf.bots.nao-menu
+(ns anbf.bots.dgl-menu
   (:require [anbf.anbf :refer :all]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
@@ -24,9 +24,10 @@
                         (deregister-handler anbf this)
                         (if-not (logged-in? frame)
                           (throw (IllegalStateException. "Failed to login")))
-                        (log/info "NAO menubot finished")
+                        (log/info "DGL menubot finished")
                         (send delegator started)
-                        (send delegator write "p")))) ; play!
+            ; the n is for acehack.de to select NetHack, for nao it does nothing
+                        (send delegator write "np")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (pass-prompt? frame)
@@ -39,7 +40,7 @@
                       ; set up the followup handler
                       (replace-handler anbf this pass-prompt)
                       (send delegator write (login-sequence
-                                              (config-get anbf :nao-login)
-                                              (config-get anbf :nao-pass))))))]
+                                              (config-get anbf :dgl-login)
+                                              (config-get anbf :dgl-pass))))))]
     (register-handler anbf trigger))
-  (log/info "Waiting for NAO menu to draw"))
+  (log/info "Waiting for DGL menu to draw"))

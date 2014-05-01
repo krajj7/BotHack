@@ -1,9 +1,9 @@
 {
  :bot "anbf.bots.simplebot"
  :interface :telnet
- :menubot "anbf.bots.nao-menu"
+ :menubot "anbf.bots.dgl-menu"
  :host "nethack.alt.org"
  :port 23
- :nao-login "quitbot"
- :nao-pass "tops3cr3t"
+ :dgl-login "quitbot"
+ :dgl-pass "tops3cr3t"
 }

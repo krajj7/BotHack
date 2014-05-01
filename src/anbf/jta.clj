@@ -28,8 +28,7 @@
                                  (send delegator online))))))
 
 (defn- new-jta [pl protocol delegator]
-  (JTA. pl protocol (-> pl
-                        (.addPlugin "NHTerminal" "terminal")
+  (JTA. pl protocol (-> (.addPlugin pl "NHTerminal" "terminal")
                         (set-delegator delegator))))
 
 (defn new-shell-jta
@@ -40,6 +39,17 @@
     (.broadcast pl (ConfigurationRequest.
                      (doto (PluginConfig. (Properties.))
                        (.setProperty "Shell" "command" command))))
+    (new-jta pl protocol delegator)))
+
+(defn new-ssh-jta
+  "Returns a set up JTA instance using the SSH plugin as protocol handler."
+  [delegator user pass]
+  (let [pl (plugin-loader delegator)
+        protocol (.addPlugin pl "JTAJSch" "protocol")]
+    (.broadcast pl (ConfigurationRequest.
+                     (doto (PluginConfig. (Properties.))
+                       (.setProperty "SSH" "user" user)
+                       (.setProperty "SSH" "password" pass))))
     (new-jta pl protocol delegator)))
 
 (defn new-telnet-jta

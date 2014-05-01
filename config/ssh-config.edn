@@ -1,0 +1,11 @@
+{
+ :bot "anbf.bots.simplebot"
+ :interface :ssh
+ :menubot "anbf.bots.dgl-menu"
+ :host "acehack.de"
+ :port 22
+ :ssh-user "acehack"
+ :ssh-pass ""
+ :dgl-login "dumbbot"
+ :dgl-pass "tops3cr3t"
+}

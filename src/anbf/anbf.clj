@@ -64,6 +64,9 @@
   (case (config-get-direct config :interface)
     :telnet (new-telnet-jta delegator)
     :shell (new-shell-jta delegator (config-get-direct config :nh-command))
+    :ssh (new-ssh-jta delegator
+                      (config-get-direct config :ssh-user)
+                      (config-get-direct config :ssh-pass))
     (throw (IllegalArgumentException. "Invalid interface configuration"))))
 
 (defn- start-clj-bot
