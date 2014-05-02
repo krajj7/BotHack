@@ -4,6 +4,7 @@
 
 (ns anbf.jta
   (:require [anbf.delegator :refer :all]
+            [anbf.util :refer :all]
             [anbf.term :refer [set-delegator]])
   (:import [anbf.NHTerminal]
            [de.mud.jta PluginLoader Plugin PluginConfig]
@@ -31,33 +32,37 @@
   (JTA. pl protocol (-> (.addPlugin pl "NHTerminal" "terminal")
                         (set-delegator delegator))))
 
-(defn new-shell-jta
-  "Returns a set up JTA instance using the Shell plugin as protocol handler, running the given command."
-  [delegator command]
+(defmulti init-jta
+  "Returns a set up JTA instance using protocol handler given in the config."
+  (fn [config delegator] (config-get config :interface)))
+
+(defmethod init-jta :shell [config delegator]
   (let [pl (plugin-loader delegator)
         protocol (.addPlugin pl "Shell" "protocol")]
     (.broadcast pl (ConfigurationRequest.
                      (doto (PluginConfig. (Properties.))
-                       (.setProperty "Shell" "command" command))))
+                       (.setProperty "Shell" "command"
+                                     (config-get config :nh-command)))))
     (new-jta pl protocol delegator)))
 
-(defn new-ssh-jta
-  "Returns a set up JTA instance using the SSH plugin as protocol handler."
-  [delegator user pass]
+(defmethod init-jta :ssh [config delegator]
   (let [pl (plugin-loader delegator)
         protocol (.addPlugin pl "JTAJSch" "protocol")]
     (.broadcast pl (ConfigurationRequest.
                      (doto (PluginConfig. (Properties.))
-                       (.setProperty "SSH" "user" user)
-                       (.setProperty "SSH" "password" pass))))
+                       (.setProperty "SSH" "user"
+                                     (config-get config :ssh-user))
+                       (.setProperty "SSH" "password"
+                                     (config-get config :ssh-pass)))))
     (new-jta pl protocol delegator)))
 
-(defn new-telnet-jta
-  "Returns a set up JTA instance using the Telnet plugin as protocol handler."
-  [delegator]
+(defmethod init-jta :telnet [config delegator]
   (let [pl (plugin-loader delegator)]
     (.addPlugin pl "Socket" "socket")
     (new-jta pl (.addPlugin pl "Telnet" "protocol") delegator)))
+
+(defmethod init-jta :default [_ _]
+  (throw (IllegalArgumentException. "Invalid :interface configuration")))
 
 (defn start-jta [jta host port]
   (.broadcast (:pl jta) (SocketRequest. host port)) ; connect

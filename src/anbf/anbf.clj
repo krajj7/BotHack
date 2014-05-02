@@ -39,18 +39,6 @@
 (defmethod print-method ANBF [anbf w]
   (.write w "<ANBF instance>"))
 
-(defn config-get-direct [config key]
-  (or (get config key)
-      (throw (IllegalStateException.
-               (str "Configuration missing key: " key)))))
-
-(defn config-get
-  "Get a configuration key or return the default, without a default throw an exception if the key is not present."
-  ([anbf key]
-   (config-get-direct (:config anbf) key))
-  ([anbf key default]
-   (get (:config anbf) key default)))
-
 (defn- load-config [fname]
   (try
     (binding [*read-eval* false]
@@ -59,15 +47,6 @@
       (throw (IllegalStateException.
                (format "Failed to load configuration from %s: %s" fname
                        (.getMessage e)))))))
-
-(defn- init-jta [delegator config]
-  (case (config-get-direct config :interface)
-    :telnet (new-telnet-jta delegator)
-    :shell (new-shell-jta delegator (config-get-direct config :nh-command))
-    :ssh (new-ssh-jta delegator
-                      (config-get-direct config :ssh-user)
-                      (config-get-direct config :ssh-pass))
-    (throw (IllegalArgumentException. "Invalid interface configuration"))))
 
 (defn- start-clj-bot
   "Dynamically loads the given namespace of a bot and runs its init function"
@@ -85,10 +64,10 @@
                    (getConstructor (into-array [anbf.bot.IANBF])))
                 (into-array [anbf])))
 
-(defn- start-bot [anbf]
-  (if-let [bot (config-get anbf :bot nil)]
+(defn- start-bot [{:keys [config] :as anbf}]
+  (if-let [bot (config-get config :bot nil)]
     (start-clj-bot anbf (symbol bot))
-    (if-let [javabot (config-get anbf :javabot nil)]
+    (if-let [javabot (config-get config :javabot nil)]
       (start-java-bot anbf (symbol javabot))
       (throw (IllegalStateException.
                "Missing :bot or :javabot in configuration.")))))
@@ -96,7 +75,7 @@
 (defn- start-menubot
   "The menubot is responsible for starting the game and letting the delegator know about it by calling 'started' on it when done.  If there is no menubot configured, the game is presumed to be started directly."
   [anbf]
-  (when-let [menubot-ns (config-get anbf :menubot nil)]
+  (when-let [menubot-ns (config-get (:config anbf) :menubot nil)]
     (start-clj-bot anbf (symbol menubot-ns))
     true))
 
@@ -106,7 +85,7 @@
   ([fname]
    (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
          config (load-config fname)
-         jta (init-jta delegator config)
+         jta (init-jta config delegator)
          scraper-fn (ref nil)
          initial-game (atom (new-game))
          anbf (ANBF. config delegator jta scraper-fn initial-game)
@@ -135,13 +114,13 @@
                              (message [_ text]
                                (log/info "Topline message: " text))))))))
 
-(defn start [anbf]
+(defn start [{:keys [config] :as anbf}]
   (log/info "ANBF instance started")
   (if-not (start-menubot anbf)
     (started @(:delegator anbf)))
   (start-jta (:jta anbf)
-             (config-get anbf :host "localhost")
-             (config-get anbf :port 23))
+             (config-get config :host "localhost")
+             (config-get config :port 23))
   anbf)
 
 (defn stop

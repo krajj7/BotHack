@@ -2,6 +2,7 @@
 
 (ns anbf.bots.dgl-menu
   (:require [anbf.anbf :refer :all]
+            [anbf.util :refer :all]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -17,7 +18,7 @@
 (defn- logged-in? [frame]
   (some #(.contains % "Logged in as: ") (:lines frame)))
 
-(defn init [{:keys [delegator] :as anbf}]
+(defn init [{:keys [delegator config] :as anbf}]
   (let [logged-in (reify RedrawHandler
                     (redraw [this frame]
                       (when (menu-drawn? frame)
@@ -40,7 +41,7 @@
                       ; set up the followup handler
                       (replace-handler anbf this pass-prompt)
                       (send delegator write (login-sequence
-                                              (config-get anbf :dgl-login)
-                                              (config-get anbf :dgl-pass))))))]
+                                              (config-get config :dgl-login)
+                                              (config-get config :dgl-pass))))))]
     (register-handler anbf trigger))
   (log/info "Waiting for DGL menu to draw"))
