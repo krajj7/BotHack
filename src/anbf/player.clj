@@ -2,6 +2,7 @@
 
 (ns anbf.player
   (:require [anbf.util :refer [enum]]
+            [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn hungry?
@@ -39,3 +40,8 @@
 (defn update-player [player status delegator]
   ; TODO not just merge, emit events on changes, adjust nutrition by hunger...
   (merge player status))
+
+(defn player-handler [game delegator]
+  (reify BOTLHandler
+    (botl [_ status]
+      (swap! game update-in [:player] update-player status delegator))))
