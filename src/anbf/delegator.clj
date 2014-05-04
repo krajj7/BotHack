@@ -85,14 +85,6 @@
         (do (log/info "Escaping choice")
             (write delegator esc))))))
 
-(defn- respond-action [protocol method delegator & args]
-  ; TODO PerformedAction event a podle nej se obcas treba vymeni scraper?
-  (when-not (:inhibited delegator)
-    (log/info "<<< bot action >>>")
-    (->> (apply invoke-command protocol method delegator args)
-         trigger
-         (write delegator))))
-
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
             (~invoke-fn ~protocol ~method ~delegator ~@args)
@@ -140,17 +132,6 @@
   `(defprotocol-delegated invoke-event ~protocol
      ~@(with-tags 'void proto-methods)))
 
-; TODO newline-terminated prompt handler, only write up to the first newline or add it
-; TODO menu handler, location handler
-
-(defmacro ^:private defchoicehandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-choice ~protocol
-     ~@(with-tags String proto-methods)))
-
-(defmacro ^:private defactionhandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-action ~protocol
-     ~@(with-tags anbf.bot.IAction proto-methods)))
-
 ; event protocols:
 
 (defeventhandler ConnectionStatusHandler
@@ -177,10 +158,30 @@
 (defeventhandler MapHandler
   (map-drawn [handler ^anbf.bot.IFrame frame]))
 
+(defeventhandler ActionChosenHandler
+  (action-chosen [handler ^anbf.bot.IAction action]))
+
 ; command protocols:
+
+; TODO newline-terminated prompt handler, only write up to the first newline or add it
+; TODO menu handler, location handler
+
+(defmacro ^:private defchoicehandler [protocol & proto-methods]
+  `(defprotocol-delegated respond-choice ~protocol
+     ~@(with-tags String proto-methods)))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
+
+(defn- respond-action [protocol method delegator & args]
+  (if-not (:inhibited delegator)
+    (let [action (apply invoke-command protocol method delegator args)]
+      (action-chosen delegator action)
+      (->> action trigger (write delegator)))))
+
+(defmacro ^:private defactionhandler [protocol & proto-methods]
+  `(defprotocol-delegated respond-action ~protocol
+     ~@(with-tags anbf.bot.IAction proto-methods)))
 
 (defactionhandler ActionHandler
   (choose-action [handler ^anbf.bot.IGame gamestate]))
