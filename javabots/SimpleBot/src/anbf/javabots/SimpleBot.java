@@ -20,7 +20,7 @@ public class SimpleBot {
 	class PrayForFood implements IActionHandler {
 		@Override
 		public IAction chooseAction(IGame game) {
-			if (game.player().isWeak())
+			if (game.player().hunger() == Hunger.FAINTING)
 				return Actions.Pray();
 			else
 				return null;

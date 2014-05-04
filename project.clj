@@ -3,7 +3,7 @@
   :url "https://github.com/krajj7/ANBF"
   :license {:name "GPLv2"}
   :repositories {"local" "file:repo"}
-  :java-source-paths ["jta26/de/mud"]
+  :java-source-paths ["jta26/de/mud" "java"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]

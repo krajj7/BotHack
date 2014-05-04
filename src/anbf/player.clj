@@ -1,7 +1,8 @@
 ; representation of the bot avatar
 
 (ns anbf.player
-  (:require [clojure.tools.logging :as log]))
+  (:require [anbf.util :refer [enum]]
+            [clojure.tools.logging :as log]))
 
 (defn hungry?
   "Return true if hunger state is Hungry or worse"
@@ -22,13 +23,13 @@
    ac
    xp
    xplvl
-   ; TODO expose to java as enum
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
    state ; stun/conf/hallu/blind/...
    stats
    alignment]
   anbf.bot.IPlayer
+  (hunger [this] (enum anbf.bot.Hunger (:hunger this)))
   (isHungry [this] (boolean (hungry? this)))
   (isWeak [this] (boolean (weak? this))))
 
