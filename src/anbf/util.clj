@@ -2,7 +2,7 @@
   (:require [clojure.string :as string]))
 
 (defn enum [cls kw]
-  (Enum/valueOf cls (string/upper-case (name kw))))
+  (if kw (Enum/valueOf cls (string/upper-case (name kw)))))
 
 (defn ctrl
   "Returns a char representing CTRL+<ch>"

@@ -17,6 +17,7 @@
   (^String trigger []))
 
 (definterface IPlayer
+  (^anbf.bot.Alignment alignment [])
   (^anbf.bot.Hunger hunger [])
   (^boolean isHungry [])
   (^boolean isWeak []))

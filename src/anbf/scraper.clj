@@ -84,18 +84,27 @@
   (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
        (before-cursor? frame "] ")))
 
-(def ^:private botl1-re #"^(\w+)?.*?St:(\d+(?:\/(?:\*\*|\d+))?) Dx:(\d+) Co:(\d+) In:(\d+) Wi:(\d+) Ch:(\d+)\s*(\w+)\s*(.*)$" )
+(def ^:private botl1-re #"^(\w+)?.*?St:(\d+(?:\/(?:\*\*|\d+))?) Dx:(\d+) Co:(\d+) In:(\d+) Wi:(\d+) Ch:(\d+)\s*(\w+)\s*(?:S:(\d+))?.*$" )
 
 (def ^:private botl2-re #"^(Dlvl:\d+|Home \d+|Fort Ludios|End Game|Astral Plane)\s+(?:\$|\*):(\d+)\s+HP:(\d+)\((\d+)\)\s+Pw:(\d+)\((\d+)\)\s+AC:([0-9-]+)\s+(?:Exp|Xp|HD):(\d+)(?:\/(\d+))?\s+T:(\d+)\s+(.*?)\s*$")
+
+(defn- re-first-groups [match]
+  (if match (-> match first (subvec 1))))
 
 (defn- parse-botls [[botl1 botl2]]
   (log/debug "parsing botl:\n" botl1 "\n" botl2)
   (merge
-    (if-let [status (re-seq botl1-re botl1)]
-      {} ; TODO parse, return same keys as in Player
-      (log/error "failed to parse botl2 " botl2))
-    (if-let [status (re-seq botl2-re botl2)]
-      {} ; TODO parse, return same keys as in Player
+    (if-let [status (re-first-groups (re-seq botl1-re botl1))]
+      {:nickname (nth status 0)
+       :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
+       :alignment (-> (nth status 7) string/lower-case keyword)
+       :score (if-let [score (nth status 8 nil)] (Integer/parseInt score))}
+      (log/error "failed to parse botl1 " botl1))
+    (if-let [status (log/spy (re-first-groups (re-seq botl2-re botl2)))]
+      ; TODO state, burden
+      (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
+              (conj (map #(Integer/parseInt %) (subvec status 1 10))
+                    (nth status 0)))
       (log/error "failed to parse botl2 " botl2))
     (condp #(.contains %2 %1) botl2
       " Sat" {:hunger :satiated}
@@ -107,7 +116,7 @@
 (defn- emit-botl [frame delegator]
   (->> frame botls parse-botls (send delegator botl)))
 
-(defn new-scraper [delegator]
+(defn new-scraper [delegator & [mark-kw]]
   (letfn [(handle-game-start [frame]
             (when (game-beginning? frame)
               (log/debug "Handling game start")
@@ -122,12 +131,13 @@
               (log/debug "Handling choice prompt")
               (emit-botl frame delegator)
               ; TODO maybe will need extra newline to push response away from ctrl-p message handler
-              ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX")
+              ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX") - zpusobi i znacka!
               (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
           (handle-more [frame]
             (when-let [text (more-prompt frame)]
               (log/debug "Handling --More-- prompt")
               ; XXX TODO possibly update map and/or botl?
+              ; TODO You wrest one last charge from the worn-out wand. => no-mark?
               (let [res (if (= text "You don't have that object.")
                           handle-choice-prompt
                           (do (send delegator message text) initial))]
@@ -150,12 +160,8 @@
               (log/debug "Handling location")
               (emit-botl frame delegator)
               (send delegator map-drawn frame)
-              ; TODO new state to stop repeated botl/map updates while the prompt is active
+              ; TODO new state to stop repeated botl/map updates while the prompt is active, also to stop multiple commands
               (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
-          (handle-last-message [frame]
-            (let [msg (-> frame topline string/trim)]
-              (when-not (= msg "# #'")
-                (send delegator message msg))))
           (handle-prompt [frame]
             (when-let [msg (prompt frame)]
               (emit-botl frame delegator)
@@ -169,23 +175,27 @@
                                        (send ended))))
 
           (initial [frame]
-            ;(log/debug "scraping frame")
             (or (handle-game-start frame)
                 (handle-game-end frame)
                 (handle-more frame)
                 (handle-menu frame)
-                (handle-choice-prompt frame)
+                ;(handle-choice-prompt frame) ; XXX znacka muze prerusit prompt
                 ;(handle-direction frame) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
                 (handle-location frame)
-                ; pokud je vykresleny status, nic z predchoziho nesmi nezotavitelne/nerozpoznatelne reagovat na "##"
+                ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
                 (when (status-drawn? frame)
                   ;(log/debug "writing ##' mark")
                   (send delegator write "##'")
                   marked)
                 (log/debug "expecting further redraw")))
+          ; TODO v kontextech akci kde ##' muze byt destruktivni (direction prompt - kick,wand,loot,talk...) cekam dokud se neobjevi neco co prokazatelne neni zacatek direction promptu, pak poslu znacku.
+          (no-mark [frame]
+            (or ; TODO (undrawn-direction? frame)
+                (handle-direction frame)
+                (log/debug "no-mark - not direction prompt")
+                initial))
           ; odeslal jsem marker, cekam jak se vykresli
           (marked [frame]
-            ;(log/debug "marked scraping frame")
             ; veci co se daji bezpecne potvrdit pomoci ## muzou byt jen tady, ve druhem to muze byt zkratka, kdyz se vykresleni stihne - pak se ale hur odladi spolehlivost tady
             ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
             (or (handle-game-end frame)
@@ -193,28 +203,23 @@
                 (handle-menu frame)
                 (handle-choice-prompt frame)
                 (handle-prompt frame)
+                (handle-location frame)
                 (when (and (= 0 (:cursor-y frame))
                            (before-cursor? frame "# #'"))
                   (send delegator write (str backspace \newline \newline))
-                  ;(log/debug "persisted mark")
                   lastmsg-clear)
                 (log/debug "marked expecting further redraw")))
           (lastmsg-clear [frame]
-            ;(log/debug "scanning for cancelled mark")
             (when (topline-empty? frame)
-              ;(log/debug "ctrl+p ctrl+p")
               (send delegator write (str (ctrl \p) (ctrl \p)))
               lastmsg-get))
           ; jakmile je vykresleno "# #" na topline, mam jistotu, ze po dalsim ctrl+p se vykresli posledni herni zprava (nebo "#", pokud zadna nebyla)
           (lastmsg-get [frame]
-            ;(log/debug "scanning ctrl+p")
             (when (re-seq #"^# # +" (topline frame))
-              ;(log/debug "got second ctrl+p, sending last ctrl+p")
               (send delegator write (str (ctrl \p)))
               lastmsg+action))
           ; cekam na vysledek <ctrl+p>, bud # z predchoziho kola nebo presmahnuta message
           (lastmsg+action [frame]
-            ;(log/debug "scanning for last message")
             (or (when-not (or (= (:cursor-y frame) 0)
                               (topline-empty? frame)
                               (.startsWith (topline frame) "# # "))
@@ -226,7 +231,9 @@
                   (send delegator full-frame frame)
                   initial)
                 (log/debug "lastmsg expecting further redraw")))]
-    initial))
+    (if (= mark-kw :no-mark)
+      no-mark
+      initial)))
 
 (defn- apply-scraper
   "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
@@ -242,3 +249,4 @@
       (->> (dosync (alter scraper apply-scraper delegator frame))
            type
            (log/debug "next scraper:")))))
+; TODO handler co switchne na no-mark u nekterych akci

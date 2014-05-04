@@ -8,8 +8,8 @@
 (defrecord Game
   [frame
    player
-   dungeon
-   level
+   dungeon ; items, topology, ...
+   levelmap
    turn
    score]
   anbf.bot.IGame
@@ -25,12 +25,19 @@
 
 (defrecord Item [])
 
+(defn- update-game [game status delegator]
+  ; TODO not just merge, emit events on changes
+  (->> game keys (select-keys status) (merge game)))
+
 (defn game-handler
   [game delegator]
   (reify
     RedrawHandler
     (redraw [_ frame]
       (swap! game assoc-in [:frame] frame))
+    BOTLHandler
+    (botl [_ status]
+      (swap! game update-game status delegator))
     FullFrameHandler
     (full-frame [_ frame]
       (send delegator choose-action @game))))
