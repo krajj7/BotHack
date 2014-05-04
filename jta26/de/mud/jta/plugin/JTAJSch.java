@@ -331,6 +331,8 @@ public class JTAJSch extends Plugin implements FilterPlugin, VisualPlugin {
         int n;
         final int length = b.length;
         n = in_.read(b,0, b.length);
+        if (n < 0)
+            return n;
         byte[] tmp = new byte[n];
         System.arraycopy(b, 0, tmp, 0, n);
         pos = 0;
