@@ -17,6 +17,7 @@
   (^String trigger []))
 
 (definterface IPlayer
+  (^anbf.bot.IPosition position [])
   (^anbf.bot.Alignment alignment [])
   (^anbf.bot.Hunger hunger [])
   (^boolean isHungry [])
@@ -26,6 +27,22 @@
   (^anbf.bot.IFrame frame [])
   (^anbf.bot.IPlayer player []))
 
+(definterface IPosition
+  (^int x [])
+  (^int y []))
+
 (definterface IFrame
+  ; TODO
+  )
+
+(definterface IDungeon
+  ; TODO
+  )
+
+(definterface ILevel
+  ; TODO
+  )
+
+(definterface ITile
   ; TODO
   )

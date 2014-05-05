@@ -13,6 +13,11 @@
 
 (def backspace (str (char 8)))
 
+(defrecord Position [x y]
+  anbf.bot.IPosition
+  (x [this] (:x this))
+  (y [this] (:y this)))
+
 (defn config-get
   "Get a configuration key from the config map or return the default, without a default throw an exception if the key is not present."
   ([config key default]

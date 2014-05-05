@@ -15,7 +15,7 @@
   [frame]
   (let [last-line (nth-line frame 23)
         name-line (nth-line frame 22)]
-    (and (< (:cursor-y frame) 22)
+    (and (< (-> frame :cursor :y) 22)
          (re-seq #" T:[0-9]+ " last-line)
          ; status may overflow
          (or (not= \space (nth name-line 78))
@@ -30,7 +30,7 @@
 (defn- choice-prompt
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
-  (if (and (status-drawn? frame) (<= (:cursor-y frame) 1))
+  (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
     (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
 
 (defn- more-prompt? [frame]
@@ -52,10 +52,10 @@
 
 (defn- prompt
   [frame]
-  (when (and (<= (:cursor-y frame) 1)
+  (when (and (<= (-> frame :cursor :y) 1)
              (before-cursor? frame "##'"))
-    (let [prompt-end (subs (cursor-line frame) 0 (- (:cursor-x frame) 4))]
-      (if (pos? (:cursor-y frame))
+    (let [prompt-end (subs (cursor-line frame) 0 (- (-> frame :cursor :x) 4))]
+      (if (pos? (-> frame :cursor :y))
         (str (string/trim topline) " " prompt-end)
         prompt-end))))
 
@@ -149,7 +149,7 @@
               (send delegator write " ")
               #_ (throw (UnsupportedOperationException. "TODO menu - implement me"))))
           (handle-direction [frame]
-            (when (and (zero? (:cursor-y frame))
+            (when (and (zero? (-> frame :cursor :x))
                        (before-cursor? frame "In what direction? "))
               (log/debug "Handling direction")
               (emit-botl frame delegator)
@@ -204,7 +204,7 @@
                 (handle-choice-prompt frame)
                 (handle-prompt frame)
                 (handle-location frame)
-                (when (and (= 0 (:cursor-y frame))
+                (when (and (= 0 (-> frame :cursor :y))
                            (before-cursor? frame "# #'"))
                   (send delegator write (str backspace \newline \newline))
                   lastmsg-clear)
@@ -220,7 +220,7 @@
               lastmsg+action))
           ; cekam na vysledek <ctrl+p>, bud # z predchoziho kola nebo presmahnuta message
           (lastmsg+action [frame]
-            (or (when-not (or (= (:cursor-y frame) 0)
+            (or (when-not (or (= 0 (-> frame :cursor :y))
                               (topline-empty? frame)
                               (.startsWith (topline frame) "# # "))
                   (if-not (re-seq #"^# +" (topline frame))

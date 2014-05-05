@@ -8,14 +8,13 @@
 (defrecord Frame
   [lines ; vector of 24 Strings representing text on each row of the terminal
    colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
-   cursor-x ; cursor position
-   cursor-y]
+   cursor]
   anbf.bot.IFrame)
 
 (defmethod print-method Frame [f w]
   (.write w "==== <Frame> ====\n")
   (pprint/write (:lines f) :stream w)
-  (.write w (format "\nCursor: %s %s\n" (:cursor-x f) (:cursor-y f)))
+  (.write w (format "\nCursor: %s %s\n" (-> f :cursor :x) (-> f :cursor :y)))
   (.write w "=================\n"))
 
 (def colormap
@@ -49,12 +48,12 @@
 (defn cursor-line
   "Returns the line of text where the cursor is on the frame."
   [frame]
-  (nth-line frame (:cursor-y frame)))
+  (nth-line frame (-> frame :cursor :y)))
 
 (defn before-cursor
   "Returns the part of the line to the left of the cursor."
   [frame]
-  (subs (cursor-line frame) 0 (:cursor-x frame)))
+  (subs (cursor-line frame) 0 (-> frame :cursor :x)))
 
 (defn before-cursor?
   "Returns true if the given text appears just before the cursor."

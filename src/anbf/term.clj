@@ -5,6 +5,7 @@
 (ns anbf.term
   (:require [anbf.delegator :refer :all]
             [anbf.frame :refer :all]
+            [anbf.util :refer [->Position]]
             [clojure.tools.logging :as log])
   (:import [de.mud.jta FilterPlugin PluginBus]
            [de.mud.terminal vt320 VDUDisplay VDUBuffer]
@@ -68,8 +69,7 @@
                      (take-last 24 (.charArray buf))))
            (vec (map unpack-colors
                      (take-last 24 (.charAttributes buf))))
-           (.getCursorColumn buf)
-           (.getCursorRow buf)))
+           (->Position (.getCursorColumn buf) (.getCursorRow buf))))
 
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
@@ -88,8 +88,7 @@
              (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
                      (:colors f)
                      updated-rows)
-             (.getCursorColumn newbuf)
-             (.getCursorRow newbuf))))
+             (->Position (.getCursorColumn newbuf) (.getCursorRow newbuf)))))
 
 (defn -init [bus id]
   [[bus id] (atom
