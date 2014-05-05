@@ -24,6 +24,8 @@
    ac
    xp
    xplvl
+   position
+   dlvl
    inventory
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
@@ -31,6 +33,7 @@
    stats ; :str :dex :con :int :wis :cha
    alignment] ; :lawful :neutral :chaotic
   anbf.bot.IPlayer
+  ; TODO expose stats etc.
   (alignment [this] (enum anbf.bot.Alignment (:alignment this)))
   (hunger [this] (enum anbf.bot.Hunger (:hunger this)))
   (isHungry [this] (boolean (hungry? this)))
@@ -44,6 +47,10 @@
   (->> player keys (select-keys status) (merge player)))
 
 (defn player-handler [game delegator]
-  (reify BOTLHandler
+  (reify
+    FullFrameHandler
+    (full-frame [_ frame]
+      (swap! game assoc-in [:player :position] (:cursor frame)))
+    BOTLHandler
     (botl [_ status]
       (swap! game update-in [:player] update-player status delegator))))

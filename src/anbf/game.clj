@@ -3,12 +3,14 @@
 (ns anbf.game
   (:require [clojure.tools.logging :as log]
             [anbf.player :refer :all]
+            [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Game
   [frame
    player
-   dungeon ; items, topology, ...
+   level
+   dungeon
    levelmap
    turn
    score]
@@ -17,9 +19,7 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) nil nil 0 0))
-
-(defrecord Dungeon [])
+  (Game. nil (new-player) (new-level nil nil) (new-dungeon) nil 0 0)) ; TODO
 
 (defrecord Monster [])
 
