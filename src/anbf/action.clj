@@ -34,7 +34,7 @@
   ([action handler]
    (-withHandler action priority-default handler))
   ([action priority handler]
-   action)) ; TODO assoc user handler, reg on performed, dereg on choose
+   action)) ; TODO assoc user handler, reg on performed, dereg on choose + clojure API
 
 ; factory functions for Java bots
 (gen-class

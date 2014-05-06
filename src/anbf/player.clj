@@ -25,7 +25,6 @@
    xp
    xplvl
    position
-   dlvl
    inventory
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
@@ -40,7 +39,7 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 14 nil)))
+  (apply ->Player (repeat 15 nil)))
 
 (defn update-player [player status delegator]
   ; TODO not just merge, emit events on changes, adjust nutrition by hunger...

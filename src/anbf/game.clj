@@ -9,9 +9,7 @@
 (defrecord Game
   [frame
    player
-   level
    dungeon
-   levelmap
    turn
    score]
   anbf.bot.IGame
@@ -19,7 +17,7 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-level nil nil) (new-dungeon) nil 0 0)) ; TODO
+  (Game. nil (new-player) (new-dungeon) 0 0)) ; TODO
 
 (defrecord Monster [])
 
