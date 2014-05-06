@@ -25,11 +25,6 @@
   [delegator state]
   (assoc-in delegator [:inhibited] state))
 
-(def priority-default 0)
-; bots should not go beyond these (their interface specifies an int priority)
-(def priority-top (dec Integer/MIN_VALUE))
-(def priority-bottom (inc Integer/MAX_VALUE))
-
 (defn register
   "Register an event/command handler."
   ([delegator handler]

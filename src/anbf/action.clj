@@ -1,5 +1,6 @@
 (ns anbf.action
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [anbf.util :refer :all]))
 
 (defprotocol Action
   (trigger [this]
@@ -29,7 +30,17 @@
   (trigger [this]
     "#pray\n"))
 
+(defn- -withHandler
+  ([action handler]
+   (-withHandler action priority-default handler))
+  ([action priority handler]
+   action)) ; TODO assoc user handler, reg on performed, dereg on choose
+
 ; factory functions for Java bots
-(gen-class :name anbf.bot.Actions
-           :methods [^:static [Move [int] anbf.bot.IAction]
-                     ^:static [Pray [] anbf.bot.IAction]])
+(gen-class
+  :name anbf.bot.Actions
+  :methods [^:static [Move [int] anbf.bot.IAction]
+            ^:static [Pray [] anbf.bot.IAction]
+            ^:static [withHandler [anbf.bot.IAction Object] anbf.bot.IAction]
+            ^:static [withHandler [anbf.bot.IAction int Object]
+                      anbf.bot.IAction]])

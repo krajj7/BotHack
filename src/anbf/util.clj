@@ -1,6 +1,11 @@
 (ns anbf.util
   (:require [clojure.string :as string]))
 
+(def priority-default 0)
+; bots should not go beyond these (their interface specifies an int priority)
+(def priority-top (dec Integer/MIN_VALUE))
+(def priority-bottom (inc Integer/MAX_VALUE))
+
 (defn enum [cls kw]
   (if kw (Enum/valueOf cls (string/upper-case (name kw)))))
 
