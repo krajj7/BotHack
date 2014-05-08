@@ -19,10 +19,6 @@
 (defn new-game []
   (Game. nil (new-player) (new-dungeon) 0 0)) ; TODO
 
-(defrecord Monster [])
-
-(defrecord Item [])
-
 (defn- update-game [game status delegator]
   ; TODO not just merge, emit events on changes
   (->> game keys (select-keys status) (merge game)))
