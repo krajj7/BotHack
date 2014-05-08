@@ -31,18 +31,17 @@
   (^int x [])
   (^int y []))
 
-(definterface IFrame
-  ; TODO
+(definterface IFrame ; TODO
   )
 
-(definterface IDungeon
-  ; TODO
+(definterface IDungeon ; TODO
   )
 
-(definterface ILevel
-  ; TODO
+(definterface ILevel ; TODO
   )
 
-(definterface ITile
-  ; TODO
+(definterface ITile ; TODO
+  )
+
+(definterface IMonster ; TODO
   )
