@@ -100,7 +100,7 @@
        :alignment (-> (nth status 7) string/lower-case keyword)
        :score (if-let [score (nth status 8 nil)] (Integer/parseInt score))}
       (log/error "failed to parse botl1 " botl1))
-    (if-let [status (log/spy (re-first-groups (re-seq botl2-re botl2)))]
+    (if-let [status (re-first-groups (re-seq botl2-re botl2))]
       ; TODO state, burden
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
               (conj (map #(Integer/parseInt %) (subvec status 1 10))
