@@ -27,6 +27,9 @@
    :inv-bold :inv-orange :inv-bright-green :inv-yellow ; inverse+bold
    :inv-bright-blue :inv-bright-magenta :inv-bright-cyan :inv-white])
 
+(defn inverse? [color]
+  (>= color 16))
+
 (defn print-colors [f]
   (println "Colors:")
   (doall (map #(if (every? zero? %)
