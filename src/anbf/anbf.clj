@@ -124,7 +124,7 @@
 (defn start [{:keys [config] :as anbf}]
   (log/info "ANBF instance started")
   (if-not (start-menubot anbf)
-    (started @(:delegator anbf)))
+    (send (:delegator anbf) started))
   (start-jta (:jta anbf)
              (config-get config :host "localhost")
              (config-get config :port 23))
