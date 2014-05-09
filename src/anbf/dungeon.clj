@@ -1,4 +1,5 @@
 (ns anbf.dungeon
+  (:import [anbf NHFov NHFov$TransparencyInfo])
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [anbf.frame :refer :all]
@@ -8,14 +9,22 @@
 (defrecord Tile
   [glyph
    color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
-   seen ; TODO turn no.
-   walked ; TODO
+   feature ; :unexplored :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
+   in-fov ; this only updates on full-frame, not on map-drawn when it may be stale data
+   lit ; TODO TODO
+   explored ; TODO turn no.
+   walked ; TODO turn no.
    searched ; no. of times searched TODO
    items ; [Items]
    monster
    engraving]
   anbf.bot.ITile)
+
+(defn- initial-tile []
+  (Tile. \space nil nil false false nil nil 0 [] nil nil))
+
+(defn visible? [tile]
+  (and (:lit tile) (:in-fov tile)))
 
 (defrecord Level
   [dlvl
@@ -27,8 +36,24 @@
   (.write w (str "#anbf.dungeon.Level"
                  (assoc (.without level :tiles) :tiles "<trimmed>"))))
 
-(defn- initial-tile []
-  (Tile. \space nil nil nil false 0 [] nil nil))
+(defn print-tiles
+  "Print map, with pred overlayed with X where pred is not true for the tile"
+  ([level]
+   (print-tiles identity level))
+  ([pred level]
+   (doall (map (fn [row]
+                 (doall (map (fn [tile]
+                               (print (if (pred tile)
+                                        (:glyph tile)
+                                        \X))) row))
+                 (println))
+               (:tiles level)))))
+
+(defn print-los [level]
+  (print-tiles visible? level))
+
+(defn print-fov [level]
+  (print-tiles :in-fov level))
 
 (defn- initial-tiles []
   (->> (initial-tile) (repeat 80) vec (repeat 20) vec))
@@ -159,8 +184,16 @@
         [:ice :floor :air :altar :door-open :sink :fountain :corridor :trap
          :throne :grave :stairs-up :stairs-down]))
 
+(defn boulder? [tile]
+  (= (:glyph tile) \0))
+
+(defn transparent? [tile]
+  (and (not (boulder? tile))
+       (not-any? #(= % (:feature tile))
+             [nil :rock :wall :tree :door-closed :cloud])))
+
 (defn walkable-by [tile monster]
-  ; TODO change feature: closed door to open door, rock/wall/tree to corridor.  consider xorns, slimes (door-ooze), fliers (over water/lava)
+  ; TODO change feature: closed door to open door, rock/wall/tree to corridor.  consider xorns, slimes (door-ooze), fliers (over water/lava), fish
   tile)
 
 (defn- update-feature [tile new-glyph new-color]
@@ -182,10 +215,15 @@
     tile))
 
 (defn- update-tiles [tiles new-lines new-colors]
-  (vec (map #(vec (map update-tile %1 %2 %3)) tiles new-lines new-colors)))
+  (vec (map (fn [tile line color-row]
+              (vec (map update-tile tile line color-row)))
+            tiles new-lines new-colors)))
 
-(defn- branch-key [{:keys [branch-id] :as dungeon}]
+(defn branch-key [{:keys [branch-id] :as dungeon}]
   (get (:id->branch dungeon) branch-id branch-id))
+
+(defn curlvl [dungeon]
+  (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
 (defn- parse-map [dungeon frame]
   ; TODO guess branch
@@ -198,17 +236,34 @@
 (defn- update-dlvl [dungeon status delegator]
   (assoc dungeon :dlvl (:dlvl status)))
 
-(defn- mark-player [dungeon {:keys [cursor] :as frame}]
-  ; player is not a Monster
-  (assoc-in dungeon [:levels (branch-key dungeon) (:dlvl dungeon) :tiles
-                     (:y cursor) (:x cursor) :monster] nil))
+(defn- update-los-row [row visibility]
+  (map (fn [tile v] (assoc tile :in-fov v)) row visibility))
+
+; TODO TODO also lit/unlit
+(defn- update-los [level cursor]
+  (update-in level [:tiles]
+             #(map update-los-row %
+                   (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
+                                  (reify NHFov$TransparencyInfo
+                                    (isTransparent [_ x y]
+                                      (transparent? ((% y) x))))))))
+
+; TODO update :explored (was in LOS, seen any items)
+(defn- handle-player [dungeon {:keys [cursor] :as frame}]
+  (-> dungeon
+      ; mark player as friendly
+      (assoc-in [:levels (branch-key dungeon) (:dlvl dungeon) :tiles
+                 (dec (:y cursor)) (:x cursor) :monster :friendly] true)
+      (update-in [:levels (branch-key dungeon) (:dlvl dungeon)]
+                 update-los cursor)))
 
 (defn dungeon-handler
   [game delegator]
   (reify
     FullFrameHandler
     (full-frame [_ frame]
-      (swap! game update-in [:dungeon] mark-player frame))
+      (swap! game update-in [:dungeon] handle-player frame)
+      (print-los @game))
     MapHandler
     (map-drawn [_ frame]
       (swap! game update-in [:dungeon] parse-map frame))
