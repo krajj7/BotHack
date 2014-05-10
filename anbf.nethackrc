@@ -1,5 +1,7 @@
 # slightly altered TAEB settings
 
+OPTIONS=lit_corridor
+
 # more feedback!
 OPTIONS=msg_wall_hits
 
