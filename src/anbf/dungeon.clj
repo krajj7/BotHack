@@ -2,13 +2,14 @@
   (:import [anbf NHFov NHFov$TransparencyInfo])
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
+            [anbf.util :refer [->Position]]
             [anbf.frame :refer :all]
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
-  ; TODO position
-  [glyph
+  [position
+   glyph
    color
    feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
    in-fov ; this only updates on full-frame, not on map-drawn when it may be stale data TODO maybe move FOV map to player
@@ -22,8 +23,8 @@
    engraving]
   anbf.bot.ITile)
 
-(defn- initial-tile []
-  (Tile. \space nil nil false false nil nil nil 0 [] nil nil))
+(defn- initial-tile [x y]
+  (Tile. (->Position x y) \space nil nil false false nil nil nil 0 [] nil nil))
 
 (defn visible? [tile]
   (and (:lit tile) (:in-fov tile)))
@@ -58,7 +59,8 @@
   (print-tiles :in-fov level))
 
 (defn- initial-tiles []
-  (->> (initial-tile) (repeat 80) vec (repeat 20) vec))
+  (vec (map (fn [y] (vec (map (fn [x] (initial-tile x y))
+                              (range 80)))) (range 20))))
 
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id (initial-tiles)))
