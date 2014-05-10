@@ -7,12 +7,14 @@
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
+  ; TODO position
   [glyph
    color
-   feature ; :unexplored :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
-   in-fov ; this only updates on full-frame, not on map-drawn when it may be stale data
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
+   in-fov ; this only updates on full-frame, not on map-drawn when it may be stale data TODO maybe move FOV map to player
    lit ; TODO TODO
-   explored ; TODO turn no.
+   seen ; TODO
+   explored ; TODO turn no. when last visible (without any items) or walked
    walked ; TODO turn no.
    searched ; no. of times searched TODO
    items ; [Items]
@@ -21,7 +23,7 @@
   anbf.bot.ITile)
 
 (defn- initial-tile []
-  (Tile. \space nil nil false false nil nil 0 [] nil nil))
+  (Tile. \space nil nil false false nil nil nil 0 [] nil nil))
 
 (defn visible? [tile]
   (and (:lit tile) (:in-fov tile)))
@@ -160,24 +162,23 @@
 (defn- update-items [tile new-glyph new-color]
   tile) ; TODO
 
-(defn- feature
-  "Presumes an explored tile"
-  [glyph color]
-  (condp = glyph
-    \space :rock
-    \. (if (= (colormap color) :cyan) :ice :floor)
+(defn- feature [tile new-glyph new-color]
+  (case new-glyph
+    \space (if (visible? tile) :rock (:feature tile)) ; TODO :air
+    \. (if (= (colormap new-color) :cyan) :ice :floor)
     \< :stairs-up
     \> :stairs-down
-    \\ (if (= (colormap color) :yellow) :throne :grave)
-    \{ (if (= (colormap color) nil) :sink :fountain)
+    \\ (if (= (colormap new-color) :yellow) :throne :grave)
+    \{ (if (= (colormap new-color) nil) :sink :fountain)
     \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
-    \# :corridor ; TODO :air
+    \# :corridor ; TODO :cloud
     \_ :altar
     \~ :water
     \^ :trap
     \] :door-closed
-    \| (if (= (colormap color) :brown) :door-open :wall)
-    \- (if (= (colormap color) :brown) :door-open :wall)))
+    \| (if (= (colormap new-color) :brown) :door-open :wall)
+    \- (if (= (colormap new-color) :brown) :door-open :wall)
+    (log/error "unrecognized appearance of tile" tile)))
 
 (defn walkable? [tile]
   (some #(= % (:feature tile))
@@ -198,11 +199,9 @@
 
 (defn- update-feature [tile new-glyph new-color]
   ; TODO events
-  (if (or (:explored tile) (not= new-glyph \space))
-    (cond (monster? new-glyph) (walkable-by tile (:monster tile))
-          (item? new-glyph) tile
-          :else (assoc tile :feature (feature new-glyph new-color)))
-    tile))
+  (cond (monster? new-glyph) (walkable-by tile (:monster tile))
+        (item? new-glyph) tile
+        :else (assoc tile :feature (feature tile new-glyph new-color))))
 
 (defn- update-tile [tile new-glyph new-color]
   (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))
@@ -225,11 +224,6 @@
 (defn curlvl [dungeon]
   (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
-(defn- parse-map [dungeon frame]
-  ; TODO guess branch
-  (update-in dungeon [:levels (branch-key dungeon) (:dlvl dungeon) :tiles]
-             update-tiles (drop 1 (:lines frame)) (drop 1 (:colors frame))))
-
 ; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios)
 
 ; TODO event
@@ -249,24 +243,24 @@
                                       (transparent? ((% y) x))))))))
 
 ; TODO update :explored (was in LOS, seen any items)
-(defn- handle-player [dungeon {:keys [cursor] :as frame}]
+(defn- update-map [{:keys [dlvl] :as dungeon} {:keys [cursor] :as frame}]
   (-> dungeon
+      (update-in [:levels (branch-key dungeon) dlvl] update-los cursor)
+      (update-in [:levels (branch-key dungeon) dlvl :tiles]
+                 update-tiles (drop 1 (:lines frame)) (drop 1 (:colors frame)))
+      ; TODO guess branch
       ; mark player as friendly
-      (assoc-in [:levels (branch-key dungeon) (:dlvl dungeon) :tiles
-                 (dec (:y cursor)) (:x cursor) :monster :friendly] true)
-      (update-in [:levels (branch-key dungeon) (:dlvl dungeon)]
-                 update-los cursor)))
+      (assoc-in [:levels (branch-key dungeon) dlvl :tiles
+                 (dec (:y cursor)) (:x cursor) :monster :friendly] true)))
 
 (defn dungeon-handler
   [game delegator]
   (reify
     FullFrameHandler
     (full-frame [_ frame]
-      (swap! game update-in [:dungeon] handle-player frame)
+      ; TODO not when engulfed
+      (swap! game update-in [:dungeon] update-map frame)
       (print-los @game))
-    MapHandler
-    (map-drawn [_ frame]
-      (swap! game update-in [:dungeon] parse-map frame))
     BOTLHandler
     (botl [_ status]
       (swap! game update-in [:dungeon] update-dlvl status delegator))))
