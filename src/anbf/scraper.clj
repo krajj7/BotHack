@@ -92,7 +92,7 @@
   (if match (-> match first (subvec 1))))
 
 (defn- parse-botls [[botl1 botl2]]
-  (log/debug "parsing botl:\n" botl1 "\n" botl2)
+  ;(log/debug "parsing botl:\n" botl1 "\n" botl2)
   (merge
     (if-let [status (re-first-groups (re-seq botl1-re botl1))]
       {:nickname (nth status 0)
@@ -247,6 +247,6 @@
   (reify RedrawHandler
     (redraw [_ frame]
       (->> (dosync (alter scraper apply-scraper delegator frame))
-           type
-           (log/debug "next scraper:")))))
+           #_ type
+           #_ (log/debug "next scraper:")))))
 ; TODO handler co switchne na no-mark u nekterych akci

@@ -102,20 +102,20 @@
                                (register-handler anbf scraper)
                                (start-bot anbf))))
          (register-handler (reify
+                             ;ToplineMessageHandler
+                             ;(message [_ text]
+                             ;  (log/info "Topline message:" text))
+                             ;ActionChosenHandler
+                             ;(action-chosen [_ action]
+                             ;  (log/info "Performing action:" action))
+                             ;BOTLHandler
+                             ;(botl [_ status]
+                             ;  (log/info "new botl status:" status))
                              ConnectionStatusHandler
                              (online [_]
                                (log/info "Connection status: online"))
                              (offline [_]
-                               (log/info "Connection status: offline"))
-                             ActionChosenHandler
-                             (action-chosen [_ action]
-                               (log/info "Performing action:" action))
-                             BOTLHandler
-                             (botl [_ status]
-                               (log/info "new botl status:" status))
-                             ToplineMessageHandler
-                             (message [_ text]
-                               (log/info "Topline message:" text))))))))
+                               (log/info "Connection status: offline"))))))))
 
 (defn start [{:keys [config delegator] :as anbf}]
   (log/info "ANBF instance started")
