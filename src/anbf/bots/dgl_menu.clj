@@ -3,17 +3,20 @@
 (ns anbf.bots.dgl-menu
   (:require [anbf.anbf :refer :all]
             [anbf.util :refer :all]
+            [anbf.frame :refer :all]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn- login-sequence [login pass]
-  (format "l%s\n%s\n" login pass))
+  (format "%s\n%s\n" login pass))
 
 (defn- menu-drawn? [frame]
-  (some #(.contains % "q) Quit") (:lines frame)))
+  (and (some #(.contains % "q) Quit") (:lines frame))
+       (before-cursor? frame "=> ")))
 
-(defn- pass-prompt? [frame]
-  (some #(.contains % "Please enter your username.") (:lines frame)))
+(defn- user-prompt? [frame]
+  (and (some #(.contains % "Please enter your username.") (:lines frame))
+       (before-cursor? frame "=> ")))
 
 (defn- logged-in? [frame]
   (some #(.contains % "Logged in as: ") (:lines frame)))
@@ -31,17 +34,18 @@
                         (send delegator write "np")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
-                        (when (pass-prompt? frame)
+                        (when (user-prompt? frame)
                           ; set up the final handler
+                          (send delegator write (login-sequence
+                                                  (config-get config :dgl-login)
+                                                  (config-get config :dgl-pass)))
                           (replace-handler anbf this logged-in))))
         trigger (reify RedrawHandler
                   (redraw [this frame]
                     (when (menu-drawn? frame)
                       (log/info "logging in")
+                      (send delegator write \l)
                       ; set up the followup handler
-                      (replace-handler anbf this pass-prompt)
-                      (send delegator write (login-sequence
-                                              (config-get config :dgl-login)
-                                              (config-get config :dgl-pass))))))]
+                      (replace-handler anbf this pass-prompt))))]
     (register-handler anbf trigger))
   (log/info "Waiting for DGL menu to draw"))

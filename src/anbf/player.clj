@@ -41,5 +41,9 @@
 (defn new-player []
   (apply ->Player (repeat 15 nil)))
 
+(defn update-player [player status delegator]
+  ; TODO events
+  (->> player keys (select-keys status) (merge player)))
+
 (defn light-radius [player]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

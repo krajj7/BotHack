@@ -117,10 +117,11 @@
                              (message [_ text]
                                (log/info "Topline message:" text))))))))
 
-(defn start [{:keys [config] :as anbf}]
+(defn start [{:keys [config delegator] :as anbf}]
   (log/info "ANBF instance started")
   (if-not (start-menubot anbf)
-    (send (:delegator anbf) started))
+    (send delegator started))
+  (await delegator)
   (start-jta (:jta anbf)
              (config-get config :host "localhost")
              (config-get config :port 23))

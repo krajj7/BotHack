@@ -20,28 +20,24 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) nil 0 0)) ; TODO
-
-(defn update-player [player status delegator]
-  (->> player keys (select-keys status) (merge player)))
-
-; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios)
-(defn- update-dlvl [dungeon status delegator]
-  (assoc dungeon :dlvl (:dlvl status)))
+  (Game. nil (new-player) (new-dungeon) nil 0 0))
 
 (defn- update-game [game status delegator]
   ; TODO not just merge, emit events on changes
+  (->> game keys (select-keys status) (merge game)))
+
+(defn- game-botl [game status delegator]
   (-> game
       (update-in [:dungeon] update-dlvl status delegator)
       (update-in [:player] update-player status delegator)
-      (->> keys (select-keys status) (merge game))))
+      (update-game status delegator)))
 
 (defn- adjacent? [pos1 pos2]
   (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
        (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
 
 (defn lit?
-  "actual lit-ness is hard to determine, this is a pessimistic guess"
+  "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [tile player]
   (or (adjacent? (:position tile) (:position player)) ; TODO actual player light radius
       (= \. (:glyph tile))
@@ -64,7 +60,6 @@
   (print-tiles transparent? (curlvl (:dungeon game))))
 
 (defn- update-fov [game cursor]
-  (log/debug "calc fov")
   (assoc game :fov
          (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
                         (reify NHFov$TransparencyInfo
@@ -77,16 +72,13 @@
          :seen true
          :feature (if (= (:glyph tile) \space) :rock (:feature tile))))
 
-
 (defn- update-explored [game]
   (update-in game [:dungeon :levels (branch-key (:dungeon game))
                    (:dlvl (:dungeon game)) :tiles]
-             #(vec (map (fn [tile-row]
-                          (vec (map (fn [tile]
-                                      (if (visible? game tile)
-                                        (update-visible-tile tile)
-                                        tile))
-                                    tile-row))) %))))
+             (partial map-tiles (fn [tile]
+                                  (if (visible? game tile)
+                                    (update-visible-tile tile)
+                                    tile)))))
 
 (defn- update-map [game {:keys [cursor] :as frame} delegator]
   (-> game
@@ -103,9 +95,8 @@
       (swap! game assoc-in [:frame] frame))
     BOTLHandler
     (botl [_ status]
-      (swap! game update-game status delegator))
+      (swap! game game-botl status delegator))
     FullFrameHandler
     (full-frame [_ frame]
       (->> (swap! game update-map frame delegator)
-           (send delegator choose-action))
-      (print-fov @game))))
+           (send delegator choose-action)))))

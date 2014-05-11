@@ -35,7 +35,7 @@
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile"
   ([level]
-   (print-tiles identity level))
+   (print-tiles (constantly true) level))
   ([pred level]
    (doall (map (fn [row]
                  (doall (map (fn [tile]
@@ -150,7 +150,7 @@
   (= (:glyph tile) \0))
 
 (defn transparent?
-  "Considers unexplored tiles opaque even though they might be unlit floor"
+  "Considers unexplored tiles (unlit or obscured by items/monsters) opaque even though they might be floor"
   [tile]
   (and (not (boulder? tile))
        (not-any? #(= % (:feature tile))
@@ -198,28 +198,42 @@
            (monster new-glyph new-color)
            nil)))
 
-(defn- update-items [tile new-glyph new-color]
-  tile) ; TODO mark new unknown items
+; they might not have actually been seen but there's usually not much to see in walls
+(defn- mark-wall-seen [tile]
+  (if (= :wall (:feature tile))
+    (assoc tile :seen true)
+    tile))
 
-(defn- update-tile [tile new-glyph new-color]
+(defn- update-items [tile new-glyph new-color]
+  tile) ; TODO mark new unknown items, disappeared items
+
+(defn- parse-tile [tile new-glyph new-color]
   (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))
     (-> tile
         (update-monster new-glyph new-color)
         (update-items new-glyph new-color)
         (update-feature new-glyph new-color)
-        (assoc :glyph new-glyph
-               :color new-color))
+        (assoc :glyph new-glyph :color new-color)
+        mark-wall-seen)
     tile))
 
-(defn- update-tiles [tiles new-lines new-colors]
-  (vec (map (fn [tile-row line color-row]
-              (vec (map update-tile tile-row line color-row)))
-            tiles new-lines new-colors)))
+(defn map-tiles
+  "Call f on each tile (or each tuple of tiles if there are more args) in 20x80 vector structures to again produce 20x80 vector of vectors"
+  [f & tile-colls]
+  (->> tile-colls
+       (map (partial apply concat))
+       (apply (partial map f))
+       (partition 80) (map vec) vec))
+
+; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios)
+(defn update-dlvl [dungeon status delegator]
+  (assoc dungeon :dlvl (:dlvl status)))
 
 (defn update-dungeon [{:keys [dungeon] :as game} {:keys [cursor] :as frame}]
   (-> game
+      ; parse the new tiles
       (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
-                 update-tiles
+                 (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
       ; mark player as friendly
       (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles
