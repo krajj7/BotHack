@@ -5,8 +5,6 @@
             [anbf.delegator :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
-            [anbf.player :refer [player-handler]]
-            [anbf.dungeon :refer [dungeon-handler]]
             [anbf.scraper :refer :all]))
 
 (defn register-handler
@@ -95,8 +93,6 @@
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (game-handler initial-game delegator))
-         (register-handler (player-handler initial-game delegator))
-         (register-handler (dungeon-handler initial-game delegator))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")

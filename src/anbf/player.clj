@@ -41,15 +41,5 @@
 (defn new-player []
   (apply ->Player (repeat 15 nil)))
 
-(defn update-player [player status delegator]
-  ; TODO not just merge, emit events on changes, adjust nutrition by hunger...
-  (->> player keys (select-keys status) (merge player)))
-
-(defn player-handler [game delegator]
-  (reify
-    FullFrameHandler
-    (full-frame [_ frame]
-      (swap! game assoc-in [:player :position] (:cursor frame)))
-    BOTLHandler
-    (botl [_ status]
-      (swap! game update-in [:player] update-player status delegator))))
+(defn light-radius [player]
+  1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil
