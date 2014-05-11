@@ -26,10 +26,11 @@ public class NHFov {
 	}
 	
 	private boolean Qpath(int x, int y) {
-		Integer px = 0, py = 0;
+		//System.out.println("qpath "+x+" "+y);
+		int[] px = {0}, py = {0};
 		boolean flip = Math.abs(x) > Math.abs(y);
-		Integer rmaj = flip ? px : py;
-		Integer rmin = flip ? py : px;
+		int[] rmaj = flip ? px : py;
+		int[] rmin = flip ? py : px;
 		int dmaj = flip ? x : y;
 		int dmin = flip ? y : x;
 		
@@ -39,16 +40,17 @@ public class NHFov {
 			fmin += 2*Math.abs(dmin);
 			if (fmin >= 0) {
 				fmin -= 2*Math.abs(dmaj);
-				rmin += Integer.compare(dmin, 0);
+				rmin[0] += cmp(dmin, 0);
 			}
-			rmaj += Integer.compare(dmaj, 0);
-			if (!clear(px,py))
+			rmaj[0] += cmp(dmaj, 0);
+			if (!clear(px[0],py[0]))
 				return false;
 		}
 		return true;
 	}
 	
 	private void quadrant(int hs, int row, int left, int rightMark) {
+		//System.out.println("quadrant "+hs+" "+row+" "+left+" "+rightMark);
 		int right, rightEdge;
 		int rail = (hs == 1) ? 79-x : x;
 		
@@ -68,7 +70,7 @@ public class NHFov {
 			if (!leftClear) {
 				if (rightEdge > rightMark) {
 					rightEdge = clear(hs*rightMark,
-							row-(Integer.compare(row, 0))) ? rightMark+1 : rightMark;
+							row-(cmp(row, 0))) ? rightMark+1 : rightMark;
 				}
 				
 				for (int i = left; i <= rightEdge; ++i) {
@@ -120,7 +122,7 @@ public class NHFov {
 					see(hs*i,row);
 				}
 				
-				quadrant(hs, row+(Integer.compare(row, 0)), left, right);
+				quadrant(hs, row+(cmp(row, 0)), left, right);
 				left = right + 1;
 			}
 		}
@@ -151,5 +153,9 @@ public class NHFov {
 		cbi = cb;
 		trace();
 		return visible;
+	}
+	
+	private static int cmp(int x, int y) {
+		return Integer.signum(Integer.compare(x, y));
 	}
 }
