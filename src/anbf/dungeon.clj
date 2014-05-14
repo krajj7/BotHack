@@ -152,11 +152,11 @@
   (= (:glyph tile) \0))
 
 (defn transparent?
-  "Considers unexplored tiles (unlit or obscured by items/monsters) opaque even though they might be floor"
-  [tile]
+  "For unexplored tiles just a guess"
+  [{:keys [feature monster items] :as tile}]
   (and (not (boulder? tile))
-       (not-any? #(= % (:feature tile))
-                 [nil :rock :wall :tree :door-closed :cloud])))
+       (not (#{:rock :wall :tree :door-closed :cloud} feature))
+       (or feature monster items)))
 
 (defn walkable-by [tile monster]
   ; TODO change feature: closed door to open door, rock/wall/tree to corridor.  consider xorns, slimes (door-ooze), fliers (over water/lava), fish
@@ -206,8 +206,13 @@
     (assoc tile :seen true)
     tile))
 
+; TODO handle properly, mark new unknown items, track disappeared items
 (defn- update-items [tile new-glyph new-color]
-  tile) ; TODO mark new unknown items, disappeared items
+  (if-let [item (item? new-glyph)]
+    (assoc tile :items [item])
+    (if (monster? new-glyph)
+      tile
+      (assoc tile :items nil))))
 
 (defn- parse-tile [tile new-glyph new-color]
   (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))

@@ -32,8 +32,9 @@
       (update-in [:player] update-player status delegator)
       (update-game status delegator)))
 
-(defn- adjacent? [pos1 pos2]
-  (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
+(defn adjacent? [pos1 pos2]
+  (and (not= pos1 pos2)
+       (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
        (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
 
 (defn lit?
@@ -65,8 +66,9 @@
          (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
                         (reify NHFov$TransparencyInfo
                           (isTransparent [_ x y]
-                            (transparent?
-                              (((-> game :dungeon curlvl :tiles) y) x)))))))
+                            (boolean
+                              (transparent?
+                                (((-> game :dungeon curlvl :tiles) y) x))))))))
 
 (defn- update-visible-tile [tile]
   (assoc tile
