@@ -1,5 +1,6 @@
 {
- :bot "anbf.bots.simplebot"
+ ;:bot "anbf.bots.simplebot"
+ :bot "anbf.bots.explorebot"
  :interface :shell
  :nh-command "/nh343/nethack.343-nao"
 }
