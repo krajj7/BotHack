@@ -6,14 +6,14 @@
             [clojure.tools.logging :as log]))
 
 (defn hungry?
-  "Return true if hunger state is Hungry or worse"
-  [{:keys [hunger]}]
-  (not-any? #(= hunger %) [:normal :satiated]))
+  "Returns hunger state if it is Hungry or worse, else nil"
+  [player]
+  (#{:hungry :weak :fainting} (:hunger player)))
 
 (defn weak?
-  "Return true if hunger state is Weak or worse"
-  [{:keys [hunger]}]
-  (some #(= hunger %) [:weak :fainting]))
+  "Returns hunger state if it is Weak or worse, else nil"
+  [player]
+  (#{:weak :fainting} (:hunger player)))
 
 (defrecord Player
   [nickname

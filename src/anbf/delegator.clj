@@ -58,7 +58,7 @@
 
 (defn- invoke-event
   [protocol method delegator & args]
-  (doall (map #(apply invoke-handler protocol method (first %) args)
+  (dorun (map #(apply invoke-handler protocol method (first %) args)
               (:handlers delegator))))
 
 (defn- invoke-command

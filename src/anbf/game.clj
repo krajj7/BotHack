@@ -47,7 +47,8 @@
   (get-in (:fov game) [(dec (:y position)) (:x position)]))
 
 (defn visible? [game tile]
-  (and (in-fov? game (:position tile))
+  (and ; TODO not blind
+       (in-fov? game (:position tile))
        (lit? tile (:player game))))
 
 (defn print-los [game]

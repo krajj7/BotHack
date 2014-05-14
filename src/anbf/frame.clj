@@ -32,7 +32,7 @@
 
 (defn print-colors [f]
   (println "Colors:")
-  (doall (map #(if (every? zero? %)
+  (dorun (map #(if (every? zero? %)
                  (println nil)
                  (println (map colormap %)))
               (:colors f))))

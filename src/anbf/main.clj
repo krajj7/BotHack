@@ -14,7 +14,7 @@
                              (println frame)))))
 
 (defn- register-javabot-jars []
-  (doall (map pom/add-classpath
+  (dorun (map pom/add-classpath
               (filter #(-> % .getName (.endsWith ".jar"))
                       (file-seq (io/file "javabots/bot-jars"))))))
 

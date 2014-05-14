@@ -129,6 +129,7 @@
           (handle-choice-prompt [frame]
             (when-let [text (choice-prompt frame)]
               (log/debug "Handling choice prompt")
+              ; TODO "Really attack the XXX?" => peaceful (unless actually attacked)
               (emit-botl frame delegator)
               ; TODO maybe will need extra newline to push response away from ctrl-p message handler
               ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX") - zpusobi i znacka!
@@ -179,7 +180,7 @@
                 (handle-game-end frame)
                 (handle-more frame)
                 (handle-menu frame)
-                ;(handle-choice-prompt frame) ; XXX znacka muze prerusit prompt
+                (handle-choice-prompt frame)
                 ;(handle-direction frame) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
                 (handle-location frame)
                 ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"

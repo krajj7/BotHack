@@ -37,8 +37,8 @@
   ([level]
    (print-tiles (constantly true) level))
   ([pred level]
-   (doall (map (fn [row]
-                 (doall (map (fn [tile]
+   (dorun (map (fn [row]
+                 (dorun (map (fn [tile]
                                (print (if (pred tile)
                                         (:glyph tile)
                                         \X))) row))
@@ -46,8 +46,10 @@
                (:tiles level)))))
 
 (defn- initial-tiles []
-  (vec (map (fn [y] (vec (map (fn [x] (initial-tile x (inc y)))
-                              (range 80)))) (range 20))))
+  (->> (for [y (range 20)
+             x (range 80)]
+         (initial-tile x (inc y)))
+       (partition 80) (map vec) vec))
 
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id (initial-tiles)))
@@ -136,10 +138,10 @@
 
 (defn monster? [glyph]
   (or (Character/isLetterOrDigit glyph)
-      (some #(= glyph %) [\& \@ \' \; \:])))
+      (#{\& \@ \' \; \:} glyph)))
 
 (defn item? [glyph]
-  (some #(= glyph %) [\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \%]))
+  (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \%} glyph))
 
 (defn walkable? [tile]
   (some #(= % (:feature tile))
