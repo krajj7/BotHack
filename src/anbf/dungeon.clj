@@ -46,7 +46,7 @@
                (:tiles level)))))
 
 (defn- initial-tiles []
-  (->> (for [y (range 20)
+  (->> (for [y (range 22)
              x (range 80)]
          (initial-tile x (inc y)))
        (partition 80) (map vec) vec))
@@ -59,7 +59,7 @@
   ([level pos]
    (at level (:x pos) (:y pos)))
   ([level x y]
-   {:pre [(>= y 1) (<= y 22) (<= x 80) (>= x 0)]}
+   {:pre [(<= 1 y 22) (<= 0 x 79)]}
    (-> level :tiles (nth (dec y)) (nth x))))
 
 (defn- new-branch-id []
@@ -225,7 +225,7 @@
     tile))
 
 (defn map-tiles
-  "Call f on each tile (or each tuple of tiles if there are more args) in 20x80 vector structures to again produce 20x80 vector of vectors"
+  "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
   [f & tile-colls]
   (->> tile-colls
        (map (partial apply concat))
