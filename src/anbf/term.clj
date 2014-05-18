@@ -5,7 +5,7 @@
 (ns anbf.term
   (:require [anbf.delegator :refer :all]
             [anbf.frame :refer :all]
-            [anbf.util :refer [->Position]]
+            [anbf.position :refer [->Position]]
             [clojure.tools.logging :as log])
   (:import [de.mud.jta FilterPlugin PluginBus]
            [de.mud.terminal vt320 VDUDisplay VDUBuffer]

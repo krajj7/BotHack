@@ -3,7 +3,7 @@
             [clojure.string :as string]
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
-            [anbf.util :refer :all]
+            [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
@@ -32,19 +32,6 @@
   (.write w (str "#anbf.dungeon.Level"
                  (assoc (.without level :tiles) :tiles "<trimmed>"))))
 
-(defn print-tiles
-  "Print map, with pred overlayed with X where pred is not true for the tile"
-  ([level]
-   (print-tiles (constantly true) level))
-  ([pred level]
-   (dorun (map (fn [row]
-                 (dorun (map (fn [tile]
-                               (print (if (pred tile)
-                                        (:glyph tile)
-                                        \X))) row))
-                 (println))
-               (:tiles level)))))
-
 (defn- initial-tiles []
   (->> (for [y (range 21)
              x (range 80)]
@@ -53,20 +40,6 @@
 
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id (initial-tiles)))
-
-(defn at? [p1 p2] (= (:position p1) (:position p2)))
-
-(defn at
-  "Tile at given position on the terminal"
-  ([level {:keys [x y] :as pos}]
-   {:pre [(valid-position? pos)]}
-   (-> level :tiles (nth (dec y)) (nth x)))
-  ([level x y]
-   (at level (->Position x y))))
-
-(defn adjacent? [pos1 pos2]
-  (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
-       (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
 
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))

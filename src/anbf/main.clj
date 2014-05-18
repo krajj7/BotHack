@@ -1,6 +1,9 @@
 (ns anbf.main
   (:require [clojure.tools.logging :as log]
             [anbf.anbf :refer :all]
+            [anbf.game :refer :all]
+            [anbf.dungeon :refer :all]
+            [anbf.position :refer :all]
             [anbf.util :refer :all]
             [anbf.jta :refer [raw-write]]
             [anbf.delegator :refer :all]
@@ -36,3 +39,25 @@
 (defn- u []
   (if (:inhibited @(:delegator a))
     (unpause a)))
+
+(defn print-tiles
+  "Print map, with pred overlayed with X where pred is not true for the tile"
+  ([level]
+   (print-tiles (constantly true) level))
+  ([pred level]
+   (dorun (map (fn [row]
+                 (dorun (map (fn [tile]
+                               (print (if (pred tile)
+                                        (:glyph tile)
+                                        \X))) row))
+                 (println))
+               (:tiles level)))))
+
+(defn print-los [game]
+  (print-tiles (partial visible? game) (curlvl (:dungeon game))))
+
+(defn print-fov [game]
+  (print-tiles (partial in-fov? game) (curlvl (:dungeon game))))
+
+(defn print-transparent [game]
+  (print-tiles transparent? (curlvl (:dungeon game))))

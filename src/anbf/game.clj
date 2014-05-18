@@ -6,6 +6,7 @@
             [anbf.frame :refer [colormap]]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Game
@@ -34,27 +35,19 @@
 
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
-  [tile player]
-  (or (adjacent? (:position tile) (:position player)) ; TODO actual player light radius
+  [game tile]
+  (or (adjacent? (:position tile) (:position (:player game))) ; TODO actual player light radius
       (= \. (:glyph tile))
       (and (= \# (:glyph tile)) (= :white (colormap (:color tile))))))
 
-(defn in-fov? [game position]
+(defn in-fov? [game {:keys [position]}]
   (get-in (:fov game) [(dec (:y position)) (:x position)]))
 
 (defn visible? [game tile]
+  "Only considers normal sight, not infravision/ESP/..."
   (and ; TODO not blind
-       (in-fov? game (:position tile))
-       (lit? tile (:player game))))
-
-(defn print-los [game]
-  (print-tiles (partial visible? game) (curlvl (:dungeon game))))
-
-(defn print-fov [game]
-  (print-tiles #(in-fov? game (:position %)) (curlvl (:dungeon game))))
-
-(defn print-transparent [game]
-  (print-tiles transparent? (curlvl (:dungeon game))))
+       (in-fov? game tile)
+       (lit? game tile)))
 
 (defn- update-fov [game cursor]
   (assoc game :fov
