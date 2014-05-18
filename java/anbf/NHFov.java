@@ -147,7 +147,7 @@ public class NHFov {
 	}
 	
 	public boolean[][] calculateFov(int startx, int starty, TransparencyInfo cb) {
-		visible = new boolean[24][80];
+		visible = new boolean[22][80];
 		x = startx;
 		y = starty;
 		cbi = cb;

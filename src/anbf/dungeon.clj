@@ -46,7 +46,7 @@
                (:tiles level)))))
 
 (defn- initial-tiles []
-  (->> (for [y (range 22)
+  (->> (for [y (range 21)
              x (range 80)]
          (initial-tile x (inc y)))
        (partition 80) (map vec) vec))
@@ -59,7 +59,7 @@
   ([level pos]
    (at level (:x pos) (:y pos)))
   ([level x y]
-   {:pre [(<= 1 y 22) (<= 0 x 79)]}
+   {:pre [(<= 1 y 21) (<= 0 x 79)]}
    (-> level :tiles (nth (dec y)) (nth x))))
 
 (defn- new-branch-id []

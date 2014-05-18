@@ -65,7 +65,7 @@
          (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
                         (reify NHFov$TransparencyInfo
                           (isTransparent [_ x y]
-                            (if (and (<= 0 y 21) (<= 0 x 79))
+                            (if (and (<= 0 y 20) (<= 0 x 79))
                               (boolean
                                 (transparent?
                                   (((-> game :dungeon curlvl :tiles) y) x)))
