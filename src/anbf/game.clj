@@ -33,8 +33,7 @@
       (update-game status delegator)))
 
 (defn adjacent? [pos1 pos2]
-  (and (not= pos1 pos2)
-       (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
+  (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
        (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
 
 (defn lit?
