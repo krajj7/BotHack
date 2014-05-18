@@ -10,7 +10,7 @@
   (if kw (Enum/valueOf cls (string/upper-case (name kw)))))
 
 (defn enum->kw [v]
-  (if (or (not v) (keyword? v)) v (keyword (.name v))))
+  (if (or (nil? v) (keyword? v)) v (.getKeyword v)))
 
 (defn ctrl
   "Returns a char representing CTRL+<ch>"
