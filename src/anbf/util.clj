@@ -6,8 +6,11 @@
 (def priority-top (dec Integer/MIN_VALUE))
 (def priority-bottom (inc Integer/MAX_VALUE))
 
-(defn enum [cls kw]
+(defn kw->enum [cls kw]
   (if kw (Enum/valueOf cls (string/upper-case (name kw)))))
+
+(defn enum->kw [v]
+  (if (or (not v) (keyword? v)) v (keyword (.name v))))
 
 (defn ctrl
   "Returns a char representing CTRL+<ch>"

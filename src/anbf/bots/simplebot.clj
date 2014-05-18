@@ -7,9 +7,7 @@
             [anbf.delegator :refer :all]
             [anbf.action :refer :all]))
 
-(def ^:private circle-large (cycle [1 4 7 8 9 6 3 2]))
-
-(def ^:private circle-small (cycle [6 2 4 8]))
+(def ^:private circle-small (cycle [:N :E :S :W]))
 
 (defn- circle-mover []
   (let [circle (atom circle-small)]

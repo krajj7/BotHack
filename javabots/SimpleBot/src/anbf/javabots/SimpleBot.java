@@ -7,7 +7,7 @@ public class SimpleBot {
 	IANBF anbf;
 	
 	class CircleMover implements IActionHandler {
-		int[] smallCircle = {6, 2, 4, 8};
+		Direction[] smallCircle = {Direction.N, Direction.E, Direction.S, Direction.W};
 		int next = 0;
 		
 		@Override

@@ -1,7 +1,7 @@
 ; representation of the bot avatar
 
 (ns anbf.player
-  (:require [anbf.util :refer [enum]]
+  (:require [anbf.util :refer [kw->enum]]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -33,8 +33,8 @@
    alignment] ; :lawful :neutral :chaotic
   anbf.bot.IPlayer
   ; TODO expose stats etc.
-  (alignment [this] (enum anbf.bot.Alignment (:alignment this)))
-  (hunger [this] (enum anbf.bot.Hunger (:hunger this)))
+  (alignment [this] (kw->enum anbf.bot.Alignment (:alignment this)))
+  (hunger [this] (kw->enum anbf.bot.Hunger (:hunger this)))
   (isHungry [this] (boolean (hungry? this)))
   (isWeak [this] (boolean (weak? this))))
 
