@@ -26,6 +26,9 @@
   (x [this] (:x this))
   (y [this] (:y this)))
 
+(defn valid-position? [{:keys [x y]}]
+  (and (<= 0 x 79) (<= 1 y 21)))
+
 (defn config-get
   "Get a configuration key from the config map or return the default, without a default throw an exception if the key is not present."
   ([config key default]

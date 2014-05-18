@@ -32,10 +32,6 @@
       (update-in [:player] update-player status delegator)
       (update-game status delegator)))
 
-(defn adjacent? [pos1 pos2]
-  (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
-       (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
-
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [tile player]

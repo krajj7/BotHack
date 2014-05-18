@@ -3,7 +3,7 @@
             [clojure.string :as string]
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
-            [anbf.util :refer [->Position]]
+            [anbf.util :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
@@ -54,13 +54,19 @@
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id (initial-tiles)))
 
+(defn at? [p1 p2] (= (:position p1) (:position p2)))
+
 (defn at
   "Tile at given position on the terminal"
-  ([level pos]
-   (at level (:x pos) (:y pos)))
+  ([level {:keys [x y] :as pos}]
+   {:pre [(valid-position? pos)]}
+   (-> level :tiles (nth (dec y)) (nth x)))
   ([level x y]
-   {:pre [(<= 1 y 21) (<= 0 x 79)]}
-   (-> level :tiles (nth (dec y)) (nth x))))
+   (at level (->Position x y))))
+
+(defn adjacent? [pos1 pos2]
+  (and (<= (Math/abs (- (:x pos1) (:x pos2))) 1)
+       (<= (Math/abs (- (:y pos1) (:y pos2))) 1)))
 
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))
@@ -137,7 +143,7 @@
              (new-level "Dlvl:1" :main)))
 
 (defn monster? [glyph]
-  (or (Character/isLetterOrDigit glyph)
+  (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
       (#{\& \@ \' \; \:} glyph)))
 
 (defn item? [glyph]
