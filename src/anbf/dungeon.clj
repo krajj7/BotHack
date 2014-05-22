@@ -44,8 +44,8 @@
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))
 
-(def branches [:main :mines :sokoban :quest :ludios
-               :vlad :earth :fire :air :water :astral])
+(def branches [:main :mines :sokoban :quest :ludios :vlad
+               :wiztower :earth :fire :air :water :astral])
 
 (def branch-entry {:mines :main, :sokoban :main}) ; TODO
 
@@ -206,10 +206,9 @@
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
   [f & tile-colls]
-  (->> tile-colls
-       (map (partial apply concat))
-       (apply (partial map f))
-       (partition 80) (map vec) vec))
+  (apply (partial mapv (fn [& rows]
+                         (apply (partial mapv #(apply f %&)) rows)))
+         tile-colls))
 
 ; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios)
 (defn update-dlvl [dungeon status delegator]

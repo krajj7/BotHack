@@ -7,7 +7,7 @@
 (def priority-bottom (inc Integer/MAX_VALUE))
 
 (defn kw->enum [cls kw]
-  (if kw (Enum/valueOf cls (string/upper-case (name kw)))))
+  (some->> kw name string/upper-case (Enum/valueOf cls)))
 
 (defn enum->kw [v]
   (if (or (nil? v) (keyword? v)) v (.getKeyword v)))
