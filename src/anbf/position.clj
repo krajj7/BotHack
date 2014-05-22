@@ -5,6 +5,9 @@
   (x [this] (:x this))
   (y [this] (:y this)))
 
+(defmethod print-method Position [pos w]
+  (.write w (str "#Position[" (:x pos) " " (:y pos) "]")))
+
 (defn valid-position? [{:keys [x y]}]
   (and (<= 0 x 79) (<= 1 y 21)))
 

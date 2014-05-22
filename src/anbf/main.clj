@@ -4,6 +4,7 @@
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.position :refer :all]
+            [anbf.pathing :refer :all]
             [anbf.util :refer :all]
             [anbf.jta :refer [raw-write]]
             [anbf.delegator :refer :all]
@@ -61,3 +62,6 @@
 
 (defn print-transparent [game]
   (print-tiles transparent? (curlvl (:dungeon game))))
+
+(defn print-path [game path]
+  (print-tiles #(.contains path (:position %)) (curlvl (:dungeon game))))
