@@ -32,38 +32,6 @@
   (max (Math/abs (- (:x from) (:x to)))
        (Math/abs (- (:y from) (:y to)))))
 
-(defn ida-search [to passable? extra-cost path cur bound]
-  (let [from (peek path)
-        delta (max-coord from to)
-        est (+ cur delta)]
-    (cond
-      (> est bound) est
-      (zero? delta) path
-      (and (= 1 delta)
-           (not-any? #(passable? % to) (neighbors from))) (conj path to)
-      :else (loop [nbrs (filter #(and (passable? from %)
-                                      (neg? (.indexOf path %)))
-                                (neighbors from))
-                   min-dist nil]
-              (if (empty? nbrs)
-                min-dist
-                (let [nbr (first nbrs)
-                      dist (inc (extra-cost nbr))
-                      res (ida-search to passable? extra-cost
-                                      (conj path nbr) (+ cur dist)
-                                      bound)]
-                  (cond
-                    (vector? res) res
-                    (and res min-dist) (recur (rest nbrs) (min res min-dist))
-                    :else (recur (rest nbrs) (or res min-dist)))))))))
-
-(defn ida* [from to passable? extra-cost]
-  (loop [bound (max-coord from to)]
-    (let [res (log/spy (ida-search to passable? extra-cost [from] 0 bound))]
-      (cond (vector? res) (subvec res 1)
-            (not res) res
-            :else (recur res)))))
-
 (defn a* [from to passable? extra-cost]
   "Extra-cost must always return non-negative values, target tile may not be passable, but will always be included in the path"
   (loop [closed #{}
