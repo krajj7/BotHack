@@ -24,7 +24,7 @@
    ac
    xp
    xplvl
-   position
+   x y
    inventory
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
@@ -39,7 +39,7 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 15 nil)))
+  (apply ->Player (repeat 16 nil)))
 
 (defn update-player [player status delegator]
   ; TODO events

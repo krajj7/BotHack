@@ -42,15 +42,18 @@
     (unpause a)))
 
 (defn print-tiles
-  "Print map, with pred overlayed with X where pred is not true for the tile"
+  "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
   ([level]
    (print-tiles (constantly true) level))
   ([pred level]
+   (print-tiles pred level nil))
+  ([pred level f]
    (dorun (map (fn [row]
                  (dorun (map (fn [tile]
                                (print (if (pred tile)
-                                        (:glyph tile)
-                                        \X))) row))
+                                        (if f (f tile) (:glyph tile))
+                                        (if f (:glyph tile) \X))))
+                             row))
                  (println))
                (:tiles level)))))
 
@@ -64,4 +67,5 @@
   (print-tiles transparent? (curlvl (:dungeon game))))
 
 (defn print-path [game path]
-  (print-tiles #(.contains path (:position %)) (curlvl (:dungeon game))))
+  (print-tiles #(.contains path (position %))
+               (curlvl (:dungeon game)) (constantly \X)))

@@ -16,19 +16,33 @@
                          #(<=> (:y %1) (:y %2)))
                    from to)))
 
+(defn diagonal-passable? [tile]
+  (if-not (= :door-open (:feature tile))
+    true)) ;TODO no diagonal near boulders, squeeze-spaces
+
 (defn passable-walking? [level from to]
-  (walkable? (at level to))) ;TODO doors, no diagonal near boulders
+  (let [from-tile (at level from)
+        to-tile (at level to)]
+    (and (or (walkable? to-tile)
+             (= nil (:feature to-tile))) ; try to path via unexplored tiles
+         (or (#{:N :W :S :E} (towards from to))
+             (and (diagonal-passable? from-tile)
+                  (diagonal-passable? to-tile))))))
 
 (defn walking-cost [tile]
-  10) ; TODO
+  ;(cond->)
+  0) ; TODO
 
-(defn neighbors [pos]
-  (filter valid-position?
-          (map #(->Position (+ (:x pos) (% 0))
-                            (+ (:y pos) (% 1)))
-               (keys directions))))
+(defn neighbors
+  ([level tile]
+   (map #(at level %) (neighbors tile)))
+  ([pos]
+   (filter valid-position?
+           (map #(hash-map :x (+ (:x pos) (% 0))
+                           :y (+ (:y pos) (% 1)))
+                (keys directions)))))
 
-(defn- max-coord [from to]
+(defn distance [from to]
   (max (Math/abs (- (:x from) (:x to)))
        (Math/abs (- (:y from) (:y to)))))
 
@@ -39,7 +53,7 @@
     ;(log/debug (count open))
     (if (empty? open) nil
       (let [[[node path dist] total] (peek open)
-            delta (max-coord node to)]
+            delta (distance node to)]
         (cond
           (zero? delta) path
           (and (= 1 delta)
@@ -59,6 +73,6 @@
 
 (defn path-walking [game to]
   (let [level (curlvl (:dungeon game))]
-    (path (-> game :player :position) to
+    (path (-> game :player) to
           (partial passable-walking? level)
           #(walking-cost (at level %)))))

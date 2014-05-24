@@ -36,12 +36,12 @@
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [game tile]
-  (or (adjacent? (:position tile) (:position (:player game))) ; TODO actual player light radius
+  (or (adjacent? tile (:player game)) ; TODO actual player light radius
       (= \. (:glyph tile))
       (and (= \# (:glyph tile)) (= :white (colormap (:color tile))))))
 
-(defn in-fov? [game {:keys [position]}]
-  (get-in (:fov game) [(dec (:y position)) (:x position)]))
+(defn in-fov? [game pos]
+  (get-in (:fov game) [(dec (:y pos)) (:x pos)]))
 
 (defn visible? [game tile]
   "Only considers normal sight, not infravision/ESP/..."
@@ -75,7 +75,7 @@
 
 (defn- update-map [game {:keys [cursor] :as frame} delegator]
   (-> game
-      (assoc-in [:player :position] (:cursor frame))
+      (update-in [:player] #(into % (:cursor frame))) ; update position
       (update-dungeon frame)
       (update-fov cursor)
       update-explored))

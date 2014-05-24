@@ -3,11 +3,10 @@
             [clojure.string :as string]
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
-            [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
-  [position
+  [x y
    glyph
    color
    feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
@@ -20,7 +19,7 @@
   anbf.bot.ITile)
 
 (defn- initial-tile [x y]
-  (Tile. (->Position x y) \space nil nil false nil 0 [] nil nil))
+  (Tile. x y \space nil nil false nil 0 [] nil nil))
 
 (defrecord Level
   [dlvl
@@ -122,13 +121,15 @@
 (defn item? [glyph]
   (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \%} glyph))
 
-(defn walkable? [tile]
-  (some #(= % (:feature tile))
-        [:ice :floor :air :altar :door-open :sink :fountain :corridor :trap
-         :throne :grave :stairs-up :stairs-down]))
-
 (defn boulder? [tile]
   (= (:glyph tile) \0))
+
+(defn walkable? [tile]
+  (and (not (boulder? tile))
+       (or (:monster tile); XXX not always true TODO fix with walkable-by
+           (some #(= % (:feature tile))
+                 [:ice :floor :air :altar :door-open :sink :fountain
+                  :corridor :trap :throne :grave :stairs-up :stairs-down]))))
 
 (defn transparent?
   "For unexplored tiles just a guess"
@@ -181,7 +182,7 @@
 
 ; they might not have actually been seen but there's usually not much to see in walls
 (defn- mark-wall-seen [tile]
-  (if (= :wall (:feature tile))
+  (if (#{:wall :door-closed} (:feature tile))
     (assoc tile :seen true)
     tile))
 
