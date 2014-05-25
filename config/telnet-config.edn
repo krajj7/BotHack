@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.simplebot"
+ :bot "anbf.bots.explorebot"
  :interface :telnet
  :menubot "anbf.bots.dgl-menu"
  :host "nethack.alt.org"

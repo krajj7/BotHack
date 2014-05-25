@@ -24,21 +24,23 @@ Code for the bot: https://github.com/krajj7/ANBF/blob/master/src/anbf/bots/simpl
 
 Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/SimpleBot/src/anbf/javabots/SimpleBot.java
 
+**25.5.2014**: The framework can now parse the map for basic level layout info and allows for a slightly more complex bot (explorebot.clj) that can explore the first level using A\* pathfinding and charge monsters it encounters.
+
 ## Roadmap
 
 ### Short-term goals
 
-Basic senses – track player status (proper statusline parsing), inventory etc.
-
 More actions, handling of prompts and menus.
 
-Parsing of the map, model of the game world.
+Expand model of the game world.
 
 More advanced bot.
 
 ### Medium-term goals
 
-Pathfinding and long-distance travel.
+Handling inventory.
+
+Long-distance travel.
 
 Make basic monster and item stats available.
 

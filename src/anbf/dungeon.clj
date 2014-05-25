@@ -15,11 +15,13 @@
    searched ; no. of times searched TODO
    items ; [Items]
    monster
-   engraving]
+   engraving
+   shop
+   temple]
   anbf.bot.ITile)
 
 (defn- initial-tile [x y]
-  (Tile. x y \space nil nil false nil 0 [] nil nil))
+  (Tile. x y \space nil nil false nil 0 [] nil nil nil nil))
 
 (defrecord Level
   [dlvl
@@ -122,14 +124,15 @@
   (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \%} glyph))
 
 (defn boulder? [tile]
-  (= (:glyph tile) \0))
+  (and (= (:glyph tile) \0) (zero? (:color tile))))
 
 (defn walkable? [tile]
   (and (not (boulder? tile))
        (or (:monster tile); XXX not always true TODO fix with walkable-by
+           (and (item? (:glyph tile)) (nil? (:feature tile)))
            (some #(= % (:feature tile))
-                 [:ice :floor :air :altar :door-open :sink :fountain
-                  :corridor :trap :throne :grave :stairs-up :stairs-down]))))
+                 [:ice :floor :air :altar :door-open :sink :fountain :trap
+                  :corridor :throne :grave :stairs-up :stairs-down]))))
 
 (defn transparent?
   "For unexplored tiles just a guess"

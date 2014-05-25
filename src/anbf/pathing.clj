@@ -17,7 +17,7 @@
                    from to)))
 
 (defn diagonal-passable? [tile]
-  (if-not (= :door-open (:feature tile))
+  (if (not-any? #(= % (:feature tile)) [nil :door-open])
     true)) ;TODO no diagonal near boulders, squeeze-spaces
 
 (defn passable-walking? [level from to]
