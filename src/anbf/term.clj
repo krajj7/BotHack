@@ -64,10 +64,10 @@
   "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
   [buf]
   ;(println "Terminal: drawing whole new frame")
-  (->Frame (vec (map unpack-line ; turns char[][] into a vector of Strings
-                     (take-last 24 (.charArray buf))))
-           (vec (map unpack-colors
-                     (take-last 24 (.charAttributes buf))))
+  (->Frame (mapv unpack-line ; turns char[][] into a vector of Strings
+                     (take-last 24 (.charArray buf)))
+           (mapv unpack-colors
+                     (take-last 24 (.charAttributes buf)))
            {:x (.getCursorColumn buf)
             :y (.getCursorRow buf)}))
 
