@@ -217,10 +217,18 @@
                          (apply (partial mapv #(apply f %&)) rows)))
          tile-colls))
 
+(defn ensure-curlvl
+  "If current branch-id + dlvl has no level associated, create a new empty level"
+  [dungeon]
+  (if-not (get-in dungeon [:levels (:branch-id dungeon) (:dlvl dungeon)])
+    (add-level dungeon (new-level (:dlvl dungeon) (:branch-id dungeon)))
+    dungeon))
+
 ; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios) or trapdoor
 (defn update-dlvl [dungeon status delegator]
-  ; TODO add-level if new
-  (assoc dungeon :dlvl (:dlvl status)))
+  (-> dungeon
+      (assoc :dlvl (:dlvl status))
+      ensure-curlvl))
 
 (defn update-dungeon [{:keys [dungeon] :as game} {:keys [cursor] :as frame}]
   (-> game
