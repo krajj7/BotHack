@@ -32,6 +32,21 @@
 (defaction Search []
   (trigger [this] "s"))
 
+(defaction Ascend []
+  (trigger [this] "<"))
+
+(defaction Descend []
+  (trigger [this] ">"))
+
+(defaction Kick [dir]
+  (trigger [this] (str (ctrl \d) (vi-directions (enum->kw dir)))))
+
+(defaction Close [dir]
+  (trigger [this] (str "c" (vi-directions (enum->kw dir)))))
+
+(defaction Open [dir]
+  (trigger [this] (str "o" (vi-directions (enum->kw dir)))))
+
 (defn- -withHandler
   ([action handler]
    (-withHandler action priority-default handler))
