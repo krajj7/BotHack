@@ -9,7 +9,7 @@
   [x y
    glyph
    color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
    seen
    walked
    searched ; no. of times searched TODO
@@ -126,6 +126,9 @@
 (defn boulder? [tile]
   (and (= (:glyph tile) \0) (zero? (:color tile))))
 
+(defn door? [tile]
+  (#{:door-open :door-closed :door-locked} (:feature tile)))
+
 (defn walkable? [tile]
   (and (not (boulder? tile))
        (or (:monster tile); XXX not always true TODO fix with walkable-by
@@ -214,8 +217,9 @@
                          (apply (partial mapv #(apply f %&)) rows)))
          tile-colls))
 
-; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios)
+; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios) or trapdoor
 (defn update-dlvl [dungeon status delegator]
+  ; TODO add-level if new
   (assoc dungeon :dlvl (:dlvl status)))
 
 (defn update-dungeon [{:keys [dungeon] :as game} {:keys [cursor] :as frame}]
