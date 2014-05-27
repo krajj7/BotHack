@@ -154,9 +154,9 @@
 (defn curlvl [dungeon]
   (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
-(defn- infer-feature [tile new-glyph new-color]
+(defn- infer-feature [current new-glyph new-color]
   (case new-glyph
-    \space (:feature tile) ; TODO :air
+    \space current ; TODO :air
     \. (if (= (colormap new-color) :cyan) :ice :floor)
     \< :stairs-up
     \> :stairs-down
@@ -170,7 +170,7 @@
     \] :door-closed
     \| (if (= (colormap new-color) :brown) :door-open :wall)
     \- (if (= (colormap new-color) :brown) :door-open :wall)
-    (log/error "unrecognized appearance of tile" tile)))
+    (log/error "unrecognized feature" new-glyph new-color "was" current)))
 
 (defn- update-feature [tile new-glyph new-color]
   ; TODO events
