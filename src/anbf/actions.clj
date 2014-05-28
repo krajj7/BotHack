@@ -27,8 +27,14 @@
   (handler [_ _])
   (trigger [this] "#pray\n"))
 
+(defn- update-searched [{:keys [player] :as game}]
+  (reduce #(update-curlvl-at %1 %2 update-in [:searched] inc) game
+          (conj (neighbors player) player)))
+
+; TODO separate handler and game-update-fn for actions?
 (defaction Search []
-  (handler [_ _])
+  (handler [_ {:keys [game] :as anbf}]
+    (swap! game update-searched) nil)
   (trigger [this] "s"))
 
 (defaction Ascend []

@@ -83,6 +83,8 @@
         (let [from-tile (at level from)
               to-tile (at level to)]
           (and (door? to-tile)
+               (not (or (item? (:glyph to-tile)) ; don't try to break blocked doors
+                        (monster? (:glyph to-tile))))
                (or (not= :door-locked (:feature to-tile))
                    (not (:shop to-tile)))))))
 

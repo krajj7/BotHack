@@ -32,12 +32,28 @@
   (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
        (some #(-> (at level %) :seen not) (neighbors level tile))))
 
+(defn- dead-end? [level tile]
+  (and (walkable? tile)
+       (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
+                                (diagonal? tile %))
+                           (neighbors level tile))))))
+
+(defn- search-dead-end
+  [{:keys [player dungeon] :as game} num-search]
+  (let [level (curlvl dungeon)
+        tile (at level player)]
+    (when (and (dead-end? level tile)
+               (< (:searched tile) num-search))
+      (log/debug "searching dead end")
+      (->Search))))
+
 (defn- explore []
   (let [current (ref nil)]
     (reify ActionHandler
       (choose-action [_ game]
         (dosync
           (or (some-> @current (choose-action game))
+              (search-dead-end game 15)
               ; TODO if reached corridor dead-end (max 1 straight-adjacent walkable), search for a bit
               (when-let [t (peek (nearest-travelling
                                    game
