@@ -9,7 +9,7 @@
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
-            [anbf.action :refer :all]))
+            [anbf.actions :refer :all]))
 
 (defn- enemy? [{:keys [monster] :as tile}]
   (and monster (not (:peaceful monster)) (not (:friendly monster))))
@@ -28,23 +28,9 @@
           (->Move (towards (-> game :player) n))
           (println "cannot path" enemy))))))
 
-(defn travel [game to]
-  (reify ActionHandler
-    (choose-action [this game]
-      (if-let [p (path-walking game to)]
-        (if-let [n (first p)]
-          (if (walkable? (at (-> game :dungeon curlvl) n))
-            (do (Thread/sleep 50) (->Move (towards (-> game :player) n))) ; XXX
-            (log/debug "reached unwalkable target"))
-          (log/debug "reached travel target"))
-        (do (log/debug "target not reachable")
-            (Thread/sleep 200)))))) ; XXX
-
-(defn- explorable-tiles [level]
-  (reduce into #{}
-          (map #(if (not (:seen %))
-                  (filter walkable? (neighbors level %)))
-               (apply concat (:tiles level)))))
+(defn- explorable-tile? [level tile]
+  (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
+       (some #(-> (at level %) :seen not) (neighbors level tile))))
 
 (defn- explore []
   (let [current (ref nil)]
@@ -52,15 +38,26 @@
       (choose-action [_ game]
         (dosync
           (or (some-> @current (choose-action game))
-              (loop [t (sort-by #(distance (-> game :player) %)
-                                (explorable-tiles (curlvl (:dungeon game))))]
-                (when-let [target (first t)]
-                  (log/debug "chose exploration target " target)
-                  (or (some-> (ref-set current (travel game target))
-                              (choose-action game))
-                      (recur (rest t)))))
+              ; TODO if reached corridor dead-end (max 1 straight-adjacent walkable), search for a bit
+              (when-let [t (peek (nearest-travelling
+                                   game
+                                   (partial explorable-tile?
+                                            (curlvl (:dungeon game)))))]
+                (log/debug "chose exploration target " t)
+                (Thread/sleep 100) ; XXX
+                (some-> (ref-set current (travel t))
+                        (choose-action game)))
               (ref-set current nil)
               (log/debug "nothing to explore")))))))
+
+(defn- descend []
+  (reify ActionHandler
+    (choose-action [_ game]
+      (if-let [path (nearest-travelling game #(= :stairs-down (:feature %)))]
+        (if-let [t (peek path)]
+          (choose-action (travel t) game)
+          (->Descend))
+        (log/debug "cannot find stairs")))))
 
 (defn- random-travel []
   (let [current (ref nil)]
@@ -72,7 +69,7 @@
                 (let [target (some->> game :dungeon curlvl :tiles (apply concat)
                                       (filterv walkable?) rand-nth)]
                   (log/debug "chose random tile " target)
-                  (or (some-> (ref-set current (travel game target))
+                  (or (some-> (ref-set current (travel target))
                               (choose-action game))
                       (recur))))))))))
 
@@ -99,5 +96,6 @@
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
       (register-handler 5 (explore))
-      (register-handler 6 (random-travel))
+      (register-handler 6 (descend))
+      (register-handler 7 (random-travel))
       (register-handler 10 (search))))

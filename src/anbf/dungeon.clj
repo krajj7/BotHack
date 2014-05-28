@@ -214,7 +214,7 @@
     tile))
 
 (defn update-curlvl-at
-  "Update the tile at given position by applying update-fn to current value and args"
+  "Update the tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
   (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
                          (:dlvl (:dungeon game)) :tiles
