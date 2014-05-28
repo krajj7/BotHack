@@ -5,7 +5,7 @@
   (:require [clojure.tools.logging :as log]
             [anbf.anbf :refer :all]
             [anbf.delegator :refer :all]
-            [anbf.action :refer :all]))
+            [anbf.actions :refer :all]))
 
 (def ^:private circle-small (cycle [:N :E :S :W]))
 

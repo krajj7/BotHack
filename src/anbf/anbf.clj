@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [anbf.util :refer :all]
             [anbf.jta :refer :all]
+            [anbf.action :refer :all]
             [anbf.delegator :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
@@ -89,10 +90,20 @@
          scraper-fn (ref nil)
          initial-game (atom (new-game))
          anbf (ANBF. config delegator jta scraper-fn initial-game)
-         scraper (scraper-handler scraper-fn delegator)]
+         scraper (scraper-handler scraper-fn delegator)
+         action-handlers (atom #{})]
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
          (register-handler (game-handler initial-game delegator))
+         (register-handler (reify ActionChosenHandler
+                             (action-chosen [_ action]
+                               (map (partial deregister-handler anbf)
+                                    @action-handlers)
+                               (reset! action-handlers #{})
+                               ; TODO user handlers
+                               (when-let [h (handler action anbf)]
+                                 (register-handler anbf priority-top h)
+                                 (swap! action-handlers conj h)))))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
@@ -102,12 +113,12 @@
                                (register-handler anbf scraper)
                                (start-bot anbf))))
          (register-handler (reify
-                             ;ToplineMessageHandler
-                             ;(message [_ text]
-                             ;  (log/info "Topline message:" text))
-                             ;ActionChosenHandler
-                             ;(action-chosen [_ action]
-                             ;  (log/info "Performing action:" action))
+                             ToplineMessageHandler
+                             (message [_ text]
+                               (log/info "Topline message:" text))
+                             ActionChosenHandler
+                             (action-chosen [_ action]
+                               (log/info "Performing action:" action))
                              ;BOTLHandler
                              ;(botl [_ status]
                              ;  (log/info "new botl status:" status))

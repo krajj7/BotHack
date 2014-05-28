@@ -144,9 +144,12 @@
        (not (#{:rock :wall :tree :door-closed :cloud} feature))
        (or feature monster items)))
 
-(defn walkable-by [tile monster]
-  ; TODO change feature: closed door to open door, rock/wall/tree to corridor.  consider xorns, slimes (door-ooze), fliers (over water/lava), fish
-  tile)
+(defn walkable-by [{:keys [feature] :as tile} {:keys [glyph color] :as monster}]
+  (cond-> tile
+    (and (not= \P glyph)
+         (door? feature)) (assoc-in [:feature] :door-open)
+    (and (not= \X glyph)
+         (#{:rock :wall :tree} feature)) (assoc-in [:feature] :corridor)))
 
 (defn branch-key [{:keys [branch-id] :as dungeon}]
   (get (:id->branch dungeon) branch-id branch-id))
@@ -210,6 +213,13 @@
         mark-wall-seen)
     tile))
 
+(defn update-curlvl-at
+  "Update the tile at given position by applying update-fn to current value and args"
+  [game pos update-fn & args]
+  (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
+                         (:dlvl (:dungeon game)) :tiles
+                         (dec (:y pos)) (:x pos)] update-fn args))
+
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
   [f & tile-colls]
@@ -237,6 +247,5 @@
                  (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
       ; mark player as friendly
-      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles
-                 (dec (:y cursor)) (:x cursor) :monster :friendly] true)
+      (update-curlvl-at cursor assoc-in [:monster :friendly] true)
       (update-in [:dungeon] infer-branch)))

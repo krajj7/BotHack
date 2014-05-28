@@ -2,7 +2,7 @@
 
 (ns anbf.bot)
 
-; note: delegator.clj, action.clj and java code generate additional classes in the anbf.bot package
+; note: delegator.clj, actions.clj and java code generate additional classes in the anbf.bot package
 
 (definterface IANBF
   (^anbf.bot.IANBF registerHandler [handler])
@@ -14,6 +14,7 @@
   (^anbf.bot.IANBF write [^String text]))
 
 (definterface IAction
+  (handler [^anbf.bot.IANBF anbf])
   (^String trigger []))
 
 (definterface IPlayer
