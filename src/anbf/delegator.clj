@@ -93,8 +93,9 @@
     (symbol res)
     (with-meta res (meta sym))))
 
-(defn- interface-sig [[method [_ & args]]]
-  `(~(symbol (declojurify method)) [~@args]))
+(defn- interface-sig [return [method [_ & args]]]
+  `(~(with-meta (symbol (declojurify method))
+                {:tag (or return 'void)}) [~@args]))
 
 (defn- interface-call [[method [this & args]]]
   `(~method [~this ~@args] (. ~this ~(declojurify method) ~@args)))
@@ -111,21 +112,17 @@
        (import ~cname))))
 
 (defmacro ^:private defprotocol-delegated
-  [invoke-fn protocol & proto-methods]
+  [return invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
        (defnsinterface ~(symbol (str \I protocol)) "anbf.bot"
-         ~@(map interface-sig proto-methods))
+         ~@(map (partial interface-sig return) proto-methods))
        (extend-type ~(symbol (str "anbf.bot.I" protocol))
          ~protocol ~@(map interface-call proto-methods))
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
-(defn- with-tags [tag specs]
-  (map (fn [[method args]] (list (with-meta method {:tag tag}) args)) specs))
-
 (defmacro ^:private defeventhandler [protocol & proto-methods]
-  `(defprotocol-delegated invoke-event ~protocol
-     ~@(with-tags 'void proto-methods)))
+  `(defprotocol-delegated nil invoke-event ~protocol ~@proto-methods))
 
 ; event protocols:
 
@@ -162,8 +159,8 @@
 ; TODO menu handler, location handler
 
 (defmacro ^:private defchoicehandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-choice ~protocol
-     ~@(with-tags String proto-methods)))
+  `(defprotocol-delegated String respond-choice ~protocol
+     ~@proto-methods))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
@@ -175,8 +172,8 @@
       (->> action trigger (write delegator)))))
 
 (defmacro ^:private defactionhandler [protocol & proto-methods]
-  `(defprotocol-delegated respond-action ~protocol
-     ~@(with-tags anbf.bot.IAction proto-methods)))
+  `(defprotocol-delegated anbf.bot.IAction respond-action ~protocol
+     ~@proto-methods))
 
 (defactionhandler ActionHandler
   (choose-action [handler ^anbf.bot.IGame gamestate]))
