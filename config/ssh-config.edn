@@ -8,4 +8,5 @@
  :ssh-pass ""
  :dgl-login "dumbbot"
  :dgl-pass "tops3cr3t"
+ :ttyrec true
 }

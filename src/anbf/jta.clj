@@ -28,7 +28,9 @@
                                (online [_]
                                  (send delegator online))))))
 
-(defn- new-jta [pl protocol delegator]
+(defn- new-jta [pl protocol config delegator]
+  (if (config-get config :ttyrec false)
+    (.addPlugin pl "Ttyrec" "ttyrec"))
   (JTA. pl protocol (-> (.addPlugin pl "NHTerminal" "terminal")
                         (set-delegator delegator))))
 
@@ -43,7 +45,7 @@
                      (doto (PluginConfig. (Properties.))
                        (.setProperty "Shell" "command"
                                      (config-get config :nh-command)))))
-    (new-jta pl protocol delegator)))
+    (new-jta pl protocol config delegator)))
 
 (defmethod init-jta :ssh [config delegator]
   (let [pl (plugin-loader delegator)
@@ -54,12 +56,12 @@
                                      (config-get config :ssh-user))
                        (.setProperty "SSH" "password"
                                      (config-get config :ssh-pass)))))
-    (new-jta pl protocol delegator)))
+    (new-jta pl protocol config delegator)))
 
 (defmethod init-jta :telnet [config delegator]
   (let [pl (plugin-loader delegator)]
     (.addPlugin pl "Socket" "socket")
-    (new-jta pl (.addPlugin pl "Telnet" "protocol") delegator)))
+    (new-jta pl (.addPlugin pl "Telnet" "protocol") config delegator)))
 
 (defmethod init-jta :default [_ _]
   (throw (IllegalArgumentException. "Invalid :interface configuration")))
