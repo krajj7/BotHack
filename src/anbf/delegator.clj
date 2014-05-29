@@ -63,7 +63,7 @@
 
 (defn- invoke-command
   [protocol method delegator & args]
-  (loop [[[handler _] & more-handlers] (seq (:handlers delegator))]
+  (loop [[handler & more-handlers] (keys (:handlers delegator))]
     ;(log/debug "invoking next command handler" handler)
     (or (apply invoke-handler protocol method handler args)
         (if (seq more-handlers)

@@ -112,7 +112,7 @@
            (:dlvl level) level)))
 
 (defn new-dungeon []
-  (add-level (Dungeon. {} (reduce #(assoc %1 %2 %2) (hash-map) branches)
+  (add-level (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)
                        {:earth "Dlvl:1"} :main "Dlvl:1")
              (new-level "Dlvl:1" :main)))
 
@@ -131,8 +131,7 @@
 
 (defn walkable? [tile]
   (and (not (boulder? tile))
-       (or (:monster tile); XXX not always true TODO fix with walkable-by
-           (and (item? (:glyph tile)) (nil? (:feature tile)))
+       (or (and (item? (:glyph tile)) (nil? (:feature tile)))
            (some #(= % (:feature tile))
                  [:ice :floor :air :altar :door-open :sink :fountain :trap
                   :corridor :throne :grave :stairs-up :stairs-down]))))
@@ -146,8 +145,8 @@
 
 (defn walkable-by [{:keys [feature] :as tile} {:keys [glyph color] :as monster}]
   (cond-> tile
-    (and (not= \P glyph)
-         (door? feature)) (assoc-in [:feature] :door-open)
+    (and (not (#{\X \P} glyph))
+         (door? tile)) (assoc-in [:feature] :door-open)
     (and (not= \X glyph)
          (#{:rock :wall :tree} feature)) (assoc-in [:feature] :corridor)))
 
