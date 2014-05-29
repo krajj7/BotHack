@@ -88,14 +88,19 @@
          config (load-config fname)
          jta (init-jta config delegator)
          scraper-fn (ref nil)
-         initial-game (atom (new-game))
-         anbf (ANBF. config delegator jta scraper-fn initial-game)
+         game (atom (new-game))
+         anbf (ANBF. config delegator jta scraper-fn game)
          scraper (scraper-handler scraper-fn delegator)
          action-handlers (atom #{})]
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
-         (register-handler (game-handler initial-game delegator))
-         (register-handler (reify ActionChosenHandler
+         (register-handler priority-top
+                           (game-handler game delegator))
+         (register-handler priority-bottom
+                           (reify FullFrameHandler
+                             (full-frame [_ _]
+                               (send delegator choose-action @game))))
+         (register-handler (reify ActionChosenHandler ; TODO move to fn (with atom)
                              (action-chosen [_ action]
                                (map (partial deregister-handler anbf)
                                     @action-handlers)

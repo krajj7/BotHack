@@ -91,5 +91,4 @@
       (swap! game game-botl status delegator))
     FullFrameHandler
     (full-frame [_ frame]
-      (->> (swap! game update-map frame delegator)
-           (send delegator choose-action)))))
+      (swap! game update-map frame delegator))))
