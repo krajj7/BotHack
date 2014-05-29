@@ -51,7 +51,16 @@
   (trigger [this] (str (ctrl \d) (vi-directions (enum->kw dir)))))
 
 (defaction Close [dir]
-  (handler [_ _])
+  (handler [this {:keys [game] :as anbf}]
+    (reify ToplineMessageHandler
+      (message [_ text]
+        (let [door (in-direction (:player @game) dir)]
+          (case text
+            "This door is already closed." (swap! game update-curlvl-at door
+                                                  assoc :feature :door-closed)
+            "You see no door there." (swap! game update-curlvl-at door
+                                            assoc :feature nil)
+            nil)))))
   (trigger [this] (str \c (vi-directions (enum->kw dir)))))
 
 (defaction Open [dir]
@@ -64,6 +73,10 @@
                                           assoc :feature :door-locked)
             "This door is already open." (swap! game update-curlvl-at door
                                                 assoc :feature :door-open)
+            "The door opens." (swap! game update-curlvl-at door
+                                     assoc :feature :door-open)
+            "You see no door there." (swap! game update-curlvl-at door
+                                            assoc :feature nil)
             nil)))))
   (trigger [this] (str \o (vi-directions (enum->kw dir)))))
 

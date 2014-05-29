@@ -80,9 +80,20 @@
     (start-clj-bot anbf (symbol menubot-ns))
     true))
 
+(defn- actions-handler [anbf]
+  (let [action-handlers (atom #{})]
+    (reify ActionChosenHandler
+      (action-chosen [_ action]
+        (dorun (map (partial deregister-handler anbf)
+                    @action-handlers))
+        (reset! action-handlers #{})
+        ; TODO user handlers - XXX dorun!
+        (when-let [h (handler action anbf)]
+          (register-handler anbf priority-top h)
+          (swap! action-handlers conj h))))))
+
 (defn new-anbf
-  ([]
-   (new-anbf "config/shell-config.edn"))
+  ([] (new-anbf "config/shell-config.edn"))
   ([fname]
    (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
          config (load-config fname)
@@ -90,25 +101,15 @@
          scraper-fn (ref nil)
          game (atom (new-game))
          anbf (ANBF. config delegator jta scraper-fn game)
-         scraper (scraper-handler scraper-fn delegator)
-         action-handlers (atom #{})]
+         scraper (scraper-handler scraper-fn delegator)]
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
-         (register-handler priority-top
-                           (game-handler game delegator))
+         (register-handler priority-top (game-handler game delegator))
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [_ _]
                                (send delegator choose-action @game))))
-         (register-handler (reify ActionChosenHandler ; TODO move to fn (with atom)
-                             (action-chosen [_ action]
-                               (map (partial deregister-handler anbf)
-                                    @action-handlers)
-                               (reset! action-handlers #{})
-                               ; TODO user handlers
-                               (when-let [h (handler action anbf)]
-                                 (register-handler anbf priority-top h)
-                                 (swap! action-handlers conj h)))))
+         (register-handler (actions-handler anbf))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
@@ -143,8 +144,7 @@
              (config-get config :port 23))
   anbf)
 
-(defn stop
-  [anbf]
+(defn stop [anbf]
   (stop-jta (:jta anbf))
   (dosync (ref-set (:scraper anbf) nil))
   (log/info "ANBF instance stopped")
