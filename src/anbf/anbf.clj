@@ -4,6 +4,7 @@
             [anbf.jta :refer :all]
             [anbf.action :refer :all]
             [anbf.delegator :refer :all]
+            [anbf.dungeon :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
             [anbf.scraper :refer :all]))
@@ -108,6 +109,7 @@
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [_ _]
+                               (log/debug (-> game deref :dungeon curlvl :monsters)) ; XXX
                                (send delegator choose-action @game))))
          (register-handler (actions-handler anbf))
          (register-handler (reify GameStateHandler

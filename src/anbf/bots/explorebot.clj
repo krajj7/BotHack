@@ -11,34 +11,40 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
-(defn- enemy? [{:keys [monster] :as tile}]
-  (and monster (not (:peaceful monster)) (not (:friendly monster))))
+(defn- enemy? [monster]
+  (and (not (:peaceful monster))
+       (not (:friendly monster))))
+
+(defn- enemies [level]
+  (filter enemy? (-> level :monsters vals)))
 
 (defn- fight []
   (reify ActionHandler
     (choose-action [_ game]
-      ; TODO can get stuck if immobile monster gets out of LOS momentarily while going to it, needs monster tracking...
-      ; TODO nearest
-      (when-let [enemy (first (filter #(and (in-fov? game %) (enemy? %))
-                                      (->> game :dungeon curlvl :tiles
-                                           (apply concat))))]
-        (println "see enemy at" enemy)
-        (Thread/sleep 200) ; XXX
-        (if-let [n (first (path-walking game enemy))]
-          (->Move (towards (-> game :player) n))
-          (println "cannot path" enemy))))))
+      (loop [enemies (sort-by #(distance (:player game) %)
+                              (filter #(and (> 3 (- (:turn game) (:seen %)))
+                                            (> 10 (distance (:player game) %)))
+                                      (-> game :dungeon curlvl enemies)))]
+        (when-let [enemy (first enemies)]
+          (log/debug "targetting enemy" enemy)
+          (Thread/sleep 100) ; XXX
+          (if-let [n (first (path-walking game enemy))]
+            (->Move (towards (-> game :player) n))
+            (do (log/debug "cannot path" enemy)
+                (recur (rest enemies)))))))))
 
 (defn- explorable-tile? [level tile]
   (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
-       (some #(-> (at level %) :seen not) (neighbors level tile))))
+       (some #(not (:seen %)) (neighbors level tile))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
-       (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
+       (> 2 (count (remove #(or (door? %)
+                                (#{:rock :wall} (:feature %))
                                 (diagonal? tile %))
                            (neighbors level tile))))))
 
-(defn- search-dead-end
+(defn- search-dead-end ; TODO not in the mines
   [{:keys [player dungeon] :as game} num-search]
   (let [level (curlvl dungeon)
         tile (at level player)]
@@ -54,7 +60,6 @@
         (dosync
           (or (some-> @current (choose-action game))
               (search-dead-end game 15)
-              ; TODO if reached corridor dead-end (max 1 straight-adjacent walkable), search for a bit
               (when-let [t (peek (nearest-travelling
                                    game
                                    (partial explorable-tile?
@@ -95,6 +100,7 @@
   (reify ActionHandler
     (choose-action [_ _]
       ; TODO look for dead ends, then walls
+      ; TODO push boulders
       (->Search))))
 
 (defn- pray-for-food []

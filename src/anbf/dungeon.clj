@@ -3,6 +3,7 @@
             [clojure.string :as string]
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
+            [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Tile
@@ -14,19 +15,19 @@
    walked
    searched ; no. of times searched TODO
    items ; [Items]
-   monster
    engraving
    shop
    temple]
   anbf.bot.ITile)
 
 (defn- initial-tile [x y]
-  (Tile. x y \space nil nil false nil 0 [] nil nil nil nil))
+  (Tile. x y \space nil nil false nil 0 [] nil nil nil))
 
 (defrecord Level
   [dlvl
    branch-id
-   tiles]
+   tiles
+   monsters] ; { {:x X :y Y} => Monster }
   anbf.bot.ILevel)
 
 (defmethod print-method Level [level w]
@@ -40,7 +41,7 @@
        (partition 80) (map vec) vec))
 
 (defn new-level [dlvl branch-id]
-  (Level. dlvl branch-id (initial-tiles)))
+  (Level. dlvl branch-id (initial-tiles) {}))
 
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))
@@ -143,7 +144,8 @@
        (not (#{:rock :wall :tree :door-closed :cloud} feature))
        (or feature monster items)))
 
-(defn walkable-by [{:keys [feature] :as tile} {:keys [glyph color] :as monster}]
+(defn walkable-by [{:keys [feature] :as tile} glyph]
+  ; full inferred monster type could be made available here but shouldn't be necessary
   (cond-> tile
     (and (not (#{\X \P} glyph))
          (door? tile)) (assoc-in [:feature] :door-open)
@@ -176,17 +178,10 @@
 
 (defn- update-feature [tile new-glyph new-color]
   ; TODO events
-  (cond (monster? new-glyph) (walkable-by tile (:monster tile))
+  (cond (monster? new-glyph) (walkable-by tile new-glyph)
         (item? new-glyph) tile
         :else (update-in tile [:feature]
                          infer-feature new-glyph new-color)))
-
-(defn- update-monster [tile new-glyph new-color]
-  ; TODO events (monster gone, monster appeared)
-  (assoc tile :monster
-         (if (and (monster? new-glyph))
-           (monster new-glyph new-color)
-           nil)))
 
 ; they might not have actually been seen but there's usually not much to see in walls
 (defn- mark-wall-seen [tile]
@@ -205,7 +200,6 @@
 (defn- parse-tile [tile new-glyph new-color]
   (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))
     (-> tile
-        (update-monster new-glyph new-color)
         (update-items new-glyph new-color)
         (update-feature new-glyph new-color)
         (assoc :glyph new-glyph :color new-color)
@@ -239,12 +233,28 @@
       (assoc :dlvl (:dlvl status))
       ensure-curlvl))
 
-(defn update-dungeon [{:keys [dungeon] :as game} {:keys [cursor] :as frame}]
+(defn- gather-monsters [game frame]
+  (into {} (map (fn [tile glyph color]
+                  (if (monster? glyph)
+                    (vector (position tile)
+                            (new-monster (:x tile) (:y tile)
+                                         (:turn game) glyph color))))
+                (apply concat (-> game :dungeon curlvl :tiles))
+                (apply concat (drop 1 (:lines frame)))
+                (apply concat (drop 1 (:colors frame))))))
+
+(defn- update-monsters [{:keys [dungeon] :as game} frame]
   (-> game
-      ; parse the new tiles
+      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
+                 :monsters] (gather-monsters game frame))
+      ; mark player as friendly
+      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
+                 :monsters (:cursor frame) :friendly] true)))
+
+(defn update-dungeon [{:keys [dungeon] :as game} frame]
+  (-> game
+      (update-monsters frame)
       (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
                  (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
-      ; mark player as friendly
-      (update-curlvl-at cursor assoc-in [:monster :friendly] true)
       (update-in [:dungeon] infer-branch)))

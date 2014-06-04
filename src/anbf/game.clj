@@ -73,11 +73,23 @@
                                     (update-visible-tile tile)
                                     tile)))))
 
+(defn- track-monsters
+  "Try to transfer monster properties from the old game snapshot to the new, even if the monsters moved slightly and remember monsters that went out of sight."
+  [{:keys [player] :as new-game} old-game]
+  (if (not= (-> old-game :dungeon :dlvl)
+            (-> new-game :dungeon :dlvl))
+    new-game ; TODO track stair followers?
+    ; nearby with same appearance => transfer props
+    ; disappeared and visible => forget, probably dead
+    ; disappeared not visible => transfer
+    new-game)) ; TODO
+
 (defn- update-map [game {:keys [cursor] :as frame} delegator]
   (-> game
       (update-in [:player] #(into % (:cursor frame))) ; update position
       (update-dungeon frame)
       (update-fov cursor)
+      (track-monsters game)
       update-explored))
 
 (defn game-handler
