@@ -65,12 +65,13 @@
   [protocol method delegator & args]
   (loop [[handler & more-handlers] (keys (:handlers delegator))]
     ;(log/debug "invoking next command handler" handler)
-    (or (apply invoke-handler protocol method handler args)
-        (if (seq more-handlers)
-          (recur more-handlers)
-          (throw (IllegalStateException.
-                   (str "No handler responded to command of "
-                        (:on-interface protocol))))))))
+    (if-some [res (apply invoke-handler protocol method handler args)]
+      res
+      (if (seq more-handlers)
+        (recur more-handlers)
+        (throw (IllegalStateException.
+                 (str "No handler responded to command of "
+                      (:on-interface protocol))))))))
 
 (defn- respond-choice [protocol method delegator & args]
   (if-not (:inhibited delegator)
@@ -79,6 +80,11 @@
         (write delegator res)
         (do (log/info "Escaping choice")
             (write delegator esc))))))
+
+(defn- respond-yesno [protocol method delegator & args]
+  (if-not (:inhibited delegator)
+    (let [res (apply invoke-command protocol method delegator args)]
+      (write delegator (if res "y" "n")))))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -159,11 +165,16 @@
 ; TODO menu handler, location handler
 
 (defmacro ^:private defchoicehandler [protocol & proto-methods]
-  `(defprotocol-delegated String respond-choice ~protocol
-     ~@proto-methods))
+  `(defprotocol-delegated String respond-choice ~protocol ~@proto-methods))
+
+(defmacro ^:private defyesnohandler [protocol & proto-methods]
+  `(defprotocol-delegated Boolean respond-yesno ~protocol ~@proto-methods))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
+
+(defyesnohandler ReallyAttackHandler
+  (really-attack [handler text]))
 
 (defn- respond-action [protocol method delegator & args]
   (if-not (:inhibited delegator)
