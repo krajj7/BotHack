@@ -31,7 +31,8 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
-    (re-seq #".*\? \[[^\]]+\] (\(.\) )?$" (before-cursor frame))))
+    (first (first (re-seq #".*\? \[[^\]]+\] (\(.\) )?$"
+                          (before-cursor frame))))))
 
 (defn- more-prompt? [frame]
   (before-cursor? frame "--More--"))
@@ -41,7 +42,7 @@
   [frame]
   (when (more-prompt? frame)
     (-> (:lines frame)
-        (nth 0) ; TODO handle non-topline --More--
+        (nth 0) ; TODO handle non-topline --More--, possibly concatenate lines (long engravings cause multiline messages)
         string/trim
         (string/replace-first #"--More--" ""))))
 
@@ -59,8 +60,7 @@
         (str (string/trim topline) " " prompt-end)
         prompt-end))))
 
-(defn- prompt-fn
-  [msg]
+(defn- prompt-fn [msg]
   (throw (UnsupportedOperationException. "TODO prompt-fn - implement me"))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
@@ -70,6 +70,12 @@
 ;    qr/^What monster do you want to genocide\?/ => 'genocide_species',
 ;    qr/^What class of monsters do you wish to genocide\?/ => 'genocide_class',
   )
+
+(defn- choice-fn [msg]
+  (cond
+    (re-seq #"^Really attack (.*?)\?" msg) really-attack
+    :default (throw (UnsupportedOperationException.
+                      (str "unimplemented choice prompt: " msg)))))
 
 (defn- game-over? [frame]
   (re-seq #"^Do you want your possessions identified\?|^Die\?|^Really quit\?|^Do you want to see what you had when you died\?"
@@ -129,11 +135,10 @@
           (handle-choice-prompt [frame]
             (when-let [text (choice-prompt frame)]
               (log/debug "Handling choice prompt")
-              ; TODO "Really attack the XXX?" => peaceful (unless actually attacked)
               (emit-botl frame delegator)
-              ; TODO maybe will need extra newline to push response away from ctrl-p message handler
+              ; TODO prompt may re-appear in lastmsg+action as topline msg
               ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX") - zpusobi i znacka!
-              (throw (UnsupportedOperationException. "TODO choice prompt - implement me")))) ; TODO
+              (send delegator (choice-fn text) text)))
           (handle-more [frame]
             (when-let [text (more-prompt frame)]
               (log/debug "Handling --More-- prompt")

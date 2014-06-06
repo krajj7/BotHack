@@ -17,7 +17,7 @@
    :SW \b :S \j :SE \n})
 
 (defaction Move [dir]
-  (handler [_ _]) ; TODO door on failed diagonal, peacefuls
+  (handler [_ _]) ; TODO door on failed diagonal, peacefuls "Really attack the XXX?" "The XXX gets angry!"
   (trigger [this]
     (str (or (vi-directions (enum->kw dir))
              (throw (IllegalArgumentException.

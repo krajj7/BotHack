@@ -115,6 +115,8 @@
                           (choose-character [this]
                             (deregister-handler anbf this)
                             "nsm"))) ; choose samurai
+      (register-handler (reify ReallyAttackHandler
+                          (really-attack [_ _] false)))
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
       (register-handler 5 (explore))
