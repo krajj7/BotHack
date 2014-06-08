@@ -206,12 +206,21 @@
         mark-wall-seen)
     tile))
 
+(defn update-curlvl-monster
+  "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
+  [game pos update-fn & args]
+  {:pre [(get-in game [:dungeon :levels (branch-key (:dungeon game))
+                       (:dlvl (:dungeon game)) :monsters (position pos)])]}
+  (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
+                         (:dlvl (:dungeon game)) :monsters (position pos)]
+         update-fn args))
+
 (defn update-curlvl-at
   "Update the tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
   (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
-                         (:dlvl (:dungeon game)) :tiles
-                         (dec (:y pos)) (:x pos)] update-fn args))
+                         (:dlvl (:dungeon game)) :tiles (dec (:y pos)) (:x pos)]
+         update-fn args))
 
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"

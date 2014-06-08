@@ -73,9 +73,10 @@
                                     (update-visible-tile tile)
                                     tile)))))
 
-(defn- track-transfer [game monster old-monster]
-  (log/debug "transfer:" \newline monster "to" \newline old-monster)
-  game) ; TODO transfer
+(defn- track-transfer [game old-monster monster]
+  (log/debug "transfer:" \newline old-monster "to" \newline monster)
+  (update-curlvl-monster game monster into ; TODO type
+                         (select-keys old-monster [:peaceful :cancelled])))
 
 (defn- track-monsters
   "Try to transfer monster properties from the old game snapshot to the new, even if the monsters moved slightly."
@@ -101,7 +102,7 @@
               (if (next candidates) ; ignore ambiguous cases
                 (recur game (rest monsters) dist
                        (conj ignored-new (position m)) ignored-old)
-                (recur (track-transfer game m (first candidates))
+                (recur (track-transfer game (first candidates) m)
                        (rest monsters) dist
                        (conj ignored-new (position m))
                        (conj ignored-old (position (first candidates)))))
