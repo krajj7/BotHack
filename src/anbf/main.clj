@@ -27,15 +27,13 @@
   (->> (take 1 args) (apply new-anbf) init-ui start (def a)))
 
 ; shorthand functions for REPL use
-(defn- w
-  [ch]
-  (raw-write (:jta a) ch))
+(defn- w [ch] (raw-write (:jta a) ch))
 
-(defn- p []
-  (pause a))
+(defn- r [] (w (ctrl \r)))
 
-(defn- s []
-  (stop a))
+(defn- p [] (pause a))
+
+(defn- s [] (stop a))
 
 (defn- u []
   (if (:inhibited @(:delegator a))
