@@ -73,16 +73,42 @@
                                     (update-visible-tile tile)
                                     tile)))))
 
+(defn- track-transfer [game monster old-monster]
+  (log/debug "transfer:" \newline monster "to" \newline old-monster)
+  game) ; TODO transfer
+
 (defn- track-monsters
-  "Try to transfer monster properties from the old game snapshot to the new, even if the monsters moved slightly and remember monsters that went out of sight."
-  [{:keys [player] :as new-game} old-game]
+  "Try to transfer monster properties from the old game snapshot to the new, even if the monsters moved slightly."
+  [new-game old-game]
   (if (not= (-> old-game :dungeon :dlvl)
             (-> new-game :dungeon :dlvl))
     new-game ; TODO track stair followers?
-    ; nearby with same appearance => transfer props
-    ; disappeared and visible => forget, probably dead
-    ; disappeared not visible => transfer
-    new-game)) ; TODO
+    (let [old-monsters (vals (-> old-game :dungeon curlvl :monsters))]
+      (loop [game new-game
+             monsters (vals (-> new-game :dungeon curlvl :monsters))
+             dist 0
+             ignored-new #{(position (:player new-game))}
+             ignored-old #{(position (:player old-game))}]
+        (if (> 3 dist)
+          (if-let [m (first (remove #(ignored-new (position %)) monsters))]
+            (if-let [candidates (seq (filter (fn candidate? [n]
+                                               (and (= (:glyph m) (:glyph n))
+                                                    (= (:color m) (:color n))
+                                                    (= dist (distance m n))))
+                                             (remove #(ignored-old
+                                                        (position %))
+                                                     old-monsters)))]
+              (if (next candidates) ; ignore ambiguous cases
+                (recur game (rest monsters) dist
+                       (conj ignored-new (position m)) ignored-old)
+                (recur (track-transfer game m (first candidates))
+                       (rest monsters) dist
+                       (conj ignored-new (position m))
+                       (conj ignored-old (position (first candidates)))))
+              (recur game (rest monsters) dist ignored-new ignored-old))
+            (recur game (vals (-> new-game :dungeon curlvl :monsters))
+                   (inc dist) ignored-new ignored-old))
+          game))))) ; TODO remember/unremember unignored old/new
 
 (defn- update-map [game {:keys [cursor] :as frame} delegator]
   (-> game
