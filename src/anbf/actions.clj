@@ -17,15 +17,21 @@
    :SW \b :S \j :SE \n})
 
 (defaction Move [dir]
-  (handler [_ _]) ; TODO door on failed diagonal, peacefuls "Really attack the XXX?" "The XXX gets angry!"
-  (trigger [this]
+  (handler [_ {:keys [game] :as anbf}]
+    ; TODO door on failed diagonal, "The XXX gets angry!"
+    (reify ReallyAttackHandler
+      (really-attack [_ _]
+        (swap! game #(update-curlvl-monster % (in-direction (:player %) dir)
+                                            assoc :peaceful true))
+        nil)))
+  (trigger [_]
     (str (or (vi-directions (enum->kw dir))
              (throw (IllegalArgumentException.
                       (str "Invalid direction: " dir)))))))
 
 (defaction Pray []
   (handler [_ _])
-  (trigger [this] "#pray\n"))
+  (trigger [_] "#pray\n"))
 
 (defn- update-searched [{:keys [player] :as game}]
   (reduce #(update-curlvl-at %1 %2 update-in [:searched] inc) game
@@ -35,23 +41,23 @@
 (defaction Search []
   (handler [_ {:keys [game] :as anbf}]
     (swap! game update-searched) nil)
-  (trigger [this] "s"))
+  (trigger [_] "s"))
 
 (defaction Ascend []
   (handler [_ _])
-  (trigger [this] "<"))
+  (trigger [_] "<"))
 
 (defaction Descend []
   (handler [_ _])
-  (trigger [this] ">"))
+  (trigger [_] ">"))
 
 ; TODO "As you kick the door, it crashes open!" => :floor
 (defaction Kick [dir]
   (handler [_ _])
-  (trigger [this] (str (ctrl \d) (vi-directions (enum->kw dir)))))
+  (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
 
 (defaction Close [dir]
-  (handler [this {:keys [game] :as anbf}]
+  (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
         (let [door (in-direction (:player @game) dir)]
@@ -64,7 +70,7 @@
   (trigger [this] (str \c (vi-directions (enum->kw dir)))))
 
 (defaction Open [dir]
-  (handler [this {:keys [game] :as anbf}]
+  (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
         (let [door (in-direction (:player @game) dir)]
@@ -78,7 +84,7 @@
             "You see no door there." (swap! game update-curlvl-at door
                                             assoc :feature nil)
             nil)))))
-  (trigger [this] (str \o (vi-directions (enum->kw dir)))))
+  (trigger [_] (str \o (vi-directions (enum->kw dir)))))
 
 (defn- -withHandler
   ([action handler]
