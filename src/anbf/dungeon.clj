@@ -3,6 +3,7 @@
             [clojure.string :as string]
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
+            [anbf.util :refer :all]
             [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
@@ -16,12 +17,11 @@
    searched ; no. of times searched TODO
    items ; [Items]
    engraving
-   shop
-   temple]
+   room]
   anbf.bot.ITile)
 
 (defn- initial-tile [x y]
-  (Tile. x y \space nil nil false nil 0 [] nil nil nil))
+  (Tile. x y \space nil nil false nil 0 [] nil nil))
 
 (defrecord Level
   [dlvl
@@ -263,11 +263,73 @@
       ; mark player as friendly
       (update-curlvl-monster (:cursor frame) assoc :friendly true)))
 
+(defn- floodfill-room [game pos kind]
+  (log/debug "room floodfill from:" pos "type:" kind)
+  (loop [res game
+         open #{pos}]
+    ;(log/debug (count open) open)
+    (if-let [x (first open)]
+      (recur (update-curlvl-at res x assoc :room kind)
+             (if (door? (at (curlvl (:dungeon res)) x))
+               (disj open x)
+               (into (disj open x)
+                     (remove #(or (= \space (:glyph %))
+                                  (#{:corridor :wall} (:feature %))
+                                  (:room %))
+                             (neighbors (curlvl (:dungeon res)) x)))))
+      res)))
+
+(defn- reflood-room [game pos]
+  (let [tile (at (-> game :dungeon curlvl) pos)]
+    (if (and (:room tile) (not (:walked tile)))
+      (do (log/debug "room reflood from:" pos "type:" (:room tile))
+          (floodfill-room game pos (:room tile)))
+      game)))
+
 (defn update-dungeon [{:keys [dungeon] :as game} frame]
   (-> game
       (update-monsters frame)
       (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
                  (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
+      (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) assoc :walked true)
       (update-in [:dungeon] infer-branch)))
+
+(def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
+
+(defn- closest-shk [game]
+  (or (first (sort-by #(distance (:player game) %)
+                      (filter #(and (= \@ (:glyph %))
+                                    (= :white (colormap (:color %))))
+                              (-> game :dungeon curlvl :monsters vals))))
+      (log/error "cannot find shk"))) ; can happen when blind...
+
+(defn mark-room [game kind]
+  (let [shk (closest-shk game)]
+    ; walking triggers more refloods to mark unexplored tiles
+    (floodfill-room game shk kind)))
+
+(def ^:private shop-types
+  {"general store" :general
+   "used armor dealership" :armor
+   "second-hand bookstore" :book
+   "liquor emporium" :potion
+   "antique weapons outlet" :weapons
+   "delicatessen" :food
+   "jewelers" :gem
+   "quality apparel and accessories" :wand
+   "hardware store" :tool
+   "rare books" :book
+   "lighting store" :light})
+
+(def shops #{:general :armor :book :potion :weapons
+             :food :gem :wand :tool :light})
+
+(defn shop? [tile]
+  ; TODO door & "closed for inventory" on neighbor
+  (shops (:room tile)))
+
+(defn room-type [msg]
+  ; TODO temples, maybe treasure zoos etc.
+  (shop-types (re-first-group room-re msg)))

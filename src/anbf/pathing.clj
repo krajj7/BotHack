@@ -104,7 +104,7 @@
                (not (item? (:glyph to-tile))) ; don't try to break blocked doors
                ;(not (monster? (:glyph to-tile)))
                (or (not= :door-locked (:feature to-tile))
-                   (not (:shop to-tile)))))))
+                   (not (shop? to-tile)))))))
 
 (defn nearest-walking [game goal?]
   (let [level (curlvl (:dungeon game))]

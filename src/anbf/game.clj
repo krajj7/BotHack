@@ -7,7 +7,9 @@
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.position :refer :all]
+            [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
+            [anbf.util :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Game
@@ -83,7 +85,7 @@
       update-explored))
 
 (defn game-handler
-  [game delegator]
+  [{:keys [game delegator] :as anbf}]
   (reify
     RedrawHandler
     (redraw [_ frame]
@@ -93,4 +95,14 @@
       (swap! game game-botl status delegator))
     FullFrameHandler
     (full-frame [_ frame]
-      (swap! game update-map frame delegator))))
+      (swap! game update-map frame delegator))
+    ToplineMessageHandler
+    (message [_ text]
+      (if-let [room (room-type text)]
+        (register-handler anbf priority-top
+                          (reify FullFrameHandler
+                            (full-frame [this _]
+                              (log/debug "marking room")
+                              (swap! game mark-room room)
+                              ; TODO entered room event?
+                              (deregister-handler anbf this))))))))
