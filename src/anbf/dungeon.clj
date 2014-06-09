@@ -261,8 +261,7 @@
       (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
                  :monsters] (gather-monsters game frame))
       ; mark player as friendly
-      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
-                 :monsters (:cursor frame) :friendly] true)))
+      (update-curlvl-monster (:cursor frame) assoc :friendly true)))
 
 (defn update-dungeon [{:keys [dungeon] :as game} frame]
   (-> game
@@ -270,4 +269,5 @@
       (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
                  (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
+      (update-curlvl-at (:cursor frame) assoc :walked true)
       (update-in [:dungeon] infer-branch)))
