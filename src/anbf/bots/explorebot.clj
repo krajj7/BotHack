@@ -2,7 +2,7 @@
 
 (ns anbf.bots.explorebot
   (:require [clojure.tools.logging :as log]
-            [anbf.anbf :refer :all]
+            [anbf.handlers :refer :all]
             [anbf.player :refer :all]
             [anbf.pathing :refer :all]
             [anbf.monster :refer :all]
@@ -17,21 +17,25 @@
 
 (defn- fight []
   (reify ActionHandler
-    (choose-action [_ game]
-      (loop [enemies (sort-by #(distance (:player game) %)
+    (choose-action [_ {:keys [:player] :as game}]
+      (loop [enemies (sort-by #(distance player %)
                               (filter #(and (> 3 (- (:turn game) (:seen %)))
-                                            (> 10 (distance (:player game) %)))
+                                            (> 10 (distance player %)))
                                       (-> game :dungeon curlvl enemies)))]
         (when-let [enemy (first enemies)]
           (log/debug "targetting enemy" enemy)
           (Thread/sleep 100) ; XXX
-          (or (choose-action (walk enemy) game)
-              (do (log/debug "cannot path" enemy)
-                  (recur (rest enemies)))))))))
+          (if (adjacent? player enemy)
+            (->Move (towards player enemy))
+            (or (choose-action (walk enemy) game)
+                (do (log/debug "cannot path" enemy)
+                    (recur (rest enemies))))))))))
 
 (defn- explorable-tile? [level tile]
-  (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
-       (some (complement :seen) (neighbors level tile))))
+  (and (not (monster? (:glyph tile)))
+       (or (walkable? tile) (door? tile)) ; XXX locked shops?
+       (or (not (:feature tile))
+           (some (complement :seen) (neighbors level tile)))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)

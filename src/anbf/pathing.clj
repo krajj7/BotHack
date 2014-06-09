@@ -13,7 +13,8 @@
         to-tile (at level to)
         monster (get-in level [:monsters (position to)])
         feature (:feature to-tile)]
-    (cond-> 0 ; TODO traps
+    (cond-> 0
+      (= :trap feature) (+ 5) ; TODO trap types
       (diagonal? from to) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
       (not (:walked to-tile)) (+ 0.2)
