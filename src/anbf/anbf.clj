@@ -105,13 +105,13 @@
          scraper (scraper-handler scraper-fn delegator)]
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
-         (register-handler priority-top (game-handler game delegator))
+         (register-handler (dec priority-top) (game-handler game delegator))
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [_ _]
                                (log/debug (-> game deref :dungeon curlvl :monsters)) ; XXX
                                (send delegator choose-action @game))))
-         (register-handler (actions-handler anbf))
+         (register-handler priority-top (actions-handler anbf))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
