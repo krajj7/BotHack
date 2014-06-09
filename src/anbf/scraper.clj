@@ -94,19 +94,16 @@
 
 (def ^:private botl2-re #"^(Dlvl:\d+|Home \d+|Fort Ludios|End Game|Astral Plane)\s+(?:\$|\*):(\d+)\s+HP:(\d+)\((\d+)\)\s+Pw:(\d+)\((\d+)\)\s+AC:([0-9-]+)\s+(?:Exp|Xp|HD):(\d+)(?:\/(\d+))?\s+T:(\d+)\s+(.*?)\s*$")
 
-(defn- re-first-groups [match]
-  (some-> match first (subvec 1)))
-
 (defn- parse-botls [[botl1 botl2]]
   ;(log/debug "parsing botl:\n" botl1 "\n" botl2)
   (merge
-    (if-let [status (re-first-groups (re-seq botl1-re botl1))]
+    (if-let [status (re-first-groups botl1-re botl1)]
       {:nickname (nth status 0)
        :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
        :alignment (-> (nth status 7) string/lower-case keyword)
        :score (some-> status (nth 8 nil) Integer/parseInt)}
       (log/error "failed to parse botl1 " botl1))
-    (if-let [status (re-first-groups (re-seq botl2-re botl2))]
+    (if-let [status (re-first-groups botl2-re botl2)]
       ; TODO state, burden
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
               (conj (map #(Integer/parseInt %) (subvec status 1 10))

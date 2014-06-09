@@ -29,3 +29,13 @@
    (or (get config key)
        (throw (IllegalStateException.
                 (str "Configuration missing key: " key))))))
+
+(defn re-first-groups
+  "Return the capturing groups of the first match"
+  [re text]
+  (some-> (re-seq re text) first (subvec 1)))
+
+(defn re-first-group
+  "Return the first capturing group of the first match."
+  [re text]
+  (some-> (re-seq re text) first (nth 1)))
