@@ -3,26 +3,13 @@
             [anbf.util :refer :all]
             [anbf.jta :refer :all]
             [anbf.action :refer :all]
+            [anbf.actions :refer :all]
             [anbf.delegator :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
+            [anbf.handlers :refer :all]
             [anbf.scraper :refer :all]))
-
-(defn register-handler
-  [anbf & args]
-  (send (:delegator anbf) #(apply register % args))
-  anbf)
-
-(defn deregister-handler
-  [anbf handler]
-  (send (:delegator anbf) deregister handler)
-  anbf)
-
-(defn replace-handler
-  [anbf handler-old handler-new]
-  (send (:delegator anbf) switch handler-old handler-new)
-  anbf)
 
 (defrecord ANBF [config delegator jta scraper game]
   anbf.bot.IANBF
@@ -109,9 +96,10 @@
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [_ _]
-                               (log/debug (-> game deref :dungeon curlvl :monsters)) ; XXX
+                               (log/debug "for action:" (-> game deref :dungeon curlvl :monsters)) ; XXX
                                (send delegator choose-action @game))))
          (register-handler priority-top (actions-handler anbf))
+         (register-handler priority-top (examine-handler anbf))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (log/info "Game ended")
