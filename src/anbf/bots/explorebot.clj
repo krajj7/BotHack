@@ -5,18 +5,15 @@
             [anbf.anbf :refer :all]
             [anbf.player :refer :all]
             [anbf.pathing :refer :all]
+            [anbf.monster :refer :all]
             [anbf.position :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
-(defn- enemy? [monster]
-  (and (not (:peaceful monster))
-       (not (:friendly monster))))
-
 (defn- enemies [level]
-  (filter enemy? (-> level :monsters vals)))
+  (filter hostile? (-> level :monsters vals)))
 
 (defn- fight []
   (reify ActionHandler
@@ -28,10 +25,9 @@
         (when-let [enemy (first enemies)]
           (log/debug "targetting enemy" enemy)
           (Thread/sleep 100) ; XXX
-          (if-let [n (first (path-walking game enemy))]
-            (->Move (towards (-> game :player) n))
-            (do (log/debug "cannot path" enemy)
-                (recur (rest enemies)))))))))
+          (or (choose-action (walk enemy) game)
+              (do (log/debug "cannot path" enemy)
+                  (recur (rest enemies)))))))))
 
 (defn- explorable-tile? [level tile]
   (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
@@ -64,8 +60,8 @@
                                    game
                                    (partial explorable-tile?
                                             (curlvl (:dungeon game)))))]
-                (log/debug "chose exploration target " t)
-                (Thread/sleep 100) ; XXX
+                (log/debug "chose exploration target" t)
+                ;(Thread/sleep 10) ; XXX
                 (some-> (ref-set current (travel t))
                         (choose-action game)))
               (ref-set current nil)
@@ -104,7 +100,7 @@
           (or (log/debug "searching for stairs" mul)
               (when-let [t (nearest-travelling
                              game #(and (dead-end? level %)
-                                        (< (:searched %) (* mul 30))))]
+                                        (< (searched level %) (* mul 30))))]
                 (if-let [t (peek t)]
                   (choose-action (travel t) game)
                   (->Search)))
