@@ -144,6 +144,10 @@
        (not (#{:rock :wall :tree :door-closed :cloud} feature))
        (or feature monster items)))
 
+(defn searched [level tile]
+  "How many times the tile has been searched directly (not by searching a neighbor)"
+  (apply min (map :searched (neighbors level tile))))
+
 (defn walkable-by [{:keys [feature] :as tile} glyph]
   ; full inferred monster type could be made available here but shouldn't be necessary
   (cond-> tile
