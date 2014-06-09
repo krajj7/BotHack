@@ -35,12 +35,11 @@
 
 (defn- explorable-tile? [level tile]
   (and (or (walkable? tile) (door? tile)) ; XXX locked shops?
-       (some #(not (:seen %)) (neighbors level tile))))
+       (some (complement :seen) (neighbors level tile))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
-       (> 2 (count (remove #(or (door? %)
-                                (#{:rock :wall} (:feature %))
+       (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
                                 (diagonal? tile %))
                            (neighbors level tile))))))
 
@@ -48,7 +47,8 @@
   [{:keys [player dungeon] :as game} num-search]
   (let [level (curlvl dungeon)
         tile (at level player)]
-    (when (and (dead-end? level tile)
+    (when (and (= :main (branch-key dungeon))
+               (dead-end? level tile)
                (< (:searched tile) num-search))
       (log/debug "searching dead end")
       (->Search))))
@@ -98,10 +98,32 @@
 
 (defn- search []
   (reify ActionHandler
-    (choose-action [_ _]
-      ; TODO look for dead ends, then walls
-      ; TODO push boulders
-      (->Search))))
+    (choose-action [_ game]
+      (let [level (curlvl (:dungeon game))]
+        (loop [mul 1]
+          (or (log/debug "searching for stairs" mul)
+              (when-let [t (nearest-travelling
+                             game #(and (dead-end? level %)
+                                        (< (:searched %) (* mul 30))))]
+                (if-let [t (peek t)]
+                  (choose-action (travel t) game)
+                  (->Search)))
+              (log/debug "searching walls" mul)
+              (when-let [t (nearest-travelling
+                             game #(some (fn [tile]
+                                           (and (= :wall (:feature tile))
+                                                (< 2 (:y tile) 21)
+                                                (< 1 (:x tile) 79)
+                                                (< (:searched tile) (* mul 10))
+                                                (->> (neighbors level tile)
+                                                     (remove :seen) count
+                                                     (< 1))))
+                                         (neighbors level %)))]
+                (if-let [t (peek t)]
+                  (choose-action (travel t) game)
+                  (->Search)))
+              ; TODO push boulders as last resort
+              (recur (inc mul))))))))
 
 (defn- pray-for-food []
   (reify ActionHandler
@@ -121,5 +143,5 @@
       (register-handler -5 (fight))
       (register-handler 5 (explore))
       (register-handler 6 (descend))
-      (register-handler 7 (random-travel))
-      (register-handler 10 (search))))
+      (register-handler 7 (search))
+      #_ (register-handler 8 (random-travel))))
