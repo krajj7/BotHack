@@ -106,7 +106,7 @@
     (if-let [status (re-first-groups botl2-re botl2)]
       ; TODO state, burden
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
-              (conj (map #(Integer/parseInt %) (subvec status 1 10))
+              (conj (map #(if % (Integer/parseInt %)) (subvec status 1 10))
                     (nth status 0)))
       (log/error "failed to parse botl2 " botl2))
     (condp #(.contains %2 %1) botl2
@@ -249,7 +249,8 @@
 (defn scraper-handler [scraper delegator]
   (reify RedrawHandler
     (redraw [_ frame]
-      (->> (dosync (alter scraper apply-scraper delegator frame))
-           #_ type
-           #_ (log/debug "next scraper:")))))
+      (dosync (alter scraper apply-scraper delegator frame))
+      #_ (->> (dosync (alter scraper apply-scraper delegator frame))
+              type
+              (log/debug "next scraper:")))))
 ; TODO handler co switchne na no-mark u nekterych akci
