@@ -133,6 +133,16 @@
           (partial passable-travelling? level)
           (partial move-cost level))))
 
+(defn fidget
+  "Move around randomly to make a peaceful move out of the way."
+  [{:keys [player] :as game}]
+  ; no monster + passable-walking
+  (log/debug "fidgeting")
+  (if-let [step (rand-nth (filter #(passable-walking? (curlvl game) player %)
+                                  (neighbors player)))]
+    (->Move (towards player step))
+    (->Search))) ; hopefully will move
+
 (defn move-travelling [{:keys [dungeon player] :as game} path]
   (let [level (curlvl dungeon)
         step (first path)
@@ -140,7 +150,7 @@
         dir (towards player to-tile)]
     (if (passable-walking? level player step)
       (if (get-in (:monsters level) [step :peaceful] nil)
-        (->Search) ; hopefully will move
+        (fidget game)
         (->Move (towards player step)))
       ; TODO should look ahead if we have to move diagonally FROM the door in the next step and kick door down in advance if necessary
       (if (door? to-tile)
