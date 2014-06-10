@@ -22,12 +22,12 @@
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))
 
-(def branches [:main :mines :sokoban :quest :ludios :vlad
-               :wiztower :earth :fire :air :water :astral])
+(def branches #{:main :mines :sokoban :quest :ludios :vlad
+                :wiztower :earth :fire :air :water :astral})
 
-(def upwards-branches [:sokoban :vlad])
+(def upwards-branches #{:sokoban :vlad})
 
-(defn upwards? [branch] (some #(= branch %) upwards-branches))
+(defn upwards? [branch] (upwards-branches branch))
 
 (defn dlvl-number [dlvl]
   (if-let [n (first (re-seq #"\d+" dlvl))]

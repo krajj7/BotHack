@@ -11,7 +11,7 @@
   "Tile of the level at given terminal position"
   [level {:keys [x y] :as pos}]
   {:pre [(valid-position? pos)]}
-  (-> level :tiles (nth (dec y)) (nth x)))
+  (get-in level [:tiles (dec y) x]))
 
 (def directions [:NW :N :NE :W :E :SW :S :SE])
 (def deltas [[-1  -1] [0  -1] [1  -1] [-1  0] [1  0] [-1 1] [0 1] [1 1]])

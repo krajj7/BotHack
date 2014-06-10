@@ -98,16 +98,16 @@
   ;(log/debug "parsing botl:\n" botl1 "\n" botl2)
   (merge
     (if-let [status (re-first-groups botl1-re botl1)]
-      {:nickname (nth status 0)
+      {:nickname (status 0)
        :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
-       :alignment (-> (nth status 7) string/lower-case keyword)
-       :score (some-> status (nth 8 nil) Integer/parseInt)}
+       :alignment (-> (status 7) string/lower-case keyword)
+       :score (some-> (status 8) Integer/parseInt)}
       (log/error "failed to parse botl1 " botl1))
     (if-let [status (re-first-groups botl2-re botl2)]
       ; TODO state, burden
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
               (conj (map #(if % (Integer/parseInt %)) (subvec status 1 10))
-                    (nth status 0)))
+                    (status 0)))
       (log/error "failed to parse botl2 " botl2))
     (condp #(.contains %2 %1) botl2
       " Sat" {:hunger :satiated}

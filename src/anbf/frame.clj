@@ -40,7 +40,7 @@
 (defn nth-line
   "Returns the line of text on n-th line of the frame."
   [frame n]
-  (nth (:lines frame) n))
+  ((:lines frame) n))
 
 (defn topline [frame]
   (nth-line frame 0))

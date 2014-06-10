@@ -36,7 +36,7 @@
 (defn walkable? [tile]
   (and (not (boulder? tile))
        (or (and (item? (:glyph tile)) (nil? (:feature tile)))
-           (some #(= % (:feature tile))
+           (some #{(:feature tile)}
                  [:ice :floor :air :altar :door-open :sink :fountain :trap
                   :corridor :throne :grave :stairs-up :stairs-down]))))
 

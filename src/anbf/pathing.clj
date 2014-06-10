@@ -31,9 +31,8 @@
       (and (not diag?) (= :door-closed feature)) (+ 3)
       (and (= :door-locked feature)) (+ 7))))
 
-(defn diagonal-walkable? [tile]
-  (if (not-any? #(= % (:feature tile)) [nil :door-open])
-    true)) ;TODO no diagonal near boulders, squeeze-spaces
+(defn diagonal-walkable? [{:keys [feature] :as tile}]
+  (and feature (not= :door-open feature))) ;TODO no diagonal near boulders, squeeze-spaces
 
 (defn a* [from to passable? extra-cost]
   "Extra-cost must always return non-negative values, target tile may not be passable, but will always be included in the path"
