@@ -9,6 +9,7 @@
             [anbf.position :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.tile :refer :all]
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
@@ -17,7 +18,7 @@
 
 (defn- fight []
   (reify ActionHandler
-    (choose-action [_ {:keys [:player] :as game}]
+    (choose-action [_ {:keys [player] :as game}]
       (loop [enemies (sort-by #(distance player %)
                               (filter #(and (> 3 (- (:turn game) (:seen %)))
                                             (> 10 (distance player %)))

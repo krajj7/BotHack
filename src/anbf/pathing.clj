@@ -5,7 +5,8 @@
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]
-            [anbf.dungeon :refer :all]))
+            [anbf.dungeon :refer :all]
+            [anbf.tile :refer :all]))
 
 (defn move-cost [level from to]
   {:pre [(and (some? level) (some? from) (some? to))]}
@@ -53,9 +54,9 @@
                     (partial min-key first)
                     (pop open)
                     (into {}
-                          (for [nbr (filter #(and (not (closed %))
-                                                  (passable? node %))
-                                            (neighbors node))]
+                          (for [nbr (->> (neighbors node)
+                                         (remove closed)
+                                         (filter #(passable? node %)))]
                             (let [new-dist (+ (inc (extra-cost node nbr)) dist)]
                               [nbr [(+ new-dist delta) new-dist node]]))))))))))
 
@@ -72,9 +73,9 @@
                  (merge-with (partial min-key first)
                              (pop open)
                              (into {}
-                                   (for [nbr (filter #(and (not (closed %))
-                                                           (passable? node %))
-                                                     (neighbors node))]
+                                   (for [nbr (->> (neighbors node)
+                                                  (remove closed)
+                                                  (filter #(passable? node %)))]
                                      [nbr [(+ dist (inc (extra-cost node nbr)))
                                            node]])))))))))
 

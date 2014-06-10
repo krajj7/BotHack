@@ -35,15 +35,6 @@
       "grave" :grave
       nil)))
 
-(defn- update-on-known-position
-  "When player position on map is known call (apply swap! game f args)"
-  [anbf f & args]
-  (register-handler anbf priority-top
-    (reify FullFrameHandler
-      (full-frame [this _]
-        (apply swap! (:game anbf) f args)
-        (deregister-handler anbf this)))))
-
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     ; TODO door on failed diagonal (only on target), "The XXX gets angry!", "How dare you ..."

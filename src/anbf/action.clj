@@ -1,6 +1,5 @@
 (ns anbf.action
-  (:require [clojure.tools.logging :as log]
-            [anbf.util :refer :all]))
+  (:require [clojure.tools.logging :as log]))
 
 (defprotocol Action
   (handler [this anbf]

@@ -4,44 +4,20 @@
             [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
             [anbf.util :refer :all]
+            [anbf.level :refer :all]
+            [anbf.tile :refer :all]
             [anbf.position :refer :all]
             [anbf.delegator :refer :all]))
 
-(defrecord Tile
-  [x y
-   glyph
-   color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
-   seen
-   walked
-   searched ; no. of times searched TODO
-   items ; [Items]
-   engraving
-   room]
-  anbf.bot.ITile)
-
-(defn- initial-tile [x y]
-  (Tile. x y \space nil nil false nil 0 [] nil nil))
-
-(defrecord Level
-  [dlvl
-   branch-id
-   tiles
-   monsters] ; { {:x X :y Y} => Monster }
-  anbf.bot.ILevel)
-
-(defmethod print-method Level [level w]
-  (.write w (str "#anbf.dungeon.Level"
-                 (assoc (.without level :tiles) :tiles "<trimmed>"))))
-
-(defn- initial-tiles []
-  (->> (for [y (range 21)
-             x (range 80)]
-         (initial-tile x (inc y)))
-       (partition 80) (map vec) vec))
-
-(defn new-level [dlvl branch-id]
-  (Level. dlvl branch-id (initial-tiles) {}))
+; branch ID is either a branch keyword from branches or random keyword that will map (via id->branch) to a standard branch keyword when the level branch is recognized.
+; a Level should be permanently uniquely identified by its branch-id + dlvl.
+(defrecord Dungeon
+  [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
+   id->branch ; {:branch-id => :branch}, only ids of recognized levels included
+   branch-start ; {:branch => dlvl of entrypoint}, only for recognized branches
+   branch-id ; current
+   dlvl] ; current
+  anbf.bot.IDungeon)
 
 (defn- new-branch-id []
   (-> "branch#" gensym keyword))
@@ -49,11 +25,37 @@
 (def branches [:main :mines :sokoban :quest :ludios :vlad
                :wiztower :earth :fire :air :water :astral])
 
-(def branch-entry {:mines :main, :sokoban :main}) ; TODO
+(def upwards-branches [:sokoban :vlad])
+
+(defn upwards? [branch] (some #(= branch %) upwards-branches))
 
 (defn dlvl-number [dlvl]
   (if-let [n (first (re-seq #"\d+" dlvl))]
     (Integer/parseInt n)))
+
+(defn dlvl-compare
+  "Only makes sense for dlvls within one branch."
+  ([branch d1 d2]
+   (if (upwards? branch)
+     (dlvl-compare d2 d1)
+     (dlvl-compare d1 d2)))
+  ([d1 d2]
+   (if (every? #(.contains % ":") [d1 d2])
+     (compare (dlvl-number d1) (dlvl-number d2))
+     (compare d1 d2))))
+
+; TODO if level looks visited find it by dlvl instead of adding
+(defn add-level [dungeon {:keys [branch-id] :as level}]
+  (assoc-in
+    dungeon [:levels branch-id]
+    (assoc (get (:levels dungeon) branch-id
+                (sorted-map-by (partial dlvl-compare branch-id)))
+           (:dlvl level) level)))
+
+(defn new-dungeon []
+  (add-level (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)
+                       {:earth "Dlvl:1"} :main "Dlvl:1")
+             (new-level "Dlvl:1" :main)))
 
 (defn change-dlvl
   "Apply function to dlvl number if there is one, otherwise no change.  The result dlvl may not actually exist."
@@ -61,10 +63,6 @@
   (if-let [n (dlvl-number dlvl)]
     (string/replace dlvl #"\d+" (str (f n)))
     dlvl))
-
-(def upwards-branches [:sokoban :vlad])
-
-(defn upwards? [branch] (some #(= branch %) upwards-branches))
 
 (defn prev-dlvl
   "Dlvl closer to branch entry (for dlvl within the branch), no change for unnumbered dlvls."
@@ -80,81 +78,8 @@
     (change-dlvl dec dlvl)
     (change-dlvl inc dlvl)))
 
-(defn dlvl-compare
-  "Only makes sense for dlvls within one branch."
-  ([branch d1 d2]
-   (if (upwards? branch)
-     (dlvl-compare d2 d1)
-     (dlvl-compare d1 d2)))
-  ([d1 d2]
-   (if (every? #(.contains % ":") [d1 d2])
-     (compare (dlvl-number d1) (dlvl-number d2))
-     (compare d1 d2))))
-
-; branch ID is either a branch keyword from branches or random keyword that will map (via id->branch) to a standard branch keyword when the level branch is recognized.
-; a Level should be permanently uniquely identified by its branch-id + dlvl.
-(defrecord Dungeon
-  [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
-   id->branch ; {:branch-id => :branch}, only ids of recognized levels included
-   branch-start ; {:branch => dlvl of entrypoint}, only for recognized branches
-   branch-id ; current
-   dlvl] ; current
-  anbf.bot.IDungeon)
-
 (defn infer-branch [dungeon]
   dungeon) ; TODO assoc id->branch, merge id to branch in levels
-
-; TODO if level looks visited find it by dlvl instead of adding
-(defn add-level [dungeon {:keys [branch-id] :as level}]
-  (assoc-in
-    dungeon [:levels branch-id]
-    (assoc (get (:levels dungeon) branch-id
-                (sorted-map-by (partial dlvl-compare branch-id)))
-           (:dlvl level) level)))
-
-(defn new-dungeon []
-  (add-level (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)
-                       {:earth "Dlvl:1"} :main "Dlvl:1")
-             (new-level "Dlvl:1" :main)))
-
-(defn monster? [glyph]
-  (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
-      (#{\& \@ \' \; \:} glyph)))
-
-(defn item? [glyph]
-  (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \%} glyph))
-
-(defn boulder? [tile]
-  (and (= (:glyph tile) \0) (zero? (:color tile))))
-
-(defn door? [tile]
-  (#{:door-open :door-closed :door-locked} (:feature tile)))
-
-(defn walkable? [tile]
-  (and (not (boulder? tile))
-       (or (and (item? (:glyph tile)) (nil? (:feature tile)))
-           (some #(= % (:feature tile))
-                 [:ice :floor :air :altar :door-open :sink :fountain :trap
-                  :corridor :throne :grave :stairs-up :stairs-down]))))
-
-(defn transparent?
-  "For unexplored tiles just a guess"
-  [{:keys [feature monster items] :as tile}]
-  (and (not (boulder? tile))
-       (not (#{:rock :wall :tree :door-closed :cloud} feature))
-       (or feature monster items)))
-
-(defn searched [level tile]
-  "How many times the tile has been searched directly (not by searching a neighbor)"
-  (apply min (map :searched (neighbors level tile))))
-
-(defn walkable-by [{:keys [feature] :as tile} glyph]
-  ; full inferred monster type could be made available here but shouldn't be necessary
-  (cond-> tile
-    (and (not (#{\X \P} glyph))
-         (door? tile)) (assoc-in [:feature] :door-open)
-    (and (not= \X glyph)
-         (#{:rock :wall :tree} feature)) (assoc-in [:feature] :corridor)))
 
 (defn branch-key [{:keys [branch-id] :as dungeon}]
   (get (:id->branch dungeon) branch-id branch-id))
@@ -162,53 +87,9 @@
 (defn curlvl [dungeon]
   (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
-(defn- infer-feature [current new-glyph new-color]
-  (case new-glyph
-    \space current ; TODO :air
-    \. (if (= (colormap new-color) :cyan) :ice :floor)
-    \< :stairs-up
-    \> :stairs-down
-    \\ (if (= (colormap new-color) :yellow) :throne :grave)
-    \{ (if (= (colormap new-color) nil) :sink :fountain)
-    \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
-    \# :corridor ; TODO :cloud
-    \_ :altar
-    \~ :water
-    \^ :trap
-    \] :door-closed
-    \| (if (= (colormap new-color) :brown) :door-open :wall)
-    \- (if (= (colormap new-color) :brown) :door-open :wall)
-    (log/error "unrecognized feature" new-glyph new-color "was" current)))
-
-(defn- update-feature [tile new-glyph new-color]
-  ; TODO events
-  (cond (monster? new-glyph) (walkable-by tile new-glyph)
-        (item? new-glyph) tile
-        :else (update-in tile [:feature]
-                         infer-feature new-glyph new-color)))
-
-; they might not have actually been seen but there's usually not much to see in walls
-(defn- mark-wall-seen [tile]
-  (if (#{:wall :door-closed} (:feature tile))
-    (assoc tile :seen true)
-    tile))
-
-; TODO handle properly, mark new unknown items, track disappeared items
-(defn- update-items [tile new-glyph new-color]
-  (if-let [item (item? new-glyph)]
-    (assoc tile :items [item])
-    (if (monster? new-glyph)
-      tile
-      (assoc tile :items nil))))
-
-(defn- parse-tile [tile new-glyph new-color]
-  (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))
-    (-> tile
-        (update-items new-glyph new-color)
-        (update-feature new-glyph new-color)
-        (assoc :glyph new-glyph :color new-color)
-        mark-wall-seen)
-    tile))
+(defn add-curlvl-tag [game tag]
+  (update-in game [:dungeon :levels (branch-key (:dungeon game))
+                   (:dlvl (:dungeon game)) :tags] conj tag))
 
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
@@ -236,7 +117,7 @@
 (defn ensure-curlvl
   "If current branch-id + dlvl has no level associated, create a new empty level"
   [dungeon]
-  (if-not (get-in dungeon [:levels (:branch-id dungeon) (:dlvl dungeon)])
+  (if-not (get-in dungeon [:levels (branch-key dungeon) (:dlvl dungeon)])
     (add-level dungeon (new-level (:dlvl dungeon) (:branch-id dungeon)))
     dungeon))
 
@@ -273,6 +154,7 @@
              (if (door? (at (curlvl (:dungeon res)) x))
                (disj open x)
                (into (disj open x)
+                     ; walking triggers more refloods to mark unexplored tiles
                      (remove #(or (= \space (:glyph %))
                                   (#{:corridor :wall} (:feature %))
                                   (:room %))
@@ -296,40 +178,15 @@
       (update-curlvl-at (:cursor frame) assoc :walked true)
       (update-in [:dungeon] infer-branch)))
 
-(def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
-
-(defn- closest-shk [game]
-  (or (first (sort-by #(distance (:player game) %)
-                      (filter #(and (= \@ (:glyph %))
-                                    (= :white (colormap (:color %))))
-                              (-> game :dungeon curlvl :monsters vals))))
+(defn- closest-shk [game] ; can also find nurses, but it is assumed this is only used when entering a shop
+  (or (min-by #(distance (:player game) %)
+              (filter #(and (= \@ (:glyph %))
+                            (= :white (colormap (:color %))))
+                      (-> game :dungeon curlvl :monsters vals)))
       (log/error "cannot find shk"))) ; can happen when blind...
 
 (defn mark-room [game kind]
   (let [shk (closest-shk game)]
-    ; walking triggers more refloods to mark unexplored tiles
-    (floodfill-room game shk kind)))
-
-(def ^:private shop-types
-  {"general store" :general
-   "used armor dealership" :armor
-   "second-hand bookstore" :book
-   "liquor emporium" :potion
-   "antique weapons outlet" :weapons
-   "delicatessen" :food
-   "jewelers" :gem
-   "quality apparel and accessories" :wand
-   "hardware store" :tool
-   "rare books" :book
-   "lighting store" :light})
-
-(def shops #{:general :armor :book :potion :weapons
-             :food :gem :wand :tool :light})
-
-(defn shop? [tile]
-  ; TODO door & "closed for inventory" on neighbor
-  (shops (:room tile)))
-
-(defn room-type [msg]
-  ; TODO temples, maybe treasure zoos etc.
-  (shop-types (re-first-group room-re msg)))
+    (-> game
+        (floodfill-room shk kind)
+        (add-curlvl-tag :shop))))

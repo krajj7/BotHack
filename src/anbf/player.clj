@@ -42,7 +42,6 @@
   (apply ->Player (repeat 16 nil)))
 
 (defn update-player [player status delegator]
-  ; TODO events
   (->> player keys (select-keys status) (merge player)))
 
 (defn light-radius [player]

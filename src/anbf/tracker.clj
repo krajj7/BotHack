@@ -23,14 +23,14 @@
              ignored-new #{(position (:player new-game))}
              ignored-old #{(position (:player old-game))}]
         (if (> 3 dist)
-          (if-let [m (first (remove #(ignored-new (position %)) new-monsters))]
-            (if-let [candidates (seq (filter (fn candidate? [n]
-                                               (and (= (:glyph m) (:glyph n))
-                                                    (= (:color m) (:color n))
-                                                    (= dist (distance m n))
-                                                    (not (ignored-old
-                                                           (position n)))))
-                                             old-monsters))]
+          (if-let [m (first (remove (comp ignored-new position) new-monsters))]
+            (if-let [candidates (seq (->> old-monsters
+                                          (remove (comp ignored-old position))
+                                          (filter
+                                            (fn candidate? [n]
+                                              (and (= (:glyph m) (:glyph n))
+                                                   (= (:color m) (:color n))
+                                                   (= dist (distance m n)))))))]
               (if (next candidates) ; ignore ambiguous cases
                 (recur res (rest new-monsters) dist
                        (conj ignored-new (position m)) ignored-old)

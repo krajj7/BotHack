@@ -1,13 +1,13 @@
 (ns anbf.monster
-  (:require [anbf.frame :refer :all])
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [anbf.frame :refer :all]))
 
 (defrecord Monster
   [x y
    seen ; last turn
    glyph
    color
-   ; TODO type
+   ; TODO type (+ transfer)
    friendly
    peaceful
    cancelled])

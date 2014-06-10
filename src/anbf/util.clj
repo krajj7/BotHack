@@ -39,3 +39,5 @@
   "Return the first capturing group of the first match."
   [re text]
   (some-> (re-seq re text) first (nth 1)))
+
+(defn min-by [f coll] (if (seq coll) (apply (partial min-key f) coll)))

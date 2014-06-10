@@ -6,6 +6,7 @@
             [anbf.frame :refer [colormap]]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.tile :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
@@ -27,10 +28,9 @@
   (Game. nil (new-player) (new-dungeon) nil 0 0))
 
 (defn- update-game [game status delegator]
-  ; TODO not just merge, emit events on changes
   (->> game keys (select-keys status) (merge game)))
 
-(defn- game-botl [game status delegator]
+(defn- update-by-botl [game status delegator]
   (-> game
       (update-in [:dungeon] update-dlvl status delegator)
       (update-in [:player] update-player status delegator)
@@ -92,17 +92,11 @@
       (swap! game assoc-in [:frame] frame))
     BOTLHandler
     (botl [_ status]
-      (swap! game game-botl status delegator))
+      (swap! game update-by-botl status delegator))
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game update-map frame delegator))
     ToplineMessageHandler
     (message [_ text]
       (if-let [room (room-type text)]
-        (register-handler anbf priority-top
-                          (reify FullFrameHandler
-                            (full-frame [this _]
-                              (log/debug "marking room")
-                              (swap! game mark-room room)
-                              ; TODO entered room event?
-                              (deregister-handler anbf this))))))))
+        (update-on-known-position anbf mark-room room)))))
