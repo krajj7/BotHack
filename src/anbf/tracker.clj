@@ -1,9 +1,9 @@
 ; tracking and pairing monsters frame-to-frame
 
 (ns anbf.tracker
-  (:require [anbf.position :refer :all])
-  (:require [anbf.dungeon :refer :all])
-  (:require [clojure.tools.logging :as log]))
+  (:require [anbf.position :refer :all]
+            [anbf.dungeon :refer :all]
+            [clojure.tools.logging :as log]))
 
 (defn- track-transfer [game old-monster monster]
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
@@ -20,8 +20,8 @@
       (loop [res new-game
              new-monsters (vals (-> new-game :dungeon curlvl :monsters))
              dist 0
-             ignored-new #{(position (:player new-game))}
-             ignored-old #{(position (:player old-game))}]
+             ignored-new #{}
+             ignored-old #{}]
         (if (> 3 dist)
           (if-let [m (first (remove (comp ignored-new position) new-monsters))]
             (if-let [candidates (seq (->> old-monsters

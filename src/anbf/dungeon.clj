@@ -128,8 +128,9 @@
       ensure-curlvl))
 
 (defn- gather-monsters [game frame]
-  (into {} (map (fn [tile glyph color]
-                  (if (monster? glyph)
+  (into {} (map (fn monster-entry [tile glyph color]
+                  (if (and (monster? glyph)
+                           (not= (position tile) (position (:player game))))
                     (vector (position tile)
                             (new-monster (:x tile) (:y tile)
                                          (:turn game) glyph color))))
@@ -140,9 +141,7 @@
 (defn- update-monsters [{:keys [dungeon] :as game} frame]
   (-> game
       (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
-                 :monsters] (gather-monsters game frame))
-      ; mark player as friendly
-      (update-curlvl-monster (:cursor frame) assoc :friendly true)))
+                 :monsters] (gather-monsters game frame))))
 
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
