@@ -20,6 +20,8 @@
 (defn initial-tile [x y]
   (Tile. x y \space nil nil false nil 0 [] nil nil))
 
+(defn color [tile] (colormap (:color tile)))
+
 (defn monster? [glyph]
   (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
       (#{\& \@ \' \; \:} glyph)))

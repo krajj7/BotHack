@@ -3,7 +3,6 @@
 (ns anbf.game
   (:import [anbf NHFov NHFov$TransparencyInfo])
   (:require [clojure.tools.logging :as log]
-            [anbf.frame :refer [colormap]]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
@@ -38,10 +37,11 @@
 
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
-  [game tile]
-  (or (adjacent? tile (:player game)) ; TODO actual player light radius
-      (= \. (:glyph tile))
-      (and (= \# (:glyph tile)) (= :white (colormap (:color tile))))))
+  [game pos]
+  (let [tile (at-curlvl game pos)]
+    (or (adjacent? tile (:player game)) ; TODO actual player light radius
+        (= \. (:glyph tile))
+        (and (= \# (:glyph tile)) (= :white (color tile))))))
 
 (defn in-fov? [game pos]
   (get-in (:fov game) [(dec (:y pos)) (:x pos)]))
@@ -60,7 +60,7 @@
                             (if (and (<= 0 y 20) (<= 0 x 79))
                               (boolean
                                 (transparent?
-                                  (((-> game :dungeon curlvl :tiles) y) x)))
+                                  (((-> game curlvl :tiles) y) x)))
                               false))))))
 
 (defn- update-visible-tile [tile]

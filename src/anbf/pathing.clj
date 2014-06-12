@@ -107,27 +107,27 @@
                    (not (shop? to-tile)))))))
 
 (defn nearest-walking [game goal?]
-  (let [level (curlvl (:dungeon game))]
+  (let [level (curlvl game)]
     (nearest (-> game :player)
              #(goal? (at level %))
              (partial passable-walking? level)
              (partial move-cost level))))
 
 (defn nearest-travelling [game goal?]
-  (let [level (curlvl (:dungeon game))]
+  (let [level (curlvl game)]
     (nearest (-> game :player)
              #(goal? (at level %))
              (partial passable-travelling? level)
              (partial move-cost level))))
 
 (defn path-walking [game to]
-  (let [level (curlvl (:dungeon game))]
+  (let [level (curlvl game)]
     (path (-> game :player) to
           (partial passable-walking? level)
           (partial move-cost level))))
 
 (defn path-travelling [game to]
-  (let [level (curlvl (:dungeon game))]
+  (let [level (curlvl game)]
     (path (-> game :player) to
           (partial passable-travelling? level)
           (partial move-cost level))))
@@ -142,8 +142,8 @@
     (->Move (towards player step))
     (->Search))) ; hopefully will move
 
-(defn move-travelling [{:keys [dungeon player] :as game} path]
-  (let [level (curlvl dungeon)
+(defn move-travelling [{:keys [player] :as game} path]
+  (let [level (curlvl game)
         step (first path)
         to-tile (at level step)
         dir (towards player to-tile)]
@@ -175,7 +175,7 @@
 (defn walk [to]
   (reify ActionHandler
     (choose-action [this game]
-      (let [level (-> game :dungeon curlvl)]
+      (let [level (curlvl game)]
        (if-let [p (path-walking game to)]
         (if-let [n (first p)]
           (if (passable-walking? level (:player game) n)

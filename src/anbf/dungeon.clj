@@ -1,7 +1,6 @@
 (ns anbf.dungeon
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
-            [anbf.frame :refer [colormap]]
             [anbf.monster :refer :all]
             [anbf.util :refer :all]
             [anbf.level :refer :all]
@@ -78,17 +77,17 @@
     (change-dlvl dec dlvl)
     (change-dlvl inc dlvl)))
 
-(defn infer-branch [dungeon]
-  dungeon) ; TODO assoc id->branch, merge id to branch in levels
+(defn infer-branch [game]
+  game) ; TODO assoc id->branch, merge id to branch in levels
 
 (defn branch-key [{:keys [branch-id] :as dungeon}]
   (get (:id->branch dungeon) branch-id branch-id))
 
-(defn curlvl [dungeon]
-  (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
+(defn curlvl [{:keys [dungeon] :as game}]
+  (-> game :dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
-(defn curlvl-monsters [dungeon]
-  (-> dungeon curlvl :monsters))
+(defn curlvl-monsters [game]
+  (-> game curlvl :monsters))
 
 (defn add-curlvl-tag [game tag]
   (update-in game [:dungeon :levels (branch-key (:dungeon game))
@@ -109,6 +108,12 @@
   (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
                          (:dlvl (:dungeon game)) :tiles (dec (:y pos)) (:x pos)]
          update-fn args))
+
+(defn at-curlvl [game pos]
+  (at (curlvl game) pos))
+
+(defn at-player [game]
+  (at-curlvl game (:player game)))
 
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
@@ -137,7 +142,7 @@
                     (vector (position tile)
                             (new-monster (:x tile) (:y tile)
                                          (:turn game) glyph color))))
-                (apply concat (-> game :dungeon curlvl :tiles))
+                (apply concat (-> game curlvl :tiles))
                 (apply concat (drop 1 (:lines frame)))
                 (apply concat (drop 1 (:colors frame))))))
 
@@ -153,18 +158,18 @@
     ;(log/debug (count open) open)
     (if-let [x (first open)]
       (recur (update-curlvl-at res x assoc :room kind)
-             (if (door? (at (curlvl (:dungeon res)) x))
+             (if (door? (at-curlvl res x))
                (disj open x)
                (into (disj open x)
                      ; walking triggers more refloods to mark unexplored tiles
                      (remove #(or (= \space (:glyph %))
                                   (#{:corridor :wall} (:feature %))
                                   (:room %))
-                             (neighbors (curlvl (:dungeon res)) x)))))
+                             (neighbors (curlvl res) x)))))
       res)))
 
 (defn- reflood-room [game pos]
-  (let [tile (at (-> game :dungeon curlvl) pos)]
+  (let [tile (at-curlvl game pos)]
     (if (and (:room tile) (not (:walked tile)))
       (do (log/debug "room reflood from:" pos "type:" (:room tile))
           (floodfill-room game pos (:room tile)))
@@ -178,17 +183,24 @@
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))
       (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) assoc :walked true)
-      (update-in [:dungeon] infer-branch)))
+      infer-branch))
 
-(defn- closest-shk [game] ; can also find nurses, but it is assumed this is only used when entering a shop
-  (or (min-by #(distance (:player game) %)
-              (filter #(and (= \@ (:glyph %))
-                            (= :white (colormap (:color %))))
-                      (-> game :dungeon curlvl-monsters vals)))
-      (log/error "cannot find shk"))) ; can happen when blind...
+(defn- closest-roomkeeper
+  "Presumes having just entered a room"
+  [game]
+  (min-by #(distance (:player game) %)
+          (filter #(and (= \@ (:glyph %)) ; can also find nurses
+                        (= :white (color %)))
+                  (vals (curlvl-monsters game)))))
+
+(defn room-tag [kind]
+  (cond
+    (shops kind) :shop
+    :else (throw (IllegalArgumentException.
+                   (str "don't know tag for room type " kind)))))
 
 (defn mark-room [game kind]
-  (let [shk (closest-shk game)]
+  (let [roomkeeper (closest-roomkeeper game)]
     (-> game
-        (floodfill-room shk kind)
-        (add-curlvl-tag :shop))))
+        (floodfill-room roomkeeper kind)
+        (add-curlvl-tag (room-tag kind)))))

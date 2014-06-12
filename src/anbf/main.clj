@@ -58,14 +58,14 @@
                (:tiles level)))))
 
 (defn print-los [game]
-  (print-tiles (partial visible? game) (curlvl (:dungeon game))))
+  (print-tiles (partial visible? game) (curlvl game)))
 
 (defn print-fov [game]
-  (print-tiles (partial in-fov? game) (curlvl (:dungeon game))))
+  (print-tiles (partial in-fov? game) (curlvl game)))
 
 (defn print-transparent [game]
-  (print-tiles transparent? (curlvl (:dungeon game))))
+  (print-tiles transparent? (curlvl game)))
 
 (defn print-path [game path]
   (print-tiles #(.contains path (position %))
-               (curlvl (:dungeon game)) (constantly \X)))
+               (curlvl game) (constantly \X)))

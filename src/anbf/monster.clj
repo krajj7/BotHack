@@ -4,7 +4,7 @@
 
 (defrecord Monster
   [x y
-   seen ; last turn
+   known ; last turn observed
    glyph
    color
    ; TODO type (+ transfer)
@@ -16,6 +16,6 @@
   (and (not (:peaceful monster))
        (not (:friendly monster))))
 
-(defn new-monster [x y seen glyph color]
+(defn new-monster [x y known glyph color]
   ; TODO infer unambiguous type/properties immediately
-  (Monster. x y seen glyph color (inverse? color) false false))
+  (Monster. x y known glyph color (inverse? color) false false))

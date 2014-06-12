@@ -135,7 +135,7 @@
   (reify ActionHandler
     (choose-action [_ game]
       ; TODO ambiguous monsters
-      (when-not (:feature (at (curlvl (:dungeon game)) (:player game)))
+      (when-not (:feature (at-player game))
         (log/debug "examining tile")
         (->Look)))))
 

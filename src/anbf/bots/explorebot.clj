@@ -15,12 +15,12 @@
 
 (defn- fight []
   (reify ActionHandler
-    (choose-action [_ {:keys [player dungeon] :as game}]
+    (choose-action [_ {:keys [player] :as game}]
       (loop [enemies (sort-by #(distance player %)
                               (filter #(and (hostile? %)
-                                            (> 3 (- (:turn game) (:seen %)))
+                                            (> 10 (- (:turn game) (:known %)))
                                             (> 10 (distance player %)))
-                                      (-> dungeon curlvl-monsters vals)))]
+                                      (-> game curlvl-monsters vals)))]
         (when-let [enemy (first enemies)]
           (log/debug "targetting enemy" enemy)
           (Thread/sleep 100) ; XXX
@@ -43,11 +43,10 @@
                            (neighbors level tile))))))
 
 (defn- search-dead-end ; TODO not in the mines
-  [{:keys [player dungeon] :as game} num-search]
-  (let [level (curlvl dungeon)
-        tile (at level player)]
-    (when (and (= :main (branch-key dungeon))
-               (dead-end? level tile)
+  [game num-search]
+  (let [tile (at-player game)]
+    (when (and (= :main (branch-key (:dungeon game)))
+               (dead-end? (curlvl game) tile)
                (< (:searched tile) num-search))
       (log/debug "searching dead end")
       (->Search))))
@@ -62,7 +61,7 @@
               (when-let [t (peek (nearest-travelling
                                    game
                                    (partial explorable-tile?
-                                            (curlvl (:dungeon game)))))]
+                                            (curlvl game))))]
                 (log/debug "chose exploration target" t)
                 ;(Thread/sleep 10) ; XXX
                 (some-> (ref-set current (travel t))
@@ -86,7 +85,7 @@
         (dosync
           (or (some-> @current (choose-action game))
               (loop []
-                (let [target (some->> game :dungeon curlvl :tiles (apply concat)
+                (let [target (some->> game curlvl :tiles (apply concat)
                                       (filterv walkable?) rand-nth)]
                   (log/debug "chose random tile " target)
                   (or (some-> (ref-set current (travel target))
@@ -98,7 +97,7 @@
 (defn- search []
   (reify ActionHandler
     (choose-action [_ game]
-      (let [level (curlvl (:dungeon game))]
+      (let [level (curlvl game)]
         (loop [mul 1]
           (or (log/debug "searching for stairs" mul)
               (when-let [t (nearest-travelling
