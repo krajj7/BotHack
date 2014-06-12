@@ -87,6 +87,9 @@
 (defn curlvl [dungeon]
   (-> dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
 
+(defn curlvl-monsters [dungeon]
+  (-> dungeon curlvl :monsters))
+
 (defn add-curlvl-tag [game tag]
   (update-in game [:dungeon :levels (branch-key (:dungeon game))
                    (:dlvl (:dungeon game)) :tags] conj tag))
@@ -181,7 +184,7 @@
   (or (min-by #(distance (:player game) %)
               (filter #(and (= \@ (:glyph %))
                             (= :white (colormap (:color %))))
-                      (-> game :dungeon curlvl :monsters vals)))
+                      (-> game :dungeon curlvl-monsters vals)))
       (log/error "cannot find shk"))) ; can happen when blind...
 
 (defn mark-room [game kind]

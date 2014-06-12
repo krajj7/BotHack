@@ -148,7 +148,7 @@
         to-tile (at level step)
         dir (towards player to-tile)]
     (if (passable-walking? level player step)
-      (if (get-in (:monsters level) [step :peaceful] nil)
+      (if (get-in level [:monsters step :peaceful] nil)
         (fidget game)
         (->Move (towards player step)))
       ; TODO should look ahead if we have to move diagonally FROM the door in the next step and kick door down in advance if necessary
@@ -179,7 +179,7 @@
        (if-let [p (path-walking game to)]
         (if-let [n (first p)]
           (if (passable-walking? level (:player game) n)
-            (if (get-in (:monsters level) [n :peaceful] nil)
+            (if (get-in level [:monsters n :peaceful] nil)
               (->Search) ; hopefully will move
               (->Move (towards (:player game) n)))
             (log/debug "walk reached unwalkable target"))

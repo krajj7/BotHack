@@ -13,16 +13,14 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
-(defn- enemies [level]
-  (filter hostile? (-> level :monsters vals)))
-
 (defn- fight []
   (reify ActionHandler
-    (choose-action [_ {:keys [player] :as game}]
+    (choose-action [_ {:keys [player dungeon] :as game}]
       (loop [enemies (sort-by #(distance player %)
-                              (filter #(and (> 3 (- (:turn game) (:seen %)))
+                              (filter #(and (hostile? %)
+                                            (> 3 (- (:turn game) (:seen %)))
                                             (> 10 (distance player %)))
-                                      (-> game :dungeon curlvl enemies)))]
+                                      (-> dungeon curlvl-monsters vals)))]
         (when-let [enemy (first enemies)]
           (log/debug "targetting enemy" enemy)
           (Thread/sleep 100) ; XXX
