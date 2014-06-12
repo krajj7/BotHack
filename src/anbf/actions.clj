@@ -17,7 +17,7 @@
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 
-(def ^:private feature-re #"^There is an?(?: \w+)* (trap|staircase (?:up|down)|spider web|fountain|sink|grave|doorway|open door) here\.")
+(def ^:private feature-re #"^There is an?(?: \w+)* (trap|staircase (?:up|down)|spider web|fountain|sink|grave|doorway|open door|broken door) here\.")
 
 (defn- feature-here [msg]
   ; TODO bear trap?
@@ -28,6 +28,7 @@
       "spider web" :trap
       "doorway" :door-open
       "open door" :door-open
+      "broken door" :floor
       "staircase up" :stairs-up
       "staircase down" :stairs-down
       "fountain" :fountain
