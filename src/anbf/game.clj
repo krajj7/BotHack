@@ -16,7 +16,6 @@
   [frame
    player
    dungeon
-   fov
    turn
    score]
   anbf.bot.IGame
@@ -24,7 +23,7 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) nil 0 0))
+  (Game. nil (new-player) (new-dungeon) 0 0))
 
 (defn- update-game [game status delegator]
   (->> game keys (select-keys status) (merge game)))
@@ -35,33 +34,16 @@
       (update-in [:player] update-player status delegator)
       (update-game status delegator)))
 
-(defn lit?
-  "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
-  [game pos]
-  (let [tile (at-curlvl game pos)]
-    (or (adjacent? tile (:player game)) ; TODO actual player light radius
-        (= \. (:glyph tile))
-        (and (= \# (:glyph tile)) (= :white (color tile))))))
-
-(defn in-fov? [game pos]
-  (get-in (:fov game) [(dec (:y pos)) (:x pos)]))
-
-(defn visible? [game tile]
-  "Only considers normal sight, not infravision/ESP/..."
-  (and ; TODO not blind
-       (in-fov? game tile)
-       (lit? game tile)))
-
 (defn- update-fov [game cursor]
-  (assoc game :fov
-         (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
-                        (reify NHFov$TransparencyInfo
-                          (isTransparent [_ x y]
-                            (if (and (<= 0 y 20) (<= 0 x 79))
-                              (boolean
-                                (transparent?
-                                  (((-> game curlvl :tiles) y) x)))
-                              false))))))
+  (assoc-in game [:player :fov]
+            (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
+                           (reify NHFov$TransparencyInfo
+                             (isTransparent [_ x y]
+                               (if (and (<= 0 y 20) (<= 0 x 79))
+                                 (boolean
+                                   (transparent?
+                                     (((-> game curlvl :tiles) y) x)))
+                                 false))))))
 
 (defn- update-visible-tile [tile]
   (assoc tile

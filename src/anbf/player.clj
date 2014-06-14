@@ -2,6 +2,7 @@
 
 (ns anbf.player
   (:require [anbf.util :refer [kw->enum]]
+            [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -25,6 +26,7 @@
    xp
    xplvl
    x y
+   fov
    inventory
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
@@ -39,10 +41,19 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 16 nil)))
+  (apply ->Player (repeat 17 nil)))
 
 (defn update-player [player status delegator]
   (->> player keys (select-keys status) (merge player)))
+
+(defn in-fov? [game pos]
+  (get-in game [:player :fov (dec (:y pos)) (:x pos)]))
+
+(defn visible? [game tile]
+  "Only considers normal sight, not infravision/ESP/..."
+  (and ; TODO not blind
+       (in-fov? game tile)
+       (lit? game tile)))
 
 (defn light-radius [player]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

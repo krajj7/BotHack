@@ -93,6 +93,12 @@
   (update-in game [:dungeon :levels (branch-key (:dungeon game))
                    (:dlvl (:dungeon game)) :tags] conj tag))
 
+(defn reset-curlvl-monster
+  [game monster]
+  (assoc-in game [:dungeon :levels (branch-key (:dungeon game))
+                  (:dlvl (:dungeon game)) :monsters (position monster)]
+            monster))
+
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
   [game pos update-fn & args]
@@ -114,6 +120,14 @@
 
 (defn at-player [game]
   (at-curlvl game (:player game)))
+
+(defn lit?
+  "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
+  [game pos]
+  (let [tile (at-curlvl game pos)]
+    (or (adjacent? tile (:player game)) ; TODO actual player light radius
+        (= \. (:glyph tile))
+        (and (= \# (:glyph tile)) (= :white (color tile))))))
 
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
