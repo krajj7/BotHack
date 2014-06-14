@@ -3,18 +3,23 @@
 (ns anbf.tracker
   (:require [anbf.position :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.player :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
-  (update-curlvl-monster game monster into ; TODO type
-                         (select-keys old-monster [:peaceful :cancelled])))
+  (update-curlvl-monster
+    game monster
+    (fn [monster]
+      (cond-> monster
+        (not= (position old-monster)
+              (position monster)) (assoc :awake true)
+        :always (into (select-keys old-monster [:peaceful :cancelled])))))); TODO type
 
 (defn- transfer-unpaired [game unpaired]
   (log/debug "unpaired" unpaired) ; TODO
-  game
-  #_(if (not (in-los? (at-curlvl game unpaired)))
-    (update-curlvl-monster game unpaired (constantly unpaired))
+  (if-not (visible? game (at-curlvl game unpaired))
+    (reset-curlvl-monster game unpaired)
     game))
 
 (defn track-monsters
@@ -46,4 +51,4 @@
                  old-monsters (inc dist)))
         (as-> new-game res
           (reduce transfer-pair res (vals pairs))
-          (reduce transfer-unpaired res old-monsters))))))
+          (reduce transfer-unpaired res (vals old-monsters)))))))

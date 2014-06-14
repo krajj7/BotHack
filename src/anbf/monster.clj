@@ -7,6 +7,7 @@
    known ; last turn observed
    glyph
    color
+   awake
    ; TODO type (+ transfer)
    friendly
    peaceful
@@ -18,4 +19,4 @@
 
 (defn new-monster [x y known glyph color]
   ; TODO infer unambiguous type/properties immediately
-  (Monster. x y known glyph color (inverse? color) false false))
+  (Monster. x y known glyph color nil (inverse? color) false false))
