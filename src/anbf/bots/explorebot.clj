@@ -56,8 +56,8 @@
     (reify ActionHandler
       (choose-action [_ game]
         (dosync
-          (or (some-> @current (choose-action game))
-              (search-dead-end game 15)
+          (or (search-dead-end game 15)
+              (some-> @current (choose-action game))
               (when-let [t (peek (nearest-travelling
                                    game
                                    (partial explorable-tile?
