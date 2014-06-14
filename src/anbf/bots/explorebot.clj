@@ -1,6 +1,5 @@
-; a dumb level-exploring bot
-
 (ns anbf.bots.explorebot
+  "a dumb level-exploring bot"
   (:require [clojure.tools.logging :as log]
             [anbf.handlers :refer :all]
             [anbf.player :refer :all]

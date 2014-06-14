@@ -1,6 +1,5 @@
-; The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event type, or the first handler that implements the command protocol.  For commands it writes responses back to the terminal.  Handlers are invoked in order of their priority, for handlers of the same priority order of invocation is not specified.
-
 (ns anbf.delegator
+  "The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event type, or the first handler that implements the command protocol.  For commands it writes responses back to the terminal.  Handlers are invoked in order of their priority, for handlers of the same priority order of invocation is not specified. "
   (:require [clojure.data.priority-map :refer [priority-map]]
             [anbf.action :refer :all]
             [anbf.util :refer :all]

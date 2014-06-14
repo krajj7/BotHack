@@ -1,8 +1,5 @@
-; This is the interface to NetHack
-; The JTA library (http://www.javatelnet.org) is used for Telnet/SSH/shell command runner implementation and terminal emulation
-; For now only Telnet is supported
-
 (ns anbf.jta
+  "This is the interface to NetHack.  The JTA library (http://www.javatelnet.org) is used for shell/SSH/Telnet implementation and terminal emulation."
   (:require [anbf.delegator :refer :all]
             [anbf.util :refer :all]
             [anbf.term :refer [set-delegator]])

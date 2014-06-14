@@ -1,6 +1,5 @@
-; JTA filter plugin to save a ttyrec
-
 (ns anbf.ttyrec
+  "JTA filter plugin to save a ttyrec"
   (:require [clojure.java.io :refer [output-stream]])
   (:import [de.mud.jta FilterPlugin]
            [java.nio ByteBuffer ByteOrder])

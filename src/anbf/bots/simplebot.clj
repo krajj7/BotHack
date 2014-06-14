@@ -1,7 +1,5 @@
-; a dumb example bot
-; equivalent to SimpleBot.java
-
 (ns anbf.bots.simplebot
+  "A dumb example bot.  Equivalent to SimpleBot.java"
   (:require [clojure.tools.logging :as log]
             [anbf.anbf :refer :all]
             [anbf.delegator :refer :all]

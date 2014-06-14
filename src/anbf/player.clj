@@ -1,6 +1,5 @@
-; representation of the bot avatar
-
 (ns anbf.player
+  "representation of the bot avatar"
   (:require [anbf.util :refer [kw->enum]]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]

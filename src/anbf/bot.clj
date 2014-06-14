@@ -1,6 +1,5 @@
-; interfaces for bots
-
-(ns anbf.bot)
+(ns anbf.bot
+  "interfaces for bots")
 
 ; note: delegator.clj, actions.clj and java code generate additional classes in the anbf.bot package
 

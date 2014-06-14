@@ -1,6 +1,5 @@
-; tracking and pairing monsters frame-to-frame
-
 (ns anbf.tracker
+  "Tracking and pairing monsters frame-to-frame"
   (:require [anbf.position :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.player :refer :all]

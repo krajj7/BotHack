@@ -1,6 +1,5 @@
-; The screen scraper handles redraw events, tries to determine when the frame is completely drawn and sends off higher-level events.  It looks for prompts and menus and triggers appropriate action selection commands.
-
 (ns anbf.scraper
+  "The screen scraper handles redraw events, tries to determine when the frame is completely drawn and sends off higher-level events.  It looks for prompts and menus and triggers appropriate action selection commands."
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [anbf.util :refer :all]

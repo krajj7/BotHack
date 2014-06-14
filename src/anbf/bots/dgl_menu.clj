@@ -1,6 +1,5 @@
-; Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and start the game.
-
 (ns anbf.bots.dgl-menu
+  "Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and start the game."
   (:require [anbf.anbf :refer :all]
             [anbf.util :refer :all]
             [anbf.frame :refer :all]

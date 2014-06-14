@@ -1,8 +1,5 @@
-; An implementation of a Terminal plugin for JTA without a GUI
-; It interprets terminal escape sequences, cursor movement etc. using the vt320 emulation in JTA, keeps a representation of the screen in memory for querying and publishes redraw events for a higher-level interpretation elsewhere.
-; Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff
-
 (ns anbf.term
+  "An implementation of a Terminal plugin for JTA without a GUI.  It interprets terminal escape sequences, cursor movement etc. using the vt320 emulation in JTA, keeps a representation of the screen in memory for querying and publishes redraw events for a higher-level interpretation elsewhere.  Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff."
   (:require [anbf.delegator :refer :all]
             [anbf.frame :refer :all]
             [clojure.tools.logging :as log])

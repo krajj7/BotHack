@@ -1,6 +1,5 @@
-; representation of the game world
-
 (ns anbf.game
+  "representation of the game world"
   (:import [anbf NHFov NHFov$TransparencyInfo])
   (:require [clojure.tools.logging :as log]
             [anbf.player :refer :all]
