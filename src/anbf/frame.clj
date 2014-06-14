@@ -42,9 +42,6 @@
   [frame n]
   ((:lines frame) n))
 
-(defn topline [frame]
-  (nth-line frame 0))
-
 (defn botls [frame]
   (subvec (:lines frame) 22))
 
@@ -62,3 +59,13 @@
   "Returns true if the given text appears just before the cursor."
   [frame text]
   (.endsWith (before-cursor frame) text))
+
+(defn topline [frame]
+  (-> frame (nth-line 0) string/trim))
+
+(defn topline+
+  "Returns the top line with possible overflow on the second line appended."
+  [frame]
+  (if (= 1 (-> frame :cursor :y))
+    (str (topline frame) " " (string/trim (cursor-line frame)))
+    (topline frame)))

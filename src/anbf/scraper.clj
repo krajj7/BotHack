@@ -7,9 +7,6 @@
             [anbf.frame :refer :all]
             [anbf.delegator :refer :all]))
 
-(defn- topline-empty? [frame]
-  (re-seq #"^ +$" (topline frame)))
-
 (defn- status-drawn?
   "Does the status line look fully drawn? Presumes there are no menus in the frame."
   [frame]
@@ -41,10 +38,7 @@
   "Returns the whole text before a --More-- prompt, or nil if there is none."
   [frame]
   (when (more-prompt? frame)
-    (-> (:lines frame)
-        (nth 0) ; TODO handle non-topline --More--, possibly concatenate lines (long engravings cause multiline messages)
-        string/trim
-        (string/replace-first #"--More--" ""))))
+    (string/replace (topline+ frame) #"--More--" "")))
 
 (defn- location-prompt? [frame]
   (let [topline (topline frame)]
@@ -55,10 +49,7 @@
   [frame]
   (when (and (<= (-> frame :cursor :y) 1)
              (before-cursor? frame "##'"))
-    (let [prompt-end (subs (cursor-line frame) 0 (- (-> frame :cursor :x) 4))]
-      (if (pos? (-> frame :cursor :y))
-        (str (string/trim topline) " " prompt-end)
-        prompt-end))))
+    (subs (topline+ frame) 0 (- (-> frame :cursor :x) 4))))
 
 (defn- prompt-fn [msg]
   (throw (UnsupportedOperationException. "TODO prompt-fn - implement me"))
@@ -213,26 +204,29 @@
                   lastmsg-clear)
                 (log/debug "marked expecting further redraw")))
           (lastmsg-clear [frame]
-            (when (topline-empty? frame)
+            (when (empty? (topline frame))
               (send delegator write (str (ctrl \p) (ctrl \p)))
               lastmsg-get))
           ; jakmile je vykresleno "# #" na topline, mam jistotu, ze po dalsim ctrl+p se vykresli posledni herni zprava (nebo "#", pokud zadna nebyla)
           (lastmsg-get [frame]
-            (when (re-seq #"^# # +" (topline frame))
+            (when (= "# #" (topline frame))
               (send delegator write (str (ctrl \p)))
               lastmsg+action))
           ; cekam na vysledek <ctrl+p>, bud # z predchoziho kola nebo presmahnuta message
           (lastmsg+action [frame]
             (or (when-not (or (= 0 (-> frame :cursor :y))
-                              (topline-empty? frame)
-                              (.startsWith (topline frame) "# # "))
-                  (if-not (re-seq #"^# +" (topline frame))
-                    (send delegator message (string/trim (topline frame)))
-                    #_ (log/debug "no last message"))
-                  (emit-botl frame delegator)
-                  (send delegator map-drawn frame)
-                  (send delegator full-frame frame)
-                  initial)
+                              (empty? (topline frame))
+                              (.startsWith (topline frame) "# #"))
+                  (if (and (more-prompt? frame) (= 1 (-> frame :cursor :y)))
+                    (do (send delegator write "\n##\n\n")
+                        lastmsg-clear)
+                    (do (if-not (.startsWith (topline frame) "#")
+                          (send delegator message (topline frame))
+                          #_ (log/debug "no last message"))
+                        (emit-botl frame delegator)
+                        (send delegator map-drawn frame)
+                        (send delegator full-frame frame)
+                        initial)))
                 (log/debug "lastmsg expecting further redraw")))]
     (if (= mark-kw :no-mark)
       no-mark
@@ -249,8 +243,8 @@
 (defn scraper-handler [scraper delegator]
   (reify RedrawHandler
     (redraw [_ frame]
-      (dosync (alter scraper apply-scraper delegator frame))
-      #_ (->> (dosync (alter scraper apply-scraper delegator frame))
+      #_(dosync (alter scraper apply-scraper delegator frame))
+      (->> (dosync (alter scraper apply-scraper delegator frame))
               type
               (log/debug "next scraper:")))))
 ; TODO handler co switchne na no-mark u nekterych akci
