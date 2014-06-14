@@ -144,7 +144,7 @@
     dungeon))
 
 ; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios) or trapdoor
-(defn update-dlvl [dungeon status delegator]
+(defn update-dlvl [dungeon status]
   (-> dungeon
       (assoc :dlvl (:dlvl status))
       ensure-curlvl))
@@ -159,11 +159,6 @@
                 (apply concat (-> game curlvl :tiles))
                 (apply concat (drop 1 (:lines frame)))
                 (apply concat (drop 1 (:colors frame))))))
-
-(defn- update-monsters [{:keys [dungeon] :as game} frame]
-  (-> game
-      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
-                 :monsters] (gather-monsters game frame))))
 
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
@@ -189,12 +184,17 @@
           (floodfill-room game pos (:room tile)))
       game)))
 
-(defn update-dungeon [{:keys [dungeon] :as game} frame]
+(defn- parse-map [{:keys [dungeon] :as game} frame]
   (-> game
-      (update-monsters frame)
+      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
+                 :monsters] (gather-monsters game frame))
       (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
                  (partial map-tiles parse-tile)
-                 (drop 1 (:lines frame)) (drop 1 (:colors frame)))
+                 (drop 1 (:lines frame)) (drop 1 (:colors frame)))))
+
+(defn update-dungeon [{:keys [dungeon] :as game} frame]
+  (-> game
+      (parse-map frame)
       (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) assoc :walked true)
       infer-branch))

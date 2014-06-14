@@ -29,6 +29,7 @@
    inventory
    hunger ; :fainting :weak :hungry :normal :satiated
    burden
+   engulfed
    state ; stun/conf/hallu/blind/...
    stats ; :str :dex :con :int :wis :cha
    alignment] ; :lawful :neutral :chaotic
@@ -40,9 +41,9 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 17 nil)))
+  (apply ->Player (repeat 18 nil)))
 
-(defn update-player [player status delegator]
+(defn update-player [player status]
   (->> player keys (select-keys status) (merge player)))
 
 (defn in-fov? [game pos]

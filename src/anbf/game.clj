@@ -24,14 +24,14 @@
 (defn new-game []
   (Game. nil (new-player) (new-dungeon) 0 0))
 
-(defn- update-game [game status delegator]
+(defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))
 
-(defn- update-by-botl [game status delegator]
+(defn- update-by-botl [game status]
   (-> game
-      (update-in [:dungeon] update-dlvl status delegator)
-      (update-in [:player] update-player status delegator)
-      (update-game status delegator)))
+      (update-in [:dungeon] update-dlvl status)
+      (update-in [:player] update-player status)
+      (update-game status)))
 
 (defn- update-fov [game cursor]
   (assoc-in game [:player :fov]
@@ -57,13 +57,23 @@
                                     (update-visible-tile tile)
                                     tile)))))
 
-(defn- update-map [game {:keys [cursor] :as frame} delegator]
+(defn- update-map [game frame]
+  (if (-> game :player :engulfed)
+    game
+    (-> game
+        (update-dungeon frame)
+        (update-fov (:cursor frame))
+        (track-monsters game)
+        update-explored)))
+
+(defn- engulfed? [game frame]
+  false) ; TODO
+
+(defn- handle-frame [game frame]
   (-> game
-      (update-in [:player] #(into % (:cursor frame))) ; update position
-      (update-dungeon frame)
-      (update-fov cursor)
-      (track-monsters game)
-      update-explored))
+      (update-in [:player] into (:cursor frame)) ; update position
+      (assoc-in [:player :engulfed] (engulfed? game frame))
+      (update-map frame)))
 
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
@@ -73,10 +83,10 @@
       (swap! game assoc-in [:frame] frame))
     BOTLHandler
     (botl [_ status]
-      (swap! game update-by-botl status delegator))
+      (swap! game update-by-botl status))
     FullFrameHandler
     (full-frame [_ frame]
-      (swap! game update-map frame delegator))
+      (swap! game handle-frame frame))
     ToplineMessageHandler
     (message [_ text]
       (if-let [room (room-type text)]
