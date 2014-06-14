@@ -207,14 +207,16 @@
                         (= :white (color %)))
                   (vals (curlvl-monsters game)))))
 
-(defn room-tag [kind]
-  (cond
-    (shops kind) :shop
-    :else (throw (IllegalArgumentException.
-                   (str "don't know tag for room type " kind)))))
+(def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
+
+(defn room-type [msg]
+  ; TODO temples, maybe treasure zoos etc.
+  (or (if (.endsWith msg ", welcome to Delphi!\"") :oracle)
+      (shop-types (re-first-group room-re msg))))
 
 (defn mark-room [game kind]
-  (let [roomkeeper (closest-roomkeeper game)]
-    (-> game
-        (floodfill-room roomkeeper kind)
-        (add-curlvl-tag (room-tag kind)))))
+  (-> game
+      (add-curlvl-tag kind)
+      (#(if-let [roomkeeper (and (shops kind) (closest-roomkeeper %))]
+        (floodfill-room % roomkeeper kind)
+        %))))

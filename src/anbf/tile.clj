@@ -108,7 +108,7 @@
         mark-wall-seen)
     tile))
 
-(def ^:private shop-types
+(def shop-types
   {"general store" :general
    "used armor dealership" :armor
    "second-hand bookstore" :book
@@ -121,15 +121,8 @@
    "rare books" :book
    "lighting store" :light})
 
-(def shops #{:general :armor :book :potion :weapons
-             :food :gem :wand :tool :light})
+(def shops (apply hash-set (vals shop-types)))
 
 (defn shop? [tile]
   ; TODO door & "closed for inventory" on neighbor
   (shops (:room tile)))
-
-(def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
-
-(defn room-type [msg]
-  ; TODO temples, maybe treasure zoos etc.
-  (shop-types (re-first-group room-re msg)))
