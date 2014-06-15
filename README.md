@@ -24,29 +24,37 @@ Code for the bot: https://github.com/krajj7/ANBF/blob/master/src/anbf/bots/simpl
 
 Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/SimpleBot/src/anbf/javabots/SimpleBot.java
 
-**25.5.2014**: The framework can now parse the map for basic level layout info and allows for a slightly more complex bot (explorebot.clj) that can explore the first level using A\* pathfinding and charge monsters it encounters.
+**25.5.2014**: The framework can parse the map for basic level layout info and allows for a slightly more complex bot (explorebot.clj) that can explore the first level using A\* pathfinding and charge monsters it encounters.
+
+**14.6.2014**: The bot can navigate effectively as far as minetown/oracle, where it usually gets killed for lack of combat tactics.  It can find hidden doors and passages and looks almost like a newbie human playing ;-)  The framework provides basic monster tracking and shop recognition allowing the bot to deal with (avoid) peaceful monsters and shopkeepers quite nicely.
 
 ## Roadmap
 
 ### Short-term goals
 
+Track feature changes, mark dug-up tiles and don't search for dead ends there.
+
+Mines detection.
+
+Recognizing blindness and other afflictions.
+
 More actions, handling of prompts and menus.
 
-Expand model of the game world.
+Keep expanding model of the game world.
 
-More advanced bot.
+Smarter combat tactics for the bot.
 
 ### Medium-term goals
 
-Handling inventory.
+Make basic monster spoilers available.
 
-Long-distance travel.
+Handling of items and inventory, esp. food.
 
-Make basic monster and item stats available.
+Ranged combat.
+
+Better pathfinding, interlevel travel.
 
 ### Future goals
-
-Basic heuristic monster tracking.
 
 Utilities for shopping and price-identification of items.
 
