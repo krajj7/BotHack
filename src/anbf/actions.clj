@@ -48,7 +48,14 @@
       ToplineMessageHandler
       (message [_ msg]
         ; TODO if not conf/stun
-        (or (if (= msg "It's a wall.")
+        (or (if (re-seq #"You read: \"Closed for inventory\"" msg) ; TODO possible degradation
+              (update-on-known-position
+                anbf (fn mark-shop [game]
+                       (reduce #(if (door? %2)
+                                  (update-curlvl-at %1 %2 assoc :shop true)
+                                  %1) game
+                               (neighbors (curlvl game) (at-player game))))))
+            (if (= msg "It's a wall.")
               (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                              assoc :feature :wall)))
             (if (re-seq #"Wait!  That's a .*mimic!" msg)
