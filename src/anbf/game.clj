@@ -15,6 +15,8 @@
   [frame
    player
    dungeon
+   branch-id ; current
+   dlvl ; current
    turn
    score]
   anbf.bot.IGame
@@ -22,14 +24,14 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) 0 0))
+  (Game. nil (new-player) (new-dungeon) :main "Dlvl:1" 0 0))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))
 
 (defn- update-by-botl [game status]
   (-> game
-      (update-in [:dungeon] update-dlvl status)
+      (assoc :dlvl (:dlvl status))
       (update-in [:player] update-player status)
       (update-game status)))
 
@@ -50,8 +52,7 @@
          :feature (if (= (:glyph tile) \space) :rock (:feature tile))))
 
 (defn- update-explored [game]
-  (update-in game [:dungeon :levels (branch-key (:dungeon game))
-                   (:dlvl (:dungeon game)) :tiles]
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
              (partial map-tiles (fn [tile]
                                   (if (visible? game tile)
                                     (update-visible-tile tile)
@@ -71,12 +72,13 @@
 
 (defn- handle-frame [game frame]
   (-> game
+      ensure-curlvl
       (update-in [:player] into (:cursor frame)) ; update position
       (assoc-in [:player :engulfed] (engulfed? game frame))
       (update-map frame)))
 
 (defn game-handler
-  [{:keys [game delegator] :as anbf}]
+  [{:keys [game] :as anbf}]
   (reify
     RedrawHandler
     (redraw [_ frame]

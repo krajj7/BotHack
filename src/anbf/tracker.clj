@@ -24,14 +24,13 @@
 (defn track-monsters
   "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
   [new-game old-game]
-  (if (not= (-> old-game :dungeon :dlvl)
-            (-> new-game :dungeon :dlvl))
+  (if (not= (:dlvl old-game) (:dlvl new-game))
     new-game ; TODO track stair followers?
     (loop [pairs {}
            new-monsters (curlvl-monsters new-game)
            old-monsters (curlvl-monsters old-game)
            dist 0]
-      (if (and (> 3 dist) (seq old-monsters))
+      (if (and (> 4 dist) (seq old-monsters))
         (if-let [[p m] (first new-monsters)]
           (if-let [[[cp cm] & more] (seq (filter
                                            (fn candidate? [[_ n]]

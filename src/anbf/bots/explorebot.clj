@@ -22,7 +22,6 @@
                                       (-> game curlvl-monsters vals)))]
         (when-let [enemy (first enemies)]
           (log/debug "targetting enemy" enemy)
-          (Thread/sleep 100) ; XXX
           (if (adjacent? player enemy)
             (->Move (towards player enemy))
             (or (choose-action (walk enemy) game)
@@ -41,10 +40,10 @@
                                 (diagonal? tile %))
                            (neighbors level tile))))))
 
-(defn- search-dead-end ; TODO not in the mines
+(defn- search-dead-end
   [game num-search]
   (let [tile (at-player game)]
-    (when (and (= :main (branch-key (:dungeon game)))
+    (when (and (= :main (branch-key game))
                (dead-end? (curlvl game) tile)
                (< (:searched tile) num-search))
       (log/debug "searching dead end")
@@ -71,11 +70,13 @@
 (defn- descend []
   (reify ActionHandler
     (choose-action [_ game]
-      (if-let [path (nearest-travelling game #(= :stairs-down (:feature %)))]
-        (if-let [t (peek path)]
-          (choose-action (travel t) game)
-          (->Descend))
-        (log/debug "cannot find stairs")))))
+      (if (some #(= :stairs-down (:feature %))
+                (apply concat (:tiles (curlvl game))))
+        (if-let [path (nearest-travelling game #(= :stairs-down (:feature %)))]
+          (if-let [t (peek path)]
+            (choose-action (travel t) game)
+            (->Descend))
+        (log/debug "cannot find stairs"))))))
 
 (defn- random-travel []
   (let [current (ref nil)]
@@ -139,6 +140,6 @@
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
       (register-handler 5 (explore))
-      (register-handler 6 (descend))
+      (register-handler 4 (descend)) ; XXX +++
       (register-handler 7 (search))
       #_ (register-handler 8 (random-travel))))

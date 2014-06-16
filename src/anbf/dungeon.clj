@@ -12,10 +12,7 @@
 ; a Level should be permanently uniquely identified by its branch-id + dlvl.
 (defrecord Dungeon
   [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
-   id->branch ; {:branch-id => :branch}, only ids of recognized levels included
-   branch-start ; {:branch => dlvl of entrypoint}, only for recognized branches
-   branch-id ; current
-   dlvl] ; current
+   id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
   anbf.bot.IDungeon)
 
 (defn- new-branch-id []
@@ -24,6 +21,8 @@
 (def branches #{:main :mines :sokoban :quest :ludios :vlad
                 :wiztower :earth :fire :air :water :astral})
 
+(def subbranches #{:mines :sokoban :ludios :vlad})
+
 (def upwards-branches #{:sokoban :vlad})
 
 (defn upwards? [branch] (upwards-branches branch))
@@ -31,6 +30,9 @@
 (defn dlvl-number [dlvl]
   (if-let [n (first (re-seq #"\d+" dlvl))]
     (Integer/parseInt n)))
+
+(defn dlvl [game-or-level]
+  (dlvl-number (:dlvl game-or-level)))
 
 (defn dlvl-compare
   "Only makes sense for dlvls within one branch."
@@ -44,17 +46,15 @@
      (compare d1 d2))))
 
 ; TODO if level looks visited find it by dlvl instead of adding
-(defn add-level [dungeon {:keys [branch-id] :as level}]
+(defn add-level [{:keys [dungeon] :as game} {:keys [branch-id] :as level}]
   (assoc-in
-    dungeon [:levels branch-id]
+    game [:dungeon :levels branch-id]
     (assoc (get (:levels dungeon) branch-id
                 (sorted-map-by (partial dlvl-compare branch-id)))
            (:dlvl level) level)))
 
 (defn new-dungeon []
-  (add-level (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)
-                       {:earth "Dlvl:1"} :main "Dlvl:1")
-             (new-level "Dlvl:1" :main)))
+  (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)))
 
 (defn change-dlvl
   "Apply function to dlvl number if there is one, otherwise no change.  The result dlvl may not actually exist."
@@ -77,42 +77,46 @@
     (change-dlvl dec dlvl)
     (change-dlvl inc dlvl)))
 
-(defn infer-branch [game]
-  game) ; TODO assoc id->branch, merge id to branch in levels
+(defn branch-key
+  ([{:keys [dungeon branch-id] :as game}]
+   (branch-key game game))
+  ([{:keys [dungeon] :as game} {:keys [branch-id]}]
+   (get (:id->branch dungeon) branch-id branch-id)))
 
-(defn branch-key [{:keys [branch-id] :as dungeon}]
-  (get (:id->branch dungeon) branch-id branch-id))
-
-(defn curlvl [{:keys [dungeon] :as game}]
-  (-> game :dungeon :levels (get (branch-key dungeon)) (get (:dlvl dungeon))))
+(defn curlvl [game]
+  (-> game :dungeon :levels (get (branch-key game)) (get (:dlvl game))))
 
 (defn curlvl-monsters [game]
   (-> game curlvl :monsters))
 
 (defn add-curlvl-tag [game tag]
-  (update-in game [:dungeon :levels (branch-key (:dungeon game))
-                   (:dlvl (:dungeon game)) :tags] conj tag))
+  (log/debug "tagging curlvl with" tag)
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tags]
+             conj tag))
+
+(defn curlvl-tags [game]
+  (-> game curlvl :tags))
 
 (defn reset-curlvl-monster
   [game monster]
-  (assoc-in game [:dungeon :levels (branch-key (:dungeon game))
-                  (:dlvl (:dungeon game)) :monsters (position monster)]
+  (assoc-in game [:dungeon :levels (branch-key game) (:dlvl game)
+                  :monsters (position monster)]
             monster))
 
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
   [game pos update-fn & args]
-  {:pre [(get-in game [:dungeon :levels (branch-key (:dungeon game))
-                       (:dlvl (:dungeon game)) :monsters (position pos)])]}
-  (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
-                         (:dlvl (:dungeon game)) :monsters (position pos)]
+  {:pre [(get-in game [:dungeon :levels (branch-key game)
+                       (:dlvl game) :monsters (position pos)])]}
+  (apply update-in game [:dungeon :levels (branch-key game)
+                         (:dlvl game) :monsters (position pos)]
          update-fn args))
 
 (defn update-curlvl-at
   "Update the tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
-  (apply update-in game [:dungeon :levels (branch-key (:dungeon game))
-                         (:dlvl (:dungeon game)) :tiles (dec (:y pos)) (:x pos)]
+  (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles
+                         (dec (:y pos)) (:x pos)]
          update-fn args))
 
 (defn at-curlvl [game pos]
@@ -136,18 +140,76 @@
                          (apply (partial mapv #(apply f %&)) rows)))
          tile-colls))
 
+(def ^:private main-features ; these don't appear in the mines
+  #{:door-closed :door-open :door-locked :altar :sink :fountain :throne})
+
+(defn- has-features [level]
+  "checks for features not occuring in the mines"
+  (some #(main-features (:feature %)) (apply concat (:tiles level))))
+
+(defn- same-glyph-diag-walls
+  " the check we make is that any level where there are diagonally adjacent
+  walls with the same glyph, it's mines. that captures the following:
+  .....
+  ..---
+  ..-..
+  .....
+  thanks TAEB!"
+  [level]
+  (some (fn has-same-glyph-diag-neighbor? [tile]
+          (->> (neighbors level tile)
+               (remove #(straight (towards tile %)))
+               (some #(and (= :wall (:feature tile) (:feature %))
+                           (= (:glyph tile) (:glyph %))))))
+        (apply concat (take-nth 2 (:tiles level)))))
+
+(defn- recognize-branch [level]
+  ; TODO soko
+  (cond (has-features level) :main
+        (same-glyph-diag-walls level) :mines))
+
+(defn- merge-branch-id [{:keys [dungeon] :as game} branch-id branch]
+  (log/debug "merging branch-id" branch-id "to branch" branch)
+  ;(log/debug dungeon)
+  (-> game
+      (assoc-in [:dungeon :id->branch branch-id] branch)
+      (update-in [:dungeon :levels branch]
+                 #(into (-> dungeon :levels branch-id) %))
+      (update-in [:dungeon :levels] dissoc branch-id)))
+
+(defn- infer-branch [game]
+  (if (branches (branch-key game))
+    game ; branch already known
+    (let [level (curlvl game)]
+      (if-let [branch (recognize-branch level)]
+        (merge-branch-id game (:branch-id level) branch)
+        game)))) ; failed to recognize
+
+(defn- infer-tags [game]
+  (let [level (curlvl game)
+        tags (:tags level)
+        branch (branch-key game)]
+    (cond-> game
+      ; TODO could check for oracle
+      (and (<= 6 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
+           (has-features level)) (add-curlvl-tag :minetown)
+      (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :minesend))
+           (has-features level)) (add-curlvl-tag :minesend))))
+
+(defn initial-branch-id
+  "Choose branch-id for a new dlvl reached by stairs."
+  [game dlvl]
+  (or (subbranches (branch-key game))
+      (if-not (<= 3 (dlvl-number dlvl) 5) :main)
+      (new-branch-id)))
+
 (defn ensure-curlvl
   "If current branch-id + dlvl has no level associated, create a new empty level"
-  [dungeon]
-  (if-not (get-in dungeon [:levels (branch-key dungeon) (:dlvl dungeon)])
-    (add-level dungeon (new-level (:dlvl dungeon) (:branch-id dungeon)))
-    dungeon))
-
-; TODO change branch-id on staircase ascend/descend event or special levelport (quest/ludios) or trapdoor
-(defn update-dlvl [dungeon status]
-  (-> dungeon
-      (assoc :dlvl (:dlvl status))
-      ensure-curlvl))
+  [{:keys [dlvl] :as game}]
+  (log/debug "ensuring curlvl:" dlvl "- branch:" (branch-key game))
+  (if-not (get-in game [:dungeon :levels (branch-key game) dlvl])
+    (add-level game (new-level dlvl (branch-key game)))
+    game))
 
 (defn- gather-monsters [game frame]
   (into {} (map (fn monster-entry [tile glyph color]
@@ -184,20 +246,21 @@
           (floodfill-room game pos (:room tile)))
       game)))
 
-(defn- parse-map [{:keys [dungeon] :as game} frame]
+(defn- parse-map [game frame]
   (-> game
-      (assoc-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon)
+      (assoc-in [:dungeon :levels (branch-key game) (:dlvl game)
                  :monsters] (gather-monsters game frame))
-      (update-in [:dungeon :levels (branch-key dungeon) (:dlvl dungeon) :tiles]
+      (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
                  (partial map-tiles parse-tile)
                  (drop 1 (:lines frame)) (drop 1 (:colors frame)))))
 
 (defn update-dungeon [{:keys [dungeon] :as game} frame]
   (-> game
       (parse-map frame)
+      infer-branch
+      infer-tags
       (reflood-room (:cursor frame))
-      (update-curlvl-at (:cursor frame) assoc :walked true)
-      infer-branch))
+      (update-curlvl-at (:cursor frame) assoc :walked true)))
 
 (defn- closest-roomkeeper
   "Presumes having just entered a room"

@@ -35,6 +35,15 @@
 (defn door? [tile]
   (#{:door-open :door-closed :door-locked} (:feature tile)))
 
+(defn stairs? [tile]
+  (#{:stairs-up :stairs-down} (:feature tile)))
+
+(defn opposite-stairs [feature]
+  {:pre [(#{:stairs-up :stairs-down} feature)]}
+  (if (= :stairs-up feature)
+    :stairs-down
+    :stairs-up))
+
 (defn walkable? [tile]
   (and (not (boulder? tile))
        (or (and (item? (:glyph tile)) (nil? (:feature tile)))

@@ -102,7 +102,7 @@
               to-tile (at level to)]
           (and (door? to-tile)
                (not (item? (:glyph to-tile))) ; don't try to break blocked doors
-               (or (not (shop? to-tile))
+               (or (and (not ((:tags level) :minetown)) (not (shop? to-tile)))
                    (and (not= :door-locked (:feature to-tile))
                         (straight (towards from to))))))))
 
