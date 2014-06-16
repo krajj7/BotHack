@@ -18,15 +18,18 @@
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 
-(def ^:private feature-re #"^There is an?(?: \w+)* (trap|staircase (?:up|down)|spider web|fountain|sink|grave|doorway|open door|broken door) here\.")
+(def ^:private feature-re #"^There is(?: an?)?(?: \w+)* (trap|staircase (?:up|down)|spider web|web|ice|opulent throne|fountain|sink|grave|doorway|open door|broken door) here\.")
 
 (defn- feature-here [msg]
   ; TODO bear trap?
   (if (.startsWith msg "There is an altar")
     :altar
     (case (re-first-group feature-re msg)
+      "opulent throne" :throne
       "trap" :trap
       "spider web" :trap
+      "web" :trap
+      "ice" :ice
       "doorway" :door-open
       "open door" :door-open
       "broken door" :floor
@@ -123,7 +126,7 @@
     (stairs-handler anbf))
   (trigger [_] ">"))
 
-; TODO "The XXX gets angry!" TODO ".*is in no shape for kicking."
+; TODO "The XXX gets angry!"
 (defaction Kick [dir]
   (handler [_ _])
   (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
