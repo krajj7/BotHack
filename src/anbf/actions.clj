@@ -44,9 +44,13 @@
     (reify
       ToplineMessageHandler
       (message [_ msg]
+        ; TODO if not conf/stun
         (or (if (= msg "It's a wall.")
               (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                              assoc :feature :wall)))
+            (if (re-seq #"Wait!  That's a .*mimic!" msg)
+              (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                             assoc :feature nil)))
             (if-let [feature (feature-here msg)]
               (update-on-known-position
                 anbf #(update-curlvl-at % (:player %)
