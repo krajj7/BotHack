@@ -12,7 +12,8 @@
 (defrecord Delegator [writer handlers inhibited]
   NetHackWriter
   (write [this cmd] "Write a string to the NetHack terminal as if typed."
-    (if-not (:inhibited this)
+    (when-not (:inhibited this)
+      (log/debug "writing" cmd)
       ((:writer this) cmd))
     this))
 

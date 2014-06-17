@@ -21,7 +21,7 @@
     (reset-curlvl-monster game unpaired)
     game))
 
-(defn track-monsters
+(defn track-monsters ; TODO hallu
   "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
   [new-game old-game]
   (if (not= (:dlvl old-game) (:dlvl new-game))
