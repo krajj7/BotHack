@@ -77,6 +77,12 @@
       (assoc-in [:player :engulfed] (engulfed? game frame))
       (update-map frame)))
 
+(defn- level-msg [msg]
+  (case msg
+    "You enter what seems to be an older, more primitive world." :rogue
+    "The odor of burnt flesh and decay pervades the air." :votd
+    nil))
+
 (defn game-handler
   [{:keys [game] :as anbf}]
   (reify
@@ -91,5 +97,7 @@
       (swap! game handle-frame frame))
     ToplineMessageHandler
     (message [_ text]
-      (if-let [room (room-type text)]
-        (update-on-known-position anbf mark-room room)))))
+      (or (if-let [level (level-msg text)]
+            (update-on-known-position anbf add-curlvl-tag level))
+          (if-let [room (room-type text)]
+            (update-on-known-position anbf mark-room room))))))
