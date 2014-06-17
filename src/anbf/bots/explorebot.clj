@@ -30,7 +30,8 @@
 
 (defn- explorable-tile? [level tile]
   (and (not (monster? (:glyph tile)))
-       (or (walkable? tile) (door? tile)) ; XXX locked shops?
+       (or (walkable? tile) (and (door? tile)))
+       (not (and (= :door-locked (:feature tile)) (shop? tile)))
        (or (not (:feature tile))
            (some (complement :seen) (neighbors level tile)))))
 
@@ -67,16 +68,33 @@
               (ref-set current nil)
               (log/debug "nothing to explore")))))))
 
-(defn- descend []
+(defn- descend-main-branch []
   (reify ActionHandler
     (choose-action [_ game]
-      (if (some #(= :stairs-down (:feature %))
+      (if (some #(and (not= :mines (branch-key game %))
+                      (= :stairs-down (:feature %)))
                 (apply concat (:tiles (curlvl game))))
         (if-let [path (nearest-travelling game #(= :stairs-down (:feature %)))]
           (if-let [t (peek path)]
             (choose-action (travel t) game)
             (->Descend))
         (log/debug "cannot find stairs"))))))
+
+(defn- found-minetown? [game]
+  (some #((:tags %) :minetown) (-> game :dungeon :levels :mines vals)))
+
+(defn- escape-mines []
+  (reify ActionHandler
+    (choose-action [_ game]
+      (if (and (= :mines (branch-key game))
+               (found-minetown? game))
+        (if (some #(= :stairs-up (:feature %))
+                  (apply concat (:tiles (curlvl game))))
+          (if-let [path (nearest-travelling game #(= :stairs-up (:feature %)))]
+            (if-let [t (peek path)]
+              (choose-action (travel t) game)
+              (->Ascend))
+            (log/debug "cannot find upstairs")))))))
 
 (defn- random-travel []
   (let [current (ref nil)]
@@ -91,6 +109,38 @@
                   (or (some-> (ref-set current (travel target))
                               (choose-action game))
                       (recur))))))))))
+
+(defn- pushable-directions [level boulder]
+  ; TODO soko
+  (filter #(->> % opposite (in-direction boulder) (at level)
+                (passable-walking? level boulder))
+          (map (partial towards boulder)
+               (->> (neighbors level boulder)
+                    (filter #(passable-walking? level boulder %))
+                    (remove #((:monsters level) (position %)))))))
+
+(defn- pushable-boulder?
+  "Return [position direction] in which it can be pushed somewhere, else nil"
+  [level tile]
+  (and (boulder? (at level tile))
+       (seq (pushable-directions level tile))))
+
+(defn- push-boulders []
+  (reify ActionHandler
+    (choose-action [_ {:keys [player] :as game}]
+      ; TODO needs better pathing...  boulders are not passable so don't work with nearest-*
+      (or (loop [[b & mb] (filter #(pushable-boulder? (curlvl game) %)
+                                  (apply concat (:tiles (curlvl game))))]
+            (or (if b
+                  (loop [[dir & more] (pushable-directions (curlvl game) b)]
+                    (if-let [target (some->> dir opposite (in-direction b))]
+                      (or (log/debug "going to push boulder from" target)
+                          (if (= (position player) target)
+                            (->Move (towards player b)))
+                          (choose-action (travel target) game)
+                          (recur more)))))
+                (if mb (recur mb))))
+          (log/debug "no boulders to push")))))
 
 ; TODO mozna by se dalo zobecnit na nejaky travel-along behavior, parametrizovany funkci na vyber tilu a akci/chovanim k provedeni na nem
 
@@ -120,7 +170,6 @@
                 (if-let [t (peek t)]
                   (choose-action (travel t) game)
                   (->Search)))
-              ; TODO push boulders as last resort
               (recur (inc mul))))))))
 
 (defn- pray-for-food []
@@ -139,7 +188,9 @@
                           (really-attack [_ _] false)))
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
-      (register-handler 5 (explore))
-      (register-handler 4 (descend)) ; XXX +++
-      (register-handler 7 (search))
-      #_ (register-handler 8 (random-travel))))
+      (register-handler 4 (descend-main-branch))
+      (register-handler 5 (escape-mines))
+      (register-handler 6 (explore))
+      (register-handler 7 (push-boulders))
+      (register-handler 8 (search))
+      #_ (register-handler 9 (random-travel))))

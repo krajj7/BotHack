@@ -15,6 +15,7 @@
         monster (get-in level [:monsters (position to)])
         feature (:feature to-tile)]
     (cond-> 0
+      (nil? feature) (+ 1)
       (= :trap feature) (+ 5) ; TODO trap types
       (diagonal? from to) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)

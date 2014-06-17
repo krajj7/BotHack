@@ -34,8 +34,6 @@ Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/Simpl
 
 Track feature changes, mark dug-up tiles and don't search for dead ends there.
 
-Mines detection.
-
 Recognizing blindness and other afflictions.
 
 More actions, handling of prompts and menus.

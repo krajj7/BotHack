@@ -43,10 +43,10 @@
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
-    ; TODO "The XXX gets angry!"
     (reify
       ToplineMessageHandler
       (message [_ msg]
+        ; TODO "The XXX gets angry!"
         ; TODO if not conf/stun
         (or (if (re-seq #"You read: \"Closed for inventory\"" msg) ; TODO possible degradation
               (update-on-known-position
@@ -55,6 +55,10 @@
                                   (update-curlvl-at %1 %2 assoc :shop true)
                                   %1) game
                                (neighbors (curlvl game) (at-player game))))))
+            (if (= msg "You try to move the boulder, but in vain.")
+              (swap! game #(update-curlvl-at
+                             % (reduce in-direction (:player %) [dir dir])
+                             assoc :feature :rock)))
             (if (= msg "It's a wall.")
               (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                              assoc :feature :wall)))
@@ -101,13 +105,13 @@
         (let [new-stairs (at-player new-game)]
           (if (and (stairs? old-stairs) (not= old-dlvl new-dlvl))
             (cond-> new-game
-              (not (:leads-to old-stairs))
+              (not (:branch-id old-stairs))
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
-                         (dec (:y old-stairs)) (:x old-stairs) :leads-to]
+                         (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (not (:leads-to new-stairs))
+              (not (:branch-id new-stairs))
               (update-curlvl-at new-stairs
-                                into {:leads-to old-branch
+                                into {:branch-id old-branch
                                       :feature (opposite-stairs
                                                  (:feature old-stairs))}))
             new-game))))
@@ -118,7 +122,7 @@
           ; get the new branch-id from the stairs or create new and mark the stairs
           (swap! (:game anbf)
                  #(assoc % :branch-id
-                         (get old-stairs :leads-to
+                         (get old-stairs :branch-id
                               (initial-branch-id % new-dlvl))))
           (log/debug "choosing branch-id" (:branch-id @(:game anbf)) "for new dlvl " new-dlvl))))))
 
@@ -133,8 +137,9 @@
     (stairs-handler anbf))
   (trigger [_] ">"))
 
-; TODO "The XXX gets angry!"
 (defaction Kick [dir]
+  ; TODO "You can't move your leg!" => bear trap
+  ; TODO "The XXX gets angry!"
   (handler [_ _])
   (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
 

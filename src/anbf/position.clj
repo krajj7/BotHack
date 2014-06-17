@@ -14,6 +14,8 @@
   (get-in level [:tiles (dec y) x]))
 
 (def directions [:NW :N :NE :W :E :SW :S :SE])
+(def opposite {:NW :SE :N :S :NE :SW :W :E :E :W :SW :NE :S :N :SE :NW})
+
 (def deltas [[-1  -1] [0  -1] [1  -1] [-1  0] [1  0] [-1 1] [0 1] [1 1]])
 (def dirmap (merge (zipmap directions deltas)
                    (zipmap deltas directions)))
