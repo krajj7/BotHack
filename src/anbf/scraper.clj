@@ -68,11 +68,12 @@
                       (str "unimplemented choice prompt: " msg)))))
 
 (defn- game-over? [frame]
-  (re-seq #"^Do you want your possessions identified\?|^Die\?|^Really quit\?|^Do you want to see what you had when you died\?"
+  (re-seq #"^Do you want your possessions identified\?|^Really quit\?|^Do you want to see what you had when you died\?"
           (topline frame)))
 
 (defn- goodbye? [frame]
   (and (more-prompt? frame)
+       (not (re-seq #" level \d+" (topline frame))) ; Sayonara level 10 => not game end
        (re-seq #"^(Fare thee well|Sayonara|Aloha|Farvel|Goodbye|Be seeing you) "
                (topline frame))))
 
