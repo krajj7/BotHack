@@ -37,6 +37,7 @@
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
+       (not (:dug tile))
        (not (in-corridor? level tile))
        (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
                                 (diagonal? tile %))
@@ -189,9 +190,9 @@
                           (really-attack [_ _] false)))
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
+      (register-handler 3 (explore))
       (register-handler 4 (descend-main-branch))
-      (register-handler 5 (escape-mines))
-      (register-handler 6 (explore))
+      ;(register-handler 5 (escape-mines))
       (register-handler 7 (push-boulders))
       (register-handler 8 (search))
       #_ (register-handler 9 (random-travel))))

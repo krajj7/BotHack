@@ -19,7 +19,7 @@
       (= :trap feature) (+ 5) ; TODO trap types
       (diagonal? from to) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
-      (not (:walked to-tile)) (+ 0.2)
+      (not (or (:dug to-tile) (:walked to-tile))) (+ 0.2)
       (and (not (:walked to-tile)) (= :floor feature)) (+ 1)
       ; close and kick down
       (and diag? (= :door-open feature)) (+ 8)
@@ -90,7 +90,7 @@
         to-tile (at level to)]
     (and (or (walkable? to-tile)
              (and (not (boulder? to-tile))
-                  (= nil (:feature to-tile)))) ; try to path via unexplored tiles
+                  (nil? (:feature to-tile)))) ; try to path via unexplored tiles
          (or (straight (towards from to))
              (and (diagonal-walkable? from-tile)
                   (diagonal-walkable? to-tile))))))

@@ -11,6 +11,7 @@
    feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
    seen
    walked
+   dug
    searched ; no. of times searched TODO
    items ; [Items]
    engraving
@@ -18,7 +19,7 @@
   anbf.bot.ITile)
 
 (defn initial-tile [x y]
-  (Tile. x y \space nil nil false nil 0 [] nil nil))
+  (Tile. x y \space nil nil false nil false 0 [] nil nil))
 
 (defn color [tile] (colormap (:color tile)))
 
@@ -77,7 +78,7 @@
     \< :stairs-up
     \> :stairs-down
     \\ (if (= (colormap new-color) :yellow) :throne :grave)
-    \{ (if (= (colormap new-color) nil) :sink :fountain)
+    \{ (if (nil? (colormap new-color)) :sink :fountain)
     \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
     \# :corridor ; TODO :cloud
     \_ :altar
@@ -108,11 +109,18 @@
         :else (update-in tile [:feature]
                          infer-feature new-glyph new-color)))
 
+(defn- mark-dug-tile [new-tile old-tile]
+  (if (and (#{:wall :rock} (:feature old-tile))
+           (= :corridor (:feature new-tile)))
+    (assoc new-tile :dug true)
+    new-tile))
+
 (defn parse-tile [tile new-glyph new-color]
   (if (or (not= new-color (:color tile)) (not= new-glyph (:glyph tile)))
     (-> tile
         (update-items new-glyph new-color)
         (update-feature new-glyph new-color)
+        (mark-dug-tile tile)
         (assoc :glyph new-glyph :color new-color)
         mark-wall-seen)
     tile))
