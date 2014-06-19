@@ -37,6 +37,7 @@
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
+       (not (in-corridor? level tile))
        (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
                                 (diagonal? tile %))
                            (neighbors level tile))))))

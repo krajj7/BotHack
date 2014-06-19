@@ -185,13 +185,16 @@
         (merge-branch-id game (:branch-id level) branch)
         game)))) ; failed to recognize
 
+(defn in-corridor? [level pos]
+  (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
+
 (defn- infer-tags [game]
   (let [level (curlvl game)
         tags (:tags level)
         branch (branch-key game)]
     (cond-> game
       ; TODO could check for oracle
-      (and (<= 6 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
+      (and (<= 5 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
            (has-features level)) (add-curlvl-tag :minetown)
       (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :minesend))
            (has-features level)) (add-curlvl-tag :minesend))))
