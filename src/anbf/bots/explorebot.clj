@@ -180,6 +180,13 @@
       (if (weak? (:player game))
         (->Pray)))))
 
+(defn- handle-impairment []
+  (reify ActionHandler
+    (choose-action [_ game]
+      (when (impaired? (:player game))
+        (log/debug "waiting out imparment")
+        (->Search)))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler (reify ChooseCharacterHandler
@@ -190,9 +197,10 @@
                           (really-attack [_ _] false)))
       (register-handler -10 (pray-for-food))
       (register-handler -5 (fight))
-      (register-handler 3 (explore))
+      (register-handler -3 (handle-impairment))
+      (register-handler 2 (explore))
       (register-handler 4 (descend-main-branch))
-      ;(register-handler 5 (escape-mines))
-      (register-handler 7 (push-boulders))
-      (register-handler 8 (search))
+      (register-handler 6 (escape-mines))
+      (register-handler 8 (push-boulders))
+      (register-handler 9 (search))
       #_ (register-handler 9 (random-travel))))

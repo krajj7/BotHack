@@ -30,9 +30,9 @@
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" action))
-          ;BOTLHandler
-          ;(botl [_ status]
-          ;  (log/info "new botl status:" status))
+          BOTLHandler
+          (botl [_ status]
+            (log/info "new botl status:" status))
           ConnectionStatusHandler
           (online [_]
             (log/info "Connection status: online"))

@@ -27,10 +27,10 @@
    x y
    fov
    inventory
-   hunger ; :fainting :weak :hungry :normal :satiated
+   hunger ; :fainting :weak :hungry :satiated
    burden
    engulfed
-   state ; stun/conf/hallu/blind/...
+   state ; subset #{:stun :conf :hallu :blind :ill}
    stats ; :str :dex :con :int :wis :cha
    alignment] ; :lawful :neutral :chaotic
   anbf.bot.IPlayer
@@ -44,16 +44,22 @@
   (apply ->Player (repeat 18 nil)))
 
 (defn update-player [player status]
-  (->> player keys (select-keys status) (merge player)))
+  (->> (keys player) (select-keys status) (into player)))
 
 (defn in-fov? [game pos]
   (get-in game [:player :fov (dec (:y pos)) (:x pos)]))
 
+(defn blind? [player]
+  (:blind (:state player)))
+
 (defn visible? [game tile]
   "Only considers normal sight, not infravision/ESP/..."
-  (and ; TODO not blind
+  (and (not (blind? (:player game)))
        (in-fov? game tile)
        (lit? game tile)))
+
+(defn impaired? [player]
+  (some (:state player) #{:conf :stun :hallu :blind}))
 
 (defn light-radius [player]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

@@ -86,7 +86,6 @@
 (def ^:private botl2-re #"^(Dlvl:\d+|Home \d+|Fort Ludios|End Game|Astral Plane)\s+(?:\$|\*):(\d+)\s+HP:(\d+)\((\d+)\)\s+Pw:(\d+)\((\d+)\)\s+AC:([0-9-]+)\s+(?:Exp|Xp|HD):(\d+)(?:\/(\d+))?\s+T:(\d+)\s+(.*?)\s*$")
 
 (defn- parse-botls [[botl1 botl2]]
-  ;(log/debug "parsing botl:\n" botl1 "\n" botl2)
   (merge
     (if-let [status (re-first-groups botl1-re botl1)]
       {:nickname (status 0)
@@ -95,17 +94,29 @@
        :score (some-> (status 8) Integer/parseInt)}
       (log/error "failed to parse botl1 " botl1))
     (if-let [status (re-first-groups botl2-re botl2)]
-      ; TODO state, burden
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
               (conj (map #(if % (Integer/parseInt %)) (subvec status 1 10))
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
-    (condp #(.contains %2 %1) botl2
-      " Sat" {:hunger :satiated}
-      " Hun" {:hunger :hungry}
-      " Wea" {:hunger :weak}
-      " Fai" {:hunger :fainting}
-      {:hunger :normal})))
+    {:state (reduce #(if (.contains botl2 (key %2))
+                       (conj %1 (val %2))
+                       %1)
+                    #{}
+                    {" Bli" :blind " Stun" :stun " Conf" :conf
+                     " Foo" :ill " Ill" :ill " Hal" :hallu})
+     :burden (condp #(.contains %2 %1) botl2
+               " Overl" :overloaded
+               " Overt" :overtaxed
+               " Stra" :strained
+               " Stre" :stressed
+               " Bur" :burdened
+               nil)
+     :hunger (condp #(.contains %2 %1) botl2
+               " Sat" :satiated
+               " Hun" :hungry
+               " Wea" :weak
+               " Fai" :fainting
+               nil)}))
 
 (defn- emit-botl [frame delegator]
   (->> frame botls parse-botls (send delegator botl)))

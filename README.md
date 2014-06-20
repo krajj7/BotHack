@@ -32,8 +32,6 @@ Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/Simpl
 
 ### Short-term goals
 
-Recognizing blindness and other afflictions.
-
 More actions, handling of prompts and menus.
 
 Keep expanding model of the game world.
