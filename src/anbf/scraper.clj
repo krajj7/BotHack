@@ -51,7 +51,9 @@
     (subs (topline+ frame) 0 (- (-> frame :cursor :x) 4))))
 
 (defn- prompt-fn [msg]
-  (throw (UnsupportedOperationException. "TODO prompt-fn - implement me"))
+  (condp re-seq msg
+    #"Call .*:" call-object
+    (throw (UnsupportedOperationException. "TODO prompt-fn - implement me")))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
 ;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:     in|on|melted into) the (.*?) here\?/ => 'write_what',
@@ -62,10 +64,10 @@
   )
 
 (defn- choice-fn [msg]
-  (cond
-    (re-seq #"^Really attack (.*?)\?" msg) really-attack
-    :default (throw (UnsupportedOperationException.
-                      (str "unimplemented choice prompt: " msg)))))
+  (condp re-first-group msg
+    #"^Really attack .*\?" really-attack
+    (throw (UnsupportedOperationException.
+             (str "unimplemented choice prompt: " msg)))))
 
 (defn- game-over? [frame]
   (re-seq #"^Do you want your possessions identified\?|^Really quit\?|^Do you want to see what you had when you died\?"

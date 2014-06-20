@@ -100,6 +100,9 @@
                                (send delegator choose-action @game))))
          (register-handler priority-top (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
+         (register-handler priority-bottom
+                           (reify PromptHandler
+                             (call-object [_ _] ""))) ; escape by default
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (deregister-handler anbf scraper))

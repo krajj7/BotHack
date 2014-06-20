@@ -73,18 +73,17 @@
                  (str "No handler responded to command of "
                       (:on-interface protocol))))))))
 
-(defn- respond-choice [protocol method delegator & args]
+(defn- newline-terminate [s] (if (.endsWith s "\n") s (str s \newline)))
+
+(defn- respond-escapable [res-transform protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [res (apply invoke-command protocol method delegator args)]
-      (if (seq res)
-        (write delegator res)
-        (do (log/info "Escaping choice")
+      (if-not (and (string? res) (empty? res)) ; can return "\n" to send empty response
+        (write delegator (res-transform res))
+        (do (log/info "Escaping prompt")
             (write delegator esc))))))
 
-(defn- respond-yesno [protocol method delegator & args]
-  (if-not (:inhibited delegator)
-    (let [res (apply invoke-command protocol method delegator args)]
-      (write delegator (if res "y" "n")))))
+(defn- yesno [s] (if s "y" "n"))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
@@ -161,20 +160,21 @@
 
 ; command protocols:
 
-; TODO newline-terminated prompt handler, only write up to the first newline or add it
 ; TODO menu handler, location handler
 
 (defmacro ^:private defchoicehandler [protocol & proto-methods]
-  `(defprotocol-delegated String respond-choice ~protocol ~@proto-methods))
+  `(defprotocol-delegated String (partial respond-escapable identity)
+     ~protocol ~@proto-methods))
 
 (defmacro ^:private defyesnohandler [protocol & proto-methods]
-  `(defprotocol-delegated Boolean respond-yesno ~protocol ~@proto-methods))
+  `(defprotocol-delegated Boolean (partial respond-escapable yesno)
+     ~protocol ~@proto-methods))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
 
 (defyesnohandler ReallyAttackHandler
-  (really-attack [handler text]))
+  (really-attack [handler ^String text]))
 
 (defn- respond-action [protocol method delegator & args]
   (if-not (:inhibited delegator)
@@ -183,8 +183,15 @@
       (->> action trigger (write delegator)))))
 
 (defmacro ^:private defactionhandler [protocol & proto-methods]
-  `(defprotocol-delegated anbf.bot.IAction respond-action ~protocol
-     ~@proto-methods))
+  `(defprotocol-delegated anbf.bot.IAction respond-action
+     ~protocol ~@proto-methods))
 
 (defactionhandler ActionHandler
   (choose-action [handler ^anbf.bot.IGame gamestate]))
+
+(defmacro ^:private defprompthandler [protocol & proto-methods]
+  `(defprotocol-delegated String (partial respond-escapable newline-terminate)
+     ~protocol ~@proto-methods))
+
+(defprompthandler PromptHandler
+  (call-object [handler ^String prompt]))
