@@ -182,10 +182,13 @@
 
 (defn- handle-impairment []
   (reify ActionHandler
-    (choose-action [_ game]
-      (when (impaired? (:player game))
-        (log/debug "waiting out imparment")
-        (->Search)))))
+    (choose-action [_ {:keys [player] :as game}]
+      (if (:trapped player)
+        (do (log/debug "trying to untrap self")
+            (fidget game))
+        (when (or (impaired? player) (:leg-hurt player))
+          (log/debug "waiting out imparment")
+          (->Search))))))
 
 (defn init [anbf]
   (-> anbf

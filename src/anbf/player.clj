@@ -30,6 +30,8 @@
    hunger ; :fainting :weak :hungry :satiated
    burden
    engulfed
+   trapped
+   leg-hurt
    state ; subset #{:stun :conf :hallu :blind :ill}
    stats ; :str :dex :con :int :wis :cha
    alignment] ; :lawful :neutral :chaotic
@@ -41,7 +43,7 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 18 nil)))
+  (apply ->Player (repeat 20 nil)))
 
 (defn update-player [player status]
   (->> (keys player) (select-keys status) (into player)))
@@ -61,5 +63,8 @@
 (defn impaired? [player]
   (some (:state player) #{:conf :stun :hallu :blind}))
 
-(defn light-radius [player]
+(defn dizzy? [player]
+  (some (:state player) #{:conf :stun}))
+
+(defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

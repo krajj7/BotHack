@@ -97,7 +97,11 @@
       (swap! game handle-frame frame))
     ToplineMessageHandler
     (message [_ text]
-      (or (if-let [level (level-msg text)]
+      (or (condp re-seq text
+            #"Your legs? feels? somewhat better"
+            (swap! game #(assoc-in [:player :leg-hurt] false))
+            nil)
+          (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))
           (if-let [room (room-type text)]
             (update-on-known-position anbf mark-room room))))))

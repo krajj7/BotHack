@@ -134,7 +134,7 @@
           (partial move-cost level))))
 
 (defn fidget
-  "Move around randomly to make a peaceful move out of the way."
+  "Move around randomly to make a peaceful move out of the way or get out of a trap."
   [{:keys [player] :as game}]
   ; no monster + passable-walking
   (log/debug "fidgeting")

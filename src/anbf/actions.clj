@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
+            [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
             [anbf.position :refer :all]
@@ -18,17 +19,19 @@
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 
-(def ^:private feature-re #"^There is(?: an?)?(?: \w+)* (trap|staircase (?:up|down)|spider web|web|ice|opulent throne|fountain|sink|grave|doorway|open door|broken door) here\.")
+(def ^:private feature-re #"^(?:You see|There is)(?: an?)?(?: \w+)* (trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|fountain|sink|grave|doorway|squeaky board|open door|broken door) (?:here|below you)\.")
 
 (defn- feature-here [msg]
-  ; TODO bear trap?
-  (if (.startsWith msg "There is an altar")
-    :altar
+  (condp re-seq msg
+    #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)" :floor
+    #"There is an altar" :altar
     (case (re-first-group feature-re msg)
       "opulent throne" :throne
       "trap" :trap
       "spider web" :trap
+      "squeaky board" :trap
       "web" :trap
+      "pit" :trap
       "ice" :ice
       "doorway" :door-open
       "open door" :door-open
@@ -43,28 +46,41 @@
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
+    (let [old-pos (position (:player @game))]
+      (update-on-known-position anbf #(if (not= (position (:player %)) old-pos)
+                                        (assoc-in % [:player :trapped] false)
+                                        %)))
     (reify
       ToplineMessageHandler
       (message [_ msg]
         ; TODO "The XXX gets angry!"
-        ; TODO if not conf/stun
-        (or (if (re-seq #"You read: \"Closed for inventory\"" msg) ; TODO possible degradation
+        (or (condp re-seq msg
+              #".*: \"Closed for inventory\"" ; TODO possible degradation
               (update-on-known-position
                 anbf (fn mark-shop [game]
                        (reduce #(if (door? %2)
                                   (update-curlvl-at %1 %2 assoc :shop true)
                                   %1) game
-                               (neighbors (curlvl game) (at-player game))))))
-            (if (= msg "You try to move the boulder, but in vain.")
-              (swap! game #(update-curlvl-at
-                             % (reduce in-direction (:player %) [dir dir])
-                             assoc :feature :rock)))
-            (if (= msg "It's a wall.")
-              (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                             assoc :feature :wall)))
-            (if (re-seq #"Wait!  That's a .*mimic!" msg)
-              (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                             assoc :feature nil)))
+                               (neighbors (curlvl game) (at-player game)))))
+              #"You crawl to the edge of the pit\.|You disentangle yourself\."
+              (swap! game assoc-in [:player :trapped] false)
+              #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!$|You are stuck to the web\.$"
+              (update-on-known-position anbf assoc-in [:player :trapped] true)
+              ; TODO #"You are carrying too much to get through"
+              nil)
+            (when-not (dizzy? (:player @game))
+              (condp re-seq msg
+                #"You try to move the boulder, but in vain\."
+                (swap! game #(update-curlvl-at
+                               % (reduce in-direction (:player %) [dir dir])
+                               assoc :feature :rock))
+                #"It's a wall\."
+                (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                               assoc :feature :wall))
+                #"Wait!  That's a .*mimic!"
+                (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                               assoc :feature nil))
+                nil))
             (if-let [feature (feature-here msg)]
               (update-on-known-position
                 anbf #(update-curlvl-at % (:player %)
@@ -137,9 +153,16 @@
   (trigger [_] ">"))
 
 (defaction Kick [dir]
-  ; TODO "You can't move your leg!" => bear trap
   ; TODO "The XXX gets angry!"
-  (handler [_ _])
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"Your .* is in no shape for kicking."
+          (swap! game #(assoc-in [:player :leg-hurt] true))
+          #"You can't move your leg!|There's not enough room to kick down here."
+          (swap! game #(assoc-in [:player :trapped] true))
+          nil))))
   (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
 
 (defaction Close [dir]
