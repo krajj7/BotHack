@@ -14,4 +14,4 @@ pom.xml.asc
 /jta26/doc/source/
 anbf.log*
 /jta26/jni/linux/libjtapty.so
-*.ttyrec
+/*.ttyrec
