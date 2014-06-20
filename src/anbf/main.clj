@@ -16,9 +16,31 @@
   (:gen-class))
 
 (defn- init-ui [anbf]
-  (register-handler anbf (reify RedrawHandler
-                           (redraw [_ frame]
-                             (println frame)))))
+  (-> anbf
+      (register-handler
+        (reify
+          GameStateHandler
+          (ended [_]
+            (log/info "Game ended"))
+          (started [_]
+            (log/info "Game started"))
+          ToplineMessageHandler
+          (message [_ text]
+            (log/info "Topline message:" text))
+          ActionChosenHandler
+          (action-chosen [_ action]
+            (log/info "Performing action:" action))
+          ;BOTLHandler
+          ;(botl [_ status]
+          ;  (log/info "new botl status:" status))
+          ConnectionStatusHandler
+          (online [_]
+            (log/info "Connection status: online"))
+          (offline [_]
+            (log/info "Connection status: offline"))
+          RedrawHandler
+          (redraw [_ frame]
+            (println frame))))))
 
 (defn- register-javabot-jars []
   (dorun (map pom/add-classpath

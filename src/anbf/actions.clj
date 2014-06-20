@@ -124,9 +124,8 @@
                  #(assoc % :branch-id
                          (get old-stairs :branch-id
                               (initial-branch-id % new-dlvl))))
-          (log/debug "choosing branch-id" (:branch-id @(:game anbf)) "for new dlvl " new-dlvl))))))
+          (log/debug "choosing branch-id" (:branch-id @(:game anbf)) "for new dlvl" new-dlvl))))))
 
-; TODO handle branches like Descend
 (defaction Ascend []
   (handler [_ anbf]
     (stairs-handler anbf))

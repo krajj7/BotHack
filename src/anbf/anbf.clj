@@ -102,27 +102,10 @@
          (register-handler priority-top (examine-handler anbf))
          (register-handler (reify GameStateHandler
                              (ended [_]
-                               (log/info "Game ended")
                                (deregister-handler anbf scraper))
                              (started [_]
-                               (log/info "Game started")
                                (register-handler anbf scraper)
-                               (start-bot anbf))))
-         (register-handler (reify
-                             ToplineMessageHandler
-                             (message [_ text]
-                               (log/info "Topline message:" text))
-                             ActionChosenHandler
-                             (action-chosen [_ action]
-                               (log/info "Performing action:" action))
-                             ;BOTLHandler
-                             ;(botl [_ status]
-                             ;  (log/info "new botl status:" status))
-                             ConnectionStatusHandler
-                             (online [_]
-                               (log/info "Connection status: online"))
-                             (offline [_]
-                               (log/info "Connection status: offline"))))))))
+                               (start-bot anbf))))))))
 
 (defn start [{:keys [config delegator] :as anbf}]
   (log/info "ANBF instance started")
