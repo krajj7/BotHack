@@ -86,6 +86,7 @@
     (->Search)))
 
 (defn move
+  "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
    (move game from to #{}))
   ([game level from to opts]
@@ -94,9 +95,13 @@
          monster (monster-at level to)]
      (if-let [step
               (or (if (passable-walking? game level from to)
-                    (if (:peaceful monster)
-                      [10 (fidget game level)] ; hopefully will move
-                      [0 (->Move dir)]))
+                    (if-not monster
+                      [0 (->Move dir)]
+                      (if-not (:peaceful monster)
+                        [30 (->Move dir)]
+                        (if (:awake monster)
+                          [50 (fidget game level)] ; hopefully will move
+                          nil)))) ; sleeping peacefuls are quite annoying
                   ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
                   ; TODO digging/levi
                   (if (and (door? to-tile)
