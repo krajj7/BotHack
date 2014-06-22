@@ -32,6 +32,7 @@
       "squeaky board" :trap
       "web" :trap
       "pit" :trap
+      "spiked pit" :trap
       "ice" :ice
       "doorway" :door-open
       "open door" :door-open
@@ -223,7 +224,7 @@
     (choose-action [_ game]
       ; TODO if not blind check engulfer
       ; TODO ambiguous monsters
-      (when-not (:feature (at-player game))
+      (when-not (or (blind? (:player game)) (:feature (at-player game)))
         (log/debug "examining tile")
         (->Look)))))
 
