@@ -46,10 +46,19 @@
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
-    (let [old-pos (position (:player @game))]
+    (let [old-pos (position (:player @game))
+          target (at-curlvl @game (in-direction old-pos dir))]
       (update-on-known-position anbf #(if (not= (position (:player %)) old-pos)
                                         (assoc-in % [:player :trapped] false)
-                                        %)))
+                                        %))
+      (if (and (diagonal dir) (item? (:glyph target)))
+        (update-on-known-position anbf
+          #(if (and (= (position (:player %)) old-pos)
+                    (not (curlvl-monster-at % target)))
+             (do (log/debug "stuck on diagonal movement => door at" target)
+                 (update-curlvl-at % (in-direction old-pos dir)
+                                   assoc :feature :door-open))
+             %))))
     (reify
       ToplineMessageHandler
       (message [_ msg]
