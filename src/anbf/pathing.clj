@@ -8,34 +8,20 @@
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]))
 
-(defn move-cost [level from to]
-  {:pre [(and (some? level) (some? from) (some? to))]}
-  (let [diag? (diagonal? from to)
-        to-tile (at level to)
-        monster (get-in level [:monsters (position to)])
-        feature (:feature to-tile)]
-    (cond-> 0
-      (nil? feature) (+ 1)
+(defn base-cost [level dir tile]
+  {:pre [(and (some? level) (some? dir) (some? tile))]}
+  (let [feature (:feature tile)]
+    (cond-> 1
       (= :trap feature) (+ 5) ; TODO trap types
-      (diagonal? from to) (+ 0.1)
+      (diagonal dir) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
-      (not (or (:dug to-tile) (:walked to-tile))) (+ 0.2)
-      (and (not (:walked to-tile)) (= :floor feature)) (+ 1)
-      ; close and kick down
-      (and diag? (= :door-open feature)) (+ 8)
-      ; kick down
-      (and diag? (= :door-closed feature)) (+ 5)
-      (and monster (hostile? monster)) (+ 10)
-      (:friendly monster) (+ 5)
-      (:peaceful monster) (+ 20)
-      (and (not diag?) (= :door-open feature)) (+ 0.5)
-      (and (not diag?) (= :door-closed feature)) (+ 3)
-      (and (= :door-locked feature)) (+ 7))))
+      (not (or (:dug tile) (:walked tile))) (+ 0.2)
+      (and (not (:walked tile)) (= :floor feature)) (+ 0.5))))
 
-(defn diagonal-walkable? [{:keys [feature] :as tile}]
-  (and feature (not= :door-open feature))) ;TODO no diagonal near boulders, squeeze-spaces
+(defn diagonal-walkable? [game {:keys [feature] :as tile}]
+  (not= :door-open feature)) ;TODO no diagonal near boulders, squeeze-spaces
 
-(defn a* [from to passable? extra-cost]
+(defn- a* [from to move-fn]
   "Extra-cost must always return non-negative values, target tile may not be passable, but will always be included in the path"
   (loop [closed {}
          open (priority-map-keyfn first (position from) [0 0])]
@@ -47,22 +33,20 @@
         (cond
           (zero? delta) final-path
           (and (= 1 delta)
-               (not-any? #(passable? % to) (neighbors to))) (conj final-path to)
+               (not-any? #(move-fn % to) (neighbors to))) (conj final-path to)
           :else (recur
                   (assoc closed node path)
                   (merge-with
                     (partial min-key first)
                     (pop open)
                     (into {}
-                          (for [nbr (->> (neighbors node)
-                                         (remove closed)
-                                         (filter #(passable? node %)))]
-                            (let [new-dist (+ (inc (extra-cost node nbr)) dist)]
+                          (for [nbr (remove closed (neighbors node))
+                                :let [[cost action] (move-fn node nbr)]
+                                :when (some? action)]
+                            (let [new-dist (int (+ dist cost))]
                               [nbr [(+ new-dist delta) new-dist node]]))))))))))
 
-(def path a*)
-
-(defn dijkstra [from goal? passable? extra-cost]
+(defn- dijkstra [from goal? move-fn]
   (loop [closed {}
          open (priority-map-keyfn first (position from) [0])]
     (if-let [[node [dist prev]] (peek open)]
@@ -73,117 +57,112 @@
                  (merge-with (partial min-key first)
                              (pop open)
                              (into {}
-                                   (for [nbr (->> (neighbors node)
-                                                  (remove closed)
-                                                  (filter #(passable? node %)))]
-                                     [nbr [(+ dist (inc (extra-cost node nbr)))
-                                           node]])))))))))
-
-(def nearest dijkstra)
-
-; XXX stuff below will need a redesign but will do for now
+                                   (for [nbr (remove closed (neighbors node))
+                                         :let [[cost action] (move-fn node nbr)]
+                                         :when (some? action)]
+                                     [nbr [(+ dist cost) node]])))))))))
 
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters"
-  [level from to]
+  [game level from to]
   (let [from-tile (at level from)
         to-tile (at level to)]
     (and (or (walkable? to-tile)
              (and (not (boulder? to-tile))
                   (nil? (:feature to-tile)))) ; try to path via unexplored tiles
          (or (straight (towards from to))
-             (and (diagonal-walkable? from-tile)
-                  (diagonal-walkable? to-tile))))))
-
-(defn passable-travelling?
-  "Consider opening/breaking doors" ; TODO unlocking shops, digging
-  [level from to]
-    (or (passable-walking? level from to)
-        (let [from-tile (at level from)
-              to-tile (at level to)]
-          (and (door? to-tile)
-               (not (item? (:glyph to-tile))) ; don't try to break blocked doors
-               (or (and (not ((:tags level) :minetown)) (not (shop? to-tile)))
-                   (and (not= :door-locked (:feature to-tile))
-                        (straight (towards from to))))))))
-
-(defn nearest-walking [game goal?]
-  (let [level (curlvl game)]
-    (nearest (-> game :player)
-             #(goal? (at level %))
-             (partial passable-walking? level)
-             (partial move-cost level))))
-
-(defn nearest-travelling [game goal?]
-  (let [level (curlvl game)]
-    (nearest (-> game :player)
-             #(goal? (at level %))
-             (partial passable-travelling? level)
-             (partial move-cost level))))
-
-(defn path-walking [game to]
-  (let [level (curlvl game)]
-    (path (-> game :player) to
-          (partial passable-walking? level)
-          (partial move-cost level))))
-
-(defn path-travelling [game to]
-  (let [level (curlvl game)]
-    (path (-> game :player) to
-          (partial passable-travelling? level)
-          (partial move-cost level))))
+             (and (diagonal-walkable? game from-tile)
+                  (diagonal-walkable? game to-tile))))))
 
 (defn fidget
   "Move around randomly to make a peaceful move out of the way or get out of a trap."
-  [{:keys [player] :as game}]
-  ; no monster + passable-walking
-  (log/debug "fidgeting")
-  (if-let [step (rand-nth (filter #(passable-walking? (curlvl game) player %)
-                                  (neighbors player)))]
+  [{:keys [player] :as game} level]
+  ;(log/debug "fidgeting")
+  (if-let [step (->> (neighbors player)
+                     (remove #(:peaceful (monster-at level %)))
+                     (filterv #(passable-walking? game level player %))
+                     rand-nth)]
     (->Move (towards player step))
-    (->Search))) ; hopefully will move
+    (->Search)))
 
-(defn move-travelling [{:keys [player] :as game} path]
-  (let [level (curlvl game)
-        step (first path)
-        to-tile (at level step)
-        dir (towards player to-tile)]
-    (if (passable-walking? level player step)
-      (if (get-in level [:monsters step :peaceful] nil)
-        (fidget game)
-        (->Move (towards player step)))
-      ; TODO should look ahead if we have to move diagonally FROM the door in the next step and kick door down in advance if necessary
-      (if (door? to-tile)
-        (if (diagonal dir)
-          (if (= :door-open (:feature to-tile))
-            (->Close dir)
-            (->Kick dir))
-          (if (= :door-locked (:feature to-tile))
-            (->Kick dir)
-            (->Open dir)))))))
+(defn move
+  ([game level from to]
+   (move game from to #{}))
+  ([game level from to opts]
+   (let [to-tile (at level to)
+         dir (towards from to-tile)
+         monster (monster-at level to)]
+     (if-let [step
+              (or (if (passable-walking? game level from to)
+                    (if (:peaceful monster)
+                      [10 (fidget game level)] ; hopefully will move
+                      [0 (->Move dir)]))
+                  ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
+                  ; TODO digging/levi
+                  (if (and (door? to-tile)
+                           (not (item? (:glyph to-tile))) ; don't try to break blocked doors
+                           (not (:walking opts)))
+                    (if (diagonal dir)
+                      (if (= :door-open (:feature to-tile))
+                        (and (not ((:tags level) :minetown))
+                             (not (shop? to-tile))
+                             [8 (->Close dir)])
+                        [5 (->Kick dir)])
+                      (if (= :door-locked (:feature to-tile))
+                        (if (and (not ((:tags level) :minetown))
+                                 (not (shop? to-tile)))
+                          [5 (->Kick dir)]
+                          ) ; TODO unlocking
+                        [3 (->Open dir)]))))]
+       (update-in step [0] + (base-cost level dir to-tile))))))
 
-(defn travel [to]
-  (reify ActionHandler
-    (choose-action [this game]
-      (if-let [p (path-travelling game to)]
-        (if (empty? p)
-          (log/debug "reached travel target")
-          (or (move-travelling game p)
-              (log/debug "failed to move according to path")))
-        (do (log/debug "travel target not pathable")
-            (Thread/sleep 200)))))) ; XXX
+(defrecord Path
+  [step ; next Action to perform to move along path
+   path ; vector of remaining positions
+   target]) ; position of target
 
-(defn walk [to]
-  (reify ActionHandler
-    (choose-action [this game]
-      (let [level (curlvl game)]
-       (if-let [p (path-walking game to)]
-        (if-let [n (first p)]
-          (if (passable-walking? level (:player game) n)
-            (if (get-in level [:monsters n :peaceful] nil)
-              (->Search) ; hopefully will move
-              (->Move (towards (:player game) n)))
-            (log/debug "walk reached unwalkable target"))
-          (log/debug "reached walk target"))
-        (do (log/debug "walk target not pathable")
-            (Thread/sleep 200))))))) ; XXX
+(defn- path-step [from move-fn path]
+  (if (seq path)
+    (nth (move-fn from (nth path 0)) 1)))
+
+(defn- get-a*-path [from to move-fn opts]
+  (log/debug "a*")
+  (if-let [path (a* from to move-fn)]
+    (if (seq path)
+      (if (:adjacent opts)
+        (->Path (path-step from move-fn path) (pop path) to)
+        (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
+             (->Path (path-step from move-fn path) path to)))
+      (->Path nil [] to))))
+
+(defn navigate
+  "Return shortest Path for given target position or predicate, will use A* or Dijkstra's algorithm as appropriate.
+  Supported options:
+    :walking - don't use actions except Move (no door opening etc.)
+    :adjacent - path to closest adjacent tile instead of the target directly"
+  [{:keys [player] :as game} pos-or-goal-fn & opts]
+  [{:pre [(or (fn? pos-or-goal-fn) (position pos-or-goal-fn))]}]
+  ;(log/debug "navigating" pos-or-goal-fn opts)
+  (let [opts (apply hash-set opts)
+        level (curlvl game)
+        move-fn #(move game level %1 %2 opts)]
+    (if-not (fn? pos-or-goal-fn)
+      (get-a*-path player pos-or-goal-fn move-fn opts)
+      (let [goal-fn #(pos-or-goal-fn (at level %))]
+        (if (:adjacent opts)
+          (let [goal-set (->> level :tiles (apply concat) (filter goal-fn)
+                              (mapcat neighbors) (into #{}))]
+            (case (count goal-set)
+              0 nil
+              1 (get-a*-path player (first goal-set) move-fn opts)
+              (if-let [path (dijkstra player goal-set move-fn)]
+                (->Path (path-step player move-fn path) path
+                        (->> (or (peek path) player) neighbors
+                             (filter goal-fn) first)))))
+          ; not searching for adjacent
+          (if-let [goal-seq (->> level :tiles (apply concat) (filter goal-fn)
+                                 (take 2) seq)]
+            (if (= 2 (count goal-seq))
+              (if-let [path (dijkstra player goal-fn move-fn)]
+                (->Path (path-step player move-fn path) path (peek path)))
+              (get-a*-path player (first goal-seq) move-fn opts))))))))
