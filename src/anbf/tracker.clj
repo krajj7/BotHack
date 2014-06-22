@@ -16,7 +16,7 @@
         :always (into (select-keys old-monster [:peaceful :cancelled])))))); TODO type
 
 (defn- transfer-unpaired [game unpaired]
-  (log/debug "unpaired" unpaired) ; TODO
+  ;(log/debug "unpaired" unpaired)
   (if-not (visible? game (at-curlvl game unpaired))
     (reset-curlvl-monster game unpaired)
     game))

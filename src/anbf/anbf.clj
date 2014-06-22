@@ -96,7 +96,8 @@
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [_ _]
-                               (log/debug "for action:" (-> game deref curlvl-monsters)) ; XXX
+                               (log/debug "action position" (at-player @game)) ; XXX
+                               ;(log/debug "for action:" (-> game deref curlvl-monsters))
                                (send delegator choose-action @game))))
          (register-handler priority-top (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))

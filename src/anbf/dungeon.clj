@@ -84,21 +84,25 @@
    (get (:id->branch dungeon) branch-id branch-id)))
 
 (defn curlvl [game]
+  {:pre [(:dungeon game)]}
   (-> game :dungeon :levels (get (branch-key game)) (get (:dlvl game))))
 
 (defn curlvl-monsters [game]
+  {:pre [(:dungeon game)]}
   (-> game curlvl :monsters))
 
 (defn add-curlvl-tag [game tag]
+  {:pre [(:dungeon game)]}
   (log/debug "tagging curlvl with" tag)
   (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tags]
              conj tag))
 
 (defn curlvl-tags [game]
+  {:pre [(:dungeon game)]}
   (-> game curlvl :tags))
 
-(defn reset-curlvl-monster
-  [game monster]
+(defn reset-curlvl-monster [game monster]
+  {:pre [(:dungeon game)]}
   (assoc-in game [:dungeon :levels (branch-key game) (:dlvl game)
                   :monsters (position monster)]
             monster))
@@ -112,17 +116,27 @@
                          (:dlvl game) :monsters (position pos)]
          update-fn args))
 
+(defn monster-at [level pos]
+  {:pre [(:monsters level)]}
+  (get-in level [:monsters (position pos)]))
+
+(defn curlvl-monster-at [game pos]
+  (-> game curlvl (monster-at pos)))
+
 (defn update-curlvl-at
   "Update the tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
+  {:pre [(:dungeon game)]}
   (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles
                          (dec (:y pos)) (:x pos)]
          update-fn args))
 
 (defn at-curlvl [game pos]
+  {:pre [(:dungeon game)]}
   (at (curlvl game) pos))
 
 (defn at-player [game]
+  {:pre [(:dungeon game)]}
   (at-curlvl game (:player game)))
 
 (defn lit?

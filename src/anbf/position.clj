@@ -1,6 +1,8 @@
-(ns anbf.position)
+(ns anbf.position
+  (:require [clojure.tools.logging :as log]))
 
 (defn position [of]
+  {:post [(:x %) (:y %)]}
   ; TODO IPosition for java
   (select-keys of [:x :y]))
 
