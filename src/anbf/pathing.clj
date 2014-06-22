@@ -121,6 +121,7 @@
    path ; vector of remaining positions
    target]) ; position of target
 
+; TODO could use builtin pathfinding (_ command) if the path is all explored
 (defn- path-step [from move-fn path]
   (if (seq path)
     (nth (move-fn from (nth path 0)) 1)))

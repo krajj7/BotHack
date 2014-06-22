@@ -191,7 +191,7 @@
                  #(into (-> dungeon :levels branch-id) %))
       (update-in [:dungeon :levels] dissoc branch-id)))
 
-(defn- infer-branch [game]
+(defn infer-branch [game]
   (if (branches (branch-key game))
     game ; branch already known
     (let [level (curlvl game)]
@@ -202,7 +202,7 @@
 (defn in-corridor? [level pos]
   (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
 
-(defn- infer-tags [game]
+(defn infer-tags [game]
   (let [level (curlvl game)
         tags (:tags level)
         branch (branch-key game)]
@@ -228,17 +228,6 @@
     (add-level game (new-level dlvl (branch-key game)))
     game))
 
-(defn- gather-monsters [game frame]
-  (into {} (map (fn monster-entry [tile glyph color]
-                  (if (and (monster? glyph)
-                           (not= (position tile) (position (:player game))))
-                    (vector (position tile)
-                            (new-monster (:x tile) (:y tile)
-                                         (:turn game) glyph color))))
-                (apply concat (-> game curlvl :tiles))
-                (apply concat (drop 1 (:lines frame)))
-                (apply concat (drop 1 (:colors frame))))))
-
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
   (loop [res game
@@ -259,28 +248,12 @@
                                        (closed %)))))))
       res)))
 
-(defn- reflood-room [game pos]
+(defn reflood-room [game pos]
   (let [tile (at-curlvl game pos)]
     (if (and (:room tile) (not (:walked tile)))
       (do (log/debug "room reflood from:" pos "type:" (:room tile))
           (floodfill-room game pos (:room tile)))
       game)))
-
-(defn- parse-map [game frame]
-  (-> game
-      (assoc-in [:dungeon :levels (branch-key game) (:dlvl game)
-                 :monsters] (gather-monsters game frame))
-      (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
-                 (partial map-tiles parse-tile)
-                 (drop 1 (:lines frame)) (drop 1 (:colors frame)))))
-
-(defn update-dungeon [{:keys [dungeon] :as game} frame]
-  (-> game
-      (parse-map frame)
-      infer-branch
-      infer-tags
-      (reflood-room (:cursor frame))
-      (update-curlvl-at (:cursor frame) assoc :walked true)))
 
 (defn- closest-roomkeeper
   "Presumes having just entered a room"

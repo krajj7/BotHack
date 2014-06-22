@@ -1,9 +1,10 @@
 (ns anbf.game
   "representation of the game world"
-  (:import [anbf NHFov NHFov$TransparencyInfo])
   (:require [clojure.tools.logging :as log]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.fov :refer :all]
+            [anbf.monster :refer :all]
             [anbf.tile :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
@@ -17,6 +18,7 @@
    dungeon
    branch-id ; current
    dlvl ; current
+   fov
    turn
    score]
   anbf.bot.IGame
@@ -24,7 +26,7 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) :main "Dlvl:1" 0 0))
+  (Game. nil (new-player) (new-dungeon) :main "Dlvl:1" nil 0 0))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))
@@ -35,28 +37,60 @@
       (update-in [:player] update-player status)
       (update-game status)))
 
-(defn- update-fov [game cursor]
-  (assoc-in game [:player :fov]
-            (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
-                           (reify NHFov$TransparencyInfo
-                             (isTransparent [_ x y]
-                               (if (and (<= 0 y 20) (<= 0 x 79))
-                                 (boolean
-                                   (transparent?
-                                     (((-> game curlvl :tiles) y) x)))
-                                 false))))))
-
-(defn- update-visible-tile [tile]
+(defn- update-visible-tile [tile rogue?]
   (assoc tile
          :seen true
-         :feature (if (= (:glyph tile) \space) :rock (:feature tile))))
+         :feature (if (and (= (:glyph tile) \space)
+                           (or (nil? (:feature tile)) (not rogue?)))
+                    :rock
+                    (:feature tile))))
 
 (defn- update-explored [game]
   (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
              (partial map-tiles (fn [tile]
                                   (if (visible? game tile)
-                                    (update-visible-tile tile)
+                                    (update-visible-tile
+                                      tile (:rogue (curlvl-tags game)))
                                     tile)))))
+
+(defn- engulfed? [game frame]
+  false) ; TODO
+
+(defn- rogue-ghost? [game tile glyph]
+  (and (:feature tile)
+       (not (#{:rock :wall} (:feature tile)))
+       (= glyph \space)
+       (:rogue (curlvl-tags game))
+       (adjacent? (:player game) tile)))
+
+(defn gather-monsters [game frame]
+  (into {} (map (fn monster-entry [tile glyph color]
+                  (if (or (rogue-ghost? game tile glyph)
+                          (and (monster? glyph color)
+                               (not= (position tile)
+                                     (position (:player game)))))
+                    (vector (position tile)
+                            (new-monster (:x tile) (:y tile)
+                                         (:turn game) glyph color))))
+                (apply concat (-> game curlvl :tiles))
+                (apply concat (drop 1 (:lines frame)))
+                (apply concat (drop 1 (:colors frame))))))
+
+(defn- parse-map [game frame]
+  (-> game
+      (assoc-in [:dungeon :levels (branch-key game) (:dlvl game)
+                 :monsters] (gather-monsters game frame))
+      (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
+                 (partial map-tiles parse-tile)
+                 (drop 1 (:lines frame)) (drop 1 (:colors frame)))))
+
+(defn- update-dungeon [{:keys [dungeon] :as game} frame]
+  (-> game
+      (parse-map frame)
+      infer-branch
+      infer-tags
+      (reflood-room (:cursor frame))
+      (update-curlvl-at (:cursor frame) assoc :walked true)))
 
 (defn- update-map [game frame]
   (if (-> game :player :engulfed)
@@ -66,9 +100,6 @@
         (update-fov (:cursor frame))
         (track-monsters game)
         update-explored)))
-
-(defn- engulfed? [game frame]
-  false) ; TODO
 
 (defn- handle-frame [game frame]
   (-> game

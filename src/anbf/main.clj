@@ -6,6 +6,7 @@
             [anbf.player :refer :all]
             [anbf.tile :refer :all]
             [anbf.handlers :refer :all]
+            [anbf.fov :refer :all]
             [anbf.position :refer :all]
             [anbf.pathing :refer :all]
             [anbf.util :refer :all]

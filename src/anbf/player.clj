@@ -25,7 +25,6 @@
    xp
    xplvl
    x y
-   fov
    inventory
    hunger ; :fainting :weak :hungry :satiated
    burden
@@ -43,22 +42,13 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 20 nil)))
+  (apply ->Player (repeat 19 nil)))
 
 (defn update-player [player status]
   (->> (keys player) (select-keys status) (into player)))
 
-(defn in-fov? [game pos]
-  (get-in game [:player :fov (dec (:y pos)) (:x pos)]))
-
 (defn blind? [player]
   (:blind (:state player)))
-
-(defn visible? [game tile]
-  "Only considers normal sight, not infravision/ESP/..."
-  (and (not (blind? (:player game)))
-       (in-fov? game tile)
-       (lit? game tile)))
 
 (defn impaired? [player]
   (some (:state player) #{:conf :stun :hallu :blind}))

@@ -23,12 +23,18 @@
 
 (defn color [tile] (colormap (:color tile)))
 
-(defn monster? [glyph]
-  (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
-      (#{\& \@ \' \; \:} glyph)))
+(defn monster?
+  ([glyph color] ; works better on rogue level
+   (and (monster? glyph) (or (pos? color) (not= \: glyph))))
+  ([glyph]
+   (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
+       (#{\& \@ \' \; \:} glyph))))
 
-(defn item? [glyph]
-  (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph))
+(defn item?
+  ([glyph color] ; works better on rogue level
+   (or (item? glyph) (and (= \: glyph) (zero? color))))
+  ([glyph]
+   (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)))
 
 (defn boulder? [tile]
   (and (= (:glyph tile) \0) (zero? (:color tile))))
@@ -47,7 +53,7 @@
 
 (defn walkable? [tile]
   (and (not (boulder? tile))
-       (or (and (item? (:glyph tile)) (nil? (:feature tile)))
+       (or (and (item? (:glyph tile) (:color tile)) (nil? (:feature tile)))
            (#{:ice :floor :air :altar :door-open :sink :fountain :trap :corridor
               :throne :grave :stairs-up :stairs-down} (:feature tile)))))
 
@@ -94,17 +100,25 @@
     (assoc tile :seen true)
     tile))
 
+(defn- update-feature-with-item [tile]
+  ; if items appeared in rock/wall we should check it out
+  (if (and (empty? (:items tile)) (#{:rock :wall} (:feature tile)))
+    (assoc tile :feature nil)
+    tile))
+
 ; TODO handle properly, mark new unknown items, track disappeared items
 (defn- update-items [tile new-glyph new-color]
-  (if-let [item (item? new-glyph)]
-    (assoc tile :items [item])
-    (if (monster? new-glyph)
+  (if-let [item (item? new-glyph new-color)]
+    (-> tile
+        update-feature-with-item
+        (assoc :items [item]))
+    (if (monster? new-glyph new-color)
       tile
       (assoc tile :items nil))))
 
 (defn- update-feature [tile new-glyph new-color]
-  (cond (monster? new-glyph) (walkable-by tile new-glyph)
-        (item? new-glyph) tile
+  (cond (monster? new-glyph new-color) (walkable-by tile new-glyph)
+        (item? new-glyph new-color) tile
         :else (update-in tile [:feature]
                          infer-feature new-glyph new-color)))
 

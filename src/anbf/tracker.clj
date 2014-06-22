@@ -2,11 +2,12 @@
   "Tracking and pairing monsters frame-to-frame"
   (:require [anbf.position :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.fov :refer :all]
             [anbf.player :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
-  (log/debug "transfer:" \newline old-monster "to" \newline monster)
+  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster
     game monster
     (fn [monster]
