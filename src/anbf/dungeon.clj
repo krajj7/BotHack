@@ -242,18 +242,21 @@
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
   (loop [res game
-         open #{pos}]
+         closed #{}
+         open #{(at-curlvl game pos)}]
     ;(log/debug (count open) open)
     (if-let [x (first open)]
       (recur (update-curlvl-at res x assoc :room kind)
-             (if (door? (at-curlvl res x))
+             (conj closed x)
+             (if (or (door? x) (= :wall (:feature x)))
                (disj open x)
                (into (disj open x)
                      ; walking triggers more refloods to mark unexplored tiles
-                     (remove #(or (= \space (:glyph %))
-                                  (#{:corridor :wall} (:feature %))
-                                  (:room %))
-                             (neighbors (curlvl res) x)))))
+                     (->> (neighbors (curlvl res) x)
+                          (remove #(or (= \space (:glyph %))
+                                       (:dug %)
+                                       (= :corridor (:feature %))
+                                       (closed %)))))))
       res)))
 
 (defn- reflood-room [game pos]

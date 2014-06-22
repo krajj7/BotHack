@@ -69,7 +69,7 @@
               (update-on-known-position
                 anbf (fn mark-shop [game]
                        (reduce #(if (door? %2)
-                                  (update-curlvl-at %1 %2 assoc :shop true)
+                                  (update-curlvl-at %1 %2 assoc :room :shop)
                                   %1) game
                                (neighbors (curlvl game) (at-player game)))))
               #"You crawl to the edge of the pit\.|You disentangle yourself\."

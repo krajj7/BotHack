@@ -122,7 +122,7 @@
                                           (and (= :wall (:feature tile))
                                                (< 2 (:y tile) 21)
                                                (< 1 (:x tile) 79)
-                                               (not (:shop tile))
+                                               (not (shop? tile))
                                                (< (:searched tile) (* mul 10))
                                                (->> (neighbors level tile)
                                                     (remove :seen) count
@@ -161,5 +161,4 @@
       (register-handler 4 (descend-main-branch))
       (register-handler 6 (escape-mines))
       (register-handler 8 (push-boulders))
-      (register-handler 9 (search))
-      #_ (register-handler 9 (random-travel))))
+      (register-handler 9 (search))))

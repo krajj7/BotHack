@@ -110,7 +110,7 @@
 
 (defn- mark-dug-tile [new-tile old-tile]
   (if (and (#{:wall :rock} (:feature old-tile))
-           (= :corridor (:feature new-tile)))
+           (#{:corridor :floor} (:feature new-tile)))
     (assoc new-tile :dug true)
     new-tile))
 
@@ -137,7 +137,7 @@
    "rare books" :book
    "lighting store" :light})
 
-(def shops (apply hash-set (vals shop-types)))
+(def shops (apply hash-set :shop (vals shop-types)))
 
 (defn shop? [tile]
   ; TODO door & "closed for inventory" on neighbor
