@@ -5,7 +5,7 @@ A Nethack Bot Framework
 
 An attempt at an implementation of a NetHack bot framework as a base for my master's thesis.
 
-Written in Clojure but provides a nice API for bots in Java.  No game modifications are used to make the game more accessible for a bot, so bots can also play on public servers (http://alt.org/nethack/).
+Written in Clojure but will provide an API for bots in Java.  No game modifications are used to make the game more accessible for a bot, so bots can also play on public servers (http://alt.org/nethack/).
 
 Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.github.io/) and Pogamut (http://pogamut.cuni.cz/).
 
@@ -28,25 +28,24 @@ Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/Simpl
 
 **14.6.2014**: The bot can navigate effectively as far as minetown/oracle, where it usually gets killed for lack of combat tactics.  It can find hidden doors and passages and looks almost like a newbie human playing ;-)  The framework provides basic monster tracking and shop recognition allowing the bot to deal with (avoid) peaceful monsters and shopkeepers quite nicely.
 
+**22.6.2014**: When boosted in wizmode (NetHack debug mode) the testing bot can navigate autonomously as far as Medusa's lair and deal with all kinds of situations like boulders blocking the way.  Item handling will need to be implemented before the bot can progress further.
+
+A ttyrec of one Medusa run is in the repo:
+https://github.com/krajj7/ANBF/blob/master/ttyrec/wizmode-exploration-dlvl1-28medusa.ttyrec?raw=true
+
 ## Roadmap
 
 ### Short-term goals
+
+Handling of items and inventory, esp. food.
 
 More actions, handling of prompts and menus.
 
 Keep expanding model of the game world.
 
-Smarter combat tactics for the bot.
-
-### Medium-term goals
+Smarter combat tactics for the bot, ranged combat.
 
 Make basic monster spoilers available.
-
-Handling of items and inventory, esp. food.
-
-Ranged combat.
-
-Better pathfinding, interlevel travel.
 
 ### Future goals
 
