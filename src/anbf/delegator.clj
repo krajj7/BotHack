@@ -155,6 +155,9 @@
 (defeventhandler MapHandler
   (map-drawn [handler ^anbf.bot.IFrame frame]))
 
+(defeventhandler DlvlChangeHandler
+  (dlvl-changed [handler ^String old-dlvl ^String new-dlvl]))
+
 (defeventhandler ActionChosenHandler
   (action-chosen [handler ^anbf.bot.IAction action]))
 

@@ -26,7 +26,7 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) :main "Dlvl:1" nil 0 0))
+  (Game. nil (new-player) (new-dungeon) :main nil nil 0 0))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))
@@ -103,7 +103,6 @@
 
 (defn- handle-frame [game frame]
   (-> game
-      ensure-curlvl
       (update-in [:player] into (:cursor frame)) ; update position
       (assoc-in [:player :engulfed] (engulfed? game frame))
       (update-map frame)))
@@ -115,14 +114,19 @@
     nil))
 
 (defn game-handler
-  [{:keys [game] :as anbf}]
+  [{:keys [game delegator] :as anbf}]
   (reify
     RedrawHandler
     (redraw [_ frame]
       (swap! game assoc-in [:frame] frame))
     BOTLHandler
     (botl [_ status]
-      (swap! game update-by-botl status))
+      (let [old-dlvl (:dlvl @game)
+            new-dlvl (:dlvl status)]
+        (swap! game update-by-botl status)
+        (when (not= old-dlvl new-dlvl)
+          (dlvl-changed @delegator old-dlvl new-dlvl)
+          (swap! game ensure-curlvl))))
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game handle-frame frame))

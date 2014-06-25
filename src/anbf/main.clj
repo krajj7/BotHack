@@ -34,6 +34,9 @@
           BOTLHandler
           (botl [_ status]
             (log/info "new botl status:" status))
+          DlvlChangeHandler
+          (dlvl-changed [_ old-dlvl new-dlvl]
+            (log/info "dlvl changed from" old-dlvl "to" new-dlvl))
           ConnectionStatusHandler
           (online [_]
             (log/info "Connection status: online"))

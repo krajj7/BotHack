@@ -128,29 +128,28 @@
     (update-on-known-position anbf
       (fn [{new-branch :branch-id new-dlvl :dlvl :as new-game}]
         (log/debug "asc/desc from" old-dlvl "to" new-dlvl "new-branch is" new-branch)
-        (let [new-stairs (at-player new-game)]
-          (if (and (stairs? old-stairs) (not= old-dlvl new-dlvl))
-            (cond-> new-game
-              (not (:branch-id old-stairs))
+        (if-let [new-stairs (and (not= old-dlvl new-dlvl)
+                                 (stairs? old-stairs)
+                                 (not (:branch-id old-stairs))
+                                 (at-player new-game))]
+          (-> new-game ; first time asc/desc to new level => will end up on upstairs
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
                          (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (not (:branch-id new-stairs))
               (update-curlvl-at new-stairs
                                 into {:branch-id old-branch
                                       :feature (opposite-stairs
                                                  (:feature old-stairs))}))
-            new-game))))
-    (reify BOTLHandler
-      (botl [this status]
-        (when-let [new-dlvl (and (not= old-dlvl (:dlvl status))
-                                 (:dlvl status))]
-          ; get the new branch-id from the stairs or create new and mark the stairs
-          (swap! (:game anbf)
-                 #(assoc % :branch-id
-                         (get old-stairs :branch-id
-                              (initial-branch-id % new-dlvl))))
-          (log/debug "choosing branch-id" (:branch-id @(:game anbf)) "for new dlvl" new-dlvl))))))
+          new-game)))
+    (reify DlvlChangeHandler
+      (dlvl-changed [this old-dlvl new-dlvl]
+        ; get the new branch-id from the stairs or create new and mark the stairs
+        (swap! (:game anbf)
+               #(assoc % :branch-id
+                       (get old-stairs :branch-id
+                            (initial-branch-id % new-dlvl))))
+        (log/debug "choosing branch-id" (:branch-id @(:game anbf))
+                   "for dlvl" new-dlvl)))))
 
 (defaction Ascend []
   (handler [_ anbf]
