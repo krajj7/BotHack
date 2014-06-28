@@ -53,9 +53,6 @@
                                       tile (:rogue (curlvl-tags game)))
                                     tile)))))
 
-(defn- engulfed? [game frame]
-  false) ; TODO
-
 (defn- rogue-ghost? [game tile glyph]
   (and (:feature tile)
        (not (#{:rock :wall} (:feature tile)))
@@ -92,10 +89,21 @@
       (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) assoc :walked true)))
 
+(defn- looks-engulfed? [{:keys [cursor lines] :as frame}]
+  (let [row-before (dec (:x cursor))
+        row-after (inc (:x cursor))
+        line-above (nth lines (dec (:y cursor)))
+        line-at (nth lines (:y cursor))
+        line-below (nth lines (inc (:y cursor)))]
+    (and (= "/-\\" (subs line-above row-before (inc row-after)))
+         (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
+         (= "\\-/" (subs line-below row-before (inc row-after))))))
+
 (defn- update-map [game frame]
-  (if (-> game :player :engulfed)
-    game
+  (if (looks-engulfed? frame)
+    (assoc-in game [:player :engulfed] true)
     (-> game
+        (assoc-in [:player :engulfed] false)
         (update-dungeon frame)
         (update-fov (:cursor frame))
         (track-monsters game)
@@ -104,7 +112,6 @@
 (defn- handle-frame [game frame]
   (-> game
       (update-in [:player] into (:cursor frame)) ; update position
-      (assoc-in [:player :engulfed] (engulfed? game frame))
       (update-map frame)))
 
 (defn- level-msg [msg]
