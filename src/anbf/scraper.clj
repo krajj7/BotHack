@@ -76,6 +76,7 @@
 (defn- goodbye? [frame]
   (and (more-prompt? frame)
        (not (re-seq #" level \d+" (topline frame))) ; Sayonara level 10 => not game end
+       (not (re-seq #"welcome .* NetHack" (topline frame))) ; game start
        (re-seq #"^(Fare thee well|Sayonara|Aloha|Farvel|Goodbye|Be seeing you) "
                (topline frame))))
 
