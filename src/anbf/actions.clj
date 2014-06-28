@@ -120,6 +120,12 @@
     (swap! game update-searched) nil)
   (trigger [_] "s"))
 
+(defn- mark-stair-branch [game tile branch]
+  "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs."
+  (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
+          game
+          (conj tile (neighbors tile))))
+
 (defn stairs-handler [anbf]
   (let [old-game (-> anbf :game deref)
         old-branch (branch-key old-game)
@@ -132,14 +138,11 @@
                                  (stairs? old-stairs)
                                  (not (:branch-id old-stairs))
                                  (at-player new-game))]
-          (-> new-game ; first time asc/desc to new level => will end up on upstairs
+          (-> new-game
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
                          (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (update-curlvl-at new-stairs
-                                into {:branch-id old-branch
-                                      :feature (opposite-stairs
-                                                 (:feature old-stairs))}))
+              (mark-stair-branch new-stairs old-branch))
           new-game)))
     (reify DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
@@ -217,6 +220,14 @@
                                             assoc :feature nil)
             nil)))))
   (trigger [_] (str \o (vi-directions (enum->kw dir)))))
+
+#_(defaction Inventory []
+  (handler [_ anbf]
+    (reify InventoryHandler
+      (inventory-list [_ inventory]
+        nil))
+    nil) ; TODO
+  (trigger [_] ("i")))
 
 (defn examine-handler [anbf]
   (reify ActionHandler
