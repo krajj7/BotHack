@@ -133,7 +133,7 @@
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs."
   (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
           game
-          (conj tile (neighbors tile))))
+          (conj (neighbors tile) tile)))
 
 (defn stairs-handler [anbf]
   (let [old-game (-> anbf :game deref)
@@ -199,16 +199,15 @@
             nil)))))
   (trigger [this] (str \c (vi-directions (enum->kw dir)))))
 
-(defn- look-feature [msg]
-  (if (re-seq #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))" msg)
-    :floor
-    (feature-here msg)))
-
 (defaction Look []
   (handler [_ {:keys [game] :as anbf}]
+    (update-on-known-position anbf
+      #(if (->> (:player %) (at-curlvl %) :feature nil?)
+         (update-curlvl-at % (:player %) assoc :feature :floor)
+         %)) ; got no topline message suggesting a special feature
     (reify ToplineMessageHandler
       (message [_ text]
-        (if-let [feature (look-feature text)]
+        (if-let [feature (feature-here text)]
           (swap! game #(update-curlvl-at % (:player %)
                                          assoc :feature feature))))))
   (trigger [this] ":"))
@@ -238,6 +237,7 @@
   (reify ActionHandler
     (choose-action [_ game]
       ; TODO if not blind check engulfer
+      ; TODO items
       ; TODO ambiguous monsters
       (when-not (or (blind? (:player game)) (:feature (at-player game)))
         (log/debug "examining tile")

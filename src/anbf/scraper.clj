@@ -72,6 +72,21 @@
 (defn- more-prompt? [frame]
   (before-cursor? frame "--More--"))
 
+(defn- more-items [frame]
+  (let [xstart (->> (nth-line frame 0) (take-while #(= \space %)) count)
+        yend (-> frame :cursor :y)]
+    (map #(-> % (subs xstart) string/trim)
+         (take yend (:lines frame)))))
+
+(defn- more-list-prompt? [frame]
+  (let [ycursor (-> frame :cursor :y)]
+    (or (and (more-prompt? frame) (< 1 ycursor))
+        (and (pos? ycursor) (= " --More--" (before-cursor frame))))))
+
+(defn- more-list [frame]
+  (if (more-list-prompt? frame)
+    (more-items frame)))
+
 (defn- more-prompt
   "Returns the whole text before a --More-- prompt, or nil if there is none."
   [frame]
@@ -163,10 +178,16 @@
 (defn- emit-botl [frame delegator]
   (->> frame botls parse-botls (send delegator botl)))
 
+(defn- emit-more-list [delegator items]
+  (if (or (not= "" (nth items 1)) (.endsWith (nth items 0) ":"))
+    (send delegator message-lines items)
+    (do (send delegator message (nth items 0)) ; "There is a grave here.\n\n...
+        (send delegator message-lines (subvec items 2))))) ; ...actual list"
+
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
         head (ref nil)
-        menu (ref nil)]
+        items (ref nil)]
     (letfn [(handle-game-start [frame]
               (when (game-beginning? frame)
                 (log/debug "Handling game start")
@@ -184,29 +205,36 @@
                 ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX") - zpusobi i znacka!
                 (send delegator (choice-fn text) text)))
             (handle-more [frame]
-              (when-let [text (more-prompt frame)]
-                (log/debug "Handling --More-- prompt")
-                ; TODO You wrest one last charge from the worn-out wand. => no-mark?
-                (let [res (if (= text "You don't have that object.")
-                            handle-choice-prompt
-                            (do (send delegator message text) initial))]
-                  (send delegator write " ")
-                  res)))
+              (or (when-let [item-list (more-list frame)]
+                    (log/debug "Handling --More-- list")
+                    (if (nil? @items)
+                      (ref-set items []))
+                    (alter items into item-list)
+                    (send delegator write " ")
+                    initial)
+                  (when-let [text (more-prompt frame)]
+                    (log/debug "Handling --More-- prompt")
+                    ; TODO You wrest one last charge from the worn-out wand. => no-mark?
+                    (let [res (if (= text "You don't have that object.")
+                                handle-choice-prompt
+                                (do (send delegator message text) initial))]
+                      (send delegator write " ")
+                      res))))
             (handle-menu [frame]
               (when (menu? frame)
                 (log/debug "Handling menu")
-                (when (nil? @menu)
+                (when (nil? @items)
                   (ref-set head (menu-head frame))
-                  (ref-set menu {}))
-                (alter menu merge (menu-options frame))
+                  (ref-set items {}))
+                (alter items merge (menu-options frame))
                 (if-not (menu-end? frame)
                   (send delegator write " ")
                   (do (log/debug "At menu end")
                       (if @head
-                        (send delegator (menu-fn @head) @menu)
-                        (do (send delegator inventory-list @menu)
+                        (send delegator (menu-fn @head) @items)
+                        (do (send delegator inventory-list @items)
                             (send delegator write " ")))
-                      (ref-set menu nil)
+                      (ref-set items nil)
                       initial))))
             (handle-direction [frame]
               (when (and (zero? (-> frame :cursor :x))
@@ -285,6 +313,10 @@
                   (if (= "# #" (topline frame))
                     (ref-set player (:cursor frame)))
                   (when (= (:cursor frame) @player)
+                    (when-not (nil? @items)
+                      (log/debug "Flushing --More-- list")
+                      (emit-more-list delegator @items)
+                      (ref-set items nil))
                     (if-not (.startsWith (topline frame) "#")
                       (send delegator message (topline frame))
                       #_ (log/debug "no last message"))

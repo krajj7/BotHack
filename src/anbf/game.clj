@@ -141,6 +141,12 @@
     InventoryHandler
     (inventory-list [_ inventory]
       (swap! game assoc-in [:player :inventory] inventory))
+    MultilineMessageHandler
+    (message-lines [_ lines]
+      (condp re-seq (nth lines 0)
+        #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
+        (do (log/debug "Items here:") (log/spy lines)) ; TODO
+        (log/error "Unrecognized message list " (str lines))))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text

@@ -164,6 +164,9 @@
 (defeventhandler InventoryHandler
   (inventory-list [handler ^clojure.lang.IPersistentMap inventory]))
 
+(defeventhandler MultilineMessageHandler
+  (message-lines [handler ^clojure.lang.IPersistentList items]))
+
 ; command protocols:
 
 ; TODO menu handler, location handler
