@@ -7,14 +7,15 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
-  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
+  (log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster
     game monster
     (fn [monster]
       (cond-> monster
+        ; TODO type
+        :always (into (select-keys old-monster [:peaceful :cancelled :awake]))
         (not= (position old-monster)
-              (position monster)) (assoc :awake true)
-        :always (into (select-keys old-monster [:peaceful :cancelled])))))); TODO type
+              (position monster)) (assoc :awake true)))))
 
 (defn- transfer-unpaired [game unpaired]
   ;(log/debug "unpaired" unpaired)

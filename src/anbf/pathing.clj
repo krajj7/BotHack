@@ -101,7 +101,7 @@
                         [30 (->Move dir)]
                         (if (:awake monster)
                           [50 (fidget game level)] ; hopefully will move
-                          nil)))) ; sleeping peacefuls are quite annoying
+                          [10000 (fidget game level)])))) ; sleeping peacefuls are quite annoying, this can cause stucking
                   ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
                   ; TODO digging/levi
                   (if (and (door? to-tile)
