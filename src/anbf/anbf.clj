@@ -92,6 +92,7 @@
          scraper (scraper-handler scraper-fn delegator)]
      (send delegator set-writer (partial raw-write jta))
      (-> anbf
+         update-inventory
          (register-handler (dec priority-top) (game-handler anbf))
          (register-handler priority-bottom
                            (reify FullFrameHandler

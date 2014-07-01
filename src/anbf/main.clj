@@ -31,6 +31,9 @@
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" action))
+          InventoryHandler
+          (inventory-list [_ inventory]
+            (log/spy inventory))
           BOTLHandler
           (botl [_ status]
             (log/info "new botl status:" status))

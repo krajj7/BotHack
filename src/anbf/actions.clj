@@ -44,6 +44,15 @@
       "grave" :grave
       nil)))
 
+(defn update-on-known-position
+  "When player position on map is known call (apply swap! game f args)"
+  [anbf f & args]
+  (register-handler anbf priority-top
+    (reify FullFrameHandler
+      (full-frame [this _]
+        (apply swap! (:game anbf) f args)
+        (deregister-handler anbf this)))))
+
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
@@ -221,13 +230,9 @@
             nil)))))
   (trigger [_] (str \o (vi-directions (enum->kw dir)))))
 
-#_(defaction Inventory []
-  (handler [_ anbf]
-    (reify InventoryHandler
-      (inventory-list [_ inventory]
-        nil))
-    nil) ; TODO
-  (trigger [_] ("i")))
+(defaction Inventory []
+  (handler [_ _])
+  (trigger [_] "i"))
 
 (defn examine-handler [anbf]
   (reify ActionHandler
@@ -237,6 +242,19 @@
       (when-not (or (blind? (:player game)) (:feature (at-player game)))
         (log/debug "examining tile")
         (->Look)))))
+
+(defn- inventory-handler [anbf]
+  (reify ActionHandler
+    (choose-action [this game]
+      (deregister-handler anbf this)
+      (->Inventory))))
+
+(def ^:private inventory-handler (memoize inventory-handler))
+
+(defn update-inventory
+  "Re-check inventory as soon as possible."
+  [anbf]
+  (register-handler anbf priority-top (inventory-handler anbf)))
 
 (defn- -withHandler
   ([action handler]

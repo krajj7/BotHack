@@ -18,10 +18,49 @@
              (not= \space (nth name-line 79))
              (re-seq #" S:[0-9]+" name-line)))))
 
+(defn- menu-head
+  "Return menu title"
+  [frame]
+  (if (not-any? inverse? (nth (:colors frame) 0))
+    (topline frame)))
+
+(defn- menu-page
+  "Return [first last] page of a menu, if there is one displayed."
+  [frame]
+  (condp re-seq (before-cursor frame)
+    #"\(end\) $" [1 1]
+    #"\(([0-9]+) of ([0-9]+)\)$" :>> #(-> % first (subvec 1))
+    nil))
+
+(defn- menu-end?
+  "Is this the last page of a menu?"
+  [frame]
+  (if-let [[f l] (menu-page frame)]
+    (= f l)))
+
 (defn- menu?
   "Is there a menu drawn onscreen?"
   [frame]
-  (re-seq #"\(end\) $|\([0-9]+ of [0-9]+\)$" (before-cursor frame)))
+  (some? (menu-page frame)))
+
+(defn- menu-line
+  "Return [character menu-item] pair for the menu line or nil for headers etc."
+  [start line colors]
+  (if-not (inverse? (nth colors start))
+    (re-first-groups #"^(.)  ?[-+#] (.*?)\s*$" (subs line start))))
+
+(defn- menu-options
+  "Return map of menu options (current page)"
+  [frame]
+  (let [xstart (->> (nth-line frame 0) (re-seq #"^ *") first count)
+        yend (-> frame :cursor :y)]
+    (into {} (map #(menu-line xstart %1 %2)
+                  (take yend (:lines frame))
+                  (take yend (:colors frame))))))
+
+(defn- menu-fn [head]
+  (condp re-seq head
+    (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- choice-prompt
   "If there is a single-letter prompt active, return the prompt text, else nil."
@@ -125,7 +164,9 @@
   (->> frame botls parse-botls (send delegator botl)))
 
 (defn new-scraper [delegator & [mark-kw]]
-  (let [player (ref nil)]
+  (let [player (ref nil)
+        head (ref nil)
+        menu (ref nil)]
     (letfn [(handle-game-start [frame]
               (when (game-beginning? frame)
                 (log/debug "Handling game start")
@@ -145,7 +186,6 @@
             (handle-more [frame]
               (when-let [text (more-prompt frame)]
                 (log/debug "Handling --More-- prompt")
-                ; XXX TODO possibly update map and/or botl?
                 ; TODO You wrest one last charge from the worn-out wand. => no-mark?
                 (let [res (if (= text "You don't have that object.")
                             handle-choice-prompt
@@ -155,8 +195,19 @@
             (handle-menu [frame]
               (when (menu? frame)
                 (log/debug "Handling menu")
-                (send delegator write " ")
-                #_ (throw (UnsupportedOperationException. "TODO menu - implement me"))))
+                (when (nil? @menu)
+                  (ref-set head (menu-head frame))
+                  (ref-set menu {}))
+                (alter menu merge (menu-options frame))
+                (if-not (menu-end? frame)
+                  (send delegator write " ")
+                  (do (log/debug "At menu end")
+                      (if @head
+                        (send delegator (menu-fn @head) @menu)
+                        (do (send delegator inventory-list @menu)
+                            (send delegator write " ")))
+                      (ref-set menu nil)
+                      initial))))
             (handle-direction [frame]
               (when (and (zero? (-> frame :cursor :x))
                          (before-cursor? frame "In what direction? "))

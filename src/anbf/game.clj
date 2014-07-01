@@ -5,6 +5,7 @@
             [anbf.dungeon :refer :all]
             [anbf.fov :refer :all]
             [anbf.monster :refer :all]
+            [anbf.actions :refer :all]
             [anbf.tile :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
@@ -137,11 +138,14 @@
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game handle-frame frame))
+    InventoryHandler
+    (inventory-list [_ inventory]
+      (swap! game assoc-in [:player :inventory] inventory))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text
             #"Your legs? feels? somewhat better"
-            (swap! game #(assoc-in [:player :leg-hurt] false))
+            (swap! game assoc-in [:player :leg-hurt] false)
             nil)
           (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))

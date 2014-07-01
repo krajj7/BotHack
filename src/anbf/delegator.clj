@@ -161,6 +161,9 @@
 (defeventhandler ActionChosenHandler
   (action-chosen [handler ^anbf.bot.IAction action]))
 
+(defeventhandler InventoryHandler
+  (inventory-list [handler ^clojure.lang.IPersistentMap inventory]))
+
 ; command protocols:
 
 ; TODO menu handler, location handler
