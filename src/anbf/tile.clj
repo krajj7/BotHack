@@ -94,9 +94,9 @@
     \- (if (= (colormap new-color) :brown) :door-open :wall)
     (log/error "unrecognized feature" new-glyph new-color "was" current)))
 
-; they might not have actually been seen but there's usually not much to see in walls
-(defn- mark-wall-seen [tile]
-  (if (#{:wall :door-closed} (:feature tile))
+; they might not have actually been seen but there's usually not much to see in walls/water
+(defn- mark-seen-features [tile]
+  (if (#{:wall :door-closed :water} (:feature tile))
     (assoc tile :seen true)
     tile))
 
@@ -135,7 +135,7 @@
         (update-feature new-glyph new-color)
         (mark-dug-tile tile)
         (assoc :glyph new-glyph :color new-color)
-        mark-wall-seen)
+        mark-seen-features)
     tile))
 
 (def shop-types
