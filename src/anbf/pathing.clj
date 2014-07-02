@@ -85,6 +85,10 @@
     (->Move (towards player step))
     (->Search)))
 
+(defn dare-kick? [level tile]
+  (and (not ((:tags level) :minetown))
+       (not (shop? tile))))
+
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
@@ -108,16 +112,14 @@
                            (not (item? (:glyph to-tile))) ; don't try to break blocked doors
                            (not (:walking opts)))
                     (if (diagonal dir)
-                      (if (= :door-open (:feature to-tile))
-                        (and (not ((:tags level) :minetown))
-                             (not (shop? to-tile))
-                             [8 (->Close dir)])
-                        [5 (->Kick dir)])
+                      (if (dare-kick? level to-tile)
+                        (if (= :door-open (:feature to-tile))
+                          [8 (->Close dir)]
+                          [5 (->Kick dir)]))
                       (if (= :door-locked (:feature to-tile))
-                        (if (and (not ((:tags level) :minetown))
-                                 (not (shop? to-tile)))
-                          [5 (->Kick dir)]
-                          ) ; TODO unlocking
+                        ; TODO unlocking
+                        (if (dare-kick? level to-tile)
+                          [5 (->Kick dir)])
                         [3 (->Open dir)]))))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
