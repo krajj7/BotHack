@@ -109,6 +109,7 @@
                   ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
                   ; TODO digging/levi
                   (if (and (door? to-tile)
+                           (not monster)
                            (not (item? (:glyph to-tile))) ; don't try to break blocked doors
                            (not (:walking opts)))
                     (if (diagonal dir)
