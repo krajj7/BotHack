@@ -77,7 +77,7 @@
               #".*: \"Closed for inventory\"" ; TODO possible degradation
               (update-on-known-position
                 anbf (fn mark-shop [game]
-                       (reduce #(if (door? %2)
+                       (reduce #(if (or (door? %2) (= :wall (:feature %2)))
                                   (update-curlvl-at %1 %2 assoc :room :shop)
                                   %1) game
                                (neighbors (curlvl game) (at-player game)))))
