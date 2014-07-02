@@ -253,8 +253,9 @@
             (handle-prompt [frame]
               (when-let [msg (prompt frame)]
                 (emit-botl frame delegator)
-                (send delegator write (str (repeat 3 backspace)))
-                (send delegator (prompt-fn msg) msg)))
+                (send delegator write (apply str (repeat 3 backspace)))
+                (send delegator (prompt-fn msg) msg)
+                initial))
             (handle-game-end [frame]
               ; TODO reg handler for escaping the inventory menu?
               (cond (game-over? frame) (send delegator write \y)
