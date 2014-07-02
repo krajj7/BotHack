@@ -129,6 +129,10 @@
     (swap! game update-searched) nil)
   (trigger [_] "s"))
 
+(defaction Wait []
+  (handler [_ _])
+  (trigger [_] "."))
+
 (defn- mark-stair-branch [game tile branch]
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs."
   (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
@@ -207,6 +211,7 @@
          %)) ; got no topline message suggesting a special feature
     (reify ToplineMessageHandler
       (message [_ text]
+        ; TODO you see/there is/... single item
         (if-let [feature (feature-here text)]
           (swap! game #(update-curlvl-at % (:player %)
                                          assoc :feature feature))))))

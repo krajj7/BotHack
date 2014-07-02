@@ -141,7 +141,7 @@
     (choose-action [_ {:keys [player] :as game}]
       (or (when (or (impaired? player) (:leg-hurt player))
             (log/debug "waiting out imparment")
-            (->Search))
+            (->Wait))
           (when (:trapped player)
             (log/debug "trying to untrap self")
             (fidget game (curlvl game)))))))
