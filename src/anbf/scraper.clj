@@ -178,12 +178,6 @@
 (defn- emit-botl [frame delegator]
   (->> frame botls parse-botls (send delegator botl)))
 
-(defn- emit-more-list [delegator items]
-  (if (or (not= "" (nth items 1)) (.endsWith (nth items 0) ":"))
-    (send delegator message-lines items)
-    (do (send delegator message (nth items 0)) ; "There is a grave here.\n\n...
-        (send delegator message-lines (subvec items 2))))) ; ...actual list"
-
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
         head (ref nil)
@@ -210,6 +204,11 @@
                     (if (nil? @items)
                       (ref-set items []))
                     (alter items into item-list)
+                    ; message about a feature that would normally appear as topline message may become part of a list when there are items on the tile
+                    (when (and (empty? (nth @items 1))
+                               (not (.endsWith (nth @items 0) ":")))
+                      (send delegator message (nth @items 0))
+                      (alter items subvec 2))
                     (send delegator write " ")
                     initial)
                   (when-let [text (more-prompt frame)]
@@ -316,7 +315,7 @@
                   (when (= (:cursor frame) @player)
                     (when-not (nil? @items)
                       (log/debug "Flushing --More-- list")
-                      (emit-more-list delegator @items)
+                      (send delegator message-lines @items)
                       (ref-set items nil))
                     (if-not (.startsWith (topline frame) "#")
                       (send delegator message (topline frame))
