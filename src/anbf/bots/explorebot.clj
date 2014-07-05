@@ -128,7 +128,9 @@
                                                     (remove :seen) count
                                                     (< 1)))) :adjacent)]
                 (or (:step p) (->Search)))
-              (recur (inc mul))))))))
+              (if (> mul 10)
+                (log/debug "stuck :-(")
+                (recur (inc mul)))))))))
 
 (defn- pray-for-food []
   (reify ActionHandler
