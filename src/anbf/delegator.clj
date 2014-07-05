@@ -158,6 +158,9 @@
 (defeventhandler DlvlChangeHandler
   (dlvl-changed [handler ^String old-dlvl ^String new-dlvl]))
 
+(defeventhandler AboutToChooseActionHandler
+  (about-to-choose [handler ^anbf.bot.IGame gamestate]))
+
 (defeventhandler ActionChosenHandler
   (action-chosen [handler ^anbf.bot.IAction action]))
 

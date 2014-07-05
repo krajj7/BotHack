@@ -6,6 +6,7 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.util :refer :all]
             [anbf.tile :refer :all]))
 
 (defn base-cost [level dir tile]
@@ -74,16 +75,32 @@
              (and (diagonal-walkable? game from-tile)
                   (diagonal-walkable? game to-tile))))))
 
+(defn- random-move [{:keys [player] :as game} level]
+  (some->> (neighbors player)
+           (remove (partial monster-at level))
+           (filterv (partial passable-walking? game level player))
+           (#(if (seq %) % nil))
+           rand-nth
+           (towards player)
+           ->Move))
+
 (defn fidget
-  "Move around randomly to make a peaceful move out of the way or get out of a trap."
-  [{:keys [player] :as game} level]
-  ;(log/debug "fidgeting")
-  (if-let [step (->> (neighbors player)
-                     (remove #(:peaceful (monster-at level %)))
-                     (filterv #(passable-walking? game level player %))
-                     rand-nth)]
-    (->Move (towards player step))
-    (->Search)))
+  "Move around randomly or wait to make a peaceful move out of the way"
+  ([game] (fidget game (curlvl game)))
+  ([game level] (fidget game level nil))
+  ([{:keys [player] :as game} level target]
+   (with-handler priority-top
+     (fn [anbf]
+       (log/debug "fidgeting")
+       (if (some? target)
+         (reify AboutToChooseActionHandler
+           (about-to-choose [_ new-game]
+             (when (:peaceful (curlvl-monster-at new-game target)) ; target did not move
+               (log/debug "blocked by peaceful" target)
+               (swap! (:game anbf) update-curlvl-at target
+                      update-in [:blocked] (fnil inc 0)))))))
+     (or (random-move game level)
+         (->Search)))))
 
 (defn dare-kick? [level tile]
   (and (not ((:tags level) :minetown))
@@ -103,11 +120,13 @@
                       [0 (->Move dir)]
                       (if-not (:peaceful monster)
                         [30 (->Move dir)]
-                        (if (:awake monster)
-                          [50 (fidget game level)] ; hopefully will move
-                          [10000 (fidget game level)])))) ; sleeping peacefuls are quite annoying, this can cause stucking
+                        (if ((fnil <= 0) (:blocked to-tile) 10)
+                          [50 (fidget game level to-tile)])))) ; hopefully will move
                   ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
                   ; TODO digging/levi
+                  (if (:trapped (:player game))
+                    (if-let [step (random-move game level)]
+                      [0 step]))
                   (if (and (door? to-tile)
                            (not monster)
                            (not (item? (:glyph to-tile))) ; don't try to break blocked doors

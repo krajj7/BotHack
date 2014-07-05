@@ -50,12 +50,12 @@
 (defn- explore []
   (reify ActionHandler
     (choose-action [_ game]
-      (let [level (curlvl game)]
-        (or (search-dead-end game 15)
-            (when-let [path (navigate game #(explorable-tile? level %))]
-              (log/debug "chose exploration target" (:target path))
-              (:step path))
-            (log/debug "nothing to explore"))))))
+      (or (search-dead-end game 15)
+          (when-let [path (navigate game
+                                    (partial explorable-tile? (curlvl game)))]
+            (log/debug "chose exploration target" (:target path))
+            (:step path))
+          (log/debug "nothing to explore")))))
 
 (defn- descend-main-branch []
   (reify ActionHandler
@@ -143,10 +143,7 @@
     (choose-action [_ {:keys [player] :as game}]
       (or (when (or (impaired? player) (:leg-hurt player))
             (log/debug "waiting out imparment")
-            (->Wait))
-          (when (:trapped player)
-            (log/debug "trying to untrap self")
-            (fidget game (curlvl game)))))))
+            (->Wait))))))
 
 (defn init [anbf]
   (-> anbf
