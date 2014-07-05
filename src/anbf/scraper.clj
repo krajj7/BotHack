@@ -95,7 +95,7 @@
 
 (defn- location-prompt? [frame]
   (let [topline (topline frame)]
-    (or (re-seq #"^Unknown direction: ''' (use hjkl or \.)" topline)
+    (or (re-seq #"^Unknown direction: ''' \(use hjkl or \.\)" topline)
         (re-seq #"(^ *|  ) (.*?)  \(For instructions type a \?\) *$" topline))))
 
 (defn- prompt
