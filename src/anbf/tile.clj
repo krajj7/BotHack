@@ -21,8 +21,9 @@
   (Tile. x y \space nil nil false nil false 0 [] nil nil))
 
 (defn monster?
-  ([glyph color] ; works better on rogue level
-   (and (monster? glyph) (or (some? color) (not= \: glyph))))
+  ([glyph color] ; works better on rogue level and for worm tails
+   (or (and (= \~ glyph) (= :brown color))
+       (and (monster? glyph) (or (some? color) (not= \: glyph)))))
   ([glyph]
    (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph))))
