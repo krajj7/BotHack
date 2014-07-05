@@ -41,9 +41,11 @@
 
 (defn in-direction [from dir]
   {:pre [(valid-position? from)]}
-  (assoc (position from)
-         :x (+ ((dirmap dir) 0) (:x from))
-         :y (+ ((dirmap dir) 1) (:y from))))
+  (let [res (assoc (position from)
+                   :x (+ ((dirmap dir) 0) (:x from))
+                   :y (+ ((dirmap dir) 1) (:y from)))]
+    (if (valid-position? res)
+      res)))
 
 (defn towards [from to]
   (get dirmap ((juxt #(<=> (:x %2) (:x %1))

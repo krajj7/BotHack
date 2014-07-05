@@ -90,8 +90,9 @@
   ; TODO soko
   (seq (filter #(if (boulder? %)
                   (let [dir (towards pos %)
-                        dest (at level (in-direction % dir))]
-                    (and (not (monster-at level dest))
+                        dest (some->> (in-direction % dir) (at level))]
+                    (and dest
+                         (not (monster-at level dest))
                          ; TODO boulders in doors don't work reliably
                          (pushable-through level % dest))))
                (neighbors level pos))))
