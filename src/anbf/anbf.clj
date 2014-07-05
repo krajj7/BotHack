@@ -75,10 +75,16 @@
         (dorun (map (partial deregister-handler anbf)
                     @action-handlers))
         (reset! action-handlers #{})
-        ; TODO user handlers - XXX dorun!
         (when-let [h (handler action anbf)]
           (register-handler anbf priority-top h)
-          (swap! action-handlers conj h))))))
+          (swap! action-handlers conj h))
+        (loop [[[p handler] & more] (:handlers action)]
+          (when-let [h (if (fn? handler)
+                         (handler anbf)
+                         handler)]
+            (register-handler anbf p h)
+            (swap! action-handlers conj h)
+            (recur more)))))))
 
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))

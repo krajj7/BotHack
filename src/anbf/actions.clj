@@ -261,11 +261,17 @@
   [anbf]
   (register-handler anbf priority-top (inventory-handler anbf)))
 
+(defn with-handler
+  ([handler action]
+   (with-handler action priority-default handler))
+  ([priority handler action]
+   (update-in action [:handlers] conj [priority handler])))
+
 (defn- -withHandler
   ([action handler]
    (-withHandler action priority-default handler))
   ([action priority handler]
-   action)) ; TODO assoc user handler, reg on performed, dereg on choose + clojure API
+   (with-handler action priority handler)))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class
@@ -273,5 +279,4 @@
   :methods [^:static [Move [anbf.bot.Direction] anbf.bot.IAction]
             ^:static [Pray [] anbf.bot.IAction]
             ^:static [withHandler [anbf.bot.IAction Object] anbf.bot.IAction]
-            ^:static [withHandler [anbf.bot.IAction int Object]
-                      anbf.bot.IAction]])
+            ^:static [withHandler [anbf.bot.IAction int Object] anbf.bot.IAction]])
