@@ -110,7 +110,7 @@
     (-> tile
         update-feature-with-item
         (assoc :items [item]))
-    (if (monster? new-glyph new-color)
+    (if (or (= \space new-glyph) (monster? new-glyph new-color))
       tile
       (assoc tile :items []))))
 
