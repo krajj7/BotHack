@@ -28,13 +28,19 @@
    :inv-bright-blue :inv-bright-magenta :inv-bright-cyan :inv-white])
 
 (defn inverse? [color]
-  (>= color 16))
+  (#{:inverse :inv-red :inv-green :inv-brown :inv-blue :inv-magenta
+     :inv-cyan :inv-gray :inv-bold :inv-orange :inv-bright-green
+     :inv-yellow :inv-bright-blue :inv-bright-magenta :inv-bright-cyan
+     :inv-white} color))
+
+(defn non-inverse [color]
+  (get {:inv-bright-green :bright-green, :inv-green :green, :inverse nil, :inv-brown :brown, :inv-orange :orange, :inv-magenta :magenta, :inv-blue :blue, :inv-bright-cyan :bright-cyan, :inv-cyan :cyan, :inv-red :red, :inv-bold :bold, :inv-bright-magenta :bright-magenta, :inv-yellow :yellow, :inv-bright-blue :bright-blue, :inv-gray :gray, :inv-white :white} color color))
 
 (defn print-colors [f]
   (println "Colors:")
-  (dorun (map #(if (every? zero? %)
+  (dorun (map #(if (every? nil? %)
                  (println nil)
-                 (println (map colormap %)))
+                 (println %))
               (:colors f))))
 
 (defn nth-line

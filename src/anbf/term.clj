@@ -40,7 +40,7 @@
 (def ^:private inverse-mask 0x4)
 
 (defn- unpack-colors
-  "for an int[] (row) of JTA character attributes make a vector of color indices"
+  "for an int[] (row) of JTA character attributes make a vector of color keywords"
   [attrs]
   (map #(let [[mask shift] (if (zero? (bit-and inverse-mask %))
                              [fg-color-mask 5]
@@ -49,7 +49,8 @@
             (bit-and mask bits)
             (if (zero? bits) 0 (dec (bit-shift-right bits shift)))
             (+ bits (* (bit-and boldness-mask %) 8) ; modify by boldness
-                    (* (bit-and inverse-mask %) 4)))) ; modify by inversion
+                    (* (bit-and inverse-mask %) 4)) ; modify by inversion
+            (colormap bits)))
        (take 80 attrs)))
 
 (defn- unpack-line

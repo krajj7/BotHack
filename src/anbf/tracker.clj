@@ -18,8 +18,9 @@
               (position monster)) (assoc :awake true)))))
 
 (defn- transfer-unpaired [game unpaired]
+  ; TODO don't transfer if we would know monsters position with ESP
   ;(log/debug "unpaired" unpaired)
-  (if-not (visible? game (at-curlvl game unpaired))
+  (if-not (visible? game unpaired)
     (reset-curlvl-monster game unpaired)
     game))
 
@@ -38,6 +39,8 @@
                                            (fn candidate? [[_ n]]
                                              (and (= (:glyph m) (:glyph n))
                                                   (= (:color m) (:color n))
+                                                  (= (:friendly m)
+                                                     (:friendly n))
                                                   (= dist (distance m n))))
                                            old-monsters))]
             (if more ; ignore ambiguous cases
@@ -50,5 +53,5 @@
           (recur pairs (apply dissoc (curlvl-monsters new-game) (keys pairs))
                  old-monsters (inc dist)))
         (as-> new-game res
-          (reduce transfer-pair res (vals pairs))
-          (reduce transfer-unpaired res (vals old-monsters)))))))
+          (reduce transfer-unpaired res (vals old-monsters))
+          (reduce transfer-pair res (vals pairs)))))))

@@ -1,8 +1,7 @@
 (ns anbf.tile
   (:require [clojure.tools.logging :as log]
             [anbf.position :refer [neighbors]]
-            [anbf.util :refer :all]
-            [anbf.frame :refer [colormap]]))
+            [anbf.util :refer :all]))
 
 (defrecord Tile
   [x y
@@ -21,23 +20,21 @@
 (defn initial-tile [x y]
   (Tile. x y \space nil nil false nil false 0 [] nil nil))
 
-(defn color [tile] (colormap (:color tile)))
-
 (defn monster?
   ([glyph color] ; works better on rogue level
-   (and (monster? glyph) (or (pos? color) (not= \: glyph))))
+   (and (monster? glyph) (or (some? color) (not= \: glyph))))
   ([glyph]
    (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph))))
 
 (defn item?
   ([glyph color] ; works better on rogue level
-   (or (item? glyph) (and (= \: glyph) (zero? color))))
+   (or (item? glyph) (and (= \: glyph) (nil? color))))
   ([glyph]
    (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)))
 
 (defn boulder? [tile]
-  (and (= (:glyph tile) \0) (zero? (:color tile))))
+  (and (= (:glyph tile) \0) (nil? (:color tile))))
 
 (defn door? [tile]
   (#{:door-open :door-closed :door-locked} (:feature tile)))
@@ -60,9 +57,9 @@
 (defn transparent?
   "For unexplored tiles just a guess"
   [{:keys [feature monster items] :as tile}]
-  (and (not (boulder? tile))
-       (not (#{:rock :wall :tree :door-closed :cloud} feature))
-       (or feature monster items)))
+  (boolean (and (not (boulder? tile))
+                (not (#{:rock :wall :tree :door-closed :cloud} feature))
+                (or feature monster (seq items)))))
 
 (defn searched [level tile]
   "How many times the tile has been searched directly (not by searching a neighbor)"
@@ -79,19 +76,19 @@
 (defn- infer-feature [current new-glyph new-color]
   (case new-glyph
     \space current ; TODO :air
-    \. (if (= (colormap new-color) :cyan) :ice :floor)
+    \. (if (= new-color :cyan) :ice :floor)
     \< :stairs-up
     \> :stairs-down
-    \\ (if (= (colormap new-color) :yellow) :throne :grave)
-    \{ (if (nil? (colormap new-color)) :sink :fountain)
+    \\ (if (= new-color :yellow) :throne :grave)
+    \{ (if (nil? new-color) :sink :fountain)
     \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
     \# :corridor ; TODO :cloud
     \_ :altar
     \~ :water
     \^ :trap
     \] :door-closed
-    \| (if (= (colormap new-color) :brown) :door-open :wall)
-    \- (if (= (colormap new-color) :brown) :door-open :wall)
+    \| (if (= new-color :brown) :door-open :wall)
+    \- (if (= new-color :brown) :door-open :wall)
     (log/error "unrecognized feature" new-glyph new-color "was" current)))
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
@@ -114,7 +111,7 @@
         (assoc :items [item]))
     (if (monster? new-glyph new-color)
       tile
-      (assoc tile :items nil))))
+      (assoc tile :items []))))
 
 (defn- update-feature [tile new-glyph new-color]
   (cond (monster? new-glyph new-color) (walkable-by tile new-glyph)
@@ -154,5 +151,4 @@
 (def shops (apply hash-set :shop (vals shop-types)))
 
 (defn shop? [tile]
-  ; TODO door & "closed for inventory" on neighbor
   (shops (:room tile)))

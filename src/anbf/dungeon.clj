@@ -141,11 +141,11 @@
 
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
-  [game pos]
-  (let [tile (at-curlvl game pos)]
-    (or (adjacent? tile (:player game)) ; TODO actual player light radius
+  [player level pos]
+  (let [tile (at level pos)]
+    (or (adjacent? pos player) ; TODO actual player light radius
         (= \. (:glyph tile))
-        (and (= \# (:glyph tile)) (= :white (color tile))))))
+        (and (= \# (:glyph tile)) (= :white (:color tile))))))
 
 (defn map-tiles
   "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
@@ -207,7 +207,7 @@
         tags (:tags level)
         branch (branch-key game)]
     (cond-> game
-      ; TODO could check for oracle
+      ; TODO could check for oracle, bigroom
       (and (<= 5 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
            (has-features level)) (add-curlvl-tag :minetown)
       (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :minesend))
@@ -260,7 +260,7 @@
   [game]
   (min-by #(distance (:player game) %)
           (filter #(and (= \@ (:glyph %)) ; can also find nurses
-                        (= :white (color %)))
+                        (= :white (:color %)))
                   (vals (curlvl-monsters game)))))
 
 (def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")

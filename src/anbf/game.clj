@@ -47,12 +47,13 @@
                     (:feature tile))))
 
 (defn- update-explored [game]
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
-             (partial map-tiles (fn [tile]
-                                  (if (visible? game tile)
-                                    (update-visible-tile
-                                      tile (:rogue (curlvl-tags game)))
-                                    tile)))))
+  (let [level (curlvl game)]
+    (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
+               (partial map-tiles (fn [tile]
+                                    (if (visible? game level tile)
+                                      (update-visible-tile
+                                        tile ((:tags level) :rogue))
+                                      tile))))))
 
 (defn- rogue-ghost? [game tile glyph]
   (and (:feature tile)
@@ -70,9 +71,9 @@
                     (vector (position tile)
                             (new-monster (:x tile) (:y tile)
                                          (:turn game) glyph color))))
-                (apply concat (-> game curlvl :tiles))
-                (apply concat (drop 1 (:lines frame)))
-                (apply concat (drop 1 (:colors frame))))))
+                (->> (:tiles (curlvl game)) (apply concat))
+                (->> (:lines frame) (drop 1) (apply concat))
+                (->> (:colors frame) (drop 1) (apply concat)))))
 
 (defn- parse-map [game frame]
   (-> game
@@ -80,7 +81,8 @@
                  :monsters] (gather-monsters game frame))
       (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
                  (partial map-tiles parse-tile)
-                 (drop 1 (:lines frame)) (drop 1 (:colors frame)))))
+                 (->> (:lines frame) (drop 1))
+                 (->> (:colors frame) (drop 1)))))
 
 (defn- update-dungeon [{:keys [dungeon] :as game} frame]
   (-> game

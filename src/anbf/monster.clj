@@ -19,4 +19,4 @@
 
 (defn new-monster [x y known glyph color]
   ; TODO infer unambiguous type/properties immediately
-  (Monster. x y known glyph color nil (inverse? color) false false))
+  (Monster. x y known glyph (non-inverse color) nil (inverse? color) false false))

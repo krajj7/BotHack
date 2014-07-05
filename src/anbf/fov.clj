@@ -7,21 +7,22 @@
             [anbf.util :refer :all]))
 
 (defn update-fov [game cursor]
-  (assoc game :fov
-         (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
-                        (reify NHFov$TransparencyInfo
-                          (isTransparent [_ x y]
-                            (if (and (<= 0 y 20) (<= 0 x 79))
-                              (boolean
-                                (transparent?
-                                  (((-> game curlvl :tiles) y) x)))
-                              false))))))
+  (let [level (curlvl game)]
+    (assoc game :fov
+           (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
+                          (reify NHFov$TransparencyInfo
+                            (isTransparent [_ x y]
+                              (if (and (< 0 y 20) (< 0 x 79))
+                                (transparent? (get-in level [:tiles y x]))
+                                false)))))))
 
 (defn in-fov? [game pos]
   (get-in game [:fov (dec (:y pos)) (:x pos)]))
 
-(defn visible? [game tile]
+(defn visible?
   "Only considers normal sight, not infravision/ESP/..."
-  (and (not (blind? (:player game)))
-       (in-fov? game tile)
-       (lit? game tile)))
+  ([game pos] (visible? game (curlvl game) pos))
+  ([{:keys [player] :as game} level pos] ; checking visibility only makes sense for current level, if supplied explicitly it performs faster in tight loops (for each tile etc.)
+   (and (not (blind? player))
+        (in-fov? game pos)
+        (lit? player level pos))))
