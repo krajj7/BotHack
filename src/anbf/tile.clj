@@ -11,7 +11,7 @@
    seen
    walked
    dug
-   searched ; no. of times searched TODO
+   searched ; no. of times searched
    items ; [Items]
    engraving
    room]
@@ -121,7 +121,8 @@
                          infer-feature new-glyph new-color)))
 
 (defn- mark-dug-tile [new-tile old-tile]
-  (if (and (#{:wall :rock} (:feature old-tile))
+  (if (and (zero? (:searched new-tile))
+           (#{:wall :rock} (:feature old-tile))
            (#{:corridor :floor} (:feature new-tile)))
     (assoc new-tile :dug true)
     new-tile))
