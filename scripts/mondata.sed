@@ -156,7 +156,7 @@ s/\<M1_OVIPAROUS\>/:oviparous/g
 s/\<M1_REGEN\>/:regen/g
 s/\<M1_SEE_INVIS\>/:see_invis/g
 s/\<M1_ACID\>/:acid/g
-s/\<M1_POIS\>/:pois/g
+s/\<M1_POIS\>/:poisonous/g
 s/\<M1_CARNIVORE\>/:carnivore/g
 s/\<M1_HERBIVORE\>/:herbivore/g
 s/\<M1_OMNIVORE\>/:omnivore/g
@@ -438,7 +438,7 @@ s/_/-/g
 # M1_REGEN :regen 
 # M1_SEE_INVIS :see_invis 
 # M1_ACID :acid 
-# M1_POIS :pois 
+# M1_POIS :poisonous
 # M1_CARNIVORE :carnivore 
 # M1_HERBIVORE :herbivore 
 # M1_OMNIVORE :omnivore 
