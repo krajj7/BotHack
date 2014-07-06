@@ -10,7 +10,7 @@ OPTIONS=runmode:teleport
 OPTIONS=!timed_delay
 
 # display
-OPTIONS=showexp
+OPTIONS=!showexp
 OPTIONS=showscore
 OPTIONS=time
 OPTIONS=color
