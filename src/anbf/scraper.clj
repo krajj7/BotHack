@@ -159,7 +159,7 @@
                        (conj %1 (val %2))
                        %1)
                     #{}
-                    {" Bli" :blind " Stun" :stun " Conf" :conf
+                    {" Bl" :blind " Stun" :stun " Conf" :conf
                      " Foo" :ill " Ill" :ill " Hal" :hallu})
      :burden (condp #(.contains %2 %1) botl2
                " Overl" :overloaded

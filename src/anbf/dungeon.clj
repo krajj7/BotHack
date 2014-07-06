@@ -81,6 +81,7 @@
   ([{:keys [dungeon branch-id] :as game}]
    (branch-key game game))
   ([{:keys [dungeon] :as game} {:keys [branch-id]}]
+   {:pre [(:id->branch dungeon)]}
    (get (:id->branch dungeon) branch-id branch-id)))
 
 (defn curlvl [game]
@@ -199,7 +200,7 @@
         (merge-branch-id game (:branch-id level) branch)
         game)))) ; failed to recognize
 
-(defn in-corridor? [level pos]
+(defn in-maze-corridor? [level pos]
   (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
 
 (defn infer-tags [game]

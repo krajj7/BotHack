@@ -6,14 +6,16 @@
   ; TODO IPosition for java
   (select-keys of [:x :y]))
 
-(defn valid-position? [{:keys [x y]}]
-  (and (<= 0 x 79) (<= 1 y 21)))
+(defn valid-position?
+  ([x y] (and (<= 0 x 79) (<= 1 y 21)))
+  ([{:keys [x y]}] (valid-position? x y)))
 
 (defn at
   "Tile of the level at given terminal position"
-  [level {:keys [x y] :as pos}]
-  {:pre [(valid-position? pos)]}
-  (get-in level [:tiles (dec y) x]))
+  ([level x y]
+   {:pre [(valid-position? x y)]}
+   (get-in level [:tiles (dec y) x]))
+  ([level {:keys [x y] :as pos}] (at level x y)))
 
 (def directions [:NW :N :NE :W :E :SW :S :SE])
 (def opposite {:NW :SE :N :S :NE :SW :W :E :E :W :SW :NE :S :N :SE :NW})
