@@ -24,7 +24,10 @@
           (when-let [{:keys [step target]} (navigate game (comp tgts position)
                                                      :walk :adjacent)]
             (log/debug "targetting enemy at" target)
-            (or step (->Move (towards player target)))))))))
+            (or step
+                (if (blind? player)
+                  (->Attack (towards player target))
+                  (->Move (towards player target))))))))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)

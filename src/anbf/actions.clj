@@ -53,6 +53,13 @@
         (apply swap! (:game anbf) f args)
         (deregister-handler anbf this)))))
 
+(defaction Attack [dir]
+  (handler [_ _])
+  (trigger [_]
+    (str \F (or (vi-directions (enum->kw dir))
+                (throw (IllegalArgumentException.
+                         (str "Invalid direction: " dir)))))))
+
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
