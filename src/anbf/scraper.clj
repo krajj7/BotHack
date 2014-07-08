@@ -135,7 +135,7 @@
                (topline frame))))
 
 (defn- game-beginning? [frame]
-  (and (.startsWith (nth-line frame 1) "NetHack, Copyright")
+  (and (.startsWith ^String (nth-line frame 1) "NetHack, Copyright")
        (before-cursor? frame "] ")))
 
 (def ^:private botl1-re #"^(\w+)?.*?St:(\d+(?:\/(?:\*\*|\d+))?) Dx:(\d+) Co:(\d+) In:(\d+) Wi:(\d+) Ch:(\d+)\s*(\w+)\s*(?:S:(\d+))?.*$" )
@@ -155,20 +155,20 @@
               (conj (map #(if % (Integer/parseInt %)) (subvec status 1 10))
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
-    {:state (reduce #(if (.contains botl2 (key %2))
+    {:state (reduce #(if (.contains ^String botl2 (key %2))
                        (conj %1 (val %2))
                        %1)
                     #{}
                     {" Bl" :blind " Stun" :stun " Conf" :conf
                      " Foo" :ill " Ill" :ill " Hal" :hallu})
-     :burden (condp #(.contains %2 %1) botl2
+     :burden (condp #(.contains ^String %2 %1) botl2
                " Overl" :overloaded
                " Overt" :overtaxed
                " Stra" :strained
                " Stre" :stressed
                " Bur" :burdened
                nil)
-     :hunger (condp #(.contains %2 %1) botl2
+     :hunger (condp #(.contains ^String %2 %1) botl2
                " Sat" :satiated
                " Hun" :hungry
                " Wea" :weak
@@ -185,7 +185,7 @@
     (letfn [(handle-game-start [frame]
               (when (game-beginning? frame)
                 (log/debug "Handling game start")
-                (condp #(.startsWith %2 %1) (cursor-line frame)
+                (condp #(.startsWith ^String %2 %1) (cursor-line frame)
                   "There is already a game in progress under your name."
                   (send delegator write "y\n") ; destroy old game
                   "Shall I pick a character"
@@ -206,7 +206,7 @@
                     (alter items into item-list)
                     ; message about a feature that would normally appear as topline message may become part of a list when there are items on the tile
                     (when (and (empty? (nth @items 1))
-                               (not (.endsWith (nth @items 0) ":")))
+                               (not (.endsWith ^String (nth @items 0) ":")))
                       (send delegator message (nth @items 0))
                       (alter items subvec 2))
                     (send delegator write " ")
@@ -317,7 +317,7 @@
                       (log/debug "Flushing --More-- list")
                       (send delegator message-lines @items)
                       (ref-set items nil))
-                    (if-not (.startsWith (topline frame) "#")
+                    (if-not (.startsWith ^String (topline frame) "#")
                       (send delegator message (topline frame))
                       #_ (log/debug "no last message"))
                     (emit-botl frame delegator)

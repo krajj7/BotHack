@@ -25,7 +25,7 @@
    (or (and (= \~ glyph) (= :brown color))
        (and (monster? glyph) (or (some? color) (not= \: glyph)))))
   ([glyph]
-   (or (and (Character/isLetterOrDigit glyph) (not= \0 glyph))
+   (or (and (Character/isLetterOrDigit ^Character glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph))))
 
 (defn item?

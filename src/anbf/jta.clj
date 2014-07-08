@@ -74,5 +74,5 @@
 (defn raw-write
   "Writes a string to the terminal back-end."
   [jta ch]
-  (io! (.write (:terminal jta)
+  (io! (.write ^anbf.NHTerminal (:terminal jta)
                (->> ch str (map byte) byte-array))))

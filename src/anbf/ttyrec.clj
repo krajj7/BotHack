@@ -17,7 +17,7 @@
   (swap! (.state this) assoc :source source))
 
 (defn -read [this b]
-  (let [n (.read (:source @(.state this)) b)
+  (let [n (.read ^FilterPlugin (:source @(.state ^anbf.Ttyrec this)) b)
         ts (System/currentTimeMillis)
         ts-sec (quot ts 1000)
         ts-usec (* 1000 (- ts (* ts-sec 1000)))
@@ -29,14 +29,14 @@
         (.putInt ts-sec)
         (.putInt ts-usec)
         (.putInt n))
-      (doto (:ttyrec @(.state this))
+      (doto ^java.io.OutputStream (:ttyrec @(.state ^anbf.Ttyrec this))
         (.write (.array ttyrec-hdr) 0 12)
         (.write b 0 n)
         (.flush)))
     n))
 
 (defn -write [this b]
-  (.write (:source @(.state this)) b))
+  (.write ^FilterPlugin (:source @(.state ^anbf.Ttyrec this)) b))
 
 (defn -init [bus id]
   [[bus id] (atom {:source nil

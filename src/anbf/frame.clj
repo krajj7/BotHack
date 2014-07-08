@@ -64,7 +64,7 @@
 (defn before-cursor?
   "Returns true if the given text appears just before the cursor."
   [frame text]
-  (.endsWith (before-cursor frame) text))
+  (.endsWith ^String (before-cursor frame) text))
 
 (defn topline [frame]
   (-> frame (nth-line 0) string/trim))

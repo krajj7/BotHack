@@ -29,10 +29,10 @@
   (swap! (.state this) assoc :source source))
 
 (defn -read [this b]
-  (.read (:source @(.state this)) b))
+  (.read ^FilterPlugin (:source @(.state ^anbf.NHTerminal this)) b))
 
 (defn -write [this b]
-  (.write (:source @(.state this)) b))
+  (.write ^FilterPlugin (:source @(.state ^anbf.NHTerminal this)) b))
 
 (def ^:private fg-color-mask 0x1e0)
 (def ^:private bg-color-mask 0x1e00)
@@ -63,31 +63,35 @@
   [buf]
   ;(println "Terminal: drawing whole new frame")
   (->Frame (mapv unpack-line ; turns char[][] into a vector of Strings
-                     (take-last 24 (.charArray buf)))
+                     (take-last 24 (.charArray ^vt320 buf)))
            (mapv unpack-colors
-                     (take-last 24 (.charAttributes buf)))
-           {:x (.getCursorColumn buf)
-            :y (.getCursorRow buf)}))
+                     (take-last 24 (.charAttributes ^vt320 buf)))
+           {:x (.getCursorColumn ^vt320 buf)
+            :y (.getCursorRow ^vt320 buf)}))
 
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
   [update]
-  (filter #(->> % inc (nth update) true?)
-          (range 24)))
+  (if (nth update 0)
+    nil
+    (filter #(->> % inc (nth update) true?)
+            (range 24))))
 
 (defn- update-frame
   "Returns an updated frame snapshot as modified by a redraw (only some rows may need to update, as specified by update[])."
   [f newbuf updated-rows]
-  (if (nth (.update newbuf) 0) ; if update[0] == true, all rows need to update
+  (if (nth (.update ^vt320 newbuf) 0) ; if update[0] == true, all rows need to update
     (frame-from-buffer newbuf)
-    (->Frame (reduce #(assoc %1 %2 (-> newbuf .charArray (nth %2) unpack-line))
+    (->Frame (reduce #(assoc %1 %2 (-> ^vt320 newbuf
+                                       .charArray (nth %2) unpack-line))
                      (:lines f)
                      updated-rows)
-             (reduce #(assoc %1 %2 (-> newbuf .charAttributes (nth %2) unpack-colors))
+             (reduce #(assoc %1 %2 (-> ^vt320 newbuf
+                                       .charAttributes (nth %2) unpack-colors))
                      (:colors f)
                      updated-rows)
-             {:x (.getCursorColumn newbuf)
-              :y (.getCursorRow newbuf)})))
+             {:x (.getCursorColumn ^vt320 newbuf)
+              :y (.getCursorRow ^vt320 newbuf)})))
 
 (defn -init [bus id]
   [[bus id] (atom
@@ -104,10 +108,11 @@
     (try
       (loop []
         ;(println "Terminal: about to .read()")
-        (let [n (.read (:source state) buffer)] ; blocking read
+        (let [n (.read ^FilterPlugin (:source state) buffer)] ; blocking read
           (if (pos? n)
             ; latin1 is the default JTA swears by
-            (.putString (:emulation state) (String. buffer 0 n "latin1")))
+            (.putString ^vt320 (:emulation state)
+                        (String. ^bytes buffer 0 n "latin1")))
           (if-not (neg? n) ; -1 would mean the stream is dead
             (recur))))
       (catch IOException e
@@ -132,8 +137,9 @@
                     (send (:delegator @state) redraw
                           (:frame (swap! state update-in [:frame]
                                          update-frame emulation
-                                         (changed-rows (.update emulation)))))
-                    (java.util.Arrays/fill (.update emulation) false))
+                                         (changed-rows
+                                           (.update ^vt320 emulation)))))
+                    (java.util.Arrays/fill (.update ^vt320 emulation) false))
                   (updateScrollBar [_])
                   (setVDUBuffer [this-display buffer]
                     (.setDisplay buffer this-display))
