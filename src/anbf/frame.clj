@@ -34,7 +34,7 @@
      :inv-white} color))
 
 (defn non-inverse [color]
-  (get {:inv-bright-green :bright-green, :inv-green :green, :inverse nil, :inv-brown :brown, :inv-orange :orange, :inv-magenta :magenta, :inv-blue :blue, :inv-bright-cyan :bright-cyan, :inv-cyan :cyan, :inv-red :red, :inv-bold :bold, :inv-bright-magenta :bright-magenta, :inv-yellow :yellow, :inv-bright-blue :bright-blue, :inv-gray :gray, :inv-white :white} color color))
+  (get {:inv-bright-green :bright-green, :inv-green :green, :inverse nil, :inv-brown :brown, :inv-orange :orange, :inv-magenta :magenta, :inv-blue :blue, :inv-bright-cyan :bright-cyan, :inv-cyan :cyan, :inv-red :red, :inv-bold :white, :inv-bright-magenta :bright-magenta, :inv-yellow :yellow, :inv-bright-blue :bright-blue, :inv-gray :gray, :inv-white :white} color color))
 
 (defn print-colors [f]
   (println "Colors:")

@@ -11,7 +11,7 @@ s/\(^.*MonsterAttack\. [^ ]* [^ ]* [^ ]* [^)]*\)), \([0-9]*\),/\1)], \2,/
 s/\(^.*MonsterAttack\. \)), \([0-9]*\),/\1)], \2,/
 s/\[\(([^)]*)\), \(([^)]*)\), \(([^)]*)\), \(([^)]*)\), \(([^)]*)\), \(([^)]*)\)\]/[\1 \2 \3 \4 \5 \6]/g
 s/ \?(MonsterAttack. )//g
-s/(Attack\. \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\))/(MonsterAttack. \1 \2 \3 \4)/g
+s/(MonsterAttack\. \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\))/(MonsterAttack. \1 \2 \3 \4)/g
 s/(MonsterType\. \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), (\([^,]*\)), /(MonsterType. \1, \2, \3, \4, \5, \6, \7, \8, /
 s/(MonsterType\. \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), \([^,]*\), /(MonsterType. \1, \2, \3, \4, \5, \6, \7, #{\8}, /
 s/\(#{[^)]*\) | [0-5]}/\1}/
@@ -230,14 +230,14 @@ s/\<BOLD\>/:bold/g
 s/\<BLACK\>/:blue/g
 s/\<RED\>/:red/g
 s/\<GREEN\>/:green/g
-s/\<YELLOW\>/:yellow/g
+s/\<YELLOW\>/:brown/g
 s/\<BLUE\>/:blue/g
 s/\<MAGENTA\>/:magenta/g
 s/\<CYAN\>/:cyan/g
 s/\<WHITE\>/nil/g
 s/\<BOLD_RED\>/:orange/g
 s/\<BOLD_GREEN\>/:bright-green/g
-s/\<BOLD_YELLOW\>/:brown/g
+s/\<BOLD_YELLOW\>/:yellow/g
 s/\<BOLD_BLUE\>/:bright-blue/g
 s/\<BOLD_MAGENTA\>/:bright-magenta/g
 s/\<BOLD_CYAN\>/:bright-cyan/g
@@ -512,14 +512,14 @@ s/_/-/g
 # BLACK :blue
 # RED :red
 # GREEN :green
-# YELLOW :yellow
+# YELLOW :brown
 # BLUE :blue
 # MAGENTA :magenta
 # CYAN :cyan
 # WHITE nil
 # BOLD_RED :orange
 # BOLD_GREEN :bright-green
-# BOLD_YELLOW :brown
+# BOLD_YELLOW :yellow
 # BOLD_BLUE :bright-blue
 # BOLD_MAGENTA :bright-magenta
 # BOLD_CYAN :bright-cyan
