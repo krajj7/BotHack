@@ -1,5 +1,7 @@
 (ns anbf.montype
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
+            [anbf.util :refer :all]))
 
 (defrecord MonsterType
   [name
@@ -404,9 +406,81 @@
   (MonsterType. "gremlin", \g, :green, 5, 12, 2, 25, -9, #{:genocidable}, [(MonsterAttack. :claw :physical 1 6) (MonsterAttack. :claw :physical 1 6) (MonsterAttack. :bite :physical 1 4) (MonsterAttack. :claw :curse 0 0)], 100, 20, :laugh, :small, #{:poison}, #{:poison}, #{:swim :humanoid :poisonous :follows :infravisible})
   (MonsterType. "gargoyle", \g, :brown, 6, 10, -4, 0, -9, #{:genocidable}, [(MonsterAttack. :claw :physical 2 6) (MonsterAttack. :claw :physical 2 6) (MonsterAttack. :bite :physical 2 4)], 1000, 200, :grunt, :human, #{:stone}, #{:stone}, #{:humanoid :thick-hide :breathless :hostile :strong})])
 
-(def appearance->monster ; {glyph => {color => monster}}, only unambiguous
+(def shopkeepers
+  #{"Abisko" "Abitibi" "Adjama" "Akalapi" "Akhalataki" "Aklavik"
+    "Akranes" "Aksaray" "Akureyri" "Alaca" "Aned" "Angmagssalik"
+    "Annootok" "Ardjawinangun" "Artvin" "Asidonhopo" "Avasaksa" "Ayancik"
+    "Babadag" "Baliga" "Ballingeary" "Balya" "Bandjar" "Banjoewangi"
+    "Bayburt" "Beddgelert" "Beinn a Ghlo" "Berbek" "Berhala" "Bicaz"
+    "Birecik" "Bnowr Falr" "Bojolali" "Bordeyri" "Boyabai" "Braemar"
+    "Brienz" "Brig" "Brzeg" "Budereyri" "Burglen" "Caergybi"
+    "Cahersiveen" "Cannich" "Carignan" "Cazelon" "Chibougamau"
+    "Chicoutimi" "Cire Htims" "Clonegal" "Corignac" "Corsh" "Cubask"
+    "Culdaff" "Curig" "Demirci" "Dirk" "Djasinga" "Djombang"
+    "Dobrinishte" "Donmyar" "Dorohoi" "Droichead Atha" "Drumnadrochit"
+    "Dunfanaghy" "Dunvegan" "Eauze" "Echourgnac" "Eed-morra" "Eforie"
+    "Ekim-p" "Elm" "Enniscorthy" "Ennistymon" "Enontekis" "Enrobwem"
+    "Ermenak" "Erreip" "Ettaw-noj" "Evad'kh" "Eygurande" "Eymoutiers"
+    "Eypau" "Falo" "Fauske" "Fenouilledes" "Fetesti" "Feyfer" "Fleac"
+    "Flims" "Flugi" "Gairloch" "Gaziantep" "Gellivare" "Gheel"
+    "Glenbeigh" "Gliwice" "Gomel" "Gorlowka" "Guizengeard" "Gweebarra"
+    "Haparanda" "Haskovo" "Havic" "Haynin" "Hebiwerie" "Hoboken"
+    "Holmavik" "Hradec Kralove" "Htargcm" "Hyeghu" "Imbyze" "Inishbofin"
+    "Inniscrone" "Inuvik" "Inverurie" "Iskenderun" "Ivrajimsal" "Izchak"
+    "Jiu" "Jonzac" "Jumilhac" "Juyn" "Kabalebo" "Kachzi Rellim"
+    "Kadirli" "Kahztiy" "Kajaani" "Kalecik" "Kanturk" "Karangkobar"
+    "Kars" "Kautekeino" "Kediri" "Kerloch" "Kesh" "Kilgarvan" "Kilmihil"
+    "Kiltamagh" "Kinnegad" "Kinojevis" "Kinsky" "Kipawa" "Kirikkale"
+    "Kirklareli" "Kittamagh" "Kivenhoug" "Klodzko" "Konosja" "Kopasker"
+    "Krnov" "Kyleakin" "Kyzyl" "Labouheyre" "Laguiolet" "Lahinch" "Lapu"
+    "Lechaim" "Lerignac" "Leuk" "Lexa" "Lez-tneg" "Liorac" "Lisnaskea"
+    "Llandrindod" "Llanerchymedd" "Llanfair-ym-muallt" "Llanrwst"
+    "Lochnagar" "Lom" "Lonzac" "Lovech" "Lucrezia" "Ludus"
+    "Lugnaquillia" "Lulea" "Maesteg" "Maganasipi" "Makharadze" "Makin"
+    "Malasgirt" "Malazgirt" "Mallwyd" "Mamaia" "Manlobbi" "Massis"
+    "Matagami" "Matray" "Melac" "Midyat" "Monbazillac" "Morven" "Moy"
+    "Mron" "Mured-oog" "Nairn" "Nallihan" "Narodnaja" "Nehoiasu"
+    "Nehpets" "Nenagh" "Nenilukah" "Neuvicq" "Ngebel" "Nhoj-lee" "Nieb"
+    "Niknar" "Niod" "Nisipitu" "Niskal" "Nivram" "Njalindoeng" "Njezjin"
+    "Nosalnef" "Nosid-da'r" "Noskcirdneh" "Noslo" "Nosnehpets" "Oeloe"
+    "Olycan" "Oryahovo" "Ossipewsk" "Ouiatchouane" "Pakka Pakka"
+    "Pameunpeuk" "Panagyuritshte" "Papar" "Parbalingga" "Pasawahan"
+    "Patjitan" "Pemboeang" "Pengalengan" "Pernik" "Pervari" "Picq"
+    "Polatli" "Pons" "Pontarfynach" "Possogroenoe" "Queyssac" "Raciborz"
+    "Rastegaisa" "Rath Luirc" "Razboieni" "Rebrol-nek" "Regien" "Rellenk"
+    "Renrut" "Rewuorb" "Rhaeader" "Rhydaman" "Rouffiac" "Rovaniemi"
+    "Sablja" "Sadelin" "Samoe" "Sarangan" "Sarnen" "Saujon" "Schuls"
+    "Semai" "Sgurr na Ciche" "Siboga" "Sighisoara" "Siirt" "Silistra"
+    "Sipaliwini" "Siverek" "Skibbereen" "Slanic" "Sliven" "Smolyan"
+    "Sneem" "Snivek" "Sperc" "Stewe" "Storr" "Svaving" "Swidnica"
+    "Syktywkar" "Tapper" "Tefenni" "Tegal" "Telloc Cyaj" "Terwen" "Thun"
+    "Tipor" "Tirebolu" "Tirgu Neamt" "Tjibarusa" "Tjisolok" "Tjiwidej"
+    "Tonbar" "Touverac" "Trahnil" "Trallwng" "Trenggalek" "Tringanoe"
+    "Troyan" "Tsew-mot" "Tsjernigof" "Tuktoyaktuk" "Tulovo" "Turriff"
+    "Uist" "Upernavik" "Urignac" "Vals" "Vanzac" "Varjag Njarga"
+    "Varvara" "Vaslui" "Vergt" "Voulgezac" "Walbrzych" "Weliki Oestjoeg"
+    "Wirix" "Wonotobo" "Y-Fenni" "Y-crad" "Yad" "Yao-hang" "Yawolloh"
+    "Ydna-s" "Yelpur" "Yildizeli" "Yl-rednow" "Ymla" "Ypey" "Yr Wyddgrug"
+    "Ytnu-haled" "Zarnesti" "Zimnicea" "Zlatna" "Zonguldak" "Zum Loch"})
+
+(def role-ranks
+  {"archeologist" #{"digger" "field worker" "investigator" "exhumer" "excavator" "spelunker" "speleologist" "collector" "curator"}
+   "barbarian" #{"plunderer" "plunderess" "pillager" "bandit" "brigand" "raider" "reaver" "slayer" "chieftain" "chieftainess" "conqueror" "conqueress"}
+   "caveman" #{"cavewoman" "troglodyte" "aborigine" "wanderer" "vagrant" "wayfarer" "roamer" "nomad" "rover" "pioneer"}
+   "healer" #{"rhizotomist" "empiric" "embalmer" "dresser" "medicus ossium" "medica ossium" "herbalist" "magister" "magistra" "physician" "chirurgeon"}
+   "knight" #{"gallant" "esquire" "bachelor" "sergeant" "knight" "banneret" "chevalier" "chevaliere" "seignieur" "dame" "paladin"}
+   "monk" #{"candidate" "novice" "initiate" "student of stones" "student of waters" "student of metals" "student of winds" "student of fire" "master"}
+   "priest" #{"priestess" "aspirant" "acolyte" "adept" "priest" "curate" "canon" "canoness" "lama" "patriarch"}
+   "rogue" #{"footpad" "cutpurse" "rogue" "pilferer" "robber" "burglar" "filcher" "magsman" "magswoman" "thief"}
+   "ranger" #{"edhel" "elleth" "ohtar" "ohtie" "kano" "kanie" "arandur" "aranduriel" "hir"}
+   "samurai" #{"hatamoto" "ronin" "ninja" "kunoichi" "joshu" "ryoshu" "kokushu" "daimyo" "kuge" "shogun"}
+   "tourist" #{"rambler" "sightseer" "excursionist" "peregrinator" "peregrinatrix" "traveler" "journeyer" "voyager" "explorer" "adventurer"}
+   "valkyrie" #{"stripling" "skirmisher" "fighter" "man-at-arms" "woman-at-arms" "warrior" "swashbuckler" "hero" "heroine" "champion" "lord" "lady"}
+   "wizard" #{"evoker" "conjurer" "thaumaturge" "magician" "enchanter" "enchantress" "sorcerer" "sorceress" "necromancer" "wizard" "mage"}})
+
+(def appearance->monster ; {glyph => {color => MonsterType}}, only unambiguous
   (as-> {} m
-    (reduce (fn index [res monster]
+    (reduce (fn [res monster]
               (update-in res [(:glyph monster) (:color monster)]
                          #(if % :ambiguous monster)))
             m monster-types)
@@ -414,4 +488,73 @@
                     [glyph (into {} (remove (fn [[color monster]]
                                               (= :ambiguous monster))
                                             (m glyph)))])
-                  (keys m)))))
+                  (keys m)))
+    (assoc-in m [\space nil] (get-in m [\X nil]))))
+
+(def by-name ; {name => MonsterType}
+  (reduce (fn [res monster]
+            (assoc res (:name monster) monster))
+          {} monster-types))
+
+(def by-rank-map
+  (reduce (fn [res [role ranks]]
+            (reduce #(assoc %1 %2 role) res ranks))
+          {} role-ranks))
+(def by-rank (comp by-rank-map string/lower-case))
+
+(defn- strip-modifier [desc]
+  (condp #(.startsWith ^String %2 %1) desc
+    "invisible " (subs desc 10)
+    "saddled " (subs desc 8)
+    desc))
+
+(defn- strip-disposition [desc]
+  (condp #(.startsWith ^String %2 %1) desc
+    "tame " (subs desc 5)
+    "peaceful " (subs desc 9)
+    "guardian " (subs desc 9)
+    desc))
+
+(defn- strip-article [desc]
+  (condp #(.startsWith ^String %2 %1) desc
+    "a " (subs desc 2)
+    "an " (subs desc 3)
+    "the " (subs desc 4)
+    "your " (subs desc 5)
+    desc))
+
+(defn by-description [text]
+  (let [^String desc (log/spy (-> text strip-article strip-disposition strip-modifier))
+        ghost-or-called (re-first-group #"ghost|called" desc)]
+    (or (if (re-seq #"^(?:the )?high priest (?:ess)?$" desc)
+          (by-name "high priest"))
+        (if (= desc "mimic")
+          (by-name "large mimic")) ; could be any mimic really
+        (if-let [[desc god] (and (not (.contains desc "Minion of Huhetotl"))
+                                 (not ghost-or-called)
+                                 ; TODO check valid god?
+                                 (re-first-groups #"(.*) of (.*)" desc))]
+          (if (re-seq #"poobah|priest|priestess" desc)
+            (if (.contains "high " desc)
+              (by-name "high priest")
+              (by-name "aligned priest"))
+            (or (by-name desc)
+                (throw (IllegalArgumentException. (str "Failed to parse monster-of description: " text))))))
+        (if-let [[nick desc] (and (not ghost-or-called)
+                                  (not (.contains desc "Neferet the Green"))
+                                  (not (.contains desc "Vlad the Impaler"))
+                                  (re-first-groups #"(.*) the (.*)" desc))]
+          (by-name desc))
+        (if-let [[desc nick] (re-first-groups #"(.*) called (.*)" desc)]
+          (by-name desc))
+        (if (re-seq #"'?s? ghost" desc)
+          (by-name "ghost"))
+        ; TODO player-monsters on astral as TAEB
+        (if (.contains desc "coyote - ")
+          (by-name "coyote"))
+        (if (shopkeepers desc)
+          (by-name "shopkeeper"))
+        (by-name desc)
+        (by-rank desc)
+        (throw (IllegalArgumentException.
+                 (str "Failed to parse monster description: " text))))))

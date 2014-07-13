@@ -45,8 +45,6 @@ Keep expanding model of the game world.
 
 Smarter combat tactics for the bot, ranged combat.
 
-Make basic monster spoilers available.
-
 ### Future goals
 
 Utilities for shopping and price-identification of items.

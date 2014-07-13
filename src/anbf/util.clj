@@ -40,4 +40,9 @@
   [re text]
   (some-> (re-seq re text) first (nth 1)))
 
+(defn re-any-group
+  "Return the first non-nil capturing group of the first match."
+  [re text]
+  (some-> (re-seq re text) first (subvec 1) ((partial some identity))))
+
 (defn min-by [f coll] (if (seq coll) (apply (partial min-key f) coll)))

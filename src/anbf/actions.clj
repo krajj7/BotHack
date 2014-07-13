@@ -3,6 +3,7 @@
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]
+            [anbf.montype :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
             [anbf.position :refer :all]
@@ -224,6 +225,32 @@
                                          assoc :feature feature))))))
   (trigger [this] ":"))
 
+(defn- to-position
+  "Sequence of keys to move the cursor from the corner to the given position"
+  [pos]
+  (apply str (concat (repeat (dec (:y pos)) \j)
+                     (repeat (:x pos) \l))))
+
+(def to-corner (apply str (concat (repeat 10 \H) (repeat 4 \K))))
+
+(def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
+
+(defaction FarLook [pos]
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ToplineMessageHandler
+      (message [_ text]
+        (or (when-let [desc (and (monster? (nth text 0))
+                                 (re-any-group farlook-monster-re text))]
+              (let [peaceful? (.startsWith ^String desc "peaceful")
+                    type (by-description desc)]
+                (log/debug "monster description" text "=>" type)
+                (swap! game update-curlvl-monster pos assoc
+                       :peaceful peaceful?
+                       :type type)))
+            (log/debug "non-monster farlook result:" text)))))
+  (trigger [this]
+    (str \; to-corner (to-position pos) \.)))
+
 (defaction Open [dir]
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
@@ -245,15 +272,26 @@
   (handler [_ _])
   (trigger [_] "i"))
 
+(defn- examine-tile [{:keys [player] :as game}]
+  (when-not (or (blind? player) (:feature (at-player game)))
+    (log/debug "examining tile")
+    (->Look)))
+
+(defn- examine-monsters [{:keys [player] :as game}]
+  (when-not (#{:hallu :blind} (:state player))
+            (when-let [m (->> (curlvl-monsters game) vals
+                              (remove #(or (:type %) (:friendly %)
+                                           (= \I (:glyph %))))
+                              first)]
+              (log/debug "examining monster" m)
+              (->FarLook m))))
+
 (defn examine-handler [anbf]
   (reify ActionHandler
     (choose-action [_ game]
-      ; TODO if not blind check engulfer
       ; TODO items
-      ; TODO ambiguous monsters
-      (when-not (or (blind? (:player game)) (:feature (at-player game)))
-        (log/debug "examining tile")
-        (->Look)))))
+      (or (examine-tile game)
+          (examine-monsters game)))))
 
 (defn- inventory-handler [anbf]
   (reify ActionHandler
