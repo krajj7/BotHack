@@ -12,8 +12,8 @@
     game monster
     (fn [monster]
       (cond-> monster
-        ; TODO type
-        :always (into (select-keys old-monster [:peaceful :cancelled :awake]))
+        :always (into (select-keys old-monster
+                                   [:type :peaceful :cancelled :awake]))
         (not= (position old-monster)
               (position monster)) (assoc :awake true)))))
 
