@@ -15,19 +15,21 @@
 (defn- fight []
   (reify ActionHandler
     (choose-action [_ {:keys [player] :as game}]
-      (let [tgts (->> (-> game curlvl-monsters vals)
-                         (filter #(and (hostile? %)
-                                       (> 10 (- (:turn game) (:known %)))
-                                       (> 10 (distance player %))))
-                         (map position) (into #{}))]
-        (if (seq tgts)
-          (when-let [{:keys [step target]} (navigate game (comp tgts position)
-                                                     :walk :adjacent)]
-            (log/debug "targetting enemy at" target)
-            (or step
-                (if (blind? player)
-                  (->Attack (towards player target))
-                  (->Move (towards player target))))))))))
+      (if (:engulfed player)
+        (->Move :E)
+        (let [tgts (->> (-> game curlvl-monsters vals)
+                        (filter #(and (hostile? %)
+                                      (> 10 (- (:turn game) (:known %)))
+                                      (> 10 (distance player %))))
+                        (map position) (into #{}))]
+          (if (seq tgts)
+            (when-let [{:keys [step target]} (navigate game (comp tgts position)
+                                                       :walk :adjacent)]
+              (log/debug "targetting enemy at" target)
+              (or step
+                  (if (blind? player)
+                    (->Attack (towards player target))
+                    (->Move (towards player target)))))))))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
