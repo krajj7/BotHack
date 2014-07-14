@@ -21,7 +21,7 @@
 (def branches #{:main :mines :sokoban :quest :ludios :vlad
                 :wiztower :earth :fire :air :water :astral})
 
-(def subbranches #{:mines :sokoban :ludios :vlad})
+(def subbranches #{:mines :sokoban :ludios :vlad :quest :earth :wiztower})
 
 (def upwards-branches #{:sokoban :vlad})
 
@@ -83,6 +83,11 @@
   ([{:keys [dungeon] :as game} {:keys [branch-id]}]
    ;{:pre [(:id->branch dungeon)]}
    (get (:id->branch dungeon) branch-id branch-id)))
+
+(defn same-branch? [game b1 b2]
+  (or (= b1 b2)
+      (= (branch-key game {:branch-id b1})
+         (branch-key game {:branch-id b2}))))
 
 (defn curlvl [game]
   {:pre [(:dungeon game)]}

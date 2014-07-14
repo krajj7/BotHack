@@ -7,8 +7,8 @@
   [x y
    known ; last turn observed
    glyph
-   type ; nil while ambiguous
    color
+   type ; nil while ambiguous
    awake
    friendly
    peaceful ; nil while undetermined
@@ -25,7 +25,7 @@
 
 (defn new-monster [x y known glyph color]
   (let [type (get-in appearance->monster [glyph color])
-        tags (get type :tags)
+        tags (:tags type)
         peaceful (if (:hostile tags) false (:peaceful tags))]
-    (Monster. x y known glyph type (non-inverse color) nil
+    (Monster. x y known glyph (non-inverse color) type nil
               (boolean (inverse? color)) peaceful false)))

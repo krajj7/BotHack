@@ -11,7 +11,7 @@
   anbf.bot.ILevel)
 
 (defmethod print-method Level [level w]
-  (.write w (str "#anbf.dungeon.Level"
+  (.write w (str "#anbf.level.Level"
                  (assoc (.without level :tiles) :tiles "<trimmed>"))))
 
 (defn- initial-tiles []

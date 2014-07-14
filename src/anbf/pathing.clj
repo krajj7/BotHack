@@ -120,7 +120,7 @@
                       [0 (->Move dir)]
                       (if-not (:peaceful monster)
                         [30 (->Move dir)]
-                        (if ((fnil <= 0) (:blocked to-tile) 10)
+                        (if ((fnil <= 0) (:blocked to-tile) 25)
                           [50 (fidget game level to-tile)])))) ; hopefully will move
                   ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
                   ; TODO digging/levi

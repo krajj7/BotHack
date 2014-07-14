@@ -351,7 +351,7 @@
   (MonsterType. "chameleon", \:, :brown, 6, 5, 6, 10, 0, #{:genocidable}, [(MonsterAttack. :bite :physical 4 2)], 100, 100, :silent, :tiny, #{}, #{}, #{:animal :nohands :carnivore :nopoly :hostile})
   (MonsterType. "crocodile", \:, :brown, 6, 9, 5, 0, 0, #{:genocidable}, [(MonsterAttack. :bite :physical 4 2) (MonsterAttack. :claw :physical 1 12)], 1450, 400, :silent, :large, #{}, #{}, #{:swim :amphibious :animal :thick-hide :nohands :oviparous :carnivore :strong :hostile})
   (MonsterType. "salamander", \:, :orange, 8, 12, -1, 0, -9, #{:hell-only}, [(MonsterAttack. :weapon :physical 2 8) (MonsterAttack. :touch :fire 1 6) (MonsterAttack. :hug :physical 2 6) (MonsterAttack. :hug :fire 3 6)], 1500, 400, :mumble, :human, #{:sleep :fire}, #{:fire}, #{:humanoid :slithy :thick-hide :poisonous :follows :hostile :collect :picks-magic-items :infravisible})
-  (MonsterType. "long worm tail", \~, :brown, 0, 0, 0, 0, 0, #{:not-generated :no-corpse :unique}, [], 0, 0, 0, 0, #{}, #{}, #{:nopoly})
+  (MonsterType. "long worm tail", \~, :brown, 0, 0, 0, 0, 0, #{:not-generated :no-corpse :unique}, [], 0, 0, 0, 0, #{}, #{}, #{:nopoly :hostile})
   (MonsterType. "archeologist", \@, :white, 10, 12, 10, 1, 3, #{:not-generated}, [(MonsterAttack. :weapon :physical 1 6) (MonsterAttack. :weapon :physical 1 6)], 1450, 400, :humanoid, :human, #{:no-elbereth}, #{}, #{:humanoid :tunnel :digger :omnivore :nopoly :human :strong :collect :infravisible})
   (MonsterType. "barbarian", \@, :white, 10, 12, 10, 1, 0, #{:not-generated}, [(MonsterAttack. :weapon :physical 1 6) (MonsterAttack. :weapon :physical 1 6)], 1450, 400, :humanoid, :human, #{:no-elbereth :poison}, #{}, #{:humanoid :omnivore :nopoly :human :strong :collect :infravisible})
   (MonsterType. "caveman", \@, :white, 10, 12, 10, 0, 1, #{:not-generated}, [(MonsterAttack. :weapon :physical 2 4)], 1450, 400, :humanoid, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :strong :male :collect :infravisible})
@@ -461,7 +461,7 @@
     "Varvara" "Vaslui" "Vergt" "Voulgezac" "Walbrzych" "Weliki Oestjoeg"
     "Wirix" "Wonotobo" "Y-Fenni" "Y-crad" "Yad" "Yao-hang" "Yawolloh"
     "Ydna-s" "Yelpur" "Yildizeli" "Yl-rednow" "Ymla" "Ypey" "Yr Wyddgrug"
-    "Ytnu-haled" "Zarnesti" "Zimnicea" "Zlatna" "Zonguldak" "Zum Loch"})
+    "Ytnu-haled" "Zarnesti" "Zimnicea" "Zlatna" "Zlaw" "Zonguldak" "Zum Loch"})
 
 (def role-ranks
   {"archeologist" #{"digger" "field worker" "investigator" "exhumer" "excavator" "spelunker" "speleologist" "collector" "curator"}
