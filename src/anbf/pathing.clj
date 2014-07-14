@@ -171,18 +171,20 @@
   [{:keys [player] :as game} pos-or-goal-fn & opts]
   [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
   ;(log/debug "navigating" pos-or-goal-fn opts)
-  (let [opts (apply hash-set opts)
+  (let [opts (into #{} opts)
         level (curlvl game)
         move-fn #(move game level %1 %2 opts)]
     (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
       (get-a*-path player pos-or-goal-fn move-fn opts)
       (let [goal-fn (if (set? pos-or-goal-fn)
-                      (comp (apply hash-set (map position pos-or-goal-fn))
+                      (comp (into #{} (map position pos-or-goal-fn))
                             position)
                       #(pos-or-goal-fn (at level %)))]
         (if (:adjacent opts)
-          (let [goal-set (->> level :tiles (apply concat) (filter goal-fn)
-                              (mapcat neighbors) (into #{}))]
+          (let [goal-set (if (set? pos-or-goal-fn)
+                           (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
+                           (->> level :tiles (apply concat) (filter goal-fn)
+                                (mapcat neighbors) (into #{})))]
             (case (count goal-set)
               0 nil
               1 (get-a*-path player (first goal-set) move-fn opts)
@@ -191,8 +193,10 @@
                         (->> (or (peek path) player) neighbors
                              (filter goal-fn) first)))))
           ; not searching for adjacent
-          (if-let [goal-seq (->> level :tiles (apply concat) (filter goal-fn)
-                                 (take 2) seq)]
+          (if-let [goal-seq (if (set? pos-or-goal-fn)
+                              (->> pos-or-goal-fn (take 2) seq)
+                              (->> level :tiles (apply concat) (filter goal-fn)
+                                   (take 2) seq))]
             (if (= 2 (count goal-seq))
               (if-let [path (dijkstra player goal-fn move-fn)]
                 (->Path (path-step player move-fn path) path (peek path)))
