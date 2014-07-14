@@ -81,7 +81,7 @@
   ([{:keys [dungeon branch-id] :as game}]
    (branch-key game game))
   ([{:keys [dungeon] :as game} {:keys [branch-id]}]
-   {:pre [(:id->branch dungeon)]}
+   ;{:pre [(:id->branch dungeon)]}
    (get (:id->branch dungeon) branch-id branch-id)))
 
 (defn curlvl [game]

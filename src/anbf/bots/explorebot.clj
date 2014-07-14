@@ -57,13 +57,12 @@
     (first (remove (fn column-explored? [x]
                      (some :feature (for [y (range 2 19)]
                                       (at level x y))))
-                   [20 40 60]))))
+                   [17 40 63]))))
 
-(defn- descend-main-branch []
+(defn- descend []
   (reify ActionHandler
     (choose-action [_ game]
-      (if-let [path (navigate game #(and (= :stairs-down (:feature %))
-                                         (not= :mines (branch-key game %))))]
+      (if-let [path (navigate game #(= :stairs-down (:feature %)))]
         (or (:step path) (->Descend))
         (log/debug "cannot find downstairs")))))
 
@@ -107,9 +106,10 @@
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
-  (if-let [p (navigate game #(and (dead-end? level %)
-                                  (< (searched level %) howmuch)))]
-    (or (:step p) (->Search))))
+  (if (= :main (branch-key game))
+    (if-let [p (navigate game #(and (dead-end? level %)
+                                    (< (searched level %) howmuch)))]
+      (or (:step p) (->Search)))))
 
 (defn- searchable-position? [pos]
   (and (< 2 (:y pos) 20)
@@ -133,6 +133,32 @@
                                    (< (searched level tile) howmuch))))]
     (or (:step p) (->Search))))
 
+(defn- searchable-extremity [level y xs howmuch]
+  (if-let [tile (->> xs (map #(at level % y)) (filter walkable?) first)]
+    (if (and (= :floor (:feature tile))
+             (< (:searched tile) howmuch)
+             (not= \- (:glyph (at level (update-in tile [:x] dec))))
+             (not= \- (:glyph (at level (update-in tile [:x] inc))))
+             (not (shop? tile)))
+      tile)))
+
+(defn- unsearched-extremities
+  "Returns a set of tiles that are facing a large blank vertical space on the map – good candidates for searching."
+  [game level howmuch]
+  (if-let [col (unexplored-column game level)]
+    (as-> #{} res
+      (into res (for [y (range 1 21)]
+                  (searchable-extremity level y (range col 80) howmuch)))
+      (into res (for [y (range 1 21)]
+                  (searchable-extremity level y (range col -1 -1) howmuch)))
+      (disj res nil))))
+
+(defn- search-extremities [game level howmuch]
+  (if (= :main (branch-key game))
+    (if-let [goals (unsearched-extremities game level howmuch)]
+      (if-let [p (navigate game goals)]
+        (or (:step p) (->Search))))))
+
 (defn- search
   ([] (search 10))
   ([max-iter]
@@ -141,8 +167,9 @@
        (let [level (curlvl game)]
          (loop [mul 1]
            (or (log/debug "search iteration" mul)
-               (push-boulders game level)
+               (if (= 1 mul) (push-boulders game level))
                (recheck-dead-ends game level (* mul 30))
+               (search-extremities game level (* mul 20))
                (if (> mul 1) (search-corridors game level (* mul 5)))
                (search-walls game level (* mul 15))
                (if (> mul (dec max-iter))
@@ -155,7 +182,7 @@
       (let [level (curlvl game)]
         (or (search-dead-end game 15)
             (when-let [path (navigate game (partial explorable-tile? level))]
-              (log/debug "chose exploration target" (:target path))
+              (log/debug "chose exploration target" (at level (:target path)))
               (:step path))
             (when (unexplored-column game level)
               (log/debug "level not explored enough, searching")
@@ -187,6 +214,6 @@
       (register-handler -5 (fight))
       (register-handler -3 (handle-impairment))
       (register-handler 2 (explore))
-      (register-handler 4 (descend-main-branch))
+      (register-handler 4 (descend))
       (register-handler 6 (escape-mines))
       (register-handler 9 (search))))
