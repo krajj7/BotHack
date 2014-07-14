@@ -35,7 +35,7 @@
       "pit" :trap
       "spiked pit" :trap
       "ice" :ice
-      "doorway" :door-open
+      "doorway" :floor
       "open door" :door-open
       "broken door" :floor
       "staircase up" :stairs-up
@@ -49,8 +49,8 @@
   "When player position on map is known call (apply swap! game f args)"
   [anbf f & args]
   (register-handler anbf priority-top
-    (reify FullFrameHandler
-      (full-frame [this _]
+    (reify AboutToChooseActionHandler
+      (about-to-choose [this _]
         (apply swap! (:game anbf) f args)
         (deregister-handler anbf this)))))
 
@@ -80,7 +80,6 @@
     (reify
       ToplineMessageHandler
       (message [_ msg]
-        ; TODO "The XXX gets angry!"
         (or (condp re-seq msg
               #".*: \"Closed for inventory\"" ; TODO possible degradation
               (update-on-known-position
@@ -92,7 +91,7 @@
               #"You crawl to the edge of the pit\.|You disentangle yourself\."
               (swap! game assoc-in [:player :trapped] false)
               #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!$|You are stuck to the web\.$"
-              (update-on-known-position anbf assoc-in [:player :trapped] true)
+              (swap! game assoc-in [:player :trapped] true)
               ; TODO #"You are carrying too much to get through"
               nil)
             (when-not (dizzy? (:player @game))
@@ -186,7 +185,6 @@
   (trigger [_] ">"))
 
 (defaction Kick [dir]
-  ; TODO "The XXX gets angry!"
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ msg]
