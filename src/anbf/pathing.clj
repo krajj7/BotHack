@@ -102,8 +102,15 @@
      (or (random-move game level)
          (->Search)))))
 
+(defn- safe-from-guards
+  "Much more pessimistic than this could be, but just enough to handle the most usual corner-case where the only door in the first room is locked."
+  [level]
+  (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
+
 (defn dare-kick? [level tile]
-  (and (not (some (:tags level) #{:minetown :rogue}))
+  (and (not ((:tags level) :rogue))
+       (or (not ((:tags level) :minetown))
+           (safe-from-guards level))
        (not (shop? tile))))
 
 (defn move
