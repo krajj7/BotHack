@@ -103,7 +103,7 @@
          (->Search)))))
 
 (defn dare-kick? [level tile]
-  (and (not ((:tags level) :minetown))
+  (and (not (some (:tags level) #{:minetown :rogue}))
        (not (shop? tile))))
 
 (defn move

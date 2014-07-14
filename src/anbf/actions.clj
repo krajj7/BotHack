@@ -22,7 +22,7 @@
 
 (def ^:private feature-re #"^(?:You see|There is)(?: an?)?(?: \w+)* (trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|fountain|sink|grave|doorway|squeaky board|open door|broken door) (?:here|below you)\.")
 
-(defn- feature-here [msg]
+(defn- feature-here [msg rogue?]
   (condp re-seq msg
     #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)" :floor
     #"There is an altar" :altar
@@ -35,7 +35,7 @@
       "pit" :trap
       "spiked pit" :trap
       "ice" :ice
-      "doorway" :floor
+      "doorway" (if rogue? :door-open :floor)
       "open door" :door-open
       "broken door" :floor
       "staircase up" :stairs-up
@@ -120,7 +120,7 @@
                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :feature nil))
                 nil))
-            (if-let [feature (feature-here msg)]
+            (if-let [feature (feature-here msg (:rogue (curlvl-tags @game)))]
               (update-on-known-position
                 anbf #(update-curlvl-at % (:player %)
                                         assoc :feature feature)))))
@@ -231,7 +231,7 @@
     (reify ToplineMessageHandler
       (message [_ text]
         ; TODO you see/there is/... single item
-        (if-let [feature (feature-here text)]
+        (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
           (swap! game #(update-curlvl-at % (:player %)
                                          assoc :feature feature))))))
   (trigger [this] ":"))

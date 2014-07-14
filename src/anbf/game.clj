@@ -122,6 +122,7 @@
   (case msg
     "You enter what seems to be an older, more primitive world." :rogue
     "The odor of burnt flesh and decay pervades the air." :votd
+    "Look for a ...ic transporter." :quest
     nil))
 
 (defn game-handler
