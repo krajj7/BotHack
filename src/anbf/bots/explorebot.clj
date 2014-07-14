@@ -1,5 +1,5 @@
 (ns anbf.bots.explorebot
-  "a dumb level-exploring bot"
+  "a dungeon-exploring bot"
   (:require [clojure.tools.logging :as log]
             [anbf.handlers :refer :all]
             [anbf.player :refer :all]
@@ -12,26 +12,26 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
+(defn- hostile-threats [{:keys [player] :as game}]
+  (->> (-> game curlvl-monsters vals)
+       (filter #(and (hostile? %)
+                     (if (blind? player)
+                       (adjacent? player %)
+                       (and (> 10 (- (:turn game) (:known %)))
+                            (> 10 (distance player %))))))
+       (into #{})))
+
 (defn- fight []
   (reify ActionHandler
     (choose-action [_ {:keys [player] :as game}]
       (if (:engulfed player)
         (->Move :E)
-        (let [tgts (->> (-> game curlvl-monsters vals)
-                        (filter #(and (hostile? %)
-                                      (if (blind? player)
-                                        (adjacent? player %)
-                                        (and (> 10 (- (:turn game) (:known %)))
-                                             (> 10 (distance player %))))))
-                        (map position) (into #{}))]
-          (if (seq tgts)
-            (when-let [{:keys [step target]} (navigate game (comp tgts position)
-                                                       :walk :adjacent)]
-              (log/debug "targetting enemy at" target)
-              (or step
-                  (if (blind? player)
-                    (->Attack (towards player target))
-                    (->Move (towards player target)))))))))))
+        (let [tgts (hostile-threats game)]
+          (when-let [{:keys [step target]} (navigate game tgts :walk :adjacent)]
+            (log/debug "targetting enemy at" target)
+            (or step (if (blind? player)
+                       (->Attack (towards player target))
+                       (->Move (towards player target))))))))))
 
 (defn- dead-end? [level tile]
   (and (walkable? tile)
