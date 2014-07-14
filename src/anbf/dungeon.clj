@@ -107,6 +107,11 @@
   {:pre [(:dungeon game)]}
   (-> game curlvl :tags))
 
+(defn remove-curlvl-monster [game pos]
+  {:pre [(:dungeon game)]}
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :monsters]
+             dissoc (position pos)))
+
 (defn reset-curlvl-monster [game monster]
   {:pre [(:dungeon game)]}
   (assoc-in game [:dungeon :levels (branch-key game) (:dlvl game)

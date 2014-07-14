@@ -19,8 +19,10 @@
         (->Move :E)
         (let [tgts (->> (-> game curlvl-monsters vals)
                         (filter #(and (hostile? %)
-                                      (> 10 (- (:turn game) (:known %)))
-                                      (> 10 (distance player %))))
+                                      (if (blind? player)
+                                        (adjacent? player %)
+                                        (and (> 10 (- (:turn game) (:known %)))
+                                             (> 10 (distance player %))))))
                         (map position) (into #{}))]
           (if (seq tgts)
             (when-let [{:keys [step target]} (navigate game (comp tgts position)

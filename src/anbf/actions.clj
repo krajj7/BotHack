@@ -54,8 +54,18 @@
         (apply swap! (:game anbf) f args)
         (deregister-handler anbf this)))))
 
+(def no-monster-re #"You .* (thin air|empty water)" )
+
 (defaction Attack [dir]
-  (handler [_ _])
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ToplineMessageHandler
+      (message [_ msg]
+        (when-not (dizzy? (:player @game))
+          (condp re-seq msg
+            no-monster-re
+            (swap! game #(remove-curlvl-monster
+                           % (in-direction (:player %) dir)))
+            nil)))))
   (trigger [_]
     (str \F (or (vi-directions (enum->kw dir))
                 (throw (IllegalArgumentException.
@@ -96,6 +106,9 @@
               nil)
             (when-not (dizzy? (:player @game))
               (condp re-seq msg
+                no-monster-re
+                (swap! game #(remove-curlvl-monster
+                               % (in-direction (:player %) dir)))
                 #"You try to move the boulder, but in vain\."
                 (swap! game #(update-curlvl-at
                                % (reduce in-direction (:player %) [dir dir])
