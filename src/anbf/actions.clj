@@ -276,13 +276,14 @@
     (->Look)))
 
 (defn- examine-monsters [{:keys [player] :as game}]
-  (when-not (#{:hallu :blind} (:state player))
-            (when-let [m (->> (curlvl-monsters game) vals
-                              (remove #(or (:type %) (:friendly %)
-                                           (= \I (:glyph %))))
-                              first)]
-              (log/debug "examining monster" m)
-              (->FarLook m))))
+  (when-not (some #{:hallu :blind} (:state player))
+    (when-let [m (->> (curlvl-monsters game) vals
+                      (remove #(or (:friendly %)
+                                   (some? (:peaceful %))
+                                   (#{\I \1 \2 \3 \4 \5} (:glyph %))))
+                      first)]
+      (log/debug "examining monster" m)
+      (->FarLook m))))
 
 (defn examine-handler [anbf]
   (reify ActionHandler
