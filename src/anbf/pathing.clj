@@ -169,14 +169,17 @@
     :walking - don't use actions except Move (no door opening etc.)
     :adjacent - path to closest adjacent tile instead of the target directly"
   [{:keys [player] :as game} pos-or-goal-fn & opts]
-  [{:pre [(or (fn? pos-or-goal-fn) (position pos-or-goal-fn))]}]
+  [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
   ;(log/debug "navigating" pos-or-goal-fn opts)
   (let [opts (apply hash-set opts)
         level (curlvl game)
         move-fn #(move game level %1 %2 opts)]
-    (if-not (fn? pos-or-goal-fn)
+    (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
       (get-a*-path player pos-or-goal-fn move-fn opts)
-      (let [goal-fn #(pos-or-goal-fn (at level %))]
+      (let [goal-fn (if (set? pos-or-goal-fn)
+                      (comp (apply hash-set (map position pos-or-goal-fn))
+                            position)
+                      #(pos-or-goal-fn (at level %)))]
         (if (:adjacent opts)
           (let [goal-set (->> level :tiles (apply concat) (filter goal-fn)
                               (mapcat neighbors) (into #{}))]
