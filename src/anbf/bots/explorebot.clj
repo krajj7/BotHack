@@ -43,9 +43,10 @@
 
 (defn- search-dead-end
   [game num-search]
-  (let [tile (at-player game)]
-    (when (and (= :main (branch-key game))
-               (dead-end? (curlvl game) tile)
+  (let [level (curlvl game)
+        tile (at level (:player game))]
+    (when (and (or (= :main (branch-key game)) (:minetown (:tags level)))
+               (dead-end? level tile)
                (< (:searched tile) num-search))
       (log/debug "searching dead end")
       (->Search))))
@@ -110,7 +111,7 @@
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
-  (if (= :main (branch-key game))
+  (if (or (= :main (branch-key game)) (:minetown (:tags level)))
     (if-let [p (navigate game #(and (dead-end? level %)
                                     (< (searched level %) howmuch)))]
       (or (:step p) (->Search)))))
@@ -190,7 +191,7 @@
               (:step path))
             (when (unexplored-column game level)
               (log/debug "level not explored enough, searching")
-              (choose-action (search 1) game))
+              (choose-action (search 2) game))
             (log/debug "nothing to explore"))))))
 
 (defn- pray-for-food []
