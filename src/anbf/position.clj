@@ -31,22 +31,6 @@
   (and (<= (Math/abs ^long (unchecked-subtract (:x pos1) (:x pos2))) 1)
        (<= (Math/abs ^long (unchecked-subtract (:y pos1) (:y pos2))) 1)))
 
-(defn neighbors
-  ([level tile]
-   (map #(at level %) (neighbors tile)))
-  ([pos]
-   (filter valid-position?
-           (map #(hash-map :x (unchecked-add (:x pos) (% 0))
-                           :y (unchecked-add (:y pos) (% 1))) deltas))))
-
-(defn in-direction [from dir]
-  {:pre [(valid-position? from)]}
-  (let [res (assoc (position from)
-                   :x (unchecked-add ((dirmap dir) 0) (:x from))
-                   :y (unchecked-add ((dirmap dir) 1) (:y from)))]
-    (if (valid-position? res)
-      res)))
-
 (defn towards [from to]
   (get dirmap [(Long/compare (:x to) (:x from))
                (Long/compare (:y to) (:y from))]))
@@ -56,6 +40,26 @@
 
 (defn straight? [from to]
   (straight (towards from to)))
+
+(defn neighbors
+  ([level tile]
+   (map #(at level %) (neighbors tile)))
+  ([pos]
+   (filter valid-position?
+           (map #(hash-map :x (unchecked-add (:x pos) (% 0))
+                           :y (unchecked-add (:y pos) (% 1))) deltas))))
+
+(defn straight-neighbors
+  ([level tile]
+   (filter (partial straight? tile) (neighbors level tile))))
+
+(defn in-direction [from dir]
+  {:pre [(valid-position? from)]}
+  (let [res (assoc (position from)
+                   :x (unchecked-add ((dirmap dir) 0) (:x from))
+                   :y (unchecked-add ((dirmap dir) 1) (:y from)))]
+    (if (valid-position? res)
+      res)))
 
 (defn distance [from to]
   (max (Math/abs ^long (unchecked-subtract (:x from) (:x to)))

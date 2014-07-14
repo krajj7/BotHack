@@ -33,9 +33,9 @@
   (and (walkable? tile)
        (not (:dug tile))
        (not (in-maze-corridor? level tile))
-       (> 2 (count (remove #(or (#{:rock :wall} (:feature %))
-                                (diagonal? tile %))
-                           (neighbors level tile))))))
+       (let [snbr (straight-neighbors level tile)]
+         (and (some walkable? snbr)
+              (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
 
 (defn- search-dead-end
   [game num-search]
