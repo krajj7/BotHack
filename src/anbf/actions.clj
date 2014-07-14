@@ -74,61 +74,63 @@
 ; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
-    (let [old-pos (position (:player @game))
-          target (at-curlvl @game (in-direction old-pos dir))]
-      (update-on-known-position anbf #(if (not= (position (:player %)) old-pos)
-                                        (assoc-in % [:player :trapped] false)
-                                        %))
+    (let [got-message (atom false)
+          old-pos (position (:player @game))
+          level (curlvl @game)
+          target (at level (in-direction old-pos dir))]
+      (update-on-known-position anbf
+        #(if (or (= (position (:player %)) old-pos)
+                 (= :trap (:feature (at-player @game))))
+           %
+           (assoc-in % [:player :trapped] false)))
       (if (and (diagonal dir) (item? (:glyph target)))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
-                    (not (curlvl-monster-at % target)))
+                    (not (curlvl-monster-at % target))
+                    (not @got-message))
              (do (log/debug "stuck on diagonal movement => door at" target)
                  (update-curlvl-at % (in-direction old-pos dir)
                                    assoc :feature :door-open))
-             %))))
-    (reify
-      ToplineMessageHandler
-      (message [_ msg]
-        (or (condp re-seq msg
-              #".*: \"Closed for inventory\"" ; TODO possible degradation
-              (update-on-known-position
-                anbf (fn mark-shop [game]
-                       (reduce #(if (or (door? %2) (= :wall (:feature %2)))
-                                  (update-curlvl-at %1 %2 assoc :room :shop)
-                                  %1) game
-                               (neighbors (curlvl game) (at-player game)))))
-              #"You crawl to the edge of the pit\.|You disentangle yourself\."
-              (swap! game assoc-in [:player :trapped] false)
-              #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!$|You are stuck to the web\.$"
-              (swap! game assoc-in [:player :trapped] true)
-              ; TODO #"You are carrying too much to get through"
-              nil)
-            (when-not (dizzy? (:player @game))
-              (condp re-seq msg
-                no-monster-re
-                (swap! game #(remove-curlvl-monster
-                               % (in-direction (:player %) dir)))
-                #"You try to move the boulder, but in vain\."
-                (swap! game #(update-curlvl-at
-                               % (reduce in-direction (:player %) [dir dir])
-                               assoc :feature :rock))
-                #"It's a wall\."
-                (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                               assoc :feature :wall))
-                #"Wait!  That's a .*mimic!"
-                (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                               assoc :feature nil))
-                nil))
-            (if-let [feature (feature-here msg (:rogue (curlvl-tags @game)))]
-              (update-on-known-position
-                anbf #(update-curlvl-at % (:player %)
-                                        assoc :feature feature)))))
-      ReallyAttackHandler
-      (really-attack [_ _]
-        (swap! game #(update-curlvl-monster % (in-direction (:player %) dir)
-                                            assoc :peaceful true))
-        nil)))
+             %)))
+      (reify
+        ToplineMessageHandler
+        (message [_ msg]
+          (reset! got-message true)
+          (or (condp re-seq msg
+                #".*: \"Closed for inventory\"" ; TODO possible degradation
+                (update-on-known-position
+                  anbf (fn mark-shop [game]
+                         (reduce #(if (or (door? %2) (= :wall (:feature %2)))
+                                    (update-curlvl-at %1 %2 assoc :room :shop)
+                                    %1) game
+                                 (neighbors level (at-player game)))))
+                #"You crawl to the edge of the pit\.|You disentangle yourself\."
+                (swap! game assoc-in [:player :trapped] false)
+                #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!$|You are stuck to the web\.$"
+                (swap! game assoc-in [:player :trapped] true)
+                ; TODO #"You are carrying too much to get through"
+                nil)
+              (when-not (dizzy? (:player @game))
+                (condp re-seq msg
+                  no-monster-re
+                  (swap! game #(remove-curlvl-monster % target))
+                  #"You try to move the boulder, but in vain\."
+                  (swap! game #(update-curlvl-at % (in-direction target dir)
+                                                 assoc :feature :rock))
+                  #"It's a wall\."
+                  (swap! game #(update-curlvl-at % target assoc :feature :wall))
+                  #"Wait!  That's a .*mimic!"
+                  (swap! game #(update-curlvl-at % target assoc :feature nil))
+                  nil))
+              (if-let [feature (feature-here msg (:rogue (:tags level)))]
+                (update-on-known-position
+                  anbf #(update-curlvl-at % (:player %)
+                                          assoc :feature feature)))))
+        ReallyAttackHandler
+        (really-attack [_ _]
+          (swap! game #(update-curlvl-monster % (in-direction (:player %) dir)
+                                              assoc :peaceful true))
+          nil))))
   (trigger [_]
     (str (or (vi-directions (enum->kw dir))
              (throw (IllegalArgumentException.
