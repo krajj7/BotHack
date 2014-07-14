@@ -168,8 +168,8 @@
 (def ^:private main-features ; these don't appear in the mines
   #{:door-closed :door-open :door-locked :altar :sink :fountain :throne})
 
-(defn- has-features [level]
-  "checks for features not occuring in the mines"
+(defn- has-features? [level]
+  "checks for features not occuring in the mines (except town/end)"
   (some #(main-features (:feature %)) (apply concat (:tiles level))))
 
 (defn- same-glyph-diag-walls
@@ -190,7 +190,7 @@
 
 (defn- recognize-branch [level]
   ; TODO soko
-  (cond (has-features level) :main
+  (cond (has-features? level) :main
         (same-glyph-diag-walls level) :mines))
 
 (defn- merge-branch-id [{:keys [dungeon] :as game} branch-id branch]
@@ -216,13 +216,14 @@
 (defn infer-tags [game]
   (let [level (curlvl game)
         tags (:tags level)
-        branch (branch-key game)]
+        branch (branch-key game)
+        has-features? (has-features? level)]
     (cond-> game
       ; TODO could check for oracle, bigroom
       (and (<= 5 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
-           (has-features level)) (add-curlvl-tag :minetown)
+           has-features?) (add-curlvl-tag :minetown)
       (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :minesend))
-           (has-features level)) (add-curlvl-tag :minesend))))
+           has-features?) (add-curlvl-tag :minesend))))
 
 (defn initial-branch-id
   "Choose branch-id for a new dlvl reached by stairs."
