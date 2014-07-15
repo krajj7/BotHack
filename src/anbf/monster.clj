@@ -12,7 +12,8 @@
    awake
    friendly
    peaceful ; nil while undetermined
-   cancelled])
+   cancelled
+   remembered]) ; not currently known
 
 (defmethod print-method Monster [m w]
   (.write w (str "#anbf.monster.Monster"
@@ -28,4 +29,4 @@
         tags (:tags type)
         peaceful (if (:hostile tags) false (:peaceful tags))]
     (Monster. x y known glyph (non-inverse color) type nil
-              (boolean (inverse? color)) peaceful false)))
+              (boolean (inverse? color)) peaceful false false)))

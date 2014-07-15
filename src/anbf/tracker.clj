@@ -21,7 +21,7 @@
   ; TODO don't transfer if we would know monsters position with ESP
   ;(log/debug "unpaired" unpaired)
   (if-not (visible? game unpaired)
-    (reset-curlvl-monster game unpaired)
+    (reset-curlvl-monster game (assoc unpaired :remembered true))
     game))
 
 (defn track-monsters ; TODO hallu

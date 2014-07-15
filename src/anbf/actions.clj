@@ -291,9 +291,10 @@
     (->Look)))
 
 (defn- examine-monsters [{:keys [player] :as game}]
-  (when-not (some #{:hallu :blind} (:state player))
+  (when-not (:hallu (:state player))
     (when-let [m (->> (curlvl-monsters game) vals
-                      (remove #(or (:friendly %)
+                      (remove #(or (:remembered %)
+                                   (:friendly %)
                                    (some? (:peaceful %))
                                    (#{\I \1 \2 \3 \4 \5} (:glyph %))))
                       first)]
