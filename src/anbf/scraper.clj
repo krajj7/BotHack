@@ -66,7 +66,7 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
-    (first (first (re-seq #".*\? \[[^\]]+\] (\(.\) )?$"
+    (first (first (re-seq #".*\?\"? \[[^\]]+\] (\(.\) )?$"
                           (before-cursor frame))))))
 
 (defn- more-prompt? [frame]

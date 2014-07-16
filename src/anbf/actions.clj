@@ -65,14 +65,14 @@
 
 (defaction Attack [dir]
   (handler [_ {:keys [game] :as anbf}]
-    (reify ToplineMessageHandler
-      (message [_ msg]
-        (when-not (dizzy? (:player @game))
-          (condp re-seq msg
-            no-monster-re
-            (swap! game #(remove-curlvl-monster
-                           % (in-direction (:player %) dir)))
-            nil)))))
+    (let [old-player (:player @game)]
+      (reify ToplineMessageHandler
+        (message [_ msg]
+          (when-not (dizzy? old-player)
+            (condp re-seq msg
+              no-monster-re
+              (swap! game remove-curlvl-monster (in-direction old-player dir))
+              nil))))))
   (trigger [_]
     (str \F (or (vi-directions (enum->kw dir))
                 (throw (IllegalArgumentException.
@@ -82,7 +82,8 @@
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
-          old-pos (position (:player @game))
+          old-player (:player @game)
+          old-pos (position old-player)
           level (curlvl @game)
           target (at level (in-direction old-pos dir))]
       (update-on-known-position anbf
@@ -118,22 +119,22 @@
                 (swap! game assoc-in [:player :trapped] true)
                 ; TODO #"You are carrying too much to get through"
                 nil)
-              (when-not (dizzy? (:player @game))
+              (when-not (dizzy? old-player)
                 (condp re-seq msg
                   no-monster-re
-                  (swap! game #(remove-curlvl-monster % target))
+                  (swap! game remove-curlvl-monster target)
                   #"You try to move the boulder, but in vain\."
-                  (swap! game #(update-curlvl-at % (in-direction target dir)
-                                                 assoc :feature :rock))
+                  (swap! game update-curlvl-at (in-direction target dir)
+                         assoc :feature :rock)
                   #"It's a wall\."
-                  (swap! game #(update-curlvl-at % target assoc :feature :wall))
+                  (swap! game update-curlvl-at target assoc :feature :wall)
                   #"Wait!  That's a .*mimic!"
-                  (swap! game #(update-curlvl-at % target assoc :feature nil))
+                  (swap! game update-curlvl-at target assoc :feature nil)
                   nil))))
         ReallyAttackHandler
         (really-attack [_ _]
-          (swap! game #(update-curlvl-monster % (in-direction (:player %) dir)
-                                              assoc :peaceful true))
+          (swap! game update-curlvl-monster (in-direction old-pos dir)
+                 assoc :peaceful true)
           nil))))
   (trigger [_]
     (str (or (vi-directions (enum->kw dir))
@@ -209,9 +210,9 @@
       (message [_ msg]
         (condp re-seq msg
           #"Your .* is in no shape for kicking."
-          (swap! game #(assoc-in [:player :leg-hurt] true))
+          (swap! game assoc-in [:player :leg-hurt] true)
           #"You can't move your leg!|There's not enough room to kick down here."
-          (swap! game #(assoc-in [:player :trapped] true))
+          (swap! game assoc-in [:player :trapped] true)
           nil))))
   (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
 

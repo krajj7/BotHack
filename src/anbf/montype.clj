@@ -472,7 +472,7 @@
    "monk" #{"candidate" "novice" "initiate" "student of stones" "student of waters" "student of metals" "student of winds" "student of fire" "master"}
    "priest" #{"priestess" "aspirant" "acolyte" "adept" "priest" "curate" "canon" "canoness" "lama" "patriarch"}
    "rogue" #{"footpad" "cutpurse" "rogue" "pilferer" "robber" "burglar" "filcher" "magsman" "magswoman" "thief"}
-   "ranger" #{"edhel" "elleth" "ohtar" "ohtie" "kano" "kanie" "arandur" "aranduriel" "hir"}
+   "ranger" #{"tenderfoot" "lookout" "trailblazer" "reconnoiterer" "reconnoiteress" "scout" "arbalester" "archer" "sharpshooter" "marksman" "markswoman"}
    "samurai" #{"hatamoto" "ronin" "ninja" "kunoichi" "joshu" "ryoshu" "kokushu" "daimyo" "kuge" "shogun"}
    "tourist" #{"rambler" "sightseer" "excursionist" "peregrinator" "peregrinatrix" "traveler" "journeyer" "voyager" "explorer" "adventurer"}
    "valkyrie" #{"stripling" "skirmisher" "fighter" "man-at-arms" "woman-at-arms" "warrior" "swashbuckler" "hero" "heroine" "champion" "lord" "lady"}
@@ -509,10 +509,10 @@
     desc))
 
 (defn- strip-disposition [desc]
-  (condp #(.startsWith ^String %2 %1) desc
+  (condp #(.startsWith ^String %2 %1) ^String desc
     "tame " (subs desc 5)
     "peaceful " (subs desc 9)
-    "guardian " (subs desc 9)
+    "guardian " (if (.contains desc " naga") desc (subs desc 9))
     desc))
 
 (defn- strip-article [desc]
@@ -534,7 +534,7 @@
                                  (not ghost-or-called)
                                  ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]
-          (if (re-seq #"poobah|priest|priestess" desc)
+          (if (re-seq #"poohbah|priest|priestess" desc)
             (if (.contains "high " desc)
               (by-name "high priest")
               (by-name "aligned priest"))
