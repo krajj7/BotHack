@@ -90,25 +90,30 @@
                 (nil? (:feature to)))) ; try to push via unexplored tiles
        (or (straight (towards from to))
            ; TODO squeezing boulders?
-           (not= :door-open (:feature from))
-           (not= :door-open (:feature to)))))
+           (and (not= :door-open (:feature from))
+                (not= :door-open (:feature to))))))
 
 (defn- pushable-from [level pos]
   ; TODO soko
   (seq (filter #(if (boulder? %)
                   (let [dir (towards pos %)
-                        dest (some->> (in-direction % dir) (at level))]
+                        dest (in-direction level % dir)]
                     (and dest
                          (not (monster-at level dest))
-                         ; TODO boulders in doors don't work reliably
                          (pushable-through level % dest))))
                (neighbors level pos))))
 
+(defn- unblocked-boulder? [level tile]
+  (and (boulder? tile)
+       (some #(and (walkable? (in-direction level tile (towards % tile)))
+                   (pushable-through level tile %)) (neighbors level tile))))
+
 ; TODO check if it makes sense, the boulder might not block
 (defn- push-boulders [{:keys [player] :as game} level]
-  (if-let [path (navigate game #(pushable-from level %))]
-    (or (:step path)
-        (->Move (towards player (first (pushable-from level player)))))
+  (if (some #(unblocked-boulder? level %) (apply concat (:tiles level)))
+    (if-let [path (navigate game #(pushable-from level %))]
+      (or (:step path)
+          (->Move (towards player (first (pushable-from level player))))))
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]

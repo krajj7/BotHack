@@ -52,13 +52,16 @@
   ([level tile]
    (filter (partial straight? tile) (neighbors level tile))))
 
-(defn in-direction [from dir]
-  {:pre [(valid-position? from)]}
-  (let [res (assoc (position from)
-                   :x (unchecked-add ((dirmap dir) 0) (:x from))
-                   :y (unchecked-add ((dirmap dir) 1) (:y from)))]
-    (if (valid-position? res)
-      res)))
+(defn in-direction
+  ([level from dir]
+   (some->> (in-direction from dir) (at level)))
+  ([from dir]
+   {:pre [(valid-position? from)]}
+   (let [res (assoc (position from)
+                    :x (unchecked-add ((dirmap dir) 0) (:x from))
+                    :y (unchecked-add ((dirmap dir) 1) (:y from)))]
+     (if (valid-position? res)
+       res))))
 
 (defn distance [from to]
   (max (Math/abs ^long (unchecked-subtract (:x from) (:x to)))

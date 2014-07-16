@@ -85,7 +85,7 @@
           old-player (:player @game)
           old-pos (position old-player)
           level (curlvl @game)
-          target (at level (in-direction old-pos dir))]
+          target (in-direction level old-pos dir)]
       (update-on-known-position anbf
         #(if (or (= (position (:player %)) old-pos)
                  (= :trap (:feature (at-player @game))))
@@ -124,8 +124,12 @@
                   no-monster-re
                   (swap! game remove-curlvl-monster target)
                   #"You try to move the boulder, but in vain\."
-                  (swap! game update-curlvl-at (in-direction target dir)
-                         assoc :feature :rock)
+                  (let [boulder-target (in-direction level target dir)]
+                    (if (item? (:glyph boulder-target) (:color boulder-target))
+                      (swap! game update-curlvl-at boulder-target
+                             assoc :feature :door-open)
+                      (swap! game update-curlvl-at boulder-target
+                             assoc :feature :rock)))
                   #"It's a wall\."
                   (swap! game update-curlvl-at target assoc :feature :wall)
                   #"Wait!  That's a .*mimic!"
