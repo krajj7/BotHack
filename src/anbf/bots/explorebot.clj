@@ -38,7 +38,8 @@
        (not (:dug tile))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
-         (and (some walkable? snbr)
+         (and (or (some walkable? snbr)
+                  (not-any? walkable? (neighbors level tile)))
               (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
 
 (defn- search-dead-end
@@ -46,8 +47,8 @@
   (let [level (curlvl game)
         tile (at level (:player game))]
     (when (and (or (= :main (branch-key game)) (:minetown (:tags level)))
-               (dead-end? level tile)
-               (< (:searched tile) num-search))
+               (< (:searched tile) num-search)
+               (dead-end? level tile))
       (log/debug "searching dead end")
       (->Search))))
 
@@ -112,8 +113,8 @@
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
   (if (or (= :main (branch-key game)) (:minetown (:tags level)))
-    (if-let [p (navigate game #(and (dead-end? level %)
-                                    (< (searched level %) howmuch)))]
+    (if-let [p (navigate game #(and (< (searched level %) howmuch)
+                                    (dead-end? level %)))]
       (or (:step p) (->Search)))))
 
 (defn- searchable-position? [pos]
