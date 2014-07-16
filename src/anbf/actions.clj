@@ -51,8 +51,13 @@
   "When player position on map is known call (apply swap! game f args)"
   [anbf f & args]
   (register-handler anbf priority-top
-    (reify AboutToChooseActionHandler
+    (reify
+      AboutToChooseActionHandler ; handler might have been registered too late to receive know-position this turn
       (about-to-choose [this _]
+        (apply swap! (:game anbf) f args)
+        (deregister-handler anbf this))
+      KnowPositionHandler
+      (know-position [this _]
         (apply swap! (:game anbf) f args)
         (deregister-handler anbf this)))))
 
@@ -90,6 +95,7 @@
           #(if (and (= (position (:player %)) old-pos)
                     (not (curlvl-monster-at % target))
                     (not @got-message))
+             ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (do (log/debug "stuck on diagonal movement => door at" target)
                  (update-curlvl-at % (in-direction old-pos dir)
                                    assoc :feature :door-open))
@@ -105,7 +111,7 @@
                          (reduce #(if (or (door? %2) (= :wall (:feature %2)))
                                     (update-curlvl-at %1 %2 assoc :room :shop)
                                     %1) game
-                                 (neighbors level (at-player game)))))
+                                 (neighbors level (:player game)))))
                 #"You crawl to the edge of the pit\.|You disentangle yourself\."
                 (swap! game assoc-in [:player :trapped] false)
                 #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\."
@@ -123,11 +129,7 @@
                   (swap! game #(update-curlvl-at % target assoc :feature :wall))
                   #"Wait!  That's a .*mimic!"
                   (swap! game #(update-curlvl-at % target assoc :feature nil))
-                  nil))
-              (if-let [feature (feature-here msg (:rogue (:tags level)))]
-                (update-on-known-position
-                  anbf #(update-curlvl-at % (:player %)
-                                          assoc :feature feature)))))
+                  nil))))
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game #(update-curlvl-monster % (in-direction (:player %) dir)
@@ -232,21 +234,21 @@
       #(if (->> (:player %) (at-curlvl %) :feature nil?)
          (update-curlvl-at % (:player %) assoc :feature :floor)
          %)) ; got no topline message suggesting a special feature
-    (reify ToplineMessageHandler
+    ; XXX note: items on tile HAVE to be determined via this command only, topline messages on Move are not reliable due to teletraps
+    (reify
+      MultilineMessageHandler
+      (message-lines [_ lines]
+        (condp re-seq (nth lines 0)
+          #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
+          (do (log/debug "Items here:") (log/spy lines)) ; TODO
+          (log/error "Unrecognized message list " (str lines))))
+      ToplineMessageHandler
       (message [_ text]
         ; TODO you see/there is/... single item
         (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
           (swap! game #(update-curlvl-at % (:player %)
                                          assoc :feature feature))))))
   (trigger [this] ":"))
-
-(defn- to-position
-  "Sequence of keys to move the cursor from the corner to the given position"
-  [pos]
-  (apply str (concat (repeat (dec (:y pos)) \j)
-                     (repeat (:x pos) \l))))
-
-(def to-corner (apply str (concat (repeat 10 \H) (repeat 4 \K))))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
 
@@ -264,7 +266,7 @@
                        :type type)))
             (log/debug "non-monster farlook result:" text)))))
   (trigger [this]
-    (str \; to-corner (to-position pos) \.)))
+    (str \; (to-position pos) \.)))
 
 (defaction Open [dir]
   (handler [_ {:keys [game] :as anbf}]

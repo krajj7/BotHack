@@ -115,7 +115,6 @@
 
 (defn- handle-frame [game frame]
   (-> game
-      (update-in [:player] into (:cursor frame)) ; update position
       (update-map frame)))
 
 (defn- level-msg [msg]
@@ -139,22 +138,19 @@
         (when (not= old-dlvl new-dlvl)
           (dlvl-changed @delegator old-dlvl new-dlvl)
           (swap! game ensure-curlvl))))
+    KnowPositionHandler
+    (know-position [_ frame]
+      (swap! game update-in [:player] into (:cursor frame)))
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game handle-frame frame))
     InventoryHandler
     (inventory-list [_ inventory]
       (swap! game assoc-in [:player :inventory] inventory))
-    MultilineMessageHandler
-    (message-lines [_ lines]
-      (condp re-seq (nth lines 0)
-        #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
-        (do (log/debug "Items here:") (log/spy lines)) ; TODO
-        (log/error "Unrecognized message list " (str lines))))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text
-            #"Your legs? feels? somewhat better"
+            #"Your .* feels? somewhat better"
             (swap! game assoc-in [:player :leg-hurt] false)
             nil)
           (if-let [level (level-msg text)]

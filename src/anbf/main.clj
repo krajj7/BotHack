@@ -29,12 +29,18 @@
           ToplineMessageHandler
           (message [_ text]
             (log/info "Topline message:" text))
+          MultilineMessageHandler
+          (message-lines [_ lines]
+            (log/info "Multiline message:" lines))
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" action))
           InventoryHandler
           (inventory-list [_ inventory]
             (log/spy inventory))
+          KnowPositionHandler
+          (know-position [_ frame]
+            (log/info "current player position:" (:cursor frame)))
           BOTLHandler
           (botl [_ status]
             (log/info "new botl status:" status))

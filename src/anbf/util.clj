@@ -46,3 +46,9 @@
   (some-> (re-seq re text) first (subvec 1) ((partial some identity))))
 
 (defn min-by [f coll] (if (seq coll) (apply (partial min-key f) coll)))
+
+(defn to-position
+  "Sequence of keys to move the cursor from the corner to the given position"
+  [pos]
+  (apply str (concat (repeat 10 \H) (repeat 4 \K) ; to corner
+                     (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))

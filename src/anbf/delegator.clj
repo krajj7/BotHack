@@ -73,6 +73,13 @@
                  (str "No handler responded to command of "
                       (:on-interface protocol))))))))
 
+(defn- position-map [s]
+  (if (instance? anbf.bot.IPosition s)
+    {:x (.x ^anbf.bot.IPosition s) :y (.y ^anbf.bot.IPosition s)}
+    s))
+
+(defn- enter-position [s] (str (to-position (position-map s)) \.))
+
 (defn- newline-terminate [s] (if (.endsWith s "\n") s (str s \newline)))
 
 (defn- respond-escapable [res-transform protocol method delegator & args]
@@ -142,6 +149,10 @@
 (defeventhandler FullFrameHandler
   (full-frame [handler ^anbf.bot.IFrame frame]))
 
+; called when the cursor is on the player – besides full frames this also occurs on location prompts
+(defeventhandler KnowPositionHandler
+  (know-position [handler ^anbf.bot.IFrame frame]))
+
 (defeventhandler GameStateHandler
   (started [handler])
   (ended [handler]))
@@ -151,9 +162,6 @@
 
 (defeventhandler BOTLHandler
   (botl [handler ^clojure.lang.IPersistentMap status]))
-
-(defeventhandler MapHandler
-  (map-drawn [handler ^anbf.bot.IFrame frame]))
 
 (defeventhandler DlvlChangeHandler
   (dlvl-changed [handler ^String old-dlvl ^String new-dlvl]))
@@ -172,8 +180,6 @@
 
 ; command protocols:
 
-; TODO menu handler, location handler
-
 (defmacro ^:private defchoicehandler [protocol & proto-methods]
   `(defprotocol-delegated String (partial respond-escapable identity)
      ~protocol ~@proto-methods))
@@ -181,6 +187,14 @@
 (defmacro ^:private defyesnohandler [protocol & proto-methods]
   `(defprotocol-delegated Boolean (partial respond-escapable yesno)
      ~protocol ~@proto-methods))
+
+(defmacro ^:private deflocationhandler [protocol & proto-methods]
+  `(defprotocol-delegated anbf.bot.IPosition (partial respond-escapable
+                                                      enter-position)
+     ~protocol ~@proto-methods))
+
+(deflocationhandler TeleportWhereHandler
+  (teleport-where [handler]))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))

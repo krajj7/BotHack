@@ -96,7 +96,7 @@
 (defn- location-prompt? [frame]
   (let [topline (topline frame)]
     (or (re-seq #"^Unknown direction: ''' \(use hjkl or \.\)" topline)
-        (re-seq #"(^ *|  ) (.*?)  \(For instructions type a \?\) *$" topline))))
+        (re-seq #"\(For instructions type a \?\)$" topline))))
 
 (defn- prompt
   [frame]
@@ -175,8 +175,14 @@
                " Fai" :fainting
                nil)}))
 
-(defn- emit-botl [frame delegator]
+(defn- emit-botl [delegator frame]
   (->> frame botls parse-botls (send delegator botl)))
+
+(defn- flush-more-list [delegator items]
+  (when-not (nil? @items)
+    (log/debug "Flushing --More-- list")
+    (send delegator message-lines @items)
+    (ref-set items nil)))
 
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
@@ -194,7 +200,7 @@
             (handle-choice-prompt [frame]
               (when-let [text (choice-prompt frame)]
                 (log/debug "Handling choice prompt")
-                (emit-botl frame delegator)
+                (emit-botl delegator frame)
                 ; TODO prompt may re-appear in lastmsg+action as topline msg
                 ; TODO after-choice-prompt scraper state to catch exceptions (without handle-more)? ("You don't have that object", "You don't have anything to XXX") - zpusobi i znacka!
                 (send delegator (choice-fn text) text)))
@@ -214,8 +220,11 @@
                   (when-let [text (more-prompt frame)]
                     (log/debug "Handling --More-- prompt")
                     ; TODO You wrest one last charge from the worn-out wand. => no-mark?
-                    (let [res (if (= text "You don't have that object.")
+                    (let [res (case text
+                                "You don't have that object."
                                 handle-choice-prompt
+                                "To what position do you want to be teleported?"
+                                location
                                 (do (send delegator message text) initial))]
                       (send delegator write " ")
                       res))))
@@ -239,19 +248,11 @@
               (when (and (zero? (-> frame :cursor :x))
                          (before-cursor? frame "In what direction? "))
                 (log/debug "Handling direction")
-                (emit-botl frame delegator)
-                (send delegator map-drawn frame)
+                (emit-botl delegator frame)
                 (throw (UnsupportedOperationException. "TODO direction prompt - implement me"))))
-            (handle-location [frame]
-              (when (location-prompt? frame)
-                (log/debug "Handling location")
-                (emit-botl frame delegator)
-                (send delegator map-drawn frame)
-                ; TODO new state to stop repeated botl/map updates while the prompt is active, also to stop multiple commands
-                (throw (UnsupportedOperationException. "TODO location prompt - implement me"))))
             (handle-prompt [frame]
               (when-let [msg (prompt frame)]
-                (emit-botl frame delegator)
+                (emit-botl delegator frame)
                 (send delegator write (apply str (repeat 3 backspace)))
                 (send delegator (prompt-fn msg) msg)
                 initial))
@@ -269,7 +270,6 @@
                   (handle-menu frame)
                   (handle-choice-prompt frame)
                   ;(handle-direction frame) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
-                  (handle-location frame)
                   ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
                   (when (status-drawn? frame)
                     ;(log/debug "writing ##' mark")
@@ -291,7 +291,6 @@
                   (handle-menu frame)
                   (handle-choice-prompt frame)
                   (handle-prompt frame)
-                  (handle-location frame)
                   (when (and (= 0 (-> frame :cursor :y))
                              (before-cursor? frame "# #'"))
                     (send delegator write (str backspace \newline \newline))
@@ -313,18 +312,25 @@
                   (if (= "# #" (topline frame))
                     (ref-set player (:cursor frame)))
                   (when (= (:cursor frame) @player)
-                    (when-not (nil? @items)
-                      (log/debug "Flushing --More-- list")
-                      (send delegator message-lines @items)
-                      (ref-set items nil))
                     (if-not (.startsWith ^String (topline frame) "#")
                       (send delegator message (topline frame))
                       #_ (log/debug "no last message"))
-                    (emit-botl frame delegator)
-                    (send delegator map-drawn frame)
+                    (emit-botl delegator frame)
+                    (send delegator know-position frame)
+                    (flush-more-list delegator items)
                     (send delegator full-frame frame)
                     initial)
-                  (log/debug "lastmsg expecting further redraw")))]
+                  (log/debug "lastmsg expecting further redraw")))
+            (location [frame]
+              (or (when (location-prompt? frame)
+                    (log/debug "Handling location")
+                    (emit-botl delegator frame)
+                    (send delegator know-position frame)
+                    (flush-more-list delegator items)
+                    (send delegator write \<) ; to stop repeated botl/map updates while the prompt is active causing multiple commands
+                    (send delegator teleport-where)
+                    initial)
+                  (log/debug "location expecting further redraw")))]
       (if (= mark-kw :no-mark)
         no-mark
         initial))))
