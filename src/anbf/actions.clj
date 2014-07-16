@@ -20,7 +20,7 @@
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 
-(def ^:private feature-re #"^(?:You see|There is)(?: an?)?(?: \w+)* (trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|fountain|sink|grave|doorway|squeaky board|open door|broken door) (?:here|below you)\.")
+(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
 (defn- feature-here [msg rogue?]
   (condp re-seq msg
@@ -32,6 +32,8 @@
       "spider web" :trap
       "squeaky board" :trap
       "web" :trap
+      "hole" :trap
+      "trap door" :trap
       "pit" :trap
       "spiked pit" :trap
       "ice" :ice
@@ -106,7 +108,7 @@
                                  (neighbors level (at-player game)))))
                 #"You crawl to the edge of the pit\.|You disentangle yourself\."
                 (swap! game assoc-in [:player :trapped] false)
-                #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!$|You are stuck to the web\.$"
+                #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\."
                 (swap! game assoc-in [:player :trapped] true)
                 ; TODO #"You are carrying too much to get through"
                 nil)
