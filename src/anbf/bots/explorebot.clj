@@ -27,7 +27,8 @@
       (if (:engulfed player)
         (->Move :E)
         (let [tgts (hostile-threats game)]
-          (when-let [{:keys [step target]} (navigate game tgts :walk :adjacent)]
+          (when-let [{:keys [step target]} (navigate game tgts :explored
+                                                     :walk :adjacent)]
             (log/debug "targetting enemy at" target)
             (or step (if (blind? player)
                        (->Attack (towards player target))

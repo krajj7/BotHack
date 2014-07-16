@@ -13,7 +13,8 @@
   {:pre [(and (some? level) (some? dir) (some? tile))]}
   (let [feature (:feature tile)]
     (cond-> 1
-      (= :trap feature) (+ 5) ; TODO trap types
+      (nil? feature) (+ 3)
+      (= :trap feature) (+ 10) ; TODO trap types
       (diagonal dir) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
       (not (or (:dug tile) (:walked tile))) (+ 0.2)
@@ -63,22 +64,25 @@
                                          :when (some? action)]
                                      [nbr [(+ dist cost) node]])))))))))
 
+(defn- unexplored? [tile]
+  (and (not (boulder? tile))
+       (nil? (:feature tile))))
+
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters"
   [game level from to]
   (let [from-tile (at level from)
         to-tile (at level to)]
-    (and (or (walkable? to-tile)
-             (and (not (boulder? to-tile))
-                  (nil? (:feature to-tile)))) ; try to path via unexplored tiles
+    (and (walkable? to-tile)
          (or (straight (towards from to))
              (and (diagonal-walkable? game from-tile)
                   (diagonal-walkable? game to-tile))))))
 
 (defn- random-move [{:keys [player] :as game} level]
-  (some->> (neighbors player)
+  (some->> (neighbors level player)
            (remove (partial monster-at level))
-           (filterv (partial passable-walking? game level player))
+           (filterv #(or (passable-walking? game level player %)
+                         (unexplored? %)))
            (#(if (seq %) % nil))
            rand-nth
            (towards player)
@@ -122,7 +126,8 @@
          dir (towards from to-tile)
          monster (monster-at level to)]
      (if-let [step
-              (or (if (passable-walking? game level from to)
+              (or (if (or (and (unexplored? to-tile) (not (:explored opts)))
+                          (passable-walking? game level from to))
                     (if-not monster
                       [0 (->Move dir)]
                       (if-not (:peaceful monster)
@@ -174,7 +179,8 @@
   "Return shortest Path for given target position or predicate, will use A* or Dijkstra's algorithm as appropriate.
   Supported options:
     :walking - don't use actions except Move (no door opening etc.)
-    :adjacent - path to closest adjacent tile instead of the target directly"
+    :adjacent - path to closest adjacent tile instead of the target directly
+    :explored - don't path through unknown tiles"
   [{:keys [player] :as game} pos-or-goal-fn & opts]
   [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
   ;(log/debug "navigating" pos-or-goal-fn opts)
