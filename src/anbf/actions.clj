@@ -235,6 +235,9 @@
 
 (defaction Look []
   (handler [_ {:keys [game] :as anbf}]
+    (swap! game #(if (blind? (:player %))
+                   %
+                   (update-curlvl-at % (:player %) assoc :seen true)))
     (update-on-known-position anbf
       #(if (->> (:player %) (at-curlvl %) :feature nil?)
          (update-curlvl-at % (:player %) assoc :feature :floor)
