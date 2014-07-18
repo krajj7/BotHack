@@ -52,6 +52,10 @@
   ([level tile]
    (filter (partial straight? tile) (neighbors level tile))))
 
+(defn diagonal-neighbors
+  ([level tile]
+   (filter (partial diagonal? tile) (neighbors level tile))))
+
 (defn in-direction
   ([level from dir]
    (some->> (in-direction from dir) (at level)))

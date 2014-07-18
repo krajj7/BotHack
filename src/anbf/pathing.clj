@@ -1,11 +1,13 @@
 (ns anbf.pathing
   (:require [clojure.data.priority-map :refer [priority-map-keyfn]]
             [clojure.tools.logging :as log]
+            [clojure.set :refer [intersection]]
             [anbf.position :refer :all]
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.player :refer :all]
             [anbf.util :refer :all]
             [anbf.tile :refer :all]))
 
@@ -21,7 +23,7 @@
       (and (not (:walked tile)) (= :floor feature)) (+ 0.5))))
 
 (defn diagonal-walkable? [game {:keys [feature] :as tile}]
-  (not= :door-open feature)) ;TODO no diagonal near boulders, squeeze-spaces
+  (not= :door-open feature))
 
 (defn- a* [from to move-fn]
   "Extra-cost must always return non-negative values, target tile may not be passable, but will always be included in the path"
@@ -68,6 +70,13 @@
   (and (not (boulder? tile))
        (nil? (:feature tile))))
 
+(defn- narrow?
+  "Only works for adjacent diagonals"
+  [level from to]
+  (not-any? #((complement #{:wall :rock}) (:feature %))
+            (intersection (into #{} (straight-neighbors level from))
+                          (into #{} (straight-neighbors level to)))))
+
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters"
   [game level from to]
@@ -76,7 +85,9 @@
     (and (walkable? to-tile)
          (or (straight (towards from to))
              (and (diagonal-walkable? game from-tile)
-                  (diagonal-walkable? game to-tile))))))
+                  (diagonal-walkable? game to-tile)
+                  (or (not (narrow? level from-tile to-tile))
+                      (not (:thick (:player game)))))))))
 
 (defn- random-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
@@ -117,42 +128,72 @@
            (safe-from-guards level))
        (not (shop? tile))))
 
+(defn- blocked-door
+  "If this is a kickable door blocked from one side, return direction from which to kick it"
+  [level tile]
+  (if-let [ws (seq (filter walkable? (straight-neighbors level tile)))]
+    (let [w (first ws)
+          dir (towards tile w)
+          o (in-direction level tile (opposite dir))]
+      (if (and (= 1 (count ws))
+               (some walkable? (intersection
+                                 (into #{} (diagonal-neighbors level tile))
+                                 (into #{} (straight-neighbors level o)))))
+        dir))))
+
+(defn- kickable-door? [level tile opts]
+  (and (door? tile)
+       (not (:walking opts))
+       (dare-kick? level tile)
+       (not (item? (:glyph tile) (:color tile))))) ; don't try to break blocked doors
+
+(defn- kick-door [level tile dir]
+  (if (= :door-open (:feature tile))
+    [8 (->Close dir)]
+    [5 (->Kick dir)]))
+
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
    (move game from to #{}))
   ([game level from to opts]
    (let [to-tile (at level to)
+         from-tile (at level from)
          dir (towards from to-tile)
          monster (monster-at level to)]
-     (if-let [step
+     (if-let [step ; TODO digging/levi
               (or (if (or (and (unexplored? to-tile) (not (:explored opts)))
-                          (passable-walking? game level from to))
+                          (and (passable-walking? game level from to)
+                               (not (and (kickable-door? level to-tile opts)
+                                         (blocked-door level to-tile)))))
                     (if-not monster
                       [0 (->Move dir)]
                       (if-not (:peaceful monster)
                         [30 (->Move dir)]
                         (if ((fnil <= 0) (:blocked to-tile) 25)
                           [50 (fidget game level to-tile)])))) ; hopefully will move
-                  ; TODO should look ahead if we have to move diagonally FROM the door in the next to and kick door down in advance if necessary
-                  ; TODO digging/levi
+                  (if (kickable-door? level from-tile opts)
+                    (if-let [odir (blocked-door level from-tile)]
+                      (if (monster-at level (in-direction from-tile odir))
+                        [3 (->Search)]
+                        [1 (->Move odir)])))
                   (if (:trapped (:player game))
                     (if-let [step (random-move game level)]
                       [0 step]))
-                  (if (and (door? to-tile)
-                           (not monster)
-                           (not (item? (:glyph to-tile))) ; don't try to break blocked doors
-                           (not (:walking opts)))
-                    (if (diagonal dir)
-                      (if (dare-kick? level to-tile)
-                        (if (= :door-open (:feature to-tile))
-                          [8 (->Close dir)]
-                          [5 (->Kick dir)]))
-                      (if (= :door-locked (:feature to-tile))
-                        ; TODO unlocking
-                        (if (dare-kick? level to-tile)
-                          [5 (->Kick dir)])
-                        [3 (->Open dir)]))))]
+                  (when (and (door? to-tile) (not monster))
+                    (or (and (kickable-door? level to-tile opts)
+                             (blocked-door level to-tile)
+                             (kick-door level to-tile dir))
+                        (if (diagonal dir)
+                          (if (kickable-door? level to-tile opts)
+                            (kick-door level to-tile dir))
+                          (if (= :door-closed (:feature to-tile))
+                            [3 (->Open dir)]
+                            (if (= :door-locked (:feature to-tile))
+                              ; TODO unlocking
+                              (if (kickable-door? level to-tile opts)
+                                (kick-door level to-tile dir))
+                              [3 (->Open dir)]))))))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
 (defrecord Path
