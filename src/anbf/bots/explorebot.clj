@@ -55,7 +55,7 @@
 
 (defn- explorable-tile? [level tile]
   (or (not (:feature tile))
-      (some (complement :seen) (neighbors level tile))))
+      (some #(and (not (:seen %)) (not (boulder? %))) (neighbors level tile))))
 
 (defn- unexplored-column
   "Look for a column of unexplored tiles on segments of the screen."

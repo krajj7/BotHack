@@ -50,7 +50,8 @@
   (let [level (curlvl game)]
     (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
                (partial map-tiles (fn [tile]
-                                    (if (visible? game level tile)
+                                    (if (and (visible? game level tile)
+                                             (not (boulder? tile)))
                                       (update-visible-tile
                                         tile ((:tags level) :rogue))
                                       tile))))))
