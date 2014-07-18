@@ -27,7 +27,7 @@
    x y
    inventory
    hunger ; :fainting :weak :hungry :satiated
-   burden
+   burden ; :overloaded :overtaxed :strained :stressed :burdened
    engulfed
    trapped
    leg-hurt
@@ -55,6 +55,11 @@
 
 (defn dizzy? [player]
   (some (:state player) #{:conf :stun}))
+
+(defn thick?
+  "True if the player can't pass through narrow diagonals."
+  [player]
+  (not (:thick player)))
 
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

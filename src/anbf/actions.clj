@@ -117,7 +117,8 @@
                 (swap! game assoc-in [:player :trapped] false)
                 #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\."
                 (swap! game assoc-in [:player :trapped] true)
-                ; TODO #"You are carrying too much to get through"
+                #"You are carrying too much to get through"
+                (swap! game assoc-in [:player :thick] true)
                 nil)
               (when-not (dizzy? old-player)
                 (condp re-seq msg
@@ -294,7 +295,8 @@
   (trigger [_] (str \o (vi-directions (enum->kw dir)))))
 
 (defaction Inventory []
-  (handler [_ _])
+  (handler [_ {:keys [game] :as anbf}]
+    (swap! game update-in [:player] dissoc :thick)) ; TODO only on changes
   (trigger [_] "i"))
 
 (defn- examine-tile [{:keys [player] :as game}]
