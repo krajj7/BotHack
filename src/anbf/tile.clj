@@ -29,10 +29,10 @@
        (#{\& \@ \' \; \:} glyph))))
 
 (defn item?
-  ([glyph color] ; works better on rogue level
-   (or (item? glyph) (and (= \: glyph) (nil? color))))
-  ([glyph]
-   (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)))
+  [glyph color]
+  (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)
+      (and (= \_ glyph) (some? color))
+      (and (= \: glyph) (nil? color))))
 
 (defn boulder? [tile]
   (and (= (:glyph tile) \0) (nil? (:color tile))))
@@ -84,7 +84,7 @@
     \{ (if (nil? new-color) :sink :fountain)
     \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
     \# :corridor ; TODO :cloud
-    \_ :altar
+    \_ (if (nil? new-color) :altar current)
     \~ :water
     \^ :trap
     \] :door-closed

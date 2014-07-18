@@ -91,7 +91,7 @@
                  (= :trap (:feature (at-player @game))))
            %
            (assoc-in % [:player :trapped] false)))
-      (if (and (diagonal dir) (item? (:glyph target)))
+      (if (and (diagonal dir) (item? (:glyph target) (:color target)))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
                     (not (curlvl-monster-at % target))
