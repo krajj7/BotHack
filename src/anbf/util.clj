@@ -46,6 +46,8 @@
   (some-> (re-seq re text) first (subvec 1) ((partial some identity))))
 
 (defn min-by [f coll] (if (seq coll) (apply (partial min-key f) coll)))
+(defn first-min-by [f coll] (if (seq coll)
+                              (apply (partial min-key f) (reverse coll))))
 
 (defn to-position
   "Sequence of keys to move the cursor from the corner to the given position"

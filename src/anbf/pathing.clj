@@ -268,11 +268,14 @@
                   (not-any? walkable? (neighbors level tile)))
               (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
 
+(defn- has-dead-ends? [game level]
+  (or (not (subbranches (branch-key game level))) (:minetown (:tags level))))
+
 (defn- search-dead-end
   [game num-search]
   (let [level (curlvl game)
         tile (at level (:player game))]
-    (when (and (or (= :main (branch-key game)) (:minetown (:tags level)))
+    (when (and (has-dead-ends? game level)
                (< (:searched tile) num-search)
                (dead-end? level tile))
       (log/debug "searching dead end")
@@ -305,15 +308,16 @@
 (defn- push-boulders [{:keys [player] :as game} level]
   (if (some #(unblocked-boulder? level %) (apply concat (:tiles level)))
     (if-let [path (navigate game #(pushable-from level %))]
-      (or (:step path)
+      (or (log/debug "going to push a boulder")
+          (:step path)
           (->Move (towards player (first (pushable-from level player))))))
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
-  (if (or (= :main (branch-key game)) (:minetown (:tags level)))
+  (if (has-dead-ends? game level)
     (if-let [p (navigate game #(and (< (searched level %) howmuch)
                                     (dead-end? level %)))]
-      (or (:step p) (->Search)))))
+      (or (log/debug "re-checking dead ends") (:step p) (->Search)))))
 
 (defn- searchable-position? [pos]
   (and (< 2 (:y pos) 20)
@@ -328,14 +332,14 @@
                                    (->> (neighbors level tile)
                                         (remove :seen) count
                                         (< 1)))) :adjacent)]
-    (or (:step p) (->Search))))
+    (or (log/debug "searching walls") (:step p) (->Search))))
 
 (defn- search-corridors [game level howmuch]
   (if-let [p (navigate game (fn searchable? [{:keys [feature] :as tile}]
                               (and (= :corridor feature)
                                    (searchable-position? tile)
                                    (< (searched level tile) howmuch))))]
-    (or (:step p) (->Search))))
+    (or (log/debug "searching corridors") (:step p) (->Search))))
 
 (defn- searchable-extremity [level y xs howmuch]
   (if-let [tile (->> xs (map #(at level % y)) (filter walkable?) first)]
@@ -367,20 +371,31 @@
                   (searchable-extremity level y (range col -1 -1) howmuch)))
       (disj res nil))))
 
+(defn at-level? [game level]
+  (and (= (:dlvl game) (:dlvl level)) (= (branch-key game) (branch-key game level))))
+
 (defn curlvl-exploration-index
-  "Measures how much the current level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
   [game]
   (let [level (curlvl game)]
     (cond
       (unexplored-column game level) 0
       (navigate game (partial explorable-tile? level)) 0
-      :else (reduce + 1 (map :searched (apply concat (:tiles level)))))))
+      :else (->> (:tiles level) (apply concat) (map :searched) (reduce + 1)))))
+
+(defn exploration-index
+  "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
+  [game branch tag-or-dlvl]
+  (if-let [level (get-level game branch tag-or-dlvl)]
+    (if (at-level? game level)
+      (curlvl-exploration-index game)
+      (get level :explored 0))
+    0))
 
 (defn- search-extremities [game level howmuch]
   (if (= :main (branch-key game))
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (or (:step p) (->Search))))))
+        (or (log/debug "searching extremities") (:step p) (->Search))))))
 
 (defn- search
   ([game] (search game 10))
@@ -442,15 +457,14 @@
 
 (defn- least-explored [game branch dlvls]
   {:pre [(#{:main :mines} branch)]}
-  (let [found (get-branch game branch)
-        curdlvl (if (= branch (branch-key game))
+  (let [curdlvl (if (= branch (branch-key game))
                   (:dlvl (curlvl game))
                   nil)]
-    (min-by #(cond
-               (not (get found %)) -500
-               (= % curdlvl) (- (curlvl-exploration-index game) 200) ; add threshold not to switch levels too often
-               :else (get-in found [% :explored]))
-            dlvls)))
+    (first-min-by #(let [res (exploration-index game branch %)]
+                     (if (and (= % curdlvl) (pos? res))
+                       (max 1 (- res 300)) ; add threshold not to switch levels too often
+                       res))
+                  dlvls)))
 
 (defn- dlvl-range
   "Only works for :main and :mines"
@@ -466,17 +480,39 @@
   (some->> (get-branch game :mines) keys first
            (change-dlvl #(+ % in-branch-depth))))
 
+(defn- possibly-oracle? [game dlvl]
+  (if-let [level (get-level game :main dlvl)]
+    (and (not-any? #(= :corridor (:feature %))
+                   (for [y [7 8 14 15]
+                         x (range 34 45)]
+                     (at level x y))))
+    true))
+
+(defn visited?
+  ([game branch]
+   (get-branch game branch))
+  ([game branch dlvl-or-tag]
+   (get-level game branch dlvl-or-tag)))
+
+(defn- first-unvisited
+  "First unvisited dlvl from given range in :main"
+  [game dlvls]
+  (->> dlvls (remove (partial visited? game :main)) first))
+
 (defn- dlvl-candidate
   "Return good Dlvl to search for given branch/tagged level"
   ([game branch]
    (or (branch-entry game branch)
-       (and (= branch :sokoban)
-            (if-let [oracle (:dlvl (get-level game :main :oracle))]
-              (next-dlvl :main oracle)))
+       (case branch
+         :sokoban (or (if-let [oracle (:dlvl (get-level game :main :oracle))]
+                        (next-dlvl :main oracle))
+                      ; TODO check for double upstairs in soko range
+                      (dlvl-candidate game :main :oracle))
+         :quest (first-unvisited (dlvl-range :main "Dlvl:11" 8))
+         :mines nil ; TODO check for double downstairs in mines range
+         nil)
        (least-explored game :main
                        (case branch
-                         :quest (dlvl-range :main "Dlvl:11" 8)
-                         :sokoban (dlvl-range :main "Dlvl:6" 5)
                          :mines (dlvl-range :main "Dlvl:2" 3)
                          (dlvl-range :main)))))
   ([game branch tag]
@@ -488,8 +524,13 @@
          (dlvl-candidate game branch))
        (if (#{:end :votd :gehennom :castle} tag)
          (->> (get-branch game branch) keys last (next-dlvl branch)))
+       (if (= :medusa tag)
+         (->> (first-unvisited game (dlvl-range :main "Dlvl:21" 8))))
        (least-explored game branch
-                       (or (if (= tag :minetown)
+                       (or (if (= tag :oracle)
+                             (filter #(possibly-oracle? game %)
+                                     (dlvl-range :main "Dlvl:5" 5)))
+                           (if (= tag :minetown)
                              (dlvl-range
                                :mines (dlvl-from-entrance game :mines 3) 2))
                            (dlvl-range branch))))))
@@ -540,19 +581,13 @@
           (switch-dlvl game tag-or-dlvl)))
       (seek-branch game new-branch))))
 
-(defn- at-level? [game level]
-  (and (= (:dlvl game) (:dlvl level)) (= (branch-key game) (branch-key level))))
-
 (defn- explored?
   ([game]
    (pos? (curlvl-exploration-index game)))
   ([game branch]
    (explored? game branch :end))
   ([game branch tag-or-dlvl]
-   (if-let [level (get-level game branch tag-or-dlvl)]
-     (pos? (if (at-level? game level)
-             (curlvl-exploration-index game)
-             (:explored level))))))
+   (pos? (exploration-index game branch tag-or-dlvl))))
 
 (defn- shallower-unexplored [game branch tag-or-dlvl]
   (let [branch (branch-key game branch)
@@ -595,12 +630,6 @@
              (log/debug "exploring target")
              (explore game)))
        (log/debug "all explored"))))
-
-(defn visited?
-  ([game branch]
-   (get-branch game branch))
-  ([game branch dlvl-or-tag]
-   (get-level game branch dlvl-or-tag)))
 
 (defn visit
   ([game branch]
