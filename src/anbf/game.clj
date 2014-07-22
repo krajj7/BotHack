@@ -11,6 +11,7 @@
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
             [anbf.util :refer :all]
+            [anbf.pathing :refer :all]
             [anbf.delegator :refer :all]))
 
 (defrecord Game
@@ -114,15 +115,12 @@
         (track-monsters game)
         update-explored)))
 
-(defn- handle-frame [game frame]
-  (-> game
-      (update-map frame)))
-
 (defn- level-msg [msg]
   (case msg
     "You enter what seems to be an older, more primitive world." :rogue
     "The odor of burnt flesh and decay pervades the air." :votd
     "Look for a ...ic transporter." :quest
+    "So be it." :gehennom
     nil))
 
 (defn game-handler
@@ -134,9 +132,13 @@
     BOTLHandler
     (botl [_ status]
       (let [old-dlvl (:dlvl @game)
-            new-dlvl (:dlvl status)]
+            new-dlvl (:dlvl status)
+            changed (not= old-dlvl new-dlvl)]
+        (if (and changed (some? old-dlvl))
+          (swap! game #(assoc-in % [:dungeon :levels (branch-key %) (:dlvl %)
+                                    :explored] (log/spy (curlvl-exploration-index %)))))
         (swap! game update-by-botl status)
-        (when (not= old-dlvl new-dlvl)
+        (when changed
           (dlvl-changed @delegator old-dlvl new-dlvl)
           (swap! game ensure-curlvl))))
     KnowPositionHandler
@@ -144,7 +146,7 @@
       (swap! game update-in [:player] into (:cursor frame)))
     FullFrameHandler
     (full-frame [_ frame]
-      (swap! game handle-frame frame))
+      (swap! game update-map frame))
     InventoryHandler
     (inventory-list [_ inventory]
       (swap! game assoc-in [:player :inventory] inventory))

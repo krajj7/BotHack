@@ -25,6 +25,8 @@
 
 (def upwards-branches #{:sokoban :vlad})
 
+(def portal-branches #{:quest :ludios :air :fire :water :astral})
+
 (defn upwards? [branch] (upwards-branches branch))
 
 (defn dlvl-number [dlvl]
@@ -80,14 +82,11 @@
 (defn branch-key
   ([{:keys [dungeon branch-id] :as game}]
    (branch-key game game))
-  ([{:keys [dungeon] :as game} {:keys [branch-id]}]
-   ;{:pre [(:id->branch dungeon)]}
-   (get (:id->branch dungeon) branch-id branch-id)))
-
-(defn same-branch? [game b1 b2]
-  (or (= b1 b2)
-      (= (branch-key game {:branch-id b1})
-         (branch-key game {:branch-id b2}))))
+  ([{:keys [dungeon] :as game} level-or-branch-id]
+   (let [branch-id (if (keyword? level-or-branch-id)
+                     level-or-branch-id
+                     (:branch-id level-or-branch-id))]
+     (get (:id->branch dungeon) branch-id branch-id))))
 
 (defn curlvl [game]
   {:pre [(:dungeon game)]}
@@ -150,6 +149,21 @@
   {:pre [(:dungeon game)]}
   (at-curlvl game (:player game)))
 
+(defn get-branch
+  "Returns {Dlvl => Level} map for branch-id (or current branch)"
+  ([game]
+   (get-branch game (branch-key game)))
+  ([game branch-id]
+   (get-in game [:dungeon :levels (branch-key game branch-id)])))
+
+(defn get-level
+  "Return Level in the given branch with the given tag or dlvl, if such was visited already"
+  [game branch dlvl-or-tag]
+  (if-let [levels (get-branch game branch)]
+    (if (keyword? dlvl-or-tag)
+      (some #(and ((:tags %) dlvl-or-tag) %) (vals levels))
+      (levels dlvl-or-tag))))
+
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [player level pos]
@@ -193,6 +207,12 @@
   (cond (has-features? level) :main
         (same-glyph-diag-walls level) :mines))
 
+(defn branch-entry
+  "Return Dlvl of :main containing entrance to branch, if already visited"
+  [game branch]
+  (if-let [l (get-level game :main (branch-key game branch))]
+    (:dlvl l)))
+
 (defn- merge-branch-id [{:keys [dungeon] :as game} branch-id branch]
   (log/debug "merging branch-id" branch-id "to branch" branch)
   ;(log/debug dungeon)
@@ -200,6 +220,8 @@
       (assoc-in [:dungeon :id->branch branch-id] branch)
       (update-in [:dungeon :levels branch]
                  #(into (-> dungeon :levels branch-id) %))
+      (update-in [:dungeon :levels :main (branch-entry game branch-id) :tags]
+                 #(-> % (disj branch-id) (conj branch)))
       (update-in [:dungeon :levels] dissoc branch-id)))
 
 (defn infer-branch [game]
@@ -219,17 +241,21 @@
         branch (branch-key game)
         has-features? (has-features? level)]
     (cond-> game
-      ; TODO could check for oracle, bigroom
+      ; TODO could check for bigroom
+      (and (= :main branch) (<= 5 (dlvl level) 9)
+           (some #(= "Oracle" (:type %))
+                 (:monsters level))) (add-curlvl-tag :oracle)
       (and (<= 5 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :minesend))
-           has-features?) (add-curlvl-tag :minesend))))
+      (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :end))
+           has-features?) (add-curlvl-tag :end))))
 
 (defn initial-branch-id
   "Choose branch-id for a new dlvl reached by stairs."
   [game dlvl]
+  ; TODO could check for already found parallel branches and disambiguate
   (or (subbranches (branch-key game))
-      (if-not (<= 3 (dlvl-number dlvl) 5) :main)
+      (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (new-branch-id)))
 
 (defn ensure-curlvl

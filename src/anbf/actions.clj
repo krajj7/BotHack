@@ -27,6 +27,7 @@
     #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)" :floor
     #"There is an altar" :altar
     (case (re-first-group feature-re msg)
+      "magic portal" :trap
       "opulent throne" :throne
       "trap" :trap
       "spider web" :trap
@@ -82,6 +83,7 @@
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
+          portal (atom false)
           old-player (:player @game)
           old-pos (position old-player)
           level (curlvl @game)
@@ -120,6 +122,13 @@
                 (swap! game assoc-in [:player :trapped] true)
                 #"You are carrying too much to get through"
                 (swap! game assoc-in [:player :thick] true)
+                #"activated a magic portal!"
+                (do (reset! portal true)
+                    (update-on-known-position anbf
+                      #(update-curlvl-at % (:player %) assoc :portal true)))
+                #"You feel a strange vibration"
+                (update-on-known-position anbf
+                      #(update-curlvl-at % (:player %) assoc :vibrating true))
                 nil)
               (when-not (dizzy? old-player)
                 (condp re-seq msg
@@ -137,6 +146,13 @@
                   #"Wait!  That's a .*mimic!"
                   (swap! game update-curlvl-at target assoc :feature nil)
                   nil))))
+        DlvlChangeHandler
+        (dlvl-changed [_ _ _]
+          (if @portal
+            (if (not= :main (branch-key level))
+              (swap! game assoc :branch-id :main)
+              (if ((:tags level) :quest) ; TODO ludios, wiztower, planes
+                (swap! game assoc :branch-id :quest)))))
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
@@ -166,11 +182,13 @@
   (handler [_ _])
   (trigger [_] "."))
 
-(defn- mark-stair-branch [game tile branch]
+(defn- mark-branch-entrance [game tile branch]
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs."
-  (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
-          game
-          (conj (neighbors tile) tile)))
+  (if (#{:quest :ludios} branch)
+    (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
+    (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
+            game
+            (conj (neighbors tile) tile))))
 
 (defn stairs-handler [anbf]
   (let [old-game (-> anbf :game deref)
@@ -188,15 +206,17 @@
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
                          (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (mark-stair-branch new-stairs old-branch))
+              (mark-branch-entrance new-stairs old-branch))
           new-game)))
     (reify DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
-        ; get the new branch-id from the stairs or create new and mark the stairs
         (swap! (:game anbf)
-               #(assoc % :branch-id
-                       (get old-stairs :branch-id
-                            (initial-branch-id % new-dlvl))))
+               #(let [new-branch (get old-stairs :branch-id
+                                      (initial-branch-id % new-dlvl))]
+                  (-> %
+                      (update-in [:dungeon :levels old-branch old-dlvl :tags]
+                                 conj new-branch)
+                      (assoc :branch-id new-branch))))
         (log/debug "choosing branch-id" (:branch-id @(:game anbf))
                    "for dlvl" new-dlvl)))))
 
@@ -254,7 +274,6 @@
           (log/error "Unrecognized message list " (str lines))))
       ToplineMessageHandler
       (message [_ text]
-        ; TODO you see/there is/... single item
         (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
           (swap! game #(update-curlvl-at % (:player %)
                                          assoc :feature feature))))))
