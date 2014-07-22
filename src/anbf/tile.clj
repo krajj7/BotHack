@@ -67,12 +67,13 @@
   (apply min (map :searched (neighbors level tile))))
 
 (defn walkable-by [{:keys [feature] :as tile} glyph]
-  ; full inferred monster type could be made available here but shouldn't be necessary
-  (cond-> tile
-    (and (not (#{\X \P} glyph))
-         (door? tile)) (assoc-in [:feature] :door-open)
-    (and (not= \X glyph)
-         (#{:rock :wall :tree} feature)) (assoc-in [:feature] :corridor)))
+  (assoc-in tile [:feature]
+            (cond
+              (and (not (#{\X \P} glyph))
+                   (door? tile)) :door-open
+              (and (not= \X glyph)
+                   (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
+              :else feature)))
 
 (defn- infer-feature [current new-glyph new-color]
   (case new-glyph
