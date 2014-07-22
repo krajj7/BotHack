@@ -202,9 +202,17 @@
                            (= (:glyph tile) (:glyph %))))))
         (apply concat (take-nth 2 (:tiles level)))))
 
-(defn- recognize-branch [level]
-  ; TODO soko
-  (cond (has-features? level) :main
+(def soko1-14 "                                |..^^^^0000...|                                 ")
+(def soko2-12 "                                |..^^^<|.....|                                  ")
+
+(defn- in-soko? [game]
+  (and (<= 5 (dlvl-number (:dlvl game)) 9)
+       (or (= soko1-14 (get-in game [:frame :lines 14]))
+           (= soko2-12 (get-in game [:frame :lines 12])))))
+
+(defn- recognize-branch [game level]
+  (cond (in-soko? game) :sokoban
+        (has-features? level) :main
         (same-glyph-diag-walls level) :mines))
 
 (defn branch-entry
@@ -228,7 +236,7 @@
   (if (branches (branch-key game))
     game ; branch already known
     (let [level (curlvl game)]
-      (if-let [branch (recognize-branch level)]
+      (if-let [branch (recognize-branch game level)]
         (merge-branch-id game (:branch-id level) branch)
         game)))) ; failed to recognize
 
