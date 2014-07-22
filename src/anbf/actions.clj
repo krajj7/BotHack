@@ -111,7 +111,8 @@
                   anbf (fn mark-shop [game]
                          (reduce #(if (or (door? %2) (= :wall (:feature %2)))
                                     (update-curlvl-at %1 %2 assoc :room :shop)
-                                    %1) game
+                                    %1)
+                                 (add-curlvl-tag game :shop-closed)
                                  (neighbors level (:player game)))))
                 #"You crawl to the edge of the pit\.|You disentangle yourself\."
                 (swap! game assoc-in [:player :trapped] false)
