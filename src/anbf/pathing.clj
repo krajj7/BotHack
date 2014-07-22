@@ -392,7 +392,7 @@
     0))
 
 (defn- search-extremities [game level howmuch]
-  (if (= :main (branch-key game))
+  (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
         (or (log/debug "searching extremities") (:step p) (->Search))))))
@@ -508,7 +508,7 @@
                         (next-dlvl :main oracle))
                       ; TODO check for double upstairs in soko range
                       (dlvl-candidate game :main :oracle))
-         :quest (first-unvisited (dlvl-range :main "Dlvl:11" 8))
+         :quest (first-unvisited game (dlvl-range :main "Dlvl:11" 8))
          :mines nil ; TODO check for double downstairs in mines range
          nil)
        (least-explored game :main
@@ -518,22 +518,21 @@
   ([game branch tag]
    (or (if (subbranches tag)
          (dlvl-candidate game tag))
-       (if-let [l (get-level game branch tag)]
-         (:dlvl l))
+       (:dlvl (get-level game branch tag))
        (if-not (get-branch game branch)
          (dlvl-candidate game branch))
        (if (#{:end :votd :gehennom :castle} tag)
          (->> (get-branch game branch) keys last (next-dlvl branch)))
-       (if (= :medusa tag)
-         (->> (first-unvisited game (dlvl-range :main "Dlvl:21" 8))))
-       (least-explored game branch
-                       (or (if (= tag :oracle)
-                             (filter #(possibly-oracle? game %)
-                                     (dlvl-range :main "Dlvl:5" 5)))
-                           (if (= tag :minetown)
-                             (dlvl-range
-                               :mines (dlvl-from-entrance game :mines 3) 2))
-                           (dlvl-range branch))))))
+       (case tag
+         :rogue (->> (first-unvisited game (dlvl-range :main "Dlvl:15" 4)))
+         :medusa (->> (first-unvisited game (dlvl-range :main "Dlvl:21" 8)))
+         (least-explored game branch
+                         (case tag
+                           :oracle (filter #(possibly-oracle? game %)
+                                           (dlvl-range :main "Dlvl:5" 5))
+                           :minetown (dlvl-range :mines
+                                       (dlvl-from-entrance game :mines 3) 2)
+                           (dlvl-range branch)))))))
 
 (defn- enter-branch [game branch]
   (log/debug "entering branch" branch)
