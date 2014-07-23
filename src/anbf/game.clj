@@ -140,7 +140,11 @@
         (swap! game update-by-botl status)
         (when changed
           (dlvl-changed @delegator old-dlvl new-dlvl)
-          (swap! game ensure-curlvl))))
+          (if (and (some? old-dlvl)
+                   (= "Home" (subs old-dlvl 0 4))
+                   (= "Dlvl" (subs new-dlvl 0 4)))
+            (swap! game assoc :branch-id :main) ; kicked out of quest
+            (swap! game ensure-curlvl)))))
     KnowPositionHandler
     (know-position [_ frame]
       (swap! game update-in [:player] into (:cursor frame)))
