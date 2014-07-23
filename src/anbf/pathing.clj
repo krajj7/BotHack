@@ -26,29 +26,28 @@
   (not= :door-open feature))
 
 (defn- a* [from to move-fn]
-  "Extra-cost must always return non-negative values, target tile may not be passable, but will always be included in the path"
+  "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
   (loop [closed {}
          open (priority-map-keyfn first (position from) [0 0])]
     (if (empty? open) nil
       (let [[node [total dist prev]] (peek open)
             path (conj (closed prev []) node)
-            final-path (subvec path 1)
             delta (distance node to)]
         (cond
-          (zero? delta) final-path
+          (zero? delta) (subvec path 1)
           (and (= 1 delta)
-               (not-any? #(move-fn % to) (neighbors to))) (conj final-path to)
-          :else (recur
-                  (assoc closed node path)
-                  (merge-with
-                    (partial min-key first)
-                    (pop open)
-                    (into {}
-                          (for [nbr (remove closed (neighbors node))
-                                :let [[cost action] (move-fn node nbr)]
-                                :when (some? action)]
-                            (let [new-dist (int (+ dist cost))]
-                              [nbr [(+ new-dist delta) new-dist node]]))))))))))
+               (not-any? #(move-fn % to)
+                         (neighbors to))) (conj (subvec path 1) to)
+          :else (recur (assoc closed node path)
+                       (merge-with
+                         (partial min-key first)
+                         (pop open)
+                         (into {} (for [nbr (remove closed (neighbors node))
+                                        :let [[cost action] (move-fn node nbr)]
+                                        :when (some? action)]
+                                    (let [new-dist (int (+ dist cost))]
+                                      [nbr [(+ new-dist (distance nbr to))
+                                            new-dist node]]))))))))))
 
 (defn- dijkstra [from goal? move-fn]
   (loop [closed {}
@@ -155,14 +154,16 @@
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
-   (move game from to #{}))
+   (move game level from to #{}))
   ([game level from to opts]
    (let [to-tile (at level to)
          from-tile (at level from)
          dir (towards from to-tile)
          monster (monster-at level to)]
      (if-let [step ; TODO digging/levi
-              (or (if (or (and (unexplored? to-tile) (not (:explored opts)))
+              (or (if (or (and (unexplored? to-tile) (not (:explored opts))
+                               (or (not (narrow? level from-tile to-tile))
+                                   (not (:thick (:player game)))))
                           (and (passable-walking? game level from to)
                                (not (and (kickable-door? level to-tile opts)
                                          (blocked-door level to-tile)))))
@@ -289,13 +290,14 @@
            (and (not= :door-open (:feature from))
                 (not= :door-open (:feature to))))))
 
-(defn- pushable-from [level pos]
+(defn- pushable-from [game level pos]
   ; TODO soko
   (seq (filter #(if (boulder? %)
                   (let [dir (towards pos %)
                         dest (in-direction level % dir)]
                     (and dest
                          (not (monster-at level dest))
+                         (passable-walking? game level pos %)
                          (pushable-through level % dest))))
                (neighbors level pos))))
 
@@ -307,10 +309,10 @@
 ; TODO check if it makes sense, the boulder might not block
 (defn- push-boulders [{:keys [player] :as game} level]
   (if (some #(unblocked-boulder? level %) (apply concat (:tiles level)))
-    (if-let [path (navigate game #(pushable-from level %))]
+    (if-let [path (navigate game #(pushable-from game level %))]
       (or (log/debug "going to push a boulder")
           (:step path)
-          (->Move (towards player (first (pushable-from level player))))))
+          (->Move (towards player (first (pushable-from game level player))))))
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
@@ -397,7 +399,7 @@
       (if-let [p (navigate game goals)]
         (or (log/debug "searching extremities") (:step p) (->Search))))))
 
-(defn- search
+(defn search
   ([game] (search game 10))
   ([game max-iter]
    (let [level (curlvl game)]
@@ -462,7 +464,7 @@
                   nil)]
     (first-min-by #(let [res (exploration-index game branch %)]
                      (if (and (= % curdlvl) (pos? res))
-                       (max 1 (- res 300)) ; add threshold not to switch levels too often
+                       (max 1 (- res 1200)) ; add threshold not to switch levels too often
                        res))
                   dlvls)))
 
