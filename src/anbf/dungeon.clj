@@ -250,7 +250,6 @@
         branch (branch-key game)
         has-features? (has-features? level)]
     (cond-> game
-      ; TODO could check for bigroom
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
            (not-any? #(not (or (= :water (log/spy (:feature (at level 2 %))))
@@ -262,14 +261,25 @@
            (not-any? #(and (not= :water (:feature (at level 5 %)))
                            (not= :floor (:feature (at level 4 %))))
                      [13 14 15])) (add-curlvl-tag :medusa :medusa-2)
+      (and (= :main branch) (<= 10 dlvl 12)
+           (not (tags :bigroom))
+           (some (fn lots-floors? [row]
+                   (->> (for [x (range 3 78)] (at level x row))
+                        (take-while #(not= :corridor %))
+                        (filter #(or (= :floor (:feature %))
+                                     (monster-at level %)))
+                        count (<= 46)))
+                 [8 16])) (add-curlvl-tag :bigroom)
       (and (= :main branch) (<= 5 dlvl 9)
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
       (and (= :quest branch) (not (tags :end))
-           (= dlvl (-> (get-branch game :quest) keys last))
-           (some :nemesis (-> (curlvl-monsters game) vals :type :tags))
+           (= (:dlvl level) (-> (get-branch game :quest) keys last))
+           ; XXX not reliable - nemesis must be spotted non-invisible
+           (some :nemesis (map (comp :tags :type)
+                               (-> (curlvl-monsters game) vals)))
            ) (add-curlvl-tag :end)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))

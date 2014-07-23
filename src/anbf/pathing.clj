@@ -270,7 +270,9 @@
               (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
 
 (defn- has-dead-ends? [game level]
-  (or (not (subbranches (branch-key game level))) (:minetown (:tags level))))
+  (and (not (:bigroom (:tags level)))
+       (or (not (subbranches (branch-key game level)))
+           (:minetown (:tags level)))))
 
 (defn- search-dead-end
   [game num-search]
