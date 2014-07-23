@@ -18,7 +18,7 @@
                      (if (blind? player)
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
-                            (> 10 (distance player %))))))
+                            (> 10 (distance player %)))))) ; TODO should be navigation distance (maybe pre-compute floodfill reachable)
        (into #{})))
 
 (defn- fight [{:keys [player] :as game}]
@@ -42,17 +42,16 @@
         (->Wait))))
 
 (defn progress [game]
-  (or (visit game :main "Dlvl:5")
+  (or (visit game :quest)
+      (visit game :sokoban)
       (visit game :mines :minetown)
       (explore game :main "Dlvl:2")
       (visit game :mines :end)
-      ;(visit game :sokoban) ; TODO recog
       ;(explore game :mines)
-      (visit game :quest)
-      ;(visit game :main :medusa)
-      (seek-level game :main "Dlvl:1")
-      (log/debug "progress end")
-      ))
+      (visit game :main :medusa)
+      (visit game :quest :end)
+      ;(seek-level game :main "Dlvl:1")
+      (log/debug "progress end")))
 
 (defn init [anbf]
   (-> anbf
