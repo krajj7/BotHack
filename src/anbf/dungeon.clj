@@ -96,11 +96,11 @@
   {:pre [(:dungeon game)]}
   (-> game curlvl :monsters))
 
-(defn add-curlvl-tag [game tag]
+(defn add-curlvl-tag [game & tags]
   {:pre [(:dungeon game)]}
-  (log/debug "tagging curlvl with" tag)
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tags]
-             conj tag))
+  (log/debug "tagging curlvl with" tags)
+  (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tags]
+         conj tags))
 
 (defn curlvl-tags [game]
   {:pre [(:dungeon game)]}
@@ -245,17 +245,33 @@
 
 (defn infer-tags [game]
   (let [level (curlvl game)
+        dlvl (dlvl level)
         tags (:tags level)
         branch (branch-key game)
         has-features? (has-features? level)]
     (cond-> game
       ; TODO could check for bigroom
-      (and (= :main branch) (<= 5 (dlvl level) 9)
+      (and (= :main branch) (<= 21 dlvl 28)
+           (not (tags :medusa))
+           (not-any? #(not (or (= :water (log/spy (:feature (at level 2 %))))
+                               (monster-at level (position 2 %))))
+                     (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
+      (and (= :main branch) (<= 21 dlvl 28)
+           (not (tags :medusa))
+           (nil? (:feature (at level 5 20)))
+           (not-any? #(and (not= :water (:feature (at level 5 %)))
+                           (not= :floor (:feature (at level 4 %))))
+                     [13 14 15])) (add-curlvl-tag :medusa :medusa-2)
+      (and (= :main branch) (<= 5 dlvl 9)
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
-      (and (<= 5 (dlvl level) 9) (= :mines branch) (not (tags :minetown))
+      (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (<= 10 (dlvl level) 13) (= :mines branch) (not (tags :end))
+      (and (= :quest branch) (not (tags :end))
+           (= dlvl (-> (get-branch game :quest) keys last))
+           (some :nemesis (-> (curlvl-monsters game) vals :type :tags))
+           ) (add-curlvl-tag :end)
+      (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
 (defn initial-branch-id

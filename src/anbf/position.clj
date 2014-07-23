@@ -1,9 +1,9 @@
 (ns anbf.position
   (:require [clojure.tools.logging :as log]))
 
-(defn position [of]
-  {:post [(:x %) (:y %)]}
-  (select-keys of [:x :y]))
+(defn position
+  ([x y] {:x x :y y})
+  ([of] {:post [(:x %) (:y %)]} (select-keys of [:x :y])))
 
 (defn valid-position?
   ([x y] (and (<= 0 x 79) (<= 1 y 21)))
