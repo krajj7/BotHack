@@ -330,11 +330,22 @@
   (and (< 2 (:y pos) 20)
        (< 1 (:x pos) 78)))
 
+(defn- wall-end? [level tile]
+  (and (= :wall (:feature tile))
+       (< 0 (:x tile) 80)
+       (< 0 (:y tile) 22)
+       (not
+         (or (and (= :wall (:feature (at level (dec (:x tile)) (:y tile))))
+                  (= :wall (:feature (at level (inc (:x tile)) (:y tile)))))
+             (and (= :wall (:feature (at level (:x tile) (dec (:y tile)))))
+                  (= :wall (:feature (at level (:x tile) (inc (:y tile))))))))))
+
 (defn- search-walls [game level howmuch]
   (if-let [p (navigate game (fn searchable? [{:keys [feature] :as tile}]
                               (and (= :wall feature)
                                    (searchable-position? tile)
                                    (not (shop? tile))
+                                   (not (wall-end? level tile))
                                    (< (:searched tile) howmuch)
                                    (->> (neighbors level tile)
                                         (remove :seen) count
