@@ -76,17 +76,20 @@
             (intersection (into #{} (straight-neighbors level from))
                           (into #{} (straight-neighbors level to)))))
 
+(defn- edge-passable-walking? [game level from-tile to-tile]
+  (or (straight (towards from-tile to-tile))
+      (and (diagonal-walkable? game from-tile)
+           (diagonal-walkable? game to-tile)
+           (or (not (narrow? level from-tile to-tile))
+               (not (:thick (:player game)))))))
+
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters"
   [game level from to]
   (let [from-tile (at level from)
         to-tile (at level to)]
     (and (walkable? to-tile)
-         (or (straight (towards from to))
-             (and (diagonal-walkable? game from-tile)
-                  (diagonal-walkable? game to-tile)
-                  (or (not (narrow? level from-tile to-tile))
-                      (not (:thick (:player game)))))))))
+         (edge-passable-walking? game level from-tile to-tile))))
 
 (defn- random-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
@@ -299,7 +302,7 @@
                         dest (in-direction level % dir)]
                     (and dest
                          (not (monster-at level dest))
-                         (passable-walking? game level pos %)
+                         (edge-passable-walking? game level pos %)
                          (pushable-through level % dest))))
                (neighbors level pos))))
 
