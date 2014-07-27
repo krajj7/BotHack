@@ -174,7 +174,7 @@
                       [0 (->Move dir)]
                       (if-not (:peaceful monster)
                         [30 (->Move dir)]
-                        (if ((fnil <= 0) (:blocked to-tile) 25)
+                        (if ((fnil <= 0) (:blocked to-tile) 25) ; TODO moving thru shk while invis/with pick
                           [50 (fidget game level to-tile)])))) ; hopefully will move
                   (if (kickable-door? level from-tile opts)
                     (if-let [odir (blocked-door level from-tile)]
@@ -496,7 +496,7 @@
 
 (defn- dlvl-from-entrance [game branch in-branch-depth]
   (some->> (get-branch game :mines) keys first
-           (change-dlvl #(+ % in-branch-depth))))
+           (change-dlvl #(+ % (dec in-branch-depth)))))
 
 (defn- possibly-oracle? [game dlvl]
   (if-let [level (get-level game :main dlvl)]
@@ -606,13 +606,19 @@
   ([game branch tag-or-dlvl]
    (pos? (exploration-index game branch tag-or-dlvl))))
 
-(defn- shallower-unexplored [game branch tag-or-dlvl]
-  (let [branch (branch-key game branch)
-        dlvl (or (:dlvl (get-level game branch tag-or-dlvl)) (:dlvl game))]
-    (->> (get-branch game branch) vals
-         (take-while #(not= (:dlvl %) dlvl))
-         (remove #(explored? game branch (:dlvl %)))
-         first :dlvl)))
+(defn- shallower-unexplored
+  ([game branch]
+   (shallower-unexplored game :main (or (some->> (get-level game :main branch)
+                                                 :dlvl (next-dlvl :main))
+                                        branch)))
+  ([game branch tag-or-dlvl]
+   (let [branch (branch-key game branch)
+         dlvl (or (:dlvl (get-level game branch tag-or-dlvl))
+                  (next-dlvl branch (:dlvl game)))]
+     (->> (get-branch game branch) vals
+          (take-while #(not= (:dlvl %) dlvl))
+          (remove #(explored? game branch (:dlvl %)))
+          first :dlvl))))
 
 (defn explore
   ([game]
@@ -631,9 +637,7 @@
   ([game branch tag-or-dlvl]
    (log/debug "exploring" branch "until" tag-or-dlvl)
    (or (if-let [l (and (not= :main (branch-key game branch))
-                       (shallower-unexplored game :main
-                                             (-> (get-level :main branch)
-                                                 :dlvl next-dlvl)))]
+                       (shallower-unexplored game branch))]
          (or (log/debug "first exploring main until branch entrance")
              (seek-level game :main l)
              (explore game)))

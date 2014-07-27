@@ -179,13 +179,13 @@
   (handler [_ _])
   (trigger [_] "."))
 
-(defn- mark-branch-entrance [game tile branch]
-  "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs."
+(defn- mark-branch-entrance [game tile branch origin-feature]
+  "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs.  (Actually two sets of stairs may be next to each other and this breaks if that happens and the non-origin stairs are obscured)"
   (if (#{:quest :ludios} branch)
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
-    (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch)
-            game
-            (conj (neighbors tile) tile))))
+    (->> (conj (neighbors tile) tile)
+         (remove #(= origin-feature (:feature %)))
+         (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch) game))))
 
 (defn stairs-handler [anbf]
   (let [old-game (-> anbf :game deref)
@@ -203,7 +203,8 @@
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
                          (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (mark-branch-entrance new-stairs old-branch))
+              (mark-branch-entrance new-stairs old-branch
+                                    (:feature old-stairs)))
           new-game)))
     (reify DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
