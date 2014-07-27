@@ -275,12 +275,6 @@
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (= :quest branch) (not (tags :end))
-           (= (:dlvl level) (-> (get-branch game :quest) keys last))
-           ; XXX not reliable - nemesis must be spotted non-invisible
-           (some :nemesis (map (comp :tags :type)
-                               (-> (curlvl-monsters game) vals)))
-           ) (add-curlvl-tag :end)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 

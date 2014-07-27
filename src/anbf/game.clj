@@ -116,12 +116,15 @@
         update-explored)))
 
 (defn- level-msg [msg]
-  (case msg
-    "You enter what seems to be an older, more primitive world." :rogue
-    "The odor of burnt flesh and decay pervades the air." :votd
-    "Look for a ...ic transporter." :quest
-    "So be it." :gehennom
-    nil))
+  (or (case msg
+        "You enter what seems to be an older, more primitive world." :rogue
+        "The odor of burnt flesh and decay pervades the air." :votd
+        "Look for a ...ic transporter." :quest
+        "So be it." :gehennom
+        (condp re-seq msg
+          ; TODO other roles (multiline)
+          #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
+          nil))))
 
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
