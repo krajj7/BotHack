@@ -20,33 +20,25 @@
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 
-(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
+(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
 (defn- feature-here [msg rogue?]
   (condp re-seq msg
     #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)" :floor
     #"There is an altar" :altar
-    (case (re-first-group feature-re msg)
-      "magic portal" :trap
-      "opulent throne" :throne
-      "trap" :trap
-      "spider web" :trap
-      "squeaky board" :trap
-      "web" :trap
-      "hole" :trap
-      "trap door" :trap
-      "pit" :trap
-      "spiked pit" :trap
-      "ice" :ice
-      "doorway" (if rogue? :door-open :floor)
-      "open door" :door-open
-      "broken door" :floor
-      "staircase up" :stairs-up
-      "staircase down" :stairs-down
-      "fountain" :fountain
-      "sink" :sink
-      "grave" :grave
-      nil)))
+    (if-let [feature (re-first-group feature-re msg)]
+      (case feature
+        "opulent throne" :throne
+        "ice" :ice
+        "doorway" (if rogue? :door-open :floor)
+        "open door" :door-open
+        "broken door" :floor
+        "staircase up" :stairs-up
+        "staircase down" :stairs-down
+        "fountain" :fountain
+        "sink" :sink
+        "grave" :grave
+        (trap-names feature)))))
 
 (defn update-on-known-position
   "When player position on map is known call (apply swap! game f args)"
@@ -90,7 +82,7 @@
           target (in-direction level old-pos dir)]
       (update-on-known-position anbf
         #(if (or (= (position (:player %)) old-pos)
-                 (= :trap (:feature (at-player @game))))
+                 (trap? (at-player @game)))
            %
            (assoc-in % [:player :trapped] false)))
       (if (and (diagonal dir) (item? (:glyph target) (:color target)))
@@ -119,13 +111,18 @@
                 #"You crawl to the edge of the pit\.|You disentangle yourself\."
                 (swap! game assoc-in [:player :trapped] false)
                 #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\."
-                (swap! game assoc-in [:player :trapped] true)
+                (do (swap! game assoc-in [:player :trapped] true)
+                    (update-on-known-position anbf
+                      #(update-curlvl-at % (:player %) assoc :feature :trap)))
+                #"trap door in the .*and a rock falls on you|trigger a rolling boulder" ; TODO dart/arrow/..
+                (update-on-known-position anbf
+                  #(update-curlvl-at % (:player %) assoc :feature :trap))
                 #"You are carrying too much to get through"
                 (swap! game assoc-in [:player :thick] true)
                 #"activated a magic portal!"
                 (do (reset! portal true)
                     (update-on-known-position anbf
-                      #(update-curlvl-at % (:player %) assoc :portal true)))
+                      #(update-curlvl-at % (:player %) assoc :feature :portal)))
                 #"You feel a strange vibration"
                 (update-on-known-position anbf
                       #(update-curlvl-at % (:player %) assoc :vibrating true))
@@ -280,12 +277,17 @@
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
+(def farlook-trap-re #"^\^ * a trap \(([^)]*)\)")
 
 (defaction FarLook [pos]
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
-        (or (when-let [desc (and (monster? (nth text 0))
+        (or (when-let [trap (re-first-group farlook-trap-re text)]
+              (swap! game update-curlvl-at pos assoc :feature
+                     (or (trap-names trap)
+                         (throw (IllegalArgumentException.  (str "unknown farlook trap: " text " >>> " trap))))))
+            (when-let [desc (and (monster? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
               (let [peaceful? (.startsWith ^String desc "peaceful")
                     type (by-description desc)]
@@ -320,9 +322,18 @@
   (trigger [_] "i"))
 
 (defn- examine-tile [{:keys [player] :as game}]
-  (when-not (or (blind? player) (:feature (at-player game)))
-    (log/debug "examining tile")
-    (->Look)))
+  (let [tile (at-player game)]
+    (when (and (not (blind? player))
+               (or (not (:feature tile)) (= :trap (:feature tile))))
+      (log/debug "examining tile")
+      (->Look))))
+
+(defn- examine-traps [game]
+  (->> (curlvl game) :tiles (apply concat)
+       (filter #(and (= :trap (:feature %))
+                     (not (item? (:glyph %) (:color %)))
+                     (not (monster? (:glyph %) (:color %)))))
+       (map ->FarLook) first))
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (:hallu (:state player))
@@ -340,7 +351,8 @@
     (choose-action [_ game]
       ; TODO items
       (or (examine-tile game)
-          (examine-monsters game)))))
+          (examine-monsters game)
+          (examine-traps game)))))
 
 (defn- inventory-handler [anbf]
   (reify ActionHandler

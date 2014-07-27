@@ -7,7 +7,7 @@
   [x y
    glyph
    color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :trap :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater + traps
    seen
    walked
    dug
@@ -27,6 +27,33 @@
   ([glyph]
    (or (and (Character/isLetterOrDigit ^Character glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph))))
+
+; bot should never get to see :trap - auto-examine
+(def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web})
+
+(def trap-names
+  {"magic portal" :portal
+   "level teleporter" :levelport
+   "teleportation trap" :teletrap
+   "bear trap" :beartrap
+   "falling rock trap" :rocktrap
+   "rolling boulder trap" :bouldertrap
+   "rust trap" :rusttrap
+   "magic trap" :magictrap
+   "anti-magic field" :antimagic
+   "polymorph trap" :polytrap
+   "fire trap" :firetrap
+   "arrow trap" :arrowtrap
+   "land mine" :mine
+   "dart trap" :darttrap
+   "sleeping gas trap" :sleeptrap
+   "spider web" :web
+   "web" :web
+   "squeaky board" :squeaky
+   "hole" :hole
+   "trap door" :trapdoor
+   "pit" :pit
+   "spiked pit" :spikepit})
 
 (defn item?
   [glyph color]
@@ -49,11 +76,15 @@
     :stairs-down
     :stairs-up))
 
-(defn walkable? [tile]
+(defn trap? [tile]
+  (traps (:feature tile)))
+
+(defn walkable? [{:keys [feature] :as tile}]
   (and (not (boulder? tile))
-       (or (and (item? (:glyph tile) (:color tile)) (nil? (:feature tile)))
-           (#{:ice :floor :air :altar :door-open :sink :fountain :trap :corridor
-              :throne :grave :stairs-up :stairs-down} (:feature tile)))))
+       (or (and (item? (:glyph tile) (:color tile)) (nil? feature))
+           (traps feature)
+           (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
+              :throne :grave :stairs-up :stairs-down} feature))))
 
 (defn transparent?
   "For unexplored tiles just a guess"
@@ -87,7 +118,7 @@
     \# :corridor ; TODO :cloud
     \_ (if (nil? new-color) :altar current)
     \~ :water
-    \^ :trap
+    \^ (if (traps current) current :trap)
     \] :door-closed
     \| (if (= new-color :brown) :door-open :wall)
     \- (if (= new-color :brown) :door-open :wall)

@@ -16,7 +16,7 @@
   (let [feature (:feature tile)]
     (cond-> 1
       (nil? feature) (+ 3)
-      (= :trap feature) (+ 10) ; TODO trap types
+      (traps feature) (+ 10) ; TODO trap types
       (diagonal dir) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
       (not (or (:dug tile) (:walked tile))) (+ 0.2)
@@ -264,7 +264,7 @@
 
 (defn dead-end? [level tile]
   (and (walkable? tile)
-       (not= :trap (:feature tile))
+       (not (trap? tile))
        (not (:dug tile))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
@@ -435,9 +435,9 @@
 
 (defn seek-portal [game]
   (log/debug "seeking portal")
-  (or (:step (navigate game #(:portal %)))
-      (explore game)
+  (or (:step (navigate game #(= :portal (:feature %))))
       (:step (navigate game (complement :walked)))
+      (explore game)
       (search game)))
 
 (defn seek [game smth]
