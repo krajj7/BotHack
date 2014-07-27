@@ -524,7 +524,7 @@
     desc))
 
 (defn by-description [text]
-  (let [^String desc (log/spy (-> text strip-article strip-disposition strip-modifier))
+  (let [^String desc (-> text strip-article strip-disposition strip-modifier)
         ghost-or-called (re-first-group #"ghost|called" desc)]
     (or (if (re-seq #"^(?:the )?high priest (?:ess)?$" desc)
           (by-name "high priest"))
