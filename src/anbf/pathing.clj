@@ -147,7 +147,7 @@
   (and (door? tile)
        (not (:walking opts))
        (dare-kick? level tile)
-       (not (item? (:glyph tile) (:color tile))))) ; don't try to break blocked doors
+       (not (item? tile)))) ; don't try to break blocked doors
 
 (defn- kick-door [level tile dir]
   (if (= :door-open (:feature tile))

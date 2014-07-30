@@ -56,10 +56,11 @@
    "spiked pit" :spikepit})
 
 (defn item?
-  [glyph color]
-  (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)
-      (and (= \_ glyph) (some? color))
-      (and (= \: glyph) (nil? color))))
+  ([tile] (item? (:glyph tile) (:color tile)))
+  ([glyph color]
+   (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)
+       (and (= \_ glyph) (some? color))
+       (and (= \: glyph) (nil? color)))))
 
 (defn boulder? [tile]
   (and (= (:glyph tile) \0) (nil? (:color tile))))
@@ -81,7 +82,7 @@
 
 (defn walkable? [{:keys [feature] :as tile}]
   (and (not (boulder? tile))
-       (or (and (item? (:glyph tile) (:color tile)) (nil? feature))
+       (or (and (item? tile) (nil? feature))
            (traps feature)
            (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
               :throne :grave :stairs-up :stairs-down} feature))))

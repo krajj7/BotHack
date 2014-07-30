@@ -85,7 +85,7 @@
                  (trap? (at-player @game)))
            %
            (assoc-in % [:player :trapped] false)))
-      (if (and (diagonal dir) (item? (:glyph target) (:color target)))
+      (if (and (diagonal dir) (item? target))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
                     (not (curlvl-monster-at % target))
@@ -133,7 +133,7 @@
                   (swap! game remove-curlvl-monster target)
                   #"You try to move the boulder, but in vain\."
                   (let [boulder-target (in-direction level target dir)]
-                    (if (item? (:glyph boulder-target) (:color boulder-target))
+                    (if (item? boulder-target)
                       (swap! game update-curlvl-at boulder-target
                              assoc :feature :door-open)
                       (swap! game update-curlvl-at boulder-target
@@ -332,7 +332,7 @@
 (defn- examine-traps [game]
   (->> (curlvl game) :tiles (apply concat)
        (filter #(and (= :trap (:feature %))
-                     (not (item? (:glyph %) (:color %)))
+                     (not (item? %))
                      (not (monster? (:glyph %) (:color %)))))
        (map ->FarLook) first))
 
