@@ -15,7 +15,7 @@
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> (-> game curlvl-monsters vals)
        (filter #(and (hostile? %)
-                     (if (blind? player)
+                     (if (or (blind? player) (:hallu (:state player)))
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
                             (> 10 (distance player %)))))) ; TODO should be navigation distance (maybe pre-compute floodfill reachable)
