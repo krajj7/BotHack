@@ -273,8 +273,10 @@
       ToplineMessageHandler
       (message [_ text]
         (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
-          (swap! game #(update-curlvl-at % (:player %)
-                                         assoc :feature feature))))))
+          (swap! game #(update-curlvl-at % (:player %) assoc :feature feature))
+          (if (= :trap (:feature (at-player @game)))
+            (swap! game #(update-curlvl-at % (:player %)
+                                           assoc :feature :floor)))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
