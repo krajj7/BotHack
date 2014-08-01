@@ -15,7 +15,7 @@
    id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
   anbf.bot.IDungeon)
 
-(defn- new-branch-id []
+(defn- gen-branch-id []
   (-> "branch#" gensym keyword))
 
 (def branches #{:main :mines :sokoban :quest :ludios :vlad
@@ -284,7 +284,7 @@
   ; TODO could check for already found parallel branches and disambiguate
   (or (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
-      (new-branch-id)))
+      (gen-branch-id)))
 
 (defn ensure-curlvl
   "If current branch-id + dlvl has no level associated, create a new empty level"

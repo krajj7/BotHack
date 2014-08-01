@@ -181,7 +181,7 @@
 
 (defn- mark-branch-entrance [game tile branch origin-feature]
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs.  (Actually two sets of stairs may be next to each other and this breaks if that happens and the non-origin stairs are obscured)"
-  (if (#{:quest :ludios} branch)
+  (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
     (->> (conj (neighbors tile) tile)
          (remove #(= origin-feature (:feature %)))
