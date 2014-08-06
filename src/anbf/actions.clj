@@ -146,7 +146,7 @@
         DlvlChangeHandler
         (dlvl-changed [_ _ _]
           (if @portal
-            (if (not= :main (branch-key level))
+            (if (not= :main (branch-key @game level))
               (swap! game assoc :branch-id :main)
               (if ((:tags level) :quest) ; TODO ludios, wiztower, planes
                 (swap! game assoc :branch-id :quest)))))
