@@ -7,6 +7,7 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.util :refer :all]
             [anbf.tile :refer :all]))

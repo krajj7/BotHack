@@ -113,9 +113,8 @@
 
 (defn reset-curlvl-monster [game monster]
   {:pre [(:dungeon game)]}
-  (assoc-in game [:dungeon :levels (branch-key game) (:dlvl game)
-                  :monsters (position monster)]
-            monster))
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
+             reset-monster monster))
 
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
@@ -126,10 +125,6 @@
                          (:dlvl game) :monsters (position pos)]
          update-fn args))
 
-(defn monster-at [level pos]
-  {:pre [(:monsters level)]}
-  (get-in level [:monsters (position pos)]))
-
 (defn curlvl-monster-at [game pos]
   (-> game curlvl (monster-at pos)))
 
@@ -137,9 +132,8 @@
   "Update the tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
   {:pre [(:dungeon game)]}
-  (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles
-                         (dec (:y pos)) (:x pos)]
-         update-fn args))
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
+             #(apply update-at % pos update-fn args)))
 
 (defn at-curlvl [game pos]
   {:pre [(:dungeon game)]}
