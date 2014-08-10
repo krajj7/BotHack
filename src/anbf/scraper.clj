@@ -263,6 +263,8 @@
                                          (send write \space)
                                          (send ended))))
 
+            (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
+              (log/debug "sink discarding redraw"))
             (initial [frame]
               (or (handle-game-start frame)
                   (handle-game-end frame)
@@ -319,7 +321,7 @@
                     (send delegator know-position frame)
                     (flush-more-list delegator items)
                     (send delegator full-frame frame)
-                    initial)
+                    sink)
                   (log/debug "lastmsg expecting further redraw")))
             (location [frame]
               (or (when (location-prompt? frame)
@@ -344,7 +346,11 @@
       current-scraper)))
 
 (defn scraper-handler [scraper delegator]
-  (reify RedrawHandler
+  (reify
+    ActionChosenHandler
+    (action-chosen [_ _]
+      (dosync (ref-set scraper nil))) ; escape sink
+    RedrawHandler
     (redraw [_ frame]
       #_(dosync (alter scraper apply-scraper delegator frame))
       (->> (dosync (alter scraper apply-scraper delegator frame))
