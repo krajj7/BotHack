@@ -186,7 +186,9 @@
                     (if-let [step (random-move game level)]
                       [0 step]))
                   (when (and (door? to-tile) (not monster))
-                    (or (and (kickable-door? level to-tile opts)
+                    (or (if (= :door-secret (:feature to-tile))
+                          [10 (->Search)]) ; TODO stethoscope
+                        (and (kickable-door? level to-tile opts)
                              (blocked-door level to-tile)
                              (kick-door level to-tile dir))
                         (if (diagonal dir)
@@ -205,6 +207,8 @@
    target]) ; position of target
 
 ; TODO could use builtin pathfinding (_ command) if the path is all explored/unobstructed
+; stop on: trap, nil feature, monster, unwalkable
+; don't use _ if the target was just _'d, or path is short
 (defn- path-step [from move-fn path]
   (if (seq path)
     (nth (move-fn from (nth path 0)) 1)))

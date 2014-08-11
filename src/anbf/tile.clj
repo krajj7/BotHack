@@ -7,7 +7,7 @@
   [x y
    glyph
    color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater + traps
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater + traps
    seen
    walked
    dug
@@ -66,7 +66,7 @@
   (and (= (:glyph tile) \0) (nil? (:color tile))))
 
 (defn door? [tile]
-  (#{:door-open :door-closed :door-locked} (:feature tile)))
+  (#{:door-open :door-closed :door-locked :door-secret} (:feature tile)))
 
 (defn stairs? [tile]
   (#{:stairs-up :stairs-down} (:feature tile)))
@@ -107,6 +107,12 @@
                    (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
               :else feature)))
 
+(defn- door-or-wall [current new-glyph new-color]
+  (cond
+    (= new-color :brown) :door-open
+    (= :door-secret current) :door-secret
+    :else :wall))
+
 (defn- infer-feature [current new-glyph new-color]
   (case new-glyph
     \space current ; TODO :air
@@ -121,8 +127,8 @@
     \~ :water
     \^ (if (traps current) current :trap)
     \] :door-closed
-    \| (if (= new-color :brown) :door-open :wall)
-    \- (if (= new-color :brown) :door-open :wall)
+    \| (door-or-wall current new-glyph new-color)
+    \- (door-or-wall current new-glyph new-color)
     (log/error "unrecognized feature" new-glyph new-color "was" current)))
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
