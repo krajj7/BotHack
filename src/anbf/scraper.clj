@@ -303,7 +303,8 @@
                 (send delegator write (str (ctrl \p) (ctrl \p)))
                 lastmsg-get))
             (lastmsg-get [frame]
-              (when (= "# #" (topline frame))
+              (when (and (= "# #" (topline frame))
+                         (< (-> frame :cursor :y) 22))
                 (ref-set player (:cursor frame))
                 (send delegator write (str (ctrl \p)))
                 lastmsg+action))
