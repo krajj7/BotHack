@@ -441,13 +441,13 @@
 (defn seek-portal [game]
   (log/debug "seeking portal")
   (or (:step (navigate game #(= :portal (:feature %))))
-      (:step (navigate game (complement :walked)))
+      (:step (navigate game #(and (not (:walked %)) (not (door? %)))))
       (explore game)
       (search game)))
 
-(defn seek [game smth]
+(defn seek [game smth & opts]
   (log/debug "seeking")
-  (if-let [{:keys [step]} (navigate game smth)]
+  (if-let [{:keys [step]} (apply navigate game smth opts)]
     step
     (or (explore game) (search game))))
 
@@ -455,15 +455,21 @@
   (log/debug "switching within branch to" new-dlvl)
   (if (= (:dlvl game) new-dlvl)
     (log/debug "got to dlvl" new-dlvl)
-    (let [branch (branch-key game)
-          [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
-                            [:stairs-up ->Ascend]
-                            [:stairs-down ->Descend])
-          step (seek game #(and (= stairs (:feature %))
-                                (if-let [b (branch-key game %)]
-                                  (= b branch)
-                                  true)))]
-        (or step (action)))))
+    (or (if (= "Home 1" (:dlvl game)) ; may need to chat with quest leader first
+          (let [level (curlvl game)
+                leader (-> level :blueprint :leader)]
+            (when (and leader (not-any? :walked (neighbors level leader)))
+              (log/debug "trying to seek out quest leader at" leader "before descending")
+              (seek game leader :adjacent :explored))))
+        (let [branch (branch-key game)
+              [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
+                                [:stairs-up ->Ascend]
+                                [:stairs-down ->Descend])
+              step (seek game #(and (= stairs (:feature %))
+                                    (if-let [b (branch-key game %)]
+                                      (= b branch)
+                                      true)))]
+          (or step (action))))))
 
 (defn- escape-branch [game]
   (let [levels (get-branch game)

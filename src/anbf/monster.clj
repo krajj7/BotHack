@@ -12,7 +12,6 @@
    awake
    friendly
    peaceful ; nil while undetermined
-   cancelled
    remembered]) ; not currently known
 
 (defmethod print-method Monster [m w]
@@ -24,9 +23,17 @@
   (and (not (:peaceful monster))
        (not (:friendly monster))))
 
-(defn new-monster [x y known glyph color]
+(defn known-monster
+  "Create a known monster on known location (like when marking Medusa on Medusa's)"
+  [x y type]
+  (Monster. x y nil (:glyph type) (:color type) type false false
+            (if (:hostile (:tags type)) false (:peaceful (:tags type))) true))
+
+(defn new-monster
+  "Create a monster by appearance"
+  [x y known glyph color]
   (let [type (get-in appearance->monster [glyph color])
         tags (:tags type)
         peaceful (if (:hostile tags) false (:peaceful tags))]
     (Monster. x y known glyph (non-inverse color) type nil
-              (boolean (inverse? color)) peaceful false false)))
+              (boolean (inverse? color)) peaceful false)))

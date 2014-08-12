@@ -8,6 +8,7 @@
   [dlvl
    branch-id
    tags ; :shop, :oracle, :minetown, :vault, ...
+   blueprint ; for special levels
    tiles
    monsters] ; { {:x X :y Y} => Monster }
   anbf.bot.ILevel)
@@ -23,7 +24,7 @@
        (partition 80) (map vec) vec))
 
 (defn new-level [dlvl branch-id]
-  (Level. dlvl branch-id #{} (initial-tiles) {}))
+  (Level. dlvl branch-id #{} nil (initial-tiles) {}))
 
 (defn update-at
   "Update the level tile at given position by applying update-fn to its current value and args"
@@ -36,3 +37,17 @@
 
 (defn reset-monster [level monster]
   (assoc-in level [:monsters (position monster)] monster))
+
+(def blueprints
+  [{:role "samurai"
+    :dlvl "Home 3"
+    :branch :quest
+    :features {{:x 28 :y 15} :door-secret
+               {:x 51 :y 8} :door-secret}}
+   {:role "samurai"
+    :dlvl "Home 1"
+    :branch :quest
+    :leader {:y 6, :x 22}
+    :monsters {{:y 6, :x 22} (by-name "Lord Sato")}
+    :features {{:x 29 :y 6} :door-secret
+               {:x 52 :y 6} :door-secret}}])

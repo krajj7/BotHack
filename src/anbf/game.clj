@@ -91,6 +91,7 @@
       (parse-map frame)
       infer-branch
       infer-tags
+      level-blueprint
       (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) dissoc :blocked)
       (update-curlvl-at (:cursor frame) assoc :walked true)))

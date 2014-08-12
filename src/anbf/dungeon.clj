@@ -336,3 +336,39 @@
       (#(if-let [roomkeeper (and (shops kind) (closest-roomkeeper %))]
         (floodfill-room % roomkeeper kind)
         %))))
+
+(defn- match-level
+  "Returns true if the level matches the blueprint :dlvl, :branch and :tag (if present)"
+  [game level blueprint]
+  (and (or (not (:role blueprint))
+           true) ; TODO check :role !
+       (or (not (:branch blueprint))
+           (= (:branch blueprint) (branch-key game level)))
+       (or (not (:dlvl blueprint))
+           (= (:dlvl blueprint) (:dlvl level)))
+       (or (not (:tag blueprint))
+           ((:tags level) (:tag blueprint)))))
+
+(defn- match-blueprint [game level]
+  (when-let [blueprint (-> (partial match-level game level)
+                         (filter blueprints) first)]
+    (log/debug "applying blueprint, level:" (:dlvl level)
+               "; branch:" (branch-key game level) "; tags:" (:tags level))
+    (as-> level res
+      (assoc res :blueprint blueprint)
+      (reduce (fn mark-feature [level [pos feature]]
+                (update-at level pos assoc :feature feature))
+              res
+              (:features blueprint))
+      (reduce (fn add-monster [level [pos monster]]
+                (reset-monster level (known-monster (:x pos) (:y pos) monster)))
+              res
+              (:monsters blueprint)))))
+
+(defn level-blueprint [game]
+  (let [level (curlvl game)]
+    (if-let [new-level (and (not (:blueprint level))
+                            (match-blueprint game level))]
+      (assoc-in game [:dungeon :levels (branch-key game new-level)
+                      (:dlvl new-level)] new-level)
+      game)))
