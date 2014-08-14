@@ -71,7 +71,6 @@
                 (throw (IllegalArgumentException.
                          (str "Invalid direction: " dir)))))))
 
-; TODO change branch-id on special levelport (quest/ludios)
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
@@ -144,12 +143,14 @@
                   (swap! game update-curlvl-at target assoc :feature nil)
                   nil))))
         DlvlChangeHandler
-        (dlvl-changed [_ _ _]
+        (dlvl-changed [_ old-dlvl new-dlvl]
           (if @portal
-            (if (not= :main (branch-key @game level))
-              (swap! game assoc :branch-id :main)
-              (if ((:tags level) :quest) ; TODO ludios, wiztower, planes
-                (swap! game assoc :branch-id :quest)))))
+            (or ; TODO planes
+                (if (subbranches (branch-key @game level))
+                  (swap! game assoc :branch-id :main))
+                (if (= "Home" (subs new-dlvl 0 4))
+                  (swap! game assoc :branch-id :quest))
+                (log/error "entered unknown portal!"))))
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)

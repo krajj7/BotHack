@@ -80,8 +80,8 @@
     (change-dlvl inc dlvl)))
 
 (defn branch-key
-  ([{:keys [dungeon branch-id] :as game}]
-   (branch-key game game))
+  ([{:keys [branch-id] :as game}]
+   (branch-key game branch-id))
   ([{:keys [dungeon] :as game} level-or-branch-id]
    (let [branch-id (if (keyword? level-or-branch-id)
                      level-or-branch-id
