@@ -38,10 +38,10 @@
 
 (defn print-colors [f]
   (println "Colors:")
-  (dorun (map #(if (every? nil? %)
-                 (println nil)
-                 (println %))
-              (:colors f))))
+  (doseq [c (:colors f)]
+    #(if (every? nil? c)
+       (println nil)
+       (println c))))
 
 (defn nth-line
   "Returns the line of text on n-th line of the frame."

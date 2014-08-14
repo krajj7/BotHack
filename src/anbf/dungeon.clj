@@ -350,8 +350,7 @@
            ((:tags level) (:tag blueprint)))))
 
 (defn- match-blueprint [game level]
-  (when-let [blueprint (-> (partial match-level game level)
-                         (filter blueprints) first)]
+  (when-let [blueprint (find-first (partial match-level game level) blueprints)]
     (log/debug "applying blueprint, level:" (:dlvl level)
                "; branch:" (branch-key game level) "; tags:" (:tags level))
     (as-> level res

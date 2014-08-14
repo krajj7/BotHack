@@ -58,9 +58,9 @@
             (println frame))))))
 
 (defn- register-javabot-jars []
-  (dorun (map pom/add-classpath
-              (filter #(-> % .getName (.endsWith ".jar"))
-                      (file-seq (io/file "javabots/bot-jars"))))))
+  (doseq [l (filter #(-> % .getName (.endsWith ".jar"))
+                    (file-seq (io/file "javabots/bot-jars")))]
+    (pom/add-classpath l)))
 
 (defn -main [& args] []
   (register-javabot-jars)
@@ -88,14 +88,12 @@
   ([pred level]
    (print-tiles pred level nil))
   ([pred level f]
-   (dorun (map (fn [row]
-                 (dorun (map (fn [tile]
-                               (print (if (pred tile)
-                                        (if f (f tile) (:glyph tile))
-                                        (if f (:glyph tile) \X))))
-                             row))
-                 (println))
-               (:tiles level)))))
+   (doseq [row (:tiles level)]
+     (doseq [tile row]
+       (print (if (pred tile)
+                (if f (f tile) (:glyph tile))
+                (if f (:glyph tile) \X))))
+     (println))))
 
 (defn print-los [game]
   (print-tiles (partial visible? game) (curlvl game)))

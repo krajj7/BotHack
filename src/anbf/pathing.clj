@@ -252,7 +252,7 @@
               (if-let [path (dijkstra player goal-set move-fn)]
                 (->Path (path-step player move-fn path) path
                         (->> (or (peek path) player) neighbors
-                             (filter goal-fn) first)))))
+                             (find-first goal-fn))))))
           ; not searching for adjacent
           (if-let [goal-seq (if (set? pos-or-goal-fn)
                               (->> pos-or-goal-fn (take 2) seq)
@@ -365,7 +365,7 @@
     (or (log/debug "searching corridors") (:step p) (->Search))))
 
 (defn- searchable-extremity [level y xs howmuch]
-  (if-let [tile (->> xs (map #(at level % y)) (filter walkable?) first)]
+  (if-let [tile (->> xs (map #(at level % y)) (find-first walkable?))]
     (if (and (= :floor (:feature tile))
              (< (:searched tile) howmuch)
              (not= \- (:glyph (at level (update-in tile [:x] dec))))

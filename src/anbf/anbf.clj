@@ -72,19 +72,18 @@
   (let [action-handlers (atom #{})]
     (reify ActionChosenHandler
       (action-chosen [_ action]
-        (dorun (map (partial deregister-handler anbf)
-                    @action-handlers))
+        (doseq [h @action-handlers]
+          (deregister-handler anbf h))
         (reset! action-handlers #{})
         (when-let [h (handler action anbf)]
           (register-handler anbf priority-top h)
           (swap! action-handlers conj h))
-        (loop [[[p handler] & more] (:handlers action)]
+        (doseq [[p handler] (:handlers action)]
           (when-let [h (if (fn? handler)
                          (handler anbf)
                          handler)]
             (register-handler anbf p h)
-            (swap! action-handlers conj h)
-            (recur more)))))))
+            (swap! action-handlers conj h)))))))
 
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))

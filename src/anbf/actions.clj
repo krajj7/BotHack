@@ -333,11 +333,11 @@
       (->Look))))
 
 (defn- examine-traps [game]
-  (->> (curlvl game) :tiles (apply concat)
-       (filter #(and (= :trap (:feature %))
-                     (not (item? %))
-                     (not (monster? (:glyph %) (:color %)))))
-       (map ->FarLook) first))
+  (some->> (curlvl game) :tiles (apply concat)
+           (find-first #(and (= :trap (:feature %))
+                             (not (item? %))
+                             (not (monster? (:glyph %) (:color %)))))
+           (->FarLook)))
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (:hallu (:state player))
