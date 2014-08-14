@@ -12,21 +12,23 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]))
 
+(def hostile-dist-thresh 10)
+
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> (-> game curlvl-monsters vals)
        (filter #(and (hostile? %)
                      (if (or (blind? player) (:hallu (:state player)))
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
-                            (> 10 (distance player %)))))) ; TODO should be navigation distance (maybe pre-compute floodfill reachable)
+                            (> hostile-dist-thresh (distance player %))))))
        (into #{})))
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
     (->Move :E)
     (let [tgts (hostile-threats game)]
-      (when-let [{:keys [step target]} (navigate game tgts :explored
-                                                 :walk :adjacent)]
+      (when-let [{:keys [step target]} (navigate game tgts :walking :adjacent
+                                         :max-steps hostile-dist-thresh)]
         (log/debug "targetting enemy at" target)
         (or step (if (blind? player)
                    (->Attack (towards player target))
@@ -42,14 +44,16 @@
         (->Wait))))
 
 (defn progress [game]
-  (or (visit game :quest)
-      (visit game :sokoban)
-      (visit game :mines :minetown)
-      (explore game :main "Dlvl:2")
-      (visit game :mines :end)
-      ;(explore game :mines)
-      (visit game :main :medusa)
+  (or ;(explore game :mines)
       (visit game :quest :end)
+      (visit game :sokoban)
+      ;(visit game :quest :end)
+      ;(visit game :mines :minetown)
+      ;(explore game :main "Dlvl:2")
+      ;(visit game :mines :end)
+      ;(explore game :mines)
+      (explore game :main "Dlvl:20")
+      (visit game :main :medusa)
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
 

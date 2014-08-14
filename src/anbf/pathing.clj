@@ -26,45 +26,52 @@
 (defn diagonal-walkable? [game {:keys [feature] :as tile}]
   (not= :door-open feature))
 
-(defn- a* [from to move-fn]
+(defn- a*
   "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
-  (loop [closed {}
-         open (priority-map-keyfn first (position from) [0 0])]
-    (if (empty? open) nil
-      (let [[node [total dist prev]] (peek open)
-            path (conj (closed prev []) node)
-            delta (distance node to)]
-        (cond
-          (zero? delta) (subvec path 1)
-          (and (= 1 delta)
-               (not-any? #(move-fn % to)
-                         (neighbors to))) (conj (subvec path 1) to)
-          :else (recur (assoc closed node path)
-                       (merge-with
-                         (partial min-key first)
-                         (pop open)
-                         (into {} (for [nbr (remove closed (neighbors node))
-                                        :let [[cost action] (move-fn node nbr)]
-                                        :when (some? action)]
-                                    (let [new-dist (int (+ dist cost))]
-                                      [nbr [(+ new-dist (distance nbr to))
-                                            new-dist node]]))))))))))
+  ([from to move-fn] (a* from to move-fn nil))
+  ([from to move-fn max-steps]
+   (loop [closed {}
+          open (priority-map-keyfn first (position from) [0 0])]
+     (if-not (empty? open)
+       (let [[node [total dist prev]] (peek open)
+             path (conj (closed prev []) node)
+             delta (distance node to)]
+         (cond
+           (zero? delta) (subvec path 1)
+           (and (= 1 delta)
+                (not-any? #(move-fn % to)
+                          (neighbors to))) (conj (subvec path 1) to)
+           (and max-steps (< max-steps (+ delta (count path)))) nil
+           :else (recur (assoc closed node path)
+                        (merge-with
+                          (partial min-key first)
+                          (pop open)
+                          (into {} (for [nbr (remove closed (neighbors node))
+                                         :let [[cost action] (move-fn node nbr)]
+                                         :when (some? action)]
+                                     (let [new-dist (int (+ dist cost))]
+                                       [nbr [(+ new-dist (distance nbr to))
+                                             new-dist node]])))))))))))
 
-(defn- dijkstra [from goal? move-fn]
-  (loop [closed {}
-         open (priority-map-keyfn first (position from) [0])]
-    (if-let [[node [dist prev]] (peek open)]
-      (let [path (conj (closed prev []) node)]
-        (if (goal? node)
-          (subvec path 1)
-          (recur (assoc closed node path)
-                 (merge-with (partial min-key first)
-                             (pop open)
-                             (into {}
+(defn- dijkstra
+  ([from goal? move-fn] (dijkstra from goal? move-fn nil))
+  ([from goal? move-fn max-steps]
+   (loop [closed {}
+          open (priority-map-keyfn first (position from) [0])]
+     (if-let [[node [dist prev]] (peek open)]
+       (let [path (conj (closed prev []) node)]
+         (cond
+           (goal? node) (subvec path 1)
+           (and max-steps (< max-steps (count path))) nil
+           :else (recur
+                   (assoc closed node path)
+                   (merge-with (partial min-key first)
+                               (pop open)
+                               (into {}
                                    (for [nbr (remove closed (neighbors node))
                                          :let [[cost action] (move-fn node nbr)]
                                          :when (some? action)]
-                                     [nbr [(+ dist cost) node]])))))))))
+                                     [nbr [(+ dist cost) node]]))))))))))
 
 (defn- unexplored? [tile]
   (and (not (boulder? tile))
@@ -185,7 +192,9 @@
                   (if (:trapped (:player game))
                     (if-let [step (random-move game level)]
                       [0 step]))
-                  (when (and (door? to-tile) (not monster))
+                  (when (and (door? to-tile) (not monster)
+                             (or (not (:walking opts))
+                                 (= :door-open (:feature to-tile))))
                     (or (if (= :door-secret (:feature to-tile))
                           [10 (->Search)]) ; TODO stethoscope
                         (and (kickable-door? level to-tile opts)
@@ -213,11 +222,11 @@
   (if (seq path)
     (nth (move-fn from (nth path 0)) 1)))
 
-(defn- get-a*-path [from to move-fn opts]
+(defn- get-a*-path [from to move-fn optset max-steps]
   (log/debug "a*")
-  (if-let [path (a* from to move-fn)]
+  (if-let [path (a* from to move-fn max-steps)]
     (if (seq path)
-      (if (:adjacent opts)
+      (if (:adjacent optset)
         (->Path (path-step from move-fn path) (pop path) to)
         (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
              (->Path (path-step from move-fn path) path to)))
@@ -228,28 +237,31 @@
   Supported options:
     :walking - don't use actions except Move (no door opening etc.)
     :adjacent - path to closest adjacent tile instead of the target directly
-    :explored - don't path through unknown tiles"
+    :explored - don't path through unknown tiles
+    :max-steps <num> - don't navigate further than given number of steps"
   [{:keys [player] :as game} pos-or-goal-fn & opts]
   [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
   ;(log/debug "navigating" pos-or-goal-fn opts)
-  (let [opts (into #{} opts)
+  (let [optset (into #{} (filter keyword? opts))
+        max-steps (if (:max-steps optset)
+                    (nth opts (inc (.indexOf opts :max-steps))))
         level (curlvl game)
-        move-fn #(move game level %1 %2 opts)]
+        move-fn #(move game level %1 %2 optset)]
     (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
-      (get-a*-path player pos-or-goal-fn move-fn opts)
+      (get-a*-path player pos-or-goal-fn move-fn optset max-steps)
       (let [goal-fn (if (set? pos-or-goal-fn)
                       (comp (into #{} (map position pos-or-goal-fn))
                             position)
                       #(pos-or-goal-fn (at level %)))]
-        (if (:adjacent opts)
+        (if (:adjacent optset)
           (let [goal-set (if (set? pos-or-goal-fn)
                            (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
                            (->> level :tiles (apply concat) (filter goal-fn)
                                 (mapcat neighbors) (into #{})))]
             (case (count goal-set)
               0 nil
-              1 (get-a*-path player (first goal-set) move-fn opts)
-              (if-let [path (dijkstra player goal-set move-fn)]
+              1 (get-a*-path player (first goal-set) move-fn optset max-steps)
+              (if-let [path (dijkstra player goal-set move-fn max-steps)]
                 (->Path (path-step player move-fn path) path
                         (->> (or (peek path) player) neighbors
                              (find-first goal-fn))))))
@@ -259,9 +271,10 @@
                               (->> level :tiles (apply concat) (filter goal-fn)
                                    (take 2) seq))]
             (if (= 2 (count goal-seq))
-              (if-let [path (dijkstra player goal-fn move-fn)]
+              (if-let [path (dijkstra player goal-fn move-fn max-steps)]
                 (->Path (path-step player move-fn path) path (peek path)))
-              (get-a*-path player (first goal-seq) move-fn opts))))))))
+              (get-a*-path player (first goal-seq)
+                           move-fn optset max-steps))))))))
 
 (defn- explorable-tile? [level tile]
   (or (not (:feature tile))

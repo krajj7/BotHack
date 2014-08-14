@@ -55,4 +55,4 @@
   (apply str (concat (repeat 10 \H) (repeat 4 \K) ; to corner
                      (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))
 
-(defn find-first [p s] (first (filter p s)))
+(defn find-first [p s] (first (filter p s)))
