@@ -119,6 +119,7 @@
 
 (defn- choice-fn [msg]
   (condp re-first-group msg
+    #"Shall I remove your|Take off your |let me run my fingers" remove-equip
     #"^Really attack .*\?" really-attack
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))

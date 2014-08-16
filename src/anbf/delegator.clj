@@ -202,6 +202,9 @@
 (defyesnohandler ReallyAttackHandler
   (really-attack [handler ^String text]))
 
+(defyesnohandler SeducedEquipRemoveHandler
+  (remove-equip [handler ^String text]))
+
 (defn- respond-action [protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [action (apply invoke-command protocol method delegator args)]
