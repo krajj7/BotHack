@@ -196,13 +196,13 @@
                            (= (:glyph tile) (:glyph %))))))
         (apply concat (take-nth 2 (:tiles level)))))
 
-(def soko1-14 "                                |..^^^^0000...|                                 ")
-(def soko2-12 "                                |..^^^<|.....|                                  ")
+(def soko1-14 "                                |..^^^^0000...|")
+(def soko2-12 "                                |..^^^<|.....|")
 
 (defn- in-soko? [game]
   (and (<= 5 (dlvl-number (:dlvl game)) 9)
-       (or (= soko1-14 (get-in game [:frame :lines 14]))
-           (= soko2-12 (get-in game [:frame :lines 12])))))
+       (or (.startsWith (get-in game [:frame :lines 14]) soko1-14)
+           (.startsWith (get-in game [:frame :lines 12]) soko2-12))))
 
 (defn- recognize-branch [game level]
   (cond (in-soko? game) :sokoban
@@ -237,6 +237,30 @@
 (defn in-maze-corridor? [level pos]
   (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
 
+(def soko2a-16 "                          |...|..0-.0.^^^^^^^^^^^^.|")
+(def soko2b-16 "                        |....|..0.0.^^^^^^^^^^^^^^^.|")
+(def soko3a-12 "                              |....-0--0-|...<...|")
+(def soko3b-9 "                              |..|.0.0.|00.|.....|")
+(def soko4a-18 "                          |..0.....|     |-|.....|--") ; BoH variant
+(def soko4b-5 "                            |..^^^^^^^^^^^^^^^^^^..|") ; "oR variant
+
+(def soko-recog ; [y trimmed-line :tag]
+  [[14 soko1-14 :soko-1b]
+   [12 soko2-12 :soko-1a]
+   [16 soko2a-16 :soko-2a]
+   [16 soko2b-16 :soko-2b]
+   [12 soko3a-12 :soko-3a]
+   [9 soko3b-9 :soko-3b]
+   [18 soko4a-18 :soko-4a]
+   [5 soko4b-5 :soko-4b]])
+
+(defn- recognize-soko [game]
+  (or (some (fn [[y line tag]]
+              (if (.startsWith (get-in game [:frame :lines y]) line)
+                tag))
+            soko-recog)
+      (throw (IllegalStateException. "unrecognized sokoban level!"))))
+
 (defn infer-tags [game]
   (let [level (curlvl game)
         dlvl (dlvl level)
@@ -246,7 +270,7 @@
     (cond-> game
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
-           (not-any? #(not (or (= :water (log/spy (:feature (at level 2 %))))
+           (not-any? #(not (or (= :water (:feature (at level 2 %)))
                                (monster-at level (position 2 %))))
                      (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
       (and (= :main branch) (<= 21 dlvl 28)
@@ -255,6 +279,15 @@
            (not-any? #(and (not= :water (:feature (at level 5 %)))
                            (not= :floor (:feature (at level 4 %))))
                      [13 14 15])) (add-curlvl-tag :medusa :medusa-2)
+      (and (= :sokoban branch)
+           (not (some #{:soko-1a :soko-1b :soko-2a :soko-2b
+                        :soko-3a :soko-3b :soko-4a :soko-4b}
+                      (:tags level)))) ((fn sokotag [game]
+                                          (let [tag (recognize-soko game)
+                                                res (add-curlvl-tag tag)]
+                                            (if (#{:soko-4a :soko-4b} tag)
+                                              (add-curlvl-tag res :end)
+                                              res))))
       (and (= :main branch) (<= 10 dlvl 12)
            (not (tags :bigroom))
            (some (fn lots-floors? [row]
