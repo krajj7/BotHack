@@ -268,6 +268,11 @@
         branch (branch-key game)
         has-features? (has-features? level)]
     (cond-> game
+      (and (= :main branch) (<= 25 dlvl 29)
+           (not (some tags #{:medusa :votd :castle}))
+           (not-any? #(not (or (= :water (:feature (at level 2 %)))
+                               (monster-at level (position 2 %))))
+                     (range 8 15))) (add-curlvl-tag :castle)
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
            (not-any? #(not (or (= :water (:feature (at level 2 %)))

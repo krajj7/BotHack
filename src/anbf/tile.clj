@@ -116,7 +116,9 @@
 (defn- infer-feature [current new-glyph new-color]
   (case new-glyph
     \space current ; TODO :air
-    \. (if (= new-color :cyan) :ice :floor)
+    \. (if (traps current)
+         current
+         (if (= new-color :cyan) :ice :floor))
     \< :stairs-up
     \> :stairs-down
     \\ (if (= new-color :yellow) :throne :grave)
@@ -128,14 +130,15 @@
          :brown :drawbridge-raised
          (or (log/warn "unknown } feature color (" new-color
                        "), possibly underwater") current))
-    \# :corridor ; TODO :cloud, :drawbridge-lowered
+    \# (if (traps current)
+         current
+         :corridor) ; TODO :cloud, :drawbridge-lowered
     \_ (if (nil? new-color) :altar current)
     \~ :water
     \^ (if (traps current) current :trap)
     \] :door-closed
     \| (door-or-wall current new-glyph new-color)
-    \- (door-or-wall current new-glyph new-color)
-    (log/error "unrecognized feature" new-glyph new-color "was" current)))
+    \- (door-or-wall current new-glyph new-color)))
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
 (defn- mark-seen-features [tile]

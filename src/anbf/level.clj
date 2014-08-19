@@ -7,7 +7,7 @@
 (defrecord Level
   [dlvl
    branch-id
-   tags ; :shop, :oracle, :minetown, :vault, ...
+   tags ; subset #{:shop :oracle :minetown :vault :medusa :castle :votd ...}
    blueprint ; for special levels
    tiles
    monsters] ; { {:x X :y Y} => Monster }
@@ -39,7 +39,23 @@
   (assoc-in level [:monsters (position monster)] monster))
 
 (def blueprints
-  [{:role "samurai"
+  [{:branch :main
+    :tag :castle
+    :features {{:x 55 :y 10} :door-secret
+               {:x 55 :y 12} :door-secret
+               {:x 46 :y 11} :door-secret
+               {:x 48 :y 11} :trapdoor
+               {:x 52 :y 12} :trapdoor
+               {:x 56 :y 12} :trapdoor
+               {:x 60 :y 12} :trapdoor
+               {:x 63 :y 12} :trapdoor}}
+   {:branch :main
+    :tag :votd
+    :features {{:x 68 :y 18} :stairs-up
+               {:x 6 :y 2} :door-secret
+               {:x 10 :y 5} :door-secret
+               {:x 8 :y 7} :door-secret}}
+   {:role "samurai"
     :dlvl "Home 3"
     :branch :quest
     :features {{:x 28 :y 15} :door-secret
