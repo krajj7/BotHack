@@ -107,7 +107,10 @@
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-bottom
-                           (reify ; escape everything by default
+                           (reify
+                             EnterGehennomHandler
+                             (enter-gehennom [_ _] true)
+                             ; escape the rest by default
                              TeleportWhereHandler
                              (teleport-where [_] "")
                              DieHandler

@@ -205,6 +205,9 @@
 (defyesnohandler SeducedEquipRemoveHandler
   (remove-equip [handler ^String text]))
 
+(defyesnohandler EnterGehennomHandler
+  (enter-gehennom [handler ^String text]))
+
 (defyesnohandler ForceGodHandler ; wizmode
   (force-god [handler ^String text]))
 
