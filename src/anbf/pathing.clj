@@ -314,11 +314,12 @@
                 (not= :door-open (:feature to))))))
 
 (defn- pushable-from [game level pos]
-  ; TODO soko
   (seq (filter #(if (boulder? %)
                   (let [dir (towards pos %)
                         dest (in-direction level % dir)]
                     (and dest
+                         (or (straight dir)
+                             (not= :sokoban (branch-key game level)))
                          (not (monster-at level dest))
                          (edge-passable-walking? game level pos %)
                          (pushable-through level % dest))))
