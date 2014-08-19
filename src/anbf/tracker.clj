@@ -24,10 +24,11 @@
     (reset-curlvl-monster game (assoc unpaired :remembered true))
     game))
 
-(defn track-monsters ; TODO hallu
+(defn track-monsters
   "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
   [new-game old-game]
-  (if (not= (:dlvl old-game) (:dlvl new-game))
+  (if (or (not= (:dlvl old-game) (:dlvl new-game))
+          (-> new-game :player :state :hallu))
     new-game ; TODO track stair followers?
     (loop [pairs {}
            new-monsters (curlvl-monsters new-game)
