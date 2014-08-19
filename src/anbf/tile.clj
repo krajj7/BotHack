@@ -121,8 +121,14 @@
     \> :stairs-down
     \\ (if (= new-color :yellow) :throne :grave)
     \{ (if (nil? new-color) :sink :fountain)
-    \} :TODO ; TODO :bars :tree :drawbridge :lava :underwater
-    \# :corridor ; TODO :cloud
+    \} (case new-color
+         :green :tree
+         :red :lava
+         :cyan :bars
+         :brown :drawbridge-raised
+         (or (log/warn "unknown } feature color (" new-color
+                       "), possibly underwater") current))
+    \# :corridor ; TODO :cloud, :drawbridge-lowered
     \_ (if (nil? new-color) :altar current)
     \~ :water
     \^ (if (traps current) current :trap)
