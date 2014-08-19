@@ -107,9 +107,17 @@
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-bottom
-                           (reify ; escape by default
+                           (reify ; escape everything by default
                              TeleportWhereHandler
                              (teleport-where [_] "")
+                             DieHandler
+                             (die [_ _] "")
+                             KeepSaveHandler
+                             (keep-save [_ _] "")
+                             ForceGodHandler
+                             (force-god [_ _] "")
+                             SeducedEquipRemoveHandler
+                             (remove-equip [_ _] "")
                              PromptHandler
                              (call-object [_ _] "")))
          (register-handler (reify GameStateHandler

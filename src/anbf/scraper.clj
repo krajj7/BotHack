@@ -119,8 +119,12 @@
 
 (defn- choice-fn [msg]
   (condp re-first-group msg
-    #"Shall I remove your|Take off your |let me run my fingers" remove-equip
+    #"^Shall I remove your|^Take off your |let me run my fingers" remove-equip
+    #"^Force the gods to be pleased\?" force-god
     #"^Really attack .*\?" really-attack
+    #"^Are you sure you want to enter\?" enter-gehennom
+    #"^Die\?" die
+    #"^Do you want to keep the save file\?" keep-save
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -258,7 +262,6 @@
                 (send delegator (prompt-fn msg) msg)
                 initial))
             (handle-game-end [frame]
-              ; TODO reg handler for escaping the inventory menu?
               (cond (game-over? frame) (send delegator write \y)
                     (goodbye? frame) (-> delegator
                                          (send write \space)

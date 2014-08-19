@@ -205,6 +205,15 @@
 (defyesnohandler SeducedEquipRemoveHandler
   (remove-equip [handler ^String text]))
 
+(defyesnohandler ForceGodHandler ; wizmode
+  (force-god [handler ^String text]))
+
+(defyesnohandler DieHandler ; wizmode
+  (die [handler ^String text]))
+
+(defyesnohandler KeepSaveHandler ; wizmode
+  (keep-save [handler ^String text]))
+
 (defn- respond-action [protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [action (apply invoke-command protocol method delegator args)]
