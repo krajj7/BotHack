@@ -130,10 +130,17 @@
                                (register-handler anbf scraper)
                                (start-bot anbf))))))))
 
+(defn pause [anbf]
+  (send (:delegator anbf) set-inhibition true)
+  (log/info "pausing")
+  anbf)
+
 (defn start [{:keys [config delegator] :as anbf}]
   (log/info "ANBF instance started")
   (if-not (start-menubot anbf)
     (send delegator started))
+  (if (:start-paused config)
+    (pause anbf))
   (await delegator)
   (start-jta (:jta anbf)
              (config-get config :host "localhost")
@@ -144,11 +151,6 @@
   (stop-jta (:jta anbf))
   (dosync (ref-set (:scraper anbf) nil))
   (log/info "ANBF instance stopped")
-  anbf)
-
-(defn pause [anbf]
-  (send (:delegator anbf) set-inhibition true)
-  (log/info "pausing")
   anbf)
 
 (defn unpause [anbf]
