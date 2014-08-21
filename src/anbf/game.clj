@@ -7,6 +7,7 @@
             [anbf.monster :refer :all]
             [anbf.actions :refer :all]
             [anbf.tile :refer :all]
+            [anbf.item :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
@@ -157,7 +158,8 @@
       (swap! game update-map frame))
     InventoryHandler
     (inventory-list [_ inventory]
-      (swap! game assoc-in [:player :inventory] inventory))
+      (swap! game assoc-in [:player :inventory]
+             (into {} (map (partial apply slot-item) inventory))))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text

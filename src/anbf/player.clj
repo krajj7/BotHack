@@ -25,7 +25,7 @@
    xp
    xplvl
    x y
-   inventory
+   inventory ; {char => Item}
    hunger ; :fainting :weak :hungry :satiated
    burden ; :overloaded :overtaxed :strained :stressed :burdened
    engulfed
