@@ -40,6 +40,24 @@
 
 (def blueprints
   [{:branch :main
+    :tag :medusa-1
+    :monsters {{:x 28 :y 12} (by-name "Medusa")}
+    :features {{:x 32 :y 14} :door-secret
+               {:x 48 :y 9} :door-secret
+               {:x 30 :y 14} :squeaky
+               {:x 30 :y 9} :squeaky
+               {:x 28 :y 12} :stairs-down}}
+   {:branch :main
+    :tag :medusa-2
+    :monsters {{:x 70 :y 12} (by-name "Medusa")}
+    :features {{:x 3 :y 7} :door-secret
+               {:x 8 :y 16} :door-secret
+               {:x 62 :y 7} :door-secret
+               {:x 68 :y 10} :door-secret
+               {:x 75 :y 16} :door-secret
+               {:x 5 :y 14} :magictrap
+               {:x 70 :y 12} :stairs-down}}
+   {:branch :main
     :tag :castle
     :features {{:x 55 :y 10} :door-secret
                {:x 55 :y 12} :door-secret

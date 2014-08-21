@@ -45,15 +45,15 @@
 
 (defn progress [game]
   (or ;(explore game :mines)
-      (visit game :quest :end)
-      (visit game :sokoban)
+      ;(visit game :sokoban)
+      (visit game :main :medusa)
       ;(visit game :quest :end)
       ;(visit game :mines :minetown)
       ;(explore game :main "Dlvl:2")
       ;(visit game :mines :end)
+      ;(visit game :quest :end)
       ;(explore game :mines)
-      (explore game :main "Dlvl:20")
-      (visit game :main :medusa)
+      ;(explore game :main "Dlvl:20")
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
 
