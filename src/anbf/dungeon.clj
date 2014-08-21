@@ -281,9 +281,9 @@
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
            (nil? (:feature (at level 5 20)))
-           (not-any? #(and (not= :water (:feature (at level 5 %)))
-                           (not= :floor (:feature (at level 4 %))))
-                     [13 14 15])) (add-curlvl-tag :medusa :medusa-2)
+           (not-any? #(or (not= :water (:feature (at level 7 %)))
+                          (not= :floor (:feature (at level 6 %))))
+                     [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
       (and (= :sokoban branch)
            (not (some #{:soko-1a :soko-1b :soko-2a :soko-2b
                         :soko-3a :soko-3b :soko-4a :soko-4b}
