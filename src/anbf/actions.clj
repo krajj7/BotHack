@@ -6,6 +6,7 @@
             [anbf.montype :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
+            [anbf.item :refer :all]
             [anbf.position :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]))
@@ -171,7 +172,6 @@
           (conj (neighbors player) player)))
 
 (defaction Search []
-  ; TODO "What are you looking for?  The exit?" => engulfed
   (handler [_ {:keys [game] :as anbf}]
     (swap! game update-searched) nil)
   (trigger [_] "s"))
@@ -256,28 +256,51 @@
 
 (defaction Look []
   (handler [_ {:keys [game] :as anbf}]
-    (swap! game #(if (blind? (:player %))
-                   %
-                   (update-curlvl-at % (:player %) assoc :seen true)))
-    (update-on-known-position anbf
-      #(if (->> (:player %) (at-curlvl %) :feature nil?)
-         (update-curlvl-at % (:player %) assoc :feature :floor)
-         %)) ; got no topline message suggesting a special feature
-    ; XXX note: items on tile HAVE to be determined via this command only, topline messages on Move are not reliable due to teletraps
-    (reify
-      MultilineMessageHandler
-      (message-lines [_ lines]
-        (condp re-seq (nth lines 0)
-          #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
-          (do (log/debug "Items here:") (log/spy lines)) ; TODO
-          (log/error "Unrecognized message list " (str lines))))
-      ToplineMessageHandler
-      (message [_ text]
-        (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
-          (swap! game #(update-curlvl-at % (:player %) assoc :feature feature))
-          (if (= :trap (:feature (at-player @game)))
-            (swap! game #(update-curlvl-at % (:player %)
-                                           assoc :feature :floor)))))))
+    (let [has-item (atom false)]
+      (swap! game #(if-not (blind? (:player %))
+                     (update-curlvl-at % (:player %)
+                       assoc :seen true :new-items false)
+                     %))
+      (update-on-known-position anbf
+        (fn after-look [game]
+          (as-> game res
+            (if (->> (:player res) (at-curlvl res) :feature nil?)
+              (update-curlvl-at res (:player res) assoc :feature :floor)
+              res) ; got no topline message suggesting a special feature
+            (if-not @has-item
+              (update-curlvl-at res (:player res) assoc :items [])
+              res))))
+      ; XXX note: items on tile HAVE to be determined via this command only, topline messages on Move are not reliable due to teletraps
+      (reify
+        MultilineMessageHandler
+        (message-lines [_ lines]
+          (condp re-seq (nth lines 0)
+            #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
+            (let [items (mapv ->Item (subvec lines 1))]
+              (log/debug "Items here:" (log/spy items))
+              (reset! has-item true)
+              ; TODO assoc :item-color :item-glyph (by top item kind)
+              (swap! game #(update-curlvl-at % (:player %) assoc :items items)))
+            (log/error "Unrecognized message list " (str lines))))
+        ToplineMessageHandler
+        (message [_ text]
+          (or (if (= text "But you can't reach it!")
+                (reset! has-item true))
+              (when-let [item (some->> text
+                                       (re-first-group
+                                         #"You (?:see|feel) here ([^.]+).")
+                                       ->Item)]
+                (log/debug "Single item here:" item)
+                ; TODO assoc :item-color :item-glyph
+                (reset! has-item true)
+                (swap! game #(update-curlvl-at % (:player %)
+                                               assoc :items [item])))
+              (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
+                (swap! game #(update-curlvl-at % (:player %)
+                                               assoc :feature feature))
+                (if (= :trap (:feature (at-player @game)))
+                  (swap! game #(update-curlvl-at % (:player %)
+                                                 assoc :feature :floor)))))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
@@ -328,7 +351,9 @@
 (defn- examine-tile [{:keys [player] :as game}]
   (let [tile (at-player game)]
     (when (and (not (blind? player))
-               (or (not (:feature tile)) (= :trap (:feature tile))))
+               (or (not (:feature tile))
+                   (= :trap (:feature tile))
+                   (:new-items tile)))
       (log/debug "examining tile")
       (->Look))))
 
@@ -353,7 +378,6 @@
 (defn examine-handler [anbf]
   (reify ActionHandler
     (choose-action [_ game]
-      ; TODO items
       (or (examine-tile game)
           (examine-monsters game)
           (examine-traps game)))))

@@ -278,6 +278,7 @@
 
 (defn- explorable-tile? [level tile]
   (or (not (:feature tile))
+      (:new-items tile)
       (some #(and (not (:seen %)) (not (boulder? %))) (neighbors level tile))))
 
 (defn dead-end? [level tile]

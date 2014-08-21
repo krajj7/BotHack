@@ -1,24 +1,28 @@
 (ns anbf.tile
   (:require [clojure.tools.logging :as log]
             [anbf.position :refer [neighbors]]
+            [anbf.item :refer :all]
             [anbf.util :refer :all]))
 
 (defrecord Tile
   [x y
    glyph
    color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge :lava :ice :underwater + traps
+   item-glyph
+   item-color
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
    seen
    walked
    dug
    searched ; no. of times searched
-   items ; [Items]
+   items ; [Item]
+   new-items ; flag if some items changed
    engraving
    room]
   anbf.bot.ITile)
 
 (defn initial-tile [x y]
-  (Tile. x y \space nil nil false nil false 0 [] nil nil))
+  (Tile. x y \space nil nil nil nil false nil false 0 [] false nil nil))
 
 (defn monster?
   ([glyph color] ; works better on rogue level and for worm tails
@@ -152,15 +156,29 @@
     (assoc tile :feature nil)
     tile))
 
-; TODO handle properly, mark new unknown items, track disappeared items
+(defn- reset-item [tile]
+  ;(log/debug "reset item" tile)
+  (assoc tile
+         :item-color nil
+         :item-glyph nil
+         :items []
+         :new-items false))
+
+(defn- mark-item [tile new-glyph new-color]
+  (if (and (= new-color (:item-color tile)) (= new-glyph (:item-glyph tile)))
+    tile ; unchanged
+    (assoc tile
+           :new-items true
+           :item-glyph new-glyph
+           :item-color new-color)))
+
 (defn- update-items [tile new-glyph new-color]
-  (if-let [item (item? new-glyph new-color)]
-    (-> tile
-        update-feature-with-item
-        (assoc :items [item]))
-    (if (or (= \space new-glyph) (monster? new-glyph new-color))
-      tile
-      (assoc tile :items []))))
+  (cond
+    (item? new-glyph new-color) (-> tile
+                                    update-feature-with-item
+                                    (mark-item new-glyph new-color))
+    (or (monster? new-glyph new-color) (= \space new-glyph)) tile
+    :else (reset-item tile)))
 
 (defn- update-feature [tile new-glyph new-color]
   (cond (monster? new-glyph new-color) (walkable-by tile new-glyph)
