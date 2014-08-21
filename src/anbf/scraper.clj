@@ -238,11 +238,13 @@
                 (log/debug "Handling menu")
                 (when (nil? @items)
                   (ref-set head (menu-head frame))
+                  (log/debug "Menu start")
                   (ref-set items {}))
                 (alter items merge (menu-options frame))
+                ;(log/debug "items so far:" @items)
                 (if-not (menu-end? frame)
                   (send delegator write " ")
-                  (do (log/debug "At menu end")
+                  (do (log/debug "Menu end")
                       (if @head
                         (send delegator (menu-fn @head) @items)
                         (do (send delegator inventory-list @items)
@@ -344,8 +346,9 @@
 
 (defn- apply-scraper
   "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
-  [current-scraper delegator frame]
-  (let [next-scraper ((or current-scraper (new-scraper delegator)) frame)]
+  [orig-scraper delegator frame]
+  (let [current-scraper (or orig-scraper (new-scraper delegator))
+        next-scraper (current-scraper frame)]
     (if (fn? next-scraper)
       next-scraper
       current-scraper)))
@@ -354,11 +357,11 @@
   (reify
     ActionChosenHandler
     (action-chosen [_ _]
-      (dosync (ref-set scraper nil))) ; escape sink
+      (dosync (log/debug "reset scraper") (ref-set scraper nil))) ; escape sink
     RedrawHandler
     (redraw [_ frame]
       #_(dosync (alter scraper apply-scraper delegator frame))
       (->> (dosync (alter scraper apply-scraper delegator frame))
-              type
-              (log/debug "next scraper:")))))
+           type
+           (log/debug "next scraper:")))))
 ; TODO handler co switchne na no-mark u nekterych akci
