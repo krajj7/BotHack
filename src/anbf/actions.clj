@@ -284,23 +284,23 @@
             (log/error "Unrecognized message list " (str lines))))
         ToplineMessageHandler
         (message [_ text]
-          (or (if (= text "But you can't reach it!")
-                (reset! has-item true))
-              (when-let [item (some->> text
-                                       (re-first-group
-                                         #"You (?:see|feel) here ([^.]+).")
-                                       ->Item)]
-                (log/debug "Single item here:" item)
-                ; TODO assoc :item-color :item-glyph
-                (reset! has-item true)
+          (when-not (and (= text "But you can't reach it!")
+                         (reset! has-item true))
+            (when-let [item (some->> text
+                                     (re-first-group
+                                       #"You (?:see|feel) here ([^.]+).")
+                                     ->Item)]
+              (log/debug "Single item here:" item)
+              ; TODO assoc :item-color :item-glyph
+              (reset! has-item true)
+              (swap! game #(update-curlvl-at % (:player %)
+                                             assoc :items [item])))
+            (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
+              (swap! game #(update-curlvl-at % (:player %)
+                                             assoc :feature feature))
+              (if (= :trap (:feature (at-player @game)))
                 (swap! game #(update-curlvl-at % (:player %)
-                                               assoc :items [item])))
-              (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
-                (swap! game #(update-curlvl-at % (:player %)
-                                               assoc :feature feature))
-                (if (= :trap (:feature (at-player @game)))
-                  (swap! game #(update-curlvl-at % (:player %)
-                                                 assoc :feature :floor)))))))))
+                                               assoc :feature :floor)))))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
