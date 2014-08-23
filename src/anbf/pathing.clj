@@ -306,12 +306,13 @@
       (log/debug "searching dead end")
       (->Search))))
 
-(defn- pushable-through [level from to]
+(defn- pushable-through [game level from to]
   (and (or (or (walkable? to) (#{:water :lava} (:feature to)))
            (and (not (boulder? to))
                 (nil? (:feature to)))) ; try to push via unexplored tiles
        (or (straight (towards from to))
-           (and (not= :door-open (:feature from))
+           (and (not= :sokoban (branch-key game))
+                (not= :door-open (:feature from))
                 (not= :door-open (:feature to))))))
 
 (defn- pushable-from [game level pos]
@@ -323,17 +324,18 @@
                              (not= :sokoban (branch-key game level)))
                          (not (monster-at level dest))
                          (edge-passable-walking? game level pos %)
-                         (pushable-through level % dest))))
+                         (pushable-through game level % dest))))
                (neighbors level pos))))
 
-(defn- unblocked-boulder? [level tile]
+(defn- unblocked-boulder? [game level tile]
   (and (boulder? tile)
        (some #(and (walkable? (in-direction level tile (towards % tile)))
-                   (pushable-through level tile %)) (neighbors level tile))))
+                   (pushable-through game level tile %))
+             (neighbors level tile))))
 
 ; TODO check if it makes sense, the boulder might not block
 (defn- push-boulders [{:keys [player] :as game} level]
-  (if (some #(unblocked-boulder? level %) (apply concat (:tiles level)))
+  (if (some #(unblocked-boulder? game level %) (apply concat (:tiles level)))
     (if-let [path (navigate game #(pushable-from game level %))]
       (or (log/debug "going to push a boulder")
           (:step path)

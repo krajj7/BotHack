@@ -289,7 +289,7 @@
                         :soko-3a :soko-3b :soko-4a :soko-4b}
                       (:tags level)))) ((fn sokotag [game]
                                           (let [tag (recognize-soko game)
-                                                res (add-curlvl-tag tag)]
+                                                res (add-curlvl-tag game tag)]
                                             (if (#{:soko-4a :soko-4b} tag)
                                               (add-curlvl-tag res :end)
                                               res))))
