@@ -276,7 +276,7 @@
         (message-lines [_ lines]
           (condp re-seq (nth lines 0)
             #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
-            (let [items (mapv ->Item (subvec lines 1))]
+            (let [items (mapv item (subvec lines 1))]
               (log/debug "Items here:" (log/spy items))
               (reset! has-item true)
               ; TODO assoc :item-color :item-glyph (by top item kind)
@@ -289,7 +289,7 @@
             (when-let [item (some->> text
                                      (re-first-group
                                        #"You (?:see|feel) here ([^.]+).")
-                                     ->Item)]
+                                     item)]
               (log/debug "Single item here:" item)
               ; TODO assoc :item-color :item-glyph
               (reset! has-item true)

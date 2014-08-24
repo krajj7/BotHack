@@ -1,12 +1,93 @@
 (ns anbf.item
-  (:require [anbf.util :refer :all]))
+  (:require [clojure.tools.logging :as log]
+            [anbf.util :refer :all]))
 
-(defrecord Item [label])
+(defrecord Key [])
+
+(defrecord Item
+  [label
+   name
+   type
+   generic ; called
+   specific ; named
+   qty
+   buc ; nil :uncursed :cursed :blessed
+   erosion ; nil or 1-6
+   proof ; :fixed :rustproof :fireproof ...
+   enchantment ; nil or number
+   charges
+   recharges
+   in-use ; worn / wielded
+   cost])
+
+(def ^:private item-re #"^(?:([\w\#\$])\s[+-]\s)?\s*([Aa]n?|[Tt]he|\d+)?\s*(blessed|(?:un)?cursed|(?:un)?holy)?\s*(greased)?\s*(poisoned)?\s*((?:(?:very|thoroughly) )?(?:burnt|rusty))?\s*((?:(?:very|thoroughly) )?(?:rotted|corroded))?\s*(fixed|(?:fire|rust|corrode)proof)?\s*(partly used)?\s*(partly eaten)?\s*(diluted)?\s*([+-]\d+)?\s*(?:(?:pair|set) of)?\s*\b(.*?)\s*(?:called (.*?))?\s*(?:named (.*?))?\s*(?:\((\d+):(-?\d+)\))?\s*(?:\((no|[1-7]) candles?(, lit| attached)\))?\s*(\(lit\))?\s*(\(laid by you\))?\s*(\(chained to you\))?\s*(\(in quiver\))?\s*(\(alternate weapon; not wielded\))?\s*(\(wielded in other.*?\))?\s*(\((?:weapon|wielded).*?\))?\s*(\((?:being|embedded|on).*?\))?\s*(?:\(unpaid, (\d+) zorkmids?\)|\((\d+) zorkmids?\)|, no charge(?:, .*)?|, (?:price )?(\d+) zorkmids( each)?(?:, .*)?)?\.?\s*$")
+
+(def ^:private item-fields
+  [:slot :qty :buc :grease :poison :erosion1 :erosion2 :proof :used :eaten
+   :diluted :enchantment :name :generic :specific :recharges :charges :candles
+   :lit-candelabrum :lit :laid :chained :quivered :offhand :offhand-wielded
+   :wielded :worn :cost1 :cost2 :cost3])
+
+(def ^:private jap->eng
+  {"wakizashi" "short sword"
+   "ninja-to" "broadsword"
+   "nunchaku" "flail"
+   "naginata" "glaive"
+   "osaku" "lock pick"
+   "koto" "wooden harp"
+   "shito" "knife"
+   "tanko" "plate mail"
+   "kabuto" "helmet"
+   "yugake" "leather gloves"
+   "gunyoki" "food ration"
+   "potion of sake" "potion of booze"
+   "potions of sake" "potions of booze"})
+
+(defn- erosion [s]
+  (if (and s (some #(.contains s %) ["burnt" "rusty" "rotted" "corroded"]))
+    (condp #(.contains %2 %1) s
+      "very" 2
+      "thoroughly" 3
+      1)))
+
+(defn parse-label [label]
+  (let [raw (zipmap item-fields (re-first-groups item-re label))]
+    ;(log/debug raw)
+    (as-> raw res
+      (if-let [buc (re-seq #"^potions? of ((?:un)?holy) water$" (:name res))]
+        (assoc res
+               :name "potion of water"
+               :buc (if (= buc "holy") "blessed" "cursed"))
+        res)
+      (update-in res [:name] #(get jap->eng % %))
+      ; TODO singular name
+      ; TODO type
+      ; TODO appearance
+      (assoc res :lit (some #{:lit :lit-candelabrum} res))
+      (assoc res :in-use (some #{:wielded :worn} res))
+      (assoc res :cost (some #{:cost1 :cost2 :cost3} res))
+      (update-in res [:qty] #(if (re-seq #"[0-9]+" %) (Integer/parseInt %) 1))
+      (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
+      (reduce (fn to-int [res kw]
+                (if (seq (kw res))
+                  (update-in res [kw] #(Integer/parseInt %))
+                  res))
+              res [:cost :candles :enchantment :charges :recharges])
+      (assoc res :erosion (if-let [deg ((fnil + 0 0)
+                                        (erosion (:erosion1 res))
+                                        (erosion (:erosion2 res)))]
+                            (if (pos? deg) deg)))
+      (dissoc res :wielded :worn :cost1 :cost2 :cost3 :lit-candelabrum
+              :erosion1 :erosion2 :slot)
+      (into {:label label} (filter (comp some? val) res)))))
+
+(defn item [label]
+  (map->Item (parse-label label)))
 
 (defn slot-item
   "Turns a string 'h - an octagonal amulet (being worn)' or [char String] pair into a [char Item] pair"
   ([s]
-   (if-let [[slot item] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
-     (slot-item (.charAt slot 0) item)))
-  ([chr item]
-   [chr (->Item item)]))
+   (if-let [[slot label] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
+     (slot-item (.charAt slot 0) label)))
+  ([chr label]
+   [chr (item label)]))
