@@ -79,15 +79,20 @@
 
 (defn- narrow?
   "Only works for adjacent diagonals"
-  [level from to]
-  (not-any? #((complement #{:wall :rock}) (:feature %))
-            (intersection (into #{} (straight-neighbors level from))
-                          (into #{} (straight-neighbors level to)))))
+  ([level from to]
+   (narrow? level from to false))
+  ([level from to soko?]
+   (not-any? #(and ((complement #{:wall :rock}) (:feature %))
+                   (not (and soko? (boulder? %))))
+             (intersection (into #{} (straight-neighbors level from))
+                           (into #{} (straight-neighbors level to))))))
 
 (defn- edge-passable-walking? [game level from-tile to-tile]
   (or (straight (towards from-tile to-tile))
       (and (diagonal-walkable? game from-tile)
            (diagonal-walkable? game to-tile)
+           (or (not= :sokoban (branch-key game level))
+               (not (narrow? level from-tile to-tile true)))
            (or (not (narrow? level from-tile to-tile))
                (not (:thick (:player game)))))))
 
