@@ -196,7 +196,7 @@
                            (= (:glyph tile) (:glyph %))))))
         (apply concat (take-nth 2 (:tiles level)))))
 
-(def soko1-14 "                                |..^^^^0000...|")
+(def soko1-14 "                                |..^^^^8888...|")
 (def soko2-12 "                                |..^^^<|.....|")
 
 (defn- in-soko? [game]
@@ -237,11 +237,11 @@
 (defn in-maze-corridor? [level pos]
   (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
 
-(def soko2a-16 "                          |...|..0-.0.^^^^^^^^^^^^.|")
-(def soko2b-16 "                        |....|..0.0.^^^^^^^^^^^^^^^.|")
-(def soko3a-12 "                              |....-0--0-|...<...|")
-(def soko3b-9 "                              |..|.0.0.|00.|.....|")
-(def soko4a-18 "                          |..0.....|     |-|.....|--") ; BoH variant
+(def soko2a-16 "                          |...|..8-.8.^^^^^^^^^^^^.|")
+(def soko2b-16 "                        |....|..8.8.^^^^^^^^^^^^^^^.|")
+(def soko3a-12 "                              |....-8--8-|...<...|")
+(def soko3b-9 "                              |..|.8.8.|88.|.....|")
+(def soko4a-18 "                          |..8.....|     |-|.....|--") ; BoH variant
 (def soko4b-5 "                            |..^^^^^^^^^^^^^^^^^^..|") ; "oR variant
 
 (def soko-recog ; [y trimmed-line :tag]

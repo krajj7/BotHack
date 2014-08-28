@@ -36,7 +36,7 @@
    (or (and (= \~ glyph) (= :brown color))
        (and (monster? glyph) (or (some? color) (not= \: glyph)))))
   ([glyph]
-   (or (and (Character/isLetterOrDigit ^Character glyph) (not= \0 glyph))
+   (or (and (Character/isLetterOrDigit ^Character glyph) (not= \8 glyph))
        (#{\& \@ \' \; \:} glyph))))
 
 ; bot should never get to see :trap - auto-examine
@@ -69,12 +69,12 @@
 (defn item?
   ([tile] (item? (:glyph tile) (:color tile)))
   ([glyph color]
-   (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \0 \$ \% \,} glyph)
+   (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \8 \0 \$ \% \,} glyph)
        (and (= \_ glyph) (some? color))
        (and (= \: glyph) (nil? color)))))
 
 (defn boulder? [tile]
-  (and (= (:glyph tile) \0) (nil? (:color tile))))
+  (and (= (:glyph tile) \8) (nil? (:color tile))))
 
 (defn door? [tile]
   (#{:door-open :door-closed :door-locked :door-secret} (:feature tile)))
@@ -172,8 +172,10 @@
          :new-items false))
 
 (defn- mark-item [tile new-glyph new-color]
-  (if (and (= new-color (:item-color tile)) (= new-glyph (:item-glyph tile)))
-    tile ; unchanged
+  (if (and (= new-glyph (:item-glyph tile))
+           (or (not (:item-color tile))
+               (= new-color (:item-color tile))))
+    (assoc tile :item-color new-color) ; unchanged
     (assoc tile
            :new-items true
            :item-glyph new-glyph
