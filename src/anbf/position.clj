@@ -44,9 +44,11 @@
   ([level tile]
    (map #(at level %) (neighbors tile)))
   ([pos]
-   (filter valid-position?
-           (map #(hash-map :x (unchecked-add (:x pos) (% 0))
-                           :y (unchecked-add (:y pos) (% 1))) deltas))))
+   (for [d deltas
+         :let [nbr (position (unchecked-add (:x pos) (d 0))
+                             (unchecked-add (:y pos) (d 1)))]
+         :when (valid-position? nbr)]
+     nbr)))
 
 (defn straight-neighbors
   ([level tile]

@@ -21,7 +21,7 @@
   (->> (for [y (range 21)
              x (range 80)]
          (initial-tile x (inc y)))
-       (partition 80) (map vec) vec))
+       (partition 80) (mapv vec)))
 
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id #{} nil (initial-tiles) {}))
