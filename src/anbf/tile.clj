@@ -22,7 +22,14 @@
   anbf.bot.ITile)
 
 (defn initial-tile [x y]
-  (Tile. x y \space nil nil nil nil false nil false 0 [] false nil nil))
+  (map->Tile {:x x
+              :y y
+              :glyph \space
+              :seen false
+              :dug false
+              :searched 0
+              :items []
+              :new-items false}))
 
 (defn monster?
   ([glyph color] ; works better on rogue level and for worm tails

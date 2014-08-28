@@ -29,7 +29,9 @@
   (player [this] (:player this)))
 
 (defn new-game []
-  (Game. nil (new-player) (new-dungeon) :main nil nil 0 0))
+  (map->Game {:player (new-player)
+              :dungeon (new-dungeon)
+              :branch-id :main}))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))

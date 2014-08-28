@@ -42,7 +42,7 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (apply ->Player (repeat 19 nil)))
+  (map->Player {}))
 
 (defn update-player [player status]
   (->> (keys player) (select-keys status) (into player)))
