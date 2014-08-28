@@ -85,6 +85,36 @@
             (register-handler anbf p h)
             (swap! action-handlers conj h)))))))
 
+(defn pause [anbf]
+  (send (:delegator anbf) set-inhibition true)
+  (log/info "pausing")
+  anbf)
+
+(defn start [{:keys [config delegator] :as anbf}]
+  (log/info "ANBF instance started")
+  (if-not (start-menubot anbf)
+    (send delegator started))
+  (await delegator)
+  (start-jta (:jta anbf)
+             (config-get config :host "localhost")
+             (config-get config :port 23))
+  anbf)
+
+(defn stop [anbf]
+  (stop-jta (:jta anbf))
+  (dosync (ref-set (:scraper anbf) nil))
+  (log/info "ANBF instance stopped")
+  anbf)
+
+(defn unpause [anbf]
+  (log/info "unpaused")
+  (dosync
+    (ref-set (:scraper anbf) nil)
+    (-> (:delegator anbf)
+        (send set-inhibition false)
+        (send write (str esc esc))))
+  anbf)
+
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))
   ([fname]
@@ -99,7 +129,7 @@
      (-> anbf
          update-inventory
          (register-handler (dec priority-top) (game-handler anbf))
-         (register-handler priority-bottom
+         (register-handler (inc priority-bottom)
                            (reify FullFrameHandler
                              (full-frame [_ _]
                                (send delegator #(about-to-choose % @game))
@@ -123,41 +153,15 @@
                              (remove-equip [_ _] "")
                              PromptHandler
                              (call-object [_ _] "")))
+         (register-handler priority-bottom
+                           (reify FullFrameHandler
+                             (full-frame [this _]
+                               (if (:start-paused config)
+                                 (pause anbf))
+                               (deregister-handler anbf this))))
          (register-handler (reify GameStateHandler
                              (ended [_]
                                (deregister-handler anbf scraper))
                              (started [_]
                                (register-handler anbf scraper)
                                (start-bot anbf))))))))
-
-(defn pause [anbf]
-  (send (:delegator anbf) set-inhibition true)
-  (log/info "pausing")
-  anbf)
-
-(defn start [{:keys [config delegator] :as anbf}]
-  (log/info "ANBF instance started")
-  (if-not (start-menubot anbf)
-    (send delegator started))
-  (if (:start-paused config)
-    (pause anbf))
-  (await delegator)
-  (start-jta (:jta anbf)
-             (config-get config :host "localhost")
-             (config-get config :port 23))
-  anbf)
-
-(defn stop [anbf]
-  (stop-jta (:jta anbf))
-  (dosync (ref-set (:scraper anbf) nil))
-  (log/info "ANBF instance stopped")
-  anbf)
-
-(defn unpause [anbf]
-  (log/info "unpaused")
-  (dosync
-    (ref-set (:scraper anbf) nil)
-    (-> (:delegator anbf)
-        (send set-inhibition false)
-        (send write (str esc esc))))
-  anbf)
