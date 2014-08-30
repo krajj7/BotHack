@@ -250,6 +250,8 @@
           (case text
             "This door is already closed." (swap! game update-curlvl-at door
                                                   assoc :feature :door-closed)
+            "This doorway has no door." (swap! game update-curlvl-at door
+                                               assoc :feature nil)
             "You see no door there." (swap! game update-curlvl-at door
                                             assoc :feature nil)
             nil)))))
@@ -343,6 +345,8 @@
                                                 assoc :feature :door-open)
             "The door opens." (swap! game update-curlvl-at door
                                      assoc :feature :door-open)
+            "This doorway has no door." (swap! game update-curlvl-at door
+                                               assoc :feature nil)
             "You see no door there." (swap! game update-curlvl-at door
                                             assoc :feature nil)
             nil)))))
