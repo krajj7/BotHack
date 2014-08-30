@@ -16,7 +16,6 @@
   {:pre [(and (some? level) (some? dir) (some? tile))]}
   (let [feature (:feature tile)]
     (cond-> 1
-      (nil? feature) (+ 3)
       (traps feature) (+ 10) ; TODO trap types
       (diagonal dir) (+ 0.1)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
