@@ -7,6 +7,7 @@
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.position :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]))
@@ -276,11 +277,14 @@
         (message-lines [_ lines]
           (condp re-seq (nth lines 0)
             #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
-            (let [items (mapv item (subvec lines 1))]
+            (let [items (mapv item (subvec lines 1))
+                  top-item (nth items 0)]
               (log/debug "Items here:" (log/spy items))
               (reset! has-item true)
-              ; TODO assoc :item-color :item-glyph (by top item kind)
-              (swap! game #(update-curlvl-at % (:player %) assoc :items items)))
+              (swap! game #(update-curlvl-at % (:player %)
+                             assoc :items items
+                                   :item-glyph (:glyph (itemtype % top-item))
+                                   :item-color nil)))
             (log/error "Unrecognized message list " (str lines))))
         ToplineMessageHandler
         (message [_ text]
@@ -291,10 +295,11 @@
                                        #"You (?:see|feel) here ([^.]+).")
                                      item)]
               (log/debug "Single item here:" item)
-              ; TODO assoc :item-color :item-glyph
               (reset! has-item true)
               (swap! game #(update-curlvl-at % (:player %)
-                                             assoc :items [item])))
+                             assoc :items [item]
+                                   :item-glyph (:glyph (itemtype % item))
+                                   :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
               (swap! game #(update-curlvl-at % (:player %)
                                              assoc :feature feature))

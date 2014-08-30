@@ -173,7 +173,7 @@
 
 (defn- mark-item [tile new-glyph new-color]
   (if (and (= new-glyph (:item-glyph tile))
-           (or (not (:item-color tile))
+           (or (not (:item-color tile)) ; don't have data to infer color from item appearance
                (= new-color (:item-color tile))))
     (assoc tile :item-color new-color) ; unchanged
     (assoc tile
