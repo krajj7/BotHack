@@ -1,5 +1,6 @@
 (ns anbf.main
   (:require [clojure.tools.logging :as log]
+            [clojure.pprint :refer [pprint]]
             [anbf.anbf :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
@@ -96,6 +97,21 @@
                 (if f (f tile) (:glyph tile))
                 (if f (:glyph tile) \X))))
      (println))))
+
+(defn print-items
+  "Print detailed info about all items on the ground of the current level"
+  [game]
+  (->> (curlvl game) :tiles (apply concat)
+       (map :items) (apply concat)
+       (map #(vector (type (itemtype game %)) % (itemtype game %)))
+       pprint))
+
+(defn print-inventory
+  "Print detailed info about all items in bot's inventory"
+  [game]
+  (->> game :player :inventory vals
+       (map #(vector (type (itemtype game %)) % (itemtype game %)))
+       pprint))
 
 (defn print-los [game]
   (print-tiles (partial visible? game) (curlvl game)))
