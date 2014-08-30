@@ -1,0 +1,101 @@
+package NetHack::Item::Spoiler::Scroll;
+{
+  $NetHack::Item::Spoiler::Scroll::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use constant type "scroll";
+my @scrolls = map { "scroll labeled $_"} (
+    "ZELGO MER" "JUYED AWK YACC" "NR 9" "XIXAXA XOXAXA XUXAXA"
+    "PRATYAVAYAH" "DAIYEN FOOELS" "LEP GEX VEN ZEA" "PRIRUTSENIE"
+    "ELBIB YLOH" "TEMOV" "VERR YED HORRE" "VENZAR BORGAVVE" "THARR"
+    "YUM YUM" "KERNOD WEL" "ELAM EBOW" "DUAM XNAHT" "KIRJE"
+    "ANDOVA BEGARIN" "VE FORBRYDERNE" "HACKEM MUCHE" "VELOX NEB"
+    "READ ME" "FOOBIE BLETCH" "GARVEN DEH"
+);
+sub _list {
+    my $scrolls = {
+        {:name "scroll of mail"
+         :price 0
+         :ink 2
+         :appearances ["stamped scroll"]}
+        {:name "scroll of blank paper"
+         :price 60
+         :ink 0
+         :appearances ["unlabeled scroll"]}
+        {:name "scroll of identify"
+         :price 20
+         :ink 14}
+        {:name "scroll of light"
+         :price 50
+         :ink 8}
+        {:name "scroll of enchant weapon"
+         :price 60
+         :ink 16}
+        {:name "scroll of enchant armor"
+         :price 80
+         :ink 16}
+        {:name "scroll of remove curse"
+         :price 80
+         :ink 16}
+        {:name "scroll of confuse monster"
+         :price 100
+         :ink 12}
+        {:name "scroll of destroy armor"
+         :price 100
+         :ink 10}
+        {:name "scroll of fire"
+         :price 100
+         :ink 8}
+        {:name "scroll of food detection"
+         :price 100
+         :ink 8}
+        {:name "scroll of gold detection"
+         :price 100
+         :ink 8}
+        {:name "scroll of magic mapping"
+         :price 100
+         :ink 8}
+        {:name "scroll of scare monster"
+         :price 100
+         :ink 20}
+        {:name "scroll of teleportation"
+         :price 100
+         :ink 20}
+        {:name "scroll of amnesia"
+         :price 200
+         :ink 8}
+        {:name "scroll of create monster"
+         :price 200
+         :ink 10}
+        {:name "scroll of earth"
+         :price 200
+         :ink 8}
+        {:name "scroll of taming"
+         :price 200
+         :ink 20}
+        {:name "scroll of charging"
+         :price 300
+         :ink 16}
+        {:name "scroll of genocide"
+         :price 300
+         :ink 30}
+        {:name "scroll of punishment"
+         :price 300
+         :ink 10}
+        {:name "scroll of stinking cloud"
+         :price 300
+         :ink 20}};
+    return $scrolls (weight 5         :appearances scrolls         :stackable 1
+                   :material :paper         :glyph \?         :plural sub {
+                        my $name = shift;
+                        $name =~ s/\bscroll\b/scrolls/;
+                        return $name;})}
+sub extra_plurals {
+    my $self = shift;
+    my %extra;
+    for (@scrolls "stamped scroll" "unlabeled scroll") {
+        (my $plural = $_) =~ s/\bscroll\b/scrolls/;
+        $extra{$_} = $plural;}
+    return \%extra;}
+1;

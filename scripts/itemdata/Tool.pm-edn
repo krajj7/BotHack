@@ -1,0 +1,427 @@
+package NetHack::Item::Spoiler::Tool;
+{
+  $NetHack::Item::Spoiler::Tool::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use NetHack::Monster::Spoiler;
+use constant type "tool";
+sub _list {
+    my $tools = {
+        {:name "Bell of Opening"
+         :artifact 1
+         :price 5000
+         :weight 10
+         :charge 3
+         :fullname "The Bell of Opening"
+         :appearances ["silver bell"]
+         :subtype :instrument
+         :material :silver
+         :tonal 0}
+        {:name "Candelabrum of Invocation"
+         :artifact 1
+         :price 5000
+         :weight 10
+         :charge 0
+         :fullname "The Candelabrum of Invocation"
+         :appearances ["candelabrum"]
+         :subtype :candelabrum
+         :material :gold}
+        {:name "Eyes of the Overworld"
+         :artifact 1
+         :base "lenses"
+         :price 80
+         :weight 3
+         :charge 0
+         :fullname "The Eyes of the Overworld"
+         :subtype :accessory
+         :material :glass}
+        {:name "Magic Mirror of Merlin"
+         :artifact 1
+         :base "mirror"
+         :price 10
+         :weight 13
+         :charge 0
+         :fullname "The Magic Mirror of Merlin"
+         :material :glass}
+        {:name "Master Key of Thievery"
+         :artifact 1
+         :base "skeleton key"
+         :price 10
+         :weight 3
+         :charge 0
+         :fullname "The Master Key of Thievery"
+         :subtype :key
+         :material :iron}
+        {:name "Orb of Detection"
+         :artifact 1
+         :base "crystal ball"
+         :price 60
+         :weight 150
+         :charge 5
+         :fullname "The Orb of Detection"
+         :material :glass}
+        {:name "Orb of Fate"
+         :artifact 1
+         :base "crystal ball"
+         :price 60
+         :weight 150
+         :charge 5
+         :fullname "The Orb of Fate"
+         :material :glass}
+        {:name "Platinum Yendorian Express Card"
+         :artifact 1
+         :base "credit card"
+         :price 10
+         :weight 1
+         :charge 0
+         :fullname "The Platinum Yendorian Express Card"
+         :subtype :key
+         :material :plastic}
+        {:name "large box"
+         :price 8
+         :weight 350
+         :charge 0
+         :subtype :container
+         :material :wood}
+        {:name "chest"
+         :price 16
+         :weight 600
+         :charge 0
+         :subtype :container
+         :material :wood}
+        {:name "ice box"
+         :price 42
+         :weight 900
+         :charge 0
+         :subtype :container
+         :material :plastic}
+        {:name "sack"
+         :price 2
+         :weight 15
+         :charge 0
+         :appearances ["bag"]
+         :subtype :container
+         :material :cloth}
+        {:name "bag of holding"
+         :price 100
+         :weight 15
+         :charge 0
+         :appearances ["bag"]
+         :subtype :container
+         :material :cloth}
+        {:name "bag of tricks"
+         :price 100
+         :weight 15
+         :charge 20
+         :appearances ["bag"]
+         :material :cloth
+            # NOT A CONTAINER!!}
+        {:name "oilskin sack"
+         :price 100
+         :weight 15
+         :charge 0
+         :appearances ["bag"]
+         :subtype :container
+         :material :cloth}
+        {:name "credit card"
+         :price 10
+         :weight 1
+         :charge 0
+         :subtype :key
+         :material :plastic}
+        {:name "lock pick"
+         :price 20
+         :weight 4
+         :charge 0
+         :subtype :key
+         :material :iron}
+        {:name "skeleton key"
+         :price 10
+         :weight 3
+         :charge 0
+         :appearance :key
+         :subtype :key
+         :material :iron}
+        {:name "tallow candle"
+         :price 10
+         :weight 2
+         :charge 0
+         :appearances ["candle"]
+         :plural "tallow candles"
+         :subtype :light
+         :stackable 1
+         :material :wax}
+        {:name "wax candle"
+         :price 20
+         :weight 2
+         :charge 0
+         :appearances ["candle"]
+         :plural "wax candles"
+         :subtype :light
+         :stackable 1
+         :material :wax}
+        {:name "brass lantern"
+         :price 12
+         :weight 30
+         :charge 1499
+         :subtype :light
+         :material :copper}
+        {:name "oil lamp"
+         :price 10
+         :weight 20
+         :charge 1499
+         :appearances ["lamp"]
+         :subtype :light
+         :material :copper}
+        {:name "magic lamp"
+         :price 50
+         :weight 20
+         :charge 0
+         :appearances ["lamp"]
+         :subtype :light
+         :material :copper}
+        {:name "tin whistle"
+         :price 10
+         :weight 3
+         :charge 0
+         :appearances ["whistle"]
+         :subtype :instrument
+         :tonal 0
+         :material :metal}
+        {:name "magic whistle"
+         :price 10
+         :weight 3
+         :charge 0
+         :appearances ["whistle"]
+         :subtype :instrument
+         :tonal 0
+         :material :metal}
+        {:name "bugle"
+         :price 15
+         :weight 10
+         :charge 0
+         :subtype :instrument
+         :tonal 1
+         :material :copper}
+        {:name "wooden flute"
+         :price 12
+         :weight 5
+         :charge 0
+         :appearances ["flute"]
+         :subtype :instrument
+         :tonal 1
+         :material :wood}
+        {:name "magic flute"
+         :price 36
+         :weight 5
+         :charge 8
+         :appearances ["flute"]
+         :subtype :instrument
+         :tonal 1
+         :material :wood}
+        {:name "tooled horn"
+         :price 15
+         :weight 18
+         :charge 0
+         :appearance :horn
+         :subtype :instrument
+         :tonal 1
+         :material :bone}
+        {:name "frost horn"
+         :price 50
+         :weight 18
+         :charge 8
+         :appearance :horn
+         :subtype :instrument
+         :tonal 1
+         :material :bone}
+        {:name "fire horn"
+         :price 50
+         :weight 18
+         :charge 8
+         :appearance :horn
+         :subtype :instrument
+         :tonal 1
+         :material :bone}
+        {:name "horn of plenty"
+         :price 50
+         :weight 18
+         :charge 20
+         :appearance :horn
+         :subtype :instrument
+         :tonal 0
+         :material :bone}
+        {:name "leather drum"
+         :price 25
+         :weight 25
+         :charge 0
+         :appearances ["drum"]
+         :subtype :instrument
+         :tonal 0
+         :material :leather}
+        {:name "drum of earthquake"
+         :price 25
+         :weight 25
+         :charge 8
+         :appearances ["drum"]
+         :subtype :instrument
+         :tonal 0
+         :material :leather}
+        {:name "wooden harp"
+         :price 50
+         :weight 30
+         :charge 0
+         :appearances ["harp"]
+         :subtype :instrument
+         :tonal 1
+         :material :wood}
+        {:name "magic harp"
+         :price 50
+         :weight 30
+         :charge 8
+         :appearances ["harp"]
+         :subtype :instrument
+         :tonal 1
+         :material :wood}
+        {:name "bell"
+         :price 50
+         :weight 30
+         :charge 0
+         :subtype :instrument
+         :tonal 0
+         :material :copper}
+        {:name "beartrap"
+         :price 60
+         :weight 200
+         :charge 0
+         :subtype "trap"
+         :material :iron}
+        {:name "land mine"
+         :price 180
+         :weight 300
+         :charge 0
+         :appearances ["land mine"]
+         :subtype "trap"
+         :material :iron}
+        {:name "pick-axe"
+         :sdam "d6"
+         :ldam "d3"
+         :to-hit 0
+         :hands 1
+         :price 50
+         :weight 100
+         :charge nil
+         :subtype :weapon
+         :material :iron}
+        {:name "grappling hook"
+         :sdam "d2"
+         :ldam "d6"
+         :to-hit 0
+         :hands 1
+         :price 50
+         :weight 30
+         :charge nil
+         :appearances ["iron hook"]
+         :subtype :weapon
+         :material :iron}
+        {:name "unicorn horn"
+         :sdam "d12"
+         :ldam "d12"
+         :to-hit 1
+         :hands 2
+         :price 100
+         :weight 20
+         :charge nil
+         :weaptool 1
+         :subtype :weapon
+         :material :bone}
+        {:name "expensive camera"
+         :price 200
+         :weight 12
+         :charge 99
+         :material :plastic}
+        {:name "mirror"
+         :price 10
+         :weight 13
+         :charge 0
+         :appearances ["looking glass"]
+         :material :glass}
+        {:name "crystal ball"
+         :price 60
+         :weight 150
+         :charge 5
+         :appearances ["glass orb"]
+         :material :glass}
+        {:name "lenses"
+         :price 80
+         :weight 3
+         :charge 0
+         :subtype :accessory
+         :material :glass}
+        {:name "blindfold"
+         :price 20
+         :weight 2
+         :charge 0
+         :subtype :accessory
+         :material :cloth}
+        {:name "towel"
+         :price 50
+         :weight 2
+         :charge 0
+         :subtype :accessory
+         :material :cloth}
+        {:name "saddle"
+         :price 150
+         :weight 200
+         :charge 0
+         :material :leather}
+        {:name "leash"
+         :price 20
+         :weight 12
+         :charge 0
+         :material :leather}
+        {:name "stethoscope"
+         :price 75
+         :weight 4
+         :charge 0
+         :material :iron}
+        {:name "tinning kit"
+         :price 30
+         :weight 100
+         :charge 99
+         :material :iron}
+        {:name "tin opener"
+         :price 30
+         :weight 4
+         :charge 0
+         :material :iron}
+        {:name "can of grease"
+         :price 20
+         :weight 15
+         :charge 25
+         :material :iron}
+        {:name "magic marker"
+         :price 50
+         :weight 2
+         :charge 99
+         :material :plastic}};
+    for my $monster (NetHack::Monster::Spoiler->list) {
+        next if $monster->is_unique;
+        next if $monster->is_human;
+        next if $monster->name eq "mail daemon";
+        my $name = "figurine of ";
+        $name .= $monster->name =~ /^[aeiou]/i ? "an " : "a ";
+        $name .= $monster->name;
+        $tools->{$name} = {
+         :price 80
+         :weight 50
+         :charge 0
+         :subtype :figurine
+         :material :mineral
+         :monster $monster};}
+    return $tools (glyph "(");}
+sub extra_plurals {
+    return {
+     :candle "candles"};}
+1;

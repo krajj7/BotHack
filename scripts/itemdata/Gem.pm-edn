@@ -1,0 +1,248 @@
+package NetHack::Item::Spoiler::Gem;
+{
+  $NetHack::Item::Spoiler::Gem::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use constant type "gem";
+sub _list {
+    my $gems = {
+        {:name "Heart of Ahriman"
+         :artifact 1
+         :base "luckstone"
+         :price 2500
+         :weight 10
+         :hardness :soft
+         :fullname "The Heart of Ahriman"
+         :appearances ["gray stone"]
+         :material :mineral}
+        {:name "dilithium crystal"
+         :price 4500
+         :hardness :soft
+         :appearances ["white gem"]
+         :plural "dilithium crystals"
+         :material :gemstone}
+        {:name "diamond"
+         :price 4000
+         :hardness :hard
+         :appearances ["white gem"]
+         :plural "diamonds"
+         :material :gemstone}
+        {:name "ruby"
+         :price 3500
+         :hardness :hard
+         :appearances ["red gem"]
+         :plural "rubies"
+         :material :gemstone}
+        {:name "jacinth stone"
+         :price 3250
+         :hardness :hard
+         :appearances ["orange gem"]
+         :plural "jacinth stones"
+         :material :gemstone}
+        {:name "sapphire"
+         :price 3000
+         :hardness :hard
+         :appearances ["blue gem"]
+         :plural "sapphires"
+         :material :gemstone}
+        {:name "black opal"
+         :price 2500
+         :hardness :hard
+         :appearances ["black gem"]
+         :plural "black opals"
+         :material :gemstone}
+        {:name "emerald"
+         :price 2500
+         :hardness :hard
+         :appearances ["green gem"]
+         :plural "emeralds"
+         :material :gemstone}
+        {:name "turquoise stone"
+         :price 2000
+         :hardness :soft
+         :appearances ["green" "blue"]
+         :plural "turquoise stones"
+         :material :gemstone}
+        {:name "aquamarine stone"
+         :price 1500
+         :hardness :hard
+         :appearances ["green" "blue"]
+         :plural "aquamarine stones"
+         :material :gemstone}
+        {:name "citrine stone"
+         :price 1500
+         :hardness :soft
+         :appearances ["yellow gem"]
+         :plural "citrine stones"
+         :material :gemstone}
+        {:name "amber stone"
+         :price 1000
+         :hardness :soft
+         :appearances ["yellowish brown gem"]
+         :plural "amber stones"
+         :material :gemstone}
+        {:name "topaz stone"
+         :price 900
+         :hardness :hard
+         :appearances ["yellowish brown gem"]
+         :plural "topaz stones"
+         :material :gemstone}
+        {:name "jet stone"
+         :price 850
+         :hardness :soft
+         :appearances ["black gem"]
+         :plural "jet stones"
+         :material :gemstone}
+        {:name "opal"
+         :price 800
+         :hardness :soft
+         :appearances ["white gem"]
+         :plural "opals"
+         :material :gemstone}
+        {:name "chrysoberyl stone"
+         :price 700
+         :hardness :soft
+         :appearances ["yellow gem"]
+         :plural "chrysoberyl stones"
+         :material :gemstone}
+        {:name "garnet stone"
+         :price 700
+         :hardness :soft
+         :appearances ["red gem"]
+         :plural "garnet stones"
+         :material :gemstone}
+        {:name "amethyst stone"
+         :price 600
+         :hardness :soft
+         :appearances ["violet gem"]
+         :plural "amethyst stones"
+         :material :gemstone}
+        {:name "jasper stone"
+         :price 500
+         :hardness :soft
+         :appearances ["red gem"]
+         :plural "jasper stones"
+         :material :gemstone}
+        {:name "fluorite stone"
+         :price 400
+         :hardness :soft
+         :appearances ["green" "blue" "white" "violet"]
+         :plural "fluorite stones"
+         :material :gemstone}
+        {:name "jade stone"
+         :price 300
+         :hardness :soft
+         :appearances ["green gem"]
+         :plural "jade stones"
+         :material :gemstone}
+        {:name "agate stone"
+         :price 200
+         :hardness :soft
+         :appearances ["orange gem"]
+         :plural "agate stones"
+         :material :gemstone}
+        {:name "obsidian stone"
+         :price 200
+         :hardness :soft
+         :appearances ["black gem"]
+         :plural "obsidian stones"
+         :material :gemstone}
+        {:name "worthless piece of black glass"
+         :price 0
+         :hardness :soft
+         :appearances ["black gem"]
+         :plural "worthless pieces of black glass"
+         :material :glass}
+        {:name "worthless piece of blue glass"
+         :price 0
+         :hardness :soft
+         :appearances ["blue gem"]
+         :plural "worthless pieces of blue glass"
+         :material :glass}
+        {:name "worthless piece of green glass"
+         :price 0
+         :hardness :soft
+         :appearances ["green gem"]
+         :plural "worthless pieces of green glass"
+         :material :glass}
+        {:name "worthless piece of orange glass"
+         :price 0
+         :hardness :soft
+         :appearances ["orange gem"]
+         :plural "worthless pieces of orange glass"
+         :material :glass}
+        {:name "worthless piece of red glass"
+         :price 0
+         :hardness :soft
+         :appearances ["red gem"]
+         :plural "worthless pieces of red glass"
+         :material :glass}
+        {:name "worthless piece of violet glass"
+         :price 0
+         :hardness :soft
+         :appearances ["violet gem"]
+         :plural "worthless pieces of violet glass"
+         :material :glass}
+        {:name "worthless piece of white glass"
+         :price 0
+         :hardness :soft
+         :appearances ["white gem"]
+         :plural "worthless pieces of white glass"
+         :material :glass}
+        {:name "worthless piece of yellow glass"
+         :price 0
+         :hardness :soft
+         :appearances ["yellow gem"]
+         :plural "worthless pieces of yellow glass"
+         :material :glass}
+        {:name "worthless piece of yellowish brown glass"
+         :price 0
+         :hardness :soft
+         :appearances ["yellowish brown gem"]
+         :plural "worthless pieces of yellowish brown glass"
+         :material :glass}
+        {:name "luckstone"
+         :price 60
+         :weight 10
+         :hardness :soft
+         :appearances ["gray stone"]
+         :plural "luckstones"
+         :material :mineral}
+        {:name "touchstone"
+         :price 45
+         :weight 10
+         :hardness :soft
+         :appearances ["gray stone"]
+         :plural "touchstones"
+         :material :mineral}
+        {:name "flint stone"
+         :price 1
+         :weight 10
+         :hardness :soft
+         :appearances ["gray stone"]
+         :plural "flint stones"
+         :material :mineral}
+        {:name "loadstone"
+         :price 1
+         :weight 500
+         :hardness :soft
+         :appearances ["gray stone"]
+         :plural "loadstones"
+         :material :mineral}
+        {:name "rock"
+         :price 0
+         :weight 10
+         :hardness :soft
+         :appearances ["rock"]
+         :plural "rocks"
+         :material :mineral}};
+    return $gems (weight 1         :stackable 1         :glyph \*);}
+sub extra_plurals {
+    my %gems;
+    $gems{"$_ gem"} = "$_ gems"
+        for qw/white red blue orange black green yellow violet/;
+    $gems{"yellowish brown gem"} = "yellowish brown gems";
+    $gems{"gray stone"} = "gray stones";
+    return \%gems;}
+1;

@@ -1,0 +1,80 @@
+package NetHack::Item::Spoiler::Potion;
+{
+  $NetHack::Item::Spoiler::Potion::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use constant type "potion";
+my @potions = map { "$_ potion"} (
+    qw/ruby pink orange yellow emerald cyan magenta purple-red puce milky
+    swirly bubbly smoky cloudy effervescent black golden brown fizzy dark white
+    murky/ "dark green" "sky blue" "brilliant blue"
+);
+sub _list {
+    my $potions = {
+        {:name "potion of booze"
+         :price 50}
+        {:name "potion of fruit juice"
+         :price 50}
+        {:name "potion of see invisible"
+         :price 50}
+        {:name "potion of sickness"
+         :price 50}
+        {:name "potion of confusion"
+         :price 100}
+        {:name "potion of extra healing"
+         :price 100}
+        {:name "potion of hallucination"
+         :price 100}
+        {:name "potion of healing"
+         :price 100}
+        {:name "potion of restore ability"
+         :price 100}
+        {:name "potion of sleeping"
+         :price 100}
+        {:name "potion of water"
+         :price 100
+         :appearances ["clear potion"]}
+        {:name "potion of blindness"
+         :price 150}
+        {:name "potion of gain energy"
+         :price 150}
+        {:name "potion of invisibility"
+         :price 150}
+        {:name "potion of monster detection"
+         :price 150}
+        {:name "potion of object detection"
+         :price 150}
+        {:name "potion of enlightenment"
+         :price 200}
+        {:name "potion of full healing"
+         :price 200}
+        {:name "potion of levitation"
+         :price 200}
+        {:name "potion of polymorph"
+         :price 200}
+        {:name "potion of speed"
+         :price 200}
+        {:name "potion of acid"
+         :price 250}
+        {:name "potion of oil"
+         :price 250}
+        {:name "potion of gain ability"
+         :price 300}
+        {:name "potion of gain level"
+         :price 300}
+        {:name "potion of paralysis"
+         :price 300}};
+    return $potions (weight 20         :appearances potions         :stackable 1
+                   :material :glass         :glyph \!         :plural sub {
+                        my $name = shift;
+                        $name =~ s/\bpotion\b/potions/;
+                        return $name;})}
+sub extra_plurals {
+    my $self = shift;
+    my %extra;
+    for (@potions "clear potion") {
+        (my $plural = $_) =~ s/\bpotion\b/potions/;
+        $extra{$_} = $plural;}
+    return \%extra;}
+1;

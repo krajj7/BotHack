@@ -1,0 +1,617 @@
+package NetHack::Item::Spoiler::Armor;
+{
+  $NetHack::Item::Spoiler::Armor::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use constant type "armor";
+my @cloaks  = ("tattered cape" "opera cloak" "ornamental cope" "piece of cloth");
+my @helmets = map { "$_ helmet"} qw/plumed etched crested visored/;
+my @gloves  = map { "$_ gloves"} qw/old padded riding fencing/;
+my @boots   = map { "$_ boots" } qw/combat jungle hiking mud buckled riding snow/;
+sub _list {
+    my $armor = {
+        {:name "Mitre of Holiness"
+         :artifact 1
+         :base "helm of brilliance"
+         :price 2000
+         :weight 50
+         :ac 1
+         :mc 0
+         :fullname "The Mitre of Holiness"
+         :material :iron
+         :subtype :helmet}
+        {:name "Hawaiian shirt"
+         :price 3
+         :weight 5
+         :ac 0
+         :mc 0
+         :material :cloth
+         :subtype "shirt"}
+        {:name "T-shirt"
+         :price 2
+         :weight 5
+         :ac 0
+         :mc 0
+         :material :cloth
+         :subtype "shirt"}
+        {:name "leather jacket"
+         :price 10
+         :weight 30
+         :ac 1
+         :mc 0
+         :material :leather
+         :subtype :body-armor}
+        {:name "leather armor"
+         :price 5
+         :weight 150
+         :ac 2
+         :mc 0
+         :material :leather
+         :subtype :body-armor}
+        {:name "orcish ring mail"
+         :price 80
+         :weight 250
+         :ac 2
+         :material :iron
+         :mc 1
+         :appearances ["crude ring mail"]
+         :subtype :body-armor}
+        {:name "studded leather armor"
+         :price 15
+         :weight 200
+         :ac 3
+         :material :leather
+         :mc 1
+         :subtype :body-armor}
+        {:name "ring mail"
+         :price 100
+         :weight 250
+         :ac 3
+         :mc 0
+         :material :iron
+         :subtype :body-armor}
+        {:name "scale mail"
+         :price 45
+         :weight 250
+         :ac 4
+         :mc 0
+         :material :iron
+         :subtype :body-armor}
+        {:name "orcish chain mail"
+         :price 75
+         :weight 300
+         :ac 4
+         :material :iron
+         :mc 1
+         :appearances ["crude chain mail"]
+         :subtype :body-armor}
+        {:name "chain mail"
+         :price 75
+         :weight 300
+         :ac 5
+         :material :iron
+         :mc 1
+         :subtype :body-armor}
+        {:name "elven mithril-coat"
+         :price 240
+         :weight 150
+         :ac 5
+         :material :mithril
+         :mc 3
+         :subtype :body-armor}
+        {:name "splint mail"
+         :price 80
+         :weight 400
+         :ac 6
+         :material :iron
+         :mc 1
+         :subtype :body-armor}
+        {:name "banded mail"
+         :price 90
+         :weight 350
+         :ac 6
+         :mc 0
+         :material :iron
+         :subtype :body-armor}
+        {:name "dwarvish mithril-coat"
+         :price 240
+         :weight 150
+         :ac 6
+         :material :mithril
+         :mc 3
+         :subtype :body-armor}
+        {:name "bronze plate mail"
+         :price 400
+         :weight 450
+         :ac 6
+         :mc 0
+         :material :copper
+         :subtype :body-armor}
+        {:name "plate mail"
+         :price 600
+         :weight 450
+         :ac 7
+         :material :iron
+         :mc 2
+         :subtype :body-armor}
+        {:name "crystal plate mail"
+         :price 820
+         :weight 450
+         :ac 7
+         :material :glass
+         :mc 2
+         :subtype :body-armor}
+        {:name "red dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "white dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "orange dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "blue dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "green dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "yellow dragon scales"
+         :price 500
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "black dragon scales"
+         :price 700
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "silver dragon scales"
+         :price 700
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "gray dragon scales"
+         :price 700
+         :weight 40
+         :ac 3
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "red dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "white dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "orange dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "blue dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "green dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "yellow dragon scale mail"
+         :price 900
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "black dragon scale mail"
+         :price 1200
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "silver dragon scale mail"
+         :price 1200
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "gray dragon scale mail"
+         :price 1200
+         :weight 40
+         :ac 9
+         :mc 0
+         :material :dragon-hide
+         :subtype :body-armor}
+        {:name "mummy wrapping"
+         :price 2
+         :weight 3
+         :ac 0
+         :material :cloth
+         :mc 1
+         :subtype :cloak}
+        {:name "orcish cloak"
+         :price 40
+         :weight 10
+         :ac 0
+         :material :cloth
+         :mc 2
+         :appearances ["coarse mantelet"]
+         :subtype :cloak}
+        {:name "dwarvish cloak"
+         :price 50
+         :weight 10
+         :ac 0
+         :material :cloth
+         :mc 2
+         :appearances ["hooded cloak"]
+         :subtype :cloak}
+        {:name "leather cloak"
+         :price 40
+         :weight 15
+         :ac 1
+         :material :leather
+         :mc 1
+         :subtype :cloak}
+        {:name "oilskin cloak"
+         :price 50
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 3
+         :appearances ["slippery cloak"]
+         :subtype :cloak}
+        {:name "alchemy smock"
+         :price 50
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 1
+         :appearances ["apron"]
+         :subtype :cloak}
+        {:name "elven cloak"
+         :price 60
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 3
+         :appearances ["faded pall"]
+         :subtype :cloak}
+        {:name "robe"
+         :price 50
+         :weight 15
+         :ac 2
+         :material :cloth
+         :mc 3
+         :subtype :cloak}
+        {:name "cloak of displacement"
+         :price 50
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 2
+         :appearances cloaks
+         :subtype :cloak}
+        {:name "cloak of invisibility"
+         :price 60
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 2
+         :appearances cloaks
+         :subtype :cloak}
+        {:name "cloak of magic resistance"
+         :price 60
+         :weight 10
+         :ac 1
+         :material :cloth
+         :mc 3
+         :appearances cloaks
+         :subtype :cloak}
+        {:name "cloak of protection"
+         :price 50
+         :weight 10
+         :ac 3
+         :material :cloth
+         :mc 3
+         :appearances cloaks
+         :subtype :cloak}
+        {:name "fedora"
+         :price 1
+         :weight 3
+         :ac 0
+         :mc 0
+         :material :cloth
+         :subtype :helmet}
+        {:name "dunce cap"
+         :price 1
+         :weight 4
+         :ac 0
+         :mc 0
+         :material :cloth
+         :appearances ["conical hat"]
+         :subtype :helmet}
+        {:name "cornuthaum"
+         :price 80
+         :weight 4
+         :ac 0
+         :material :cloth
+         :mc 2
+         :appearances ["conical hat"]
+         :subtype :helmet}
+        {:name "dented pot"
+         :price 8
+         :weight 10
+         :ac 1
+         :mc 0
+         :material :iron
+         :subtype :helmet}
+        {:name "elven leather helm"
+         :price 8
+         :weight 3
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances ["leather hat"]
+         :subtype :helmet}
+        {:name "orcish helm"
+         :price 10
+         :weight 30
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances ["iron skull cap"]
+         :subtype :helmet}
+        {:name "dwarvish iron helm"
+         :price 20
+         :weight 40
+         :ac 2
+         :mc 0
+         :material :iron
+         :appearances ["hard hat"]
+         :subtype :helmet}
+        {:name :helmet
+         :price 10
+         :weight 30
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances helmets
+         :subtype :helmet}
+        {:name "helm of brilliance"
+         :price 50
+         :weight 50
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances helmets
+         :subtype :helmet}
+        {:name "helm of opposite alignment"
+         :price 50
+         :weight 50
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances helmets
+         :subtype :helmet}
+        {:name "helm of telepathy"
+         :price 50
+         :weight 50
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances helmets
+         :subtype :helmet}
+        {:name "leather gloves"
+         :price 8
+         :weight 10
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances gloves
+         :subtype :gloves}
+        {:name "gauntlets of dexterity"
+         :price 50
+         :weight 10
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances gloves
+         :subtype :gloves}
+        {:name "gauntlets of fumbling"
+         :price 50
+         :weight 10
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances gloves
+         :subtype :gloves}
+        {:name "gauntlets of power"
+         :price 50
+         :weight 30
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances gloves
+         :subtype :gloves}
+        {:name "small shield"
+         :price 3
+         :weight 30
+         :ac 1
+         :mc 0
+         :material :wood
+         :subtype :shield}
+        {:name "orcish shield"
+         :price 7
+         :weight 50
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances ["red-eyed shield"]
+         :subtype :shield}
+        {:name "Uruk-hai shield"
+         :price 7
+         :weight 50
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances ["white-handed shield"]
+         :subtype :shield}
+        {:name "elven shield"
+         :price 7
+         :weight 40
+         :ac 2
+         :mc 0
+         :material :wood
+         :appearances ["blue and green shield"]
+         :subtype :shield}
+        {:name "dwarvish roundshield"
+         :price 10
+         :weight 100
+         :ac 2
+         :mc 0
+         :material :iron
+         :appearances ["large round shield"]
+         :subtype :shield}
+        {:name "large shield"
+         :price 10
+         :weight 100
+         :ac 2
+         :mc 0
+         :material :iron
+         :subtype :shield}
+        {:name "shield of reflection"
+         :price 50
+         :weight 50
+         :ac 2
+         :mc 0
+         :material :silver
+         :appearances ["polished silver shield"]
+         :subtype :shield}
+        {:name "low boots"
+         :price 8
+         :weight 10
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances ["walking shoes"]
+         :subtype :boots}
+        {:name "high boots"
+         :price 12
+         :weight 20
+         :ac 2
+         :mc 0
+         :material :leather
+         :appearances ["jackboots"]
+         :subtype :boots}
+        {:name "iron shoes"
+         :price 16
+         :weight 50
+         :ac 2
+         :mc 0
+         :material :iron
+         :appearances ["hard shoes"]
+         :subtype :boots}
+        {:name "elven boots"
+         :price 8
+         :weight 15
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}
+        {:name "kicking boots"
+         :price 8
+         :weight 15
+         :ac 1
+         :mc 0
+         :material :iron
+         :appearances boots
+         :subtype :boots}
+        {:name "fumble boots"
+         :price 30
+         :weight 20
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}
+        {:name "levitation boots"
+         :price 30
+         :weight 15
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}
+        {:name "jumping boots"
+         :price 50
+         :weight 20
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}
+        {:name "speed boots"
+         :price 50
+         :weight 20
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}
+        {:name "water walking boots"
+         :price 50
+         :weight 20
+         :ac 1
+         :mc 0
+         :material :leather
+         :appearances boots
+         :subtype :boots}};
+    return $armor (glyph "[");}
+1;

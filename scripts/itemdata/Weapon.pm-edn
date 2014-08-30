@@ -1,0 +1,963 @@
+package NetHack::Item::Spoiler::Weapon;
+{
+  $NetHack::Item::Spoiler::Weapon::VERSION = "0.21";}
+use strict;
+use warnings;
+use base "NetHack::Item::Spoiler";
+use constant type :weapon;
+sub _list {
+    my $weapons = {
+            {:name "Cleaver"
+             :artifact 1
+             :base "battle-axe"
+             :sdam "d8+d6+d4"
+             :ldam "2d6+2d4"
+             :to-hit "d3"
+             :hands 2
+             :weight 120
+             :price 1500
+             :material :iron}
+            {:name "Demonbane"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 2500
+             :material :iron}
+            {:name "Dragonbane"
+             :artifact 1
+             :base "broadsword"
+             :sdam "2d4"
+             :ldam "d6+1"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 500
+             :material :iron}
+            {:name "Excalibur"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8+d10"
+             :ldam "d12+d10"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 4000
+             :material :iron}
+            {:name "Fire Brand"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 3000
+             :material :iron}
+            {:name "Frost Brand"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 3000
+             :material :iron}
+            {:name "Giantslayer"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 200
+             :material :iron}
+            {:name "Grayswandir"
+             :artifact 1
+             :base "silver saber"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 8000
+             :material :silver}
+            {:name "Grimtooth"
+             :artifact 1
+             :base "orcish dagger"
+             :sdam "d6+d3"
+             :ldam "d6+d3"
+             :to-hit "d2+2"
+             :hands 1
+             :weight 10
+             :price 300
+             :material :iron}
+            {:name "Longbow of Diana"
+             :artifact 1
+             :base "bow"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit "d5"
+             :hands 1
+             :weight 30
+             :price 4000
+             :fullname "The Longbow of Diana"
+             :material :wood}
+            {:name "Magicbane"
+             :artifact 1
+             :base "athame"
+             :sdam "2d4"
+             :ldam "d4+d3"
+             :to-hit "d5+2"
+             :hands 1
+             :weight 10
+             :price 3500
+             :material :iron}
+            {:name "Mjollnir"
+             :artifact 1
+             :base "war hammer"
+             :sdam "d4+1"
+             :ldam "d4"
+             :to-hit "d5"
+             :hands 1
+             :weight 50
+             :price 4000
+             :material :iron}
+            {:name "Ogresmasher"
+             :artifact 1
+             :base "war hammer"
+             :sdam "d4+1"
+             :ldam "d4"
+             :to-hit "d5"
+             :hands 1
+             :weight 50
+             :price 200
+             :material :iron}
+            {:name "Orcrist"
+             :artifact 1
+             :base "elven broadsword"
+             :sdam "d6+d4"
+             :ldam "d6+1"
+             :to-hit "d5"
+             :hands 1
+             :weight 70
+             :price 2000
+             :material :wood}
+            {:name "Sceptre of Might"
+             :artifact 1
+             :base "mace"
+             :sdam "d6+1"
+             :ldam "d6"
+             :to-hit "d5"
+             :hands 1
+             :weight 30
+             :price 2500
+             :fullname "The Sceptre of Might"
+             :material :iron}
+            {:name "Snickersnee"
+             :artifact 1
+             :base "katana"
+             :sdam "d10+d8"
+             :ldam "d12+d8"
+             :to-hit 1
+             :hands 1
+             :weight 40
+             :price 1200
+             :material :iron}
+            {:name "Staff of Aesculapius"
+             :artifact 1
+             :base "quarterstaff"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 2
+             :weight 40
+             :price 5000
+             :fullname "The Staff of Aesculapius"
+             :material :wood}
+            {:name "Sting"
+             :artifact 1
+             :base "elven dagger"
+             :sdam "d5"
+             :ldam "d3"
+             :to-hit "d5+2"
+             :hands 1
+             :weight 10
+             :price 800
+             :material :wood}
+            {:name "Stormbringer"
+             :artifact 1
+             :base "runesword"
+             :sdam "2d4+d2"
+             :ldam "d6+d2+1"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 8000
+             :material :iron}
+            {:name "Sunsword"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 1500
+             :material :iron}
+            {:name "Tsurugi of Muramasa"
+             :artifact 1
+             :base "tsurugi"
+             :sdam "d16+d8"
+             :ldam "2d8+2d6"
+             :to-hit 2
+             :hands 2
+             :weight 60
+             :price 4500
+             :fullname "The Tsurugi of Muramasa"
+             :material :metal}
+            {:name "Trollsbane"
+             :artifact 1
+             :base "morning star"
+             :sdam "2d4"
+             :ldam "d6+1"
+             :to-hit "d5"
+             :hands 1
+             :weight 120
+             :price 200
+             :material :iron}
+            {:name "Vorpal Blade"
+             :artifact 1
+             :base "long sword"
+             :sdam "d8+1"
+             :ldam "d12+1"
+             :to-hit "d5"
+             :hands 1
+             :weight 40
+             :price 4000
+             :material :iron}
+            {:name "Werebane"
+             :artifact 1
+             :base "silver saber"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit "d2"
+             :hands 1
+             :weight 40
+             :price 1500
+             :material :silver}
+            {:name "aklys"
+             :sdam "d6"
+             :ldam "d3"
+             :to-hit 0
+             :hands 1
+             :weight 15
+             :price 4
+             :material :iron
+             :appearances ["thonged club"]
+             :plural "aklyses"}
+            {:name "arrow"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 2
+             :material :iron
+             :plural "arrows"
+             :stackable 1}
+            {:name "athame"
+             :sdam "d4"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 10
+             :price 4
+             :material :iron
+             :plural "athames"
+             :stackable 1}
+            {:name "axe"
+             :sdam "d6"
+             :ldam "d4"
+             :to-hit 0
+             :hands 1
+             :weight 60
+             :price 8
+             :material :iron
+             :plural "axes"}
+            {:name "bardiche"
+             :sdam "2d4"
+             :ldam "3d4"
+             :to-hit 0
+             :hands 2
+             :weight 120
+             :price 7
+             :material :iron
+             :appearances ["long poleaxe"]
+             :plural "bardiches"}
+            {:name "battle-axe"
+             :sdam "d8+d4"
+             :ldam "d6+2d4"
+             :to-hit 0
+             :hands 2
+             :weight 120
+             :price 40
+             :material :iron
+             :appearances ["double-headed axe"]
+             :plural "battle-axes"}
+            {:name "bec de corbin"
+             :sdam "d8"
+             :ldam "d6"
+             :to-hit 0
+             :hands 2
+             :weight 100
+             :price 8
+             :material :iron
+             :appearances ["beaked polearm"]
+             :plural "bec de corbins"}
+            {:name "bill-guisarme"
+             :sdam "2d4"
+             :ldam "d10"
+             :to-hit 0
+             :hands 2
+             :weight 120
+             :price 7
+             :material :iron
+             :appearances ["hooked polearm"]
+             :plural "bill-guisarmes"}
+            {:name "boomerang"
+             :sdam "d9"
+             :ldam "d9"
+             :to-hit 0
+             :hands 1
+             :weight 5
+             :price 20
+             :material :wood
+             :plural "boomerangs"
+             :stackable 1}
+            {:name "bow"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 60
+             :material :wood
+             :plural "bows"}
+            {:name "broadsword"
+             :sdam "2d4"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 1
+             :weight 70
+             :price 10
+             :material :iron
+             :plural "broadswords"}
+            {:name "bullwhip"
+             :sdam "d2"
+             :ldam 1
+             :to-hit 0
+             :hands 1
+             :weight 20
+             :price 4
+             :material :leather
+             :plural "bullwhips"}
+            {:name "club"
+             :sdam "d6"
+             :ldam "d3"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 3
+             :material :wood
+             :plural "clubs"}
+            {:name "crossbow"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 50
+             :price 40
+             :material :wood
+             :plural "crossbows"}
+            {:name "crossbow bolt"
+             :sdam "d4+1"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 2
+             :material :iron
+             :plural "crossbow bolts"
+             :stackable 1}
+            {:name "crysknife"
+             :sdam "d10"
+             :ldam "d10"
+             :to-hit 3
+             :hands 1
+             :weight 20
+             :price 100
+             :material :mineral
+             :plural "crysknives"}
+            {:name "dagger"
+             :sdam "d4"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 10
+             :price 4
+             :material :iron
+             :plural "daggers"
+             :stackable 1}
+            {:name "dart"
+             :sdam "d3"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 2
+             :material :iron
+             :plural "darts"
+             :stackable 1}
+            {:name "dwarvish mattock"
+             :sdam "d12"
+             :ldam "d8+2d6"
+             :to-hit "-1"
+             :hands 2
+             :weight 120
+             :price 50
+             :material :iron
+             :appearances ["broad pick"]
+             :plural "dwarvish mattocks"}
+            {:name "dwarvish short sword"
+             :sdam "d7"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 10
+             :material :iron
+             :appearances ["broad short sword"]
+             :plural "dwarvish short swords"}
+            {:name "dwarvish spear"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 35
+             :price 3
+             :material :iron
+             :appearances ["stout spear"]
+             :plural "dwarvish spears"
+             :stackable 1}
+            {:name "elven arrow"
+             :sdam "d7"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 2
+             :material :wood
+             :appearances ["runed arrow"]
+             :plural "elven arrows"
+             :stackable 1}
+            {:name "elven bow"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 60
+             :material :wood
+             :appearances ["runed bow"]
+             :plural "elven bows"}
+            {:name "elven broadsword"
+             :sdam "d6+d4"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 1
+             :weight 70
+             :price 10
+             :material :wood
+             :appearances ["runed broadsword"]
+             :plural "elven broadswords"}
+            {:name "elven dagger"
+             :sdam "d5"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 10
+             :price 4
+             :material :wood
+             :appearances ["runed dagger"]
+             :plural "elven daggers"
+             :stackable 1}
+            {:name "elven short sword"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 10
+             :material :wood
+             :appearances ["runed short sword"]
+             :plural "elven short swords"}
+            {:name "elven spear"
+             :sdam "d7"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 3
+             :material :wood
+             :appearances ["runed spear"]
+             :plural "elven spears"
+             :stackable 1}
+            {:name "fauchard"
+             :sdam "d6"
+             :ldam "d8"
+             :to-hit 0
+             :hands 2
+             :weight 60
+             :price 5
+             :material :iron
+             :appearances ["pole sickle"]
+             :plural "fauchards"}
+            {:name "flail"
+             :sdam "d6+1"
+             :ldam "2d4"
+             :to-hit 0
+             :hands 1
+             :weight 15
+             :price 4
+             :material :iron
+             :plural "flails"}
+            {:name "flintstone"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 10
+             :price 1
+             :material :mineral
+             :plural "flintstones"
+             :stackable 1}
+            {:name "glaive"
+             :sdam "d6"
+             :ldam "d10"
+             :to-hit 0
+             :hands 2
+             :weight 75
+             :price 6
+             :material :iron
+             :appearances ["single-edged polearm"]
+             :plural "glaives"}
+            {:name "guisarme"
+             :sdam "2d4"
+             :ldam "d8"
+             :to-hit 0
+             :hands 2
+             :weight 80
+             :price 5
+             :material :iron
+             :appearances ["pruning hook"]
+             :plural "guisarmes"}
+            {:name "halberd"
+             :sdam "d10"
+             :ldam "2d6"
+             :to-hit 0
+             :hands 2
+             :weight 150
+             :price 10
+             :material :iron
+             :appearances ["angled poleaxe"]
+             :plural "halberds"}
+            {:name "javelin"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 20
+             :price 3
+             :material :iron
+             :appearances ["throwing spear"]
+             :plural "javelins"
+             :stackable 1}
+            {:name "katana"
+             :sdam "d10"
+             :ldam "d12"
+             :to-hit 1
+             :hands 1
+             :weight 40
+             :price 80
+             :material :iron
+             :appearances ["samurai sword"]
+             :plural "katanas"}
+            {:name "knife"
+             :sdam "d3"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 5
+             :price 4
+             :material :iron
+             :plural "knives"
+             :stackable 1}
+            {:name "lance"
+             :sdam "d6"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 180
+             :price 10
+             :material :iron
+             :plural "lances"}
+            {:name "long sword"
+             :sdam "d8"
+             :ldam "d12"
+             :to-hit 0
+             :hands 1
+             :weight 40
+             :price 15
+             :material :iron
+             :plural "long swords"}
+            {:name "lucern hammer"
+             :sdam "2d4"
+             :ldam "d6"
+             :to-hit 0
+             :hands 2
+             :weight 150
+             :price 7
+             :material :iron
+             :appearances ["pronged polearm"]
+             :plural "lucern hammers"}
+            {:name "mace"
+             :sdam "d6+1"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 5
+             :material :iron
+             :plural "maces"}
+            {:name "morning star"
+             :sdam "2d4"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 1
+             :weight 120
+             :price 10
+             :material :iron
+             :plural "morning stars"}
+            {:name "orcish arrow"
+             :sdam "d5"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 2
+             :material :iron
+             :appearances ["crude arrow"]
+             :plural "orcish arrows"
+             :stackable 1}
+            {:name "orcish bow"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 60
+             :material :wood
+             :appearances ["crude bow"]
+             :plural "orcish bows"}
+            {:name "orcish dagger"
+             :sdam "d3"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 10
+             :price 4
+             :material :iron
+             :appearances ["crude dagger"]
+             :plural "orcish daggers"
+             :stackable 1}
+            {:name "orcish short sword"
+             :sdam "d5"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 10
+             :material :iron
+             :appearances ["crude short sword"]
+             :plural "orcish short swords"}
+            {:name "orcish spear"
+             :sdam "d5"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 3
+             :material :iron
+             :appearances ["crude spear"]
+             :plural "orcish spears"
+             :stackable 1}
+            {:name "partisan"
+             :sdam "d6"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 2
+             :weight 80
+             :price 10
+             :material :iron
+             :appearances ["vulgar polearm"]
+             :plural "partisans"}
+            {:name "quarterstaff"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 2
+             :weight 40
+             :price 5
+             :material :wood
+             :appearances ["staff"]
+             :plural "quarterstaves"}
+            {:name "ranseur"
+             :sdam "2d4"
+             :ldam "2d4"
+             :to-hit 0
+             :hands 2
+             :weight 50
+             :price 6
+             :material :iron
+             :appearances ["hilted polearm"]
+             :plural "ranseurs"}
+            {:name "rubber hose"
+             :sdam "d4"
+             :ldam "d3"
+             :to-hit 0
+             :hands 1
+             :weight 20
+             :price 3
+             :material :plastic
+             :plural "rubber hoses"}
+            {:name "runesword"
+             :sdam "2d4"
+             :ldam "d6+1"
+             :to-hit 0
+             :hands 1
+             :weight 40
+             :price 300
+             :material :iron
+             :appearances ["runed broadsword"]
+             :plural "runeswords"}
+            {:name "scalpel"
+             :sdam "d3"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 5
+             :price 6
+             :material :metal
+             :plural "scalpels"
+             :stackable 1}
+            {:name "scimitar"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 40
+             :price 15
+             :material :iron
+             :appearances ["curved sword"]
+             :plural "scimitars"}
+            {:name "short sword"
+             :sdam "d6"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 10
+             :material :iron
+             :plural "short swords"}
+            {:name "shuriken"
+             :sdam "d8"
+             :ldam "d6"
+             :to-hit 2
+             :hands 1
+             :weight 1
+             :price 5
+             :material :iron
+             :appearances ["throwing star"]
+             :plural "shuriken"
+             :stackable 1}
+            {:name "silver arrow"
+             :sdam "d6"
+             :ldam "d6"
+             :to-hit 0
+             :hands 1
+             :weight 1
+             :price 5
+             :material :silver
+             :plural "silver arrows"
+             :stackable 1}
+            {:name "silver dagger"
+             :sdam "d4"
+             :ldam "d3"
+             :to-hit 2
+             :hands 1
+             :weight 12
+             :price 40
+             :material :silver
+             :plural "silver daggers"
+             :stackable 1}
+            {:name "silver saber"
+             :sdam "d8"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 40
+             :price 75
+             :material :silver
+             :plural "silver sabers"}
+            {:name "silver spear"
+             :sdam "d6"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 36
+             :price 40
+             :material :silver
+             :plural "silver spears"
+             :stackable 1}
+            {:name "sling"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 3
+             :price 20
+             :material :leather
+             :plural "slings"}
+            {:name "spear"
+             :sdam "d6"
+             :ldam "d8"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 3
+             :material :iron
+             :plural "spears"
+             :stackable 1}
+            {:name "spetum"
+             :sdam "d6+1"
+             :ldam "2d6"
+             :to-hit 0
+             :hands 2
+             :weight 50
+             :price 5
+             :material :iron
+             :appearances ["forked polearm"]
+             :plural "spetums"}
+            {:name "stiletto"
+             :sdam "d3"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 5
+             :price 4
+             :material :iron
+             :plural "stilettos"
+             :stackable 1}
+            {:name "trident"
+             :sdam "d6+1"
+             :ldam "3d4"
+             :to-hit 0
+             :hands 1
+             :weight 25
+             :price 5
+             :material :iron
+             :plural "tridents"}
+            {:name "tsurugi"
+             :sdam "d16"
+             :ldam "d8+2d6"
+             :to-hit 2
+             :hands 2
+             :weight 60
+             :price 500
+             :material :metal
+             :appearances ["long samurai sword"]
+             :plural "tsurugis"}
+            {:name "two-handed sword"
+             :sdam "d12"
+             :ldam "3d6"
+             :to-hit 0
+             :hands 2
+             :weight 150
+             :price 50
+             :material :iron
+             :plural "two-handed swords"}
+            {:name "voulge"
+             :sdam "2d4"
+             :ldam "2d4"
+             :to-hit 0
+             :hands 2
+             :weight 125
+             :price 5
+             :material :iron
+             :appearances ["pole cleaver"]
+             :plural "voulges"}
+            {:name "war hammer"
+             :sdam "d4+1"
+             :ldam "d4"
+             :to-hit 0
+             :hands 1
+             :weight 50
+             :price 5
+             :material :iron
+             :plural "war hammers"}
+            {:name "worm tooth"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 20
+             :price 2
+             :material "none"
+             :plural "worm teeth"}
+            {:name "ya"
+             :sdam "d7"
+             :ldam "d7"
+             :to-hit 1
+             :hands 1
+             :weight 1
+             :price 4
+             :material :metal
+             :appearances ["bamboo arrow"]
+             :plural "ya"
+             :stackable 1}
+            {:name "yumi"
+             :sdam "d2"
+             :ldam "d2"
+             :to-hit 0
+             :hands 1
+             :weight 30
+             :price 60
+             :material :wood
+             :appearances ["long bow"]
+             :plural "yumis"}};
+    return $weapons (glyph ")");}
+# these are stackable weapon appearances where name != appearance
+sub extra_plurals {
+    my $self = shift;
+    return {
+        map { $_ "${_}s"}
+        "stout spear" "runed arrow" "runed dagger" "runed spear"
+        "crude arrow" "crude dagger" "crude spear" "throwing spear"
+        "throwing star" "bamboo arrow"};}
+1;
