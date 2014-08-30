@@ -33,17 +33,17 @@ Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/Simpl
 A ttyrec of one Medusa run is in the repo:
 https://github.com/krajj7/ANBF/blob/master/ttyrec/wizmode-exploration-dlvl1-28medusa.ttyrec?raw=true
 
-**14.7.2014**: The framework can now recognize all types of monsters found in the dungeon and provides information about their properties.  Monsters that have ambiguous representation (like dwarf king/mind flayer) are queried automatically with the FarLook command, so bots don't have to worry about ambiguities or possibly-peaceful monsters at all.
+**14.7.2014**: The framework can now recognize all types of monsters found in the dungeon and provides information about their properties.  The raw data was adapted from the Saiph bot.  Monsters that have ambiguous representation (like dwarf king/mind flayer) are queried automatically with the FarLook command, so bots don't have to worry about ambiguities or possibly-peaceful monsters at all.
 
 **26.7.2014**: Navigation has been expanded to allow navigating (either exploring everything fully or going as fast as possible) to any given branch – so far only above the Castle – or special level (Minetown, Oracle, Medusa's lair, ...).  Unvisited branches and levels are automatically searched for.
 
 Item handling is still missing so bots can't cross Medusa's yet, but in wizmode the testing bot can use the new navigation API to easily explore dungeon branches above the Castle in any desired order, without having to explicitly deal with finding the right stairs/portal etc.
 
+**31.8.2014**: Pretty much all item types found in NetHack are now recognized by the framework and their properties are available for querying, including monster corpses, statues and everything.  Much of the data and some handy regexes were adapted from the TAEB libs.  Items with fixed appearances are auto-identified (e.g. polished silver shield is always shield of reflection) and unusual appearances are normalized (japanese names for the Samurai, plurals).  However, actions for interacting with items are not yet implemented and the framework currently doesn't help with item identification like dropping rings into sinks, engraving with wands, price identification or elimination, but all of this is on the roadmap.
+
 ## Roadmap
 
 ### Short-term goals
-
-Handling of items and inventory.
 
 Navigation using pickaxe / ring of levitation.
 

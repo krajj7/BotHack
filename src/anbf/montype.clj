@@ -491,16 +491,14 @@
                   (keys m)))
     (assoc-in m [\space nil] (get-in m [\X nil]))))
 
-(def by-name ; {name => MonsterType}
-  (reduce (fn [res monster]
-            (assoc res (:name monster) monster))
-          {} monster-types))
+(def name->monster ; {name => MonsterType}
+  (into {} (map #(vector (:name %) %) monster-types)))
 
 (def by-rank-map
   (reduce (fn [res [role ranks]]
             (reduce #(assoc %1 %2 role) res ranks))
           {} role-ranks))
-(def by-rank (comp by-rank-map string/lower-case))
+(def rank->monster (comp by-rank-map string/lower-case))
 
 (defn- strip-modifier [desc]
   (condp #(.startsWith ^String %2 %1) desc
@@ -527,34 +525,34 @@
   (let [^String desc (-> text strip-article strip-disposition strip-modifier)
         ghost-or-called (re-first-group #"ghost|called" desc)]
     (or (if (re-seq #"^(?:the )?high priest (?:ess)?$" desc)
-          (by-name "high priest"))
+          (name->monster "high priest"))
         (if (= desc "mimic")
-          (by-name "large mimic")) ; could be any mimic really
+          (name->monster "large mimic")) ; could be any mimic really
         (if-let [[desc god] (and (not (.contains desc "Minion of Huhetotl"))
                                  (not ghost-or-called)
                                  ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]
           (if (re-seq #"poohbah|priest|priestess" desc)
             (if (.contains "high " desc)
-              (by-name "high priest")
-              (by-name "aligned priest"))
-            (or (by-name desc)
+              (name->monster "high priest")
+              (name->monster "aligned priest"))
+            (or (name->monster desc)
                 (throw (IllegalArgumentException. (str "Failed to parse monster-of description: " text))))))
         (if-let [[nick desc] (and (not ghost-or-called)
                                   (not (.contains desc "Neferet the Green"))
                                   (not (.contains desc "Vlad the Impaler"))
                                   (re-first-groups #"(.*) the (.*)" desc))]
-          (by-name desc))
+          (name->monster desc))
         (if-let [[desc nick] (re-first-groups #"(.*) called (.*)" desc)]
-          (by-name desc))
+          (name->monster desc))
         (if (re-seq #"'?s? ghost" desc)
-          (by-name "ghost"))
+          (name->monster "ghost"))
         ; TODO player-monsters on astral as TAEB
         (if (.contains desc "coyote - ")
-          (by-name "coyote"))
+          (name->monster "coyote"))
         (if (shopkeepers desc)
-          (by-name "shopkeeper"))
-        (by-name desc)
-        (by-rank desc)
+          (name->monster "shopkeeper"))
+        (name->monster desc)
+        (rank->monster desc)
         (throw (IllegalArgumentException.
                  (str "Failed to parse monster description: " text))))))

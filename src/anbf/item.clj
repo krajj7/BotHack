@@ -1,5 +1,6 @@
 (ns anbf.item
   (:require [clojure.tools.logging :as log]
+            [anbf.itemtype :refer :all]
             [anbf.util :refer :all]))
 
 (defrecord Key [])
@@ -7,7 +8,6 @@
 (defrecord Item
   [label
    name
-   type
    generic ; called
    specific ; named
    qty
@@ -18,7 +18,7 @@
    charges
    recharges
    in-use ; worn / wielded
-   cost])
+   cost]) ; not to be confused with ItemType price
 
 (def ^:private item-re #"^(?:([\w\#\$])\s[+-]\s)?\s*([Aa]n?|[Tt]he|\d+)?\s*(blessed|(?:un)?cursed|(?:un)?holy)?\s*(greased)?\s*(poisoned)?\s*((?:(?:very|thoroughly) )?(?:burnt|rusty))?\s*((?:(?:very|thoroughly) )?(?:rotted|corroded))?\s*(fixed|(?:fire|rust|corrode)proof)?\s*(partly used)?\s*(partly eaten)?\s*(diluted)?\s*([+-]\d+)?\s*(?:(?:pair|set) of)?\s*\b(.*?)\s*(?:called (.*?))?\s*(?:named (.*?))?\s*(?:\((\d+):(-?\d+)\))?\s*(?:\((no|[1-7]) candles?(, lit| attached)\))?\s*(\(lit\))?\s*(\(laid by you\))?\s*(\(chained to you\))?\s*(\(in quiver\))?\s*(\(alternate weapon; not wielded\))?\s*(\(wielded in other.*?\))?\s*(\((?:weapon|wielded).*?\))?\s*(\((?:being|embedded|on).*?\))?\s*(?:\(unpaid, (\d+) zorkmids?\)|\((\d+) zorkmids?\)|, no charge(?:, .*)?|, (?:price )?(\d+) zorkmids( each)?(?:, .*)?)?\.?\s*$")
 
@@ -60,19 +60,22 @@
                :buc (if (= buc "holy") "blessed" "cursed"))
         res)
       (update-in res [:name] #(get jap->eng % %))
-      ; TODO singular name
-      ; TODO type
-      ; TODO appearance
+      (update-in res [:name] #(get plural->singular % %))
       (assoc res :lit (some #{:lit :lit-candelabrum} res))
-      (assoc res :in-use (some #{:wielded :worn} res))
-      (assoc res :cost (some #{:cost1 :cost2 :cost3} res))
-      (update-in res [:qty] #(if (re-seq #"[0-9]+" %) (Integer/parseInt %) 1))
+      (assoc res :in-use (find-first some? (map res [:wielded :worn])))
+      (assoc res :cost (find-first some? (map res [:cost1 :cost2 :cost3])))
+      (update-in res [:qty] #(if (re-seq #"[0-9]+" %)
+                               (Integer/parseInt %)
+                               1))
+      (update-in res [:candles] #(if (and % (re-seq #"[0-9]+" %))
+                                   (Integer/parseInt %)
+                                   0))
       (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
       (reduce (fn to-int [res kw]
                 (if (seq (kw res))
                   (update-in res [kw] #(Integer/parseInt %))
                   res))
-              res [:cost :candles :enchantment :charges :recharges])
+              res [:cost :enchantment :charges :recharges])
       (assoc res :erosion (if-let [deg ((fnil + 0 0)
                                         (erosion (:erosion1 res))
                                         (erosion (:erosion2 res)))]

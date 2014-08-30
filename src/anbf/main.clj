@@ -4,6 +4,7 @@
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.item :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.tile :refer :all]

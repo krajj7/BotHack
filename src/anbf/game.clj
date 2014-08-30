@@ -8,6 +8,7 @@
             [anbf.actions :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
@@ -21,6 +22,7 @@
    dungeon
    branch-id ; current
    dlvl ; current
+   discoveries ; {normalized appearance => ItemType}, ItemType may be only partial
    fov
    turn
    score]
@@ -31,7 +33,8 @@
 (defn new-game []
   (map->Game {:player (new-player)
               :dungeon (new-dungeon)
-              :branch-id :main}))
+              :branch-id :main
+              :discoveries default-identities}))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))

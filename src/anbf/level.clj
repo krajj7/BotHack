@@ -41,7 +41,7 @@
 (def blueprints
   [{:branch :main
     :tag :medusa-1
-    :monsters {{:x 28 :y 12} (by-name "Medusa")}
+    :monsters {{:x 28 :y 12} (name->monster "Medusa")}
     :features {{:x 32 :y 14} :door-secret
                {:x 48 :y 9} :door-secret
                {:x 30 :y 14} :squeaky
@@ -49,7 +49,7 @@
                {:x 28 :y 12} :stairs-down}}
    {:branch :main
     :tag :medusa-2
-    :monsters {{:x 70 :y 12} (by-name "Medusa")}
+    :monsters {{:x 70 :y 12} (name->monster "Medusa")}
     :features {{:x 3 :y 7} :door-secret
                {:x 8 :y 16} :door-secret
                {:x 62 :y 7} :door-secret
@@ -82,6 +82,6 @@
     :dlvl "Home 1"
     :branch :quest
     :leader {:y 6, :x 22}
-    :monsters {{:y 6, :x 22} (by-name "Lord Sato")}
+    :monsters {{:y 6, :x 22} (name->monster "Lord Sato")}
     :features {{:x 29 :y 6} :door-secret
                {:x 52 :y 6} :door-secret}}])
