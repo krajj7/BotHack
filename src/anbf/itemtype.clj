@@ -131,38 +131,3 @@
                (for [{:keys [name plural] :as id} items
                      :when plural]
                  [plural name]))))
-
-(def blind-appearances
-  (into {} (map (fn [[generic-name typekw glyph]]
-                  [generic-name ((kw->itemtype typekw) {:glyph glyph})])
-                [["stone" :gem \*]
-                 ["gem" :gem \*]
-                 ["potion" :potion \!]
-                 ["wand" :wand \/]
-                 ["spellbook" :spellbook \+]
-                 ["scroll" :scroll \?]])))
-
-(defn- map-intersection [m n]
-  (into {}
-        (for [[k v] m
-              :let [u (get n k)]
-              :when (= u v)]
-          [k v])))
-
-(def static-identities "{name => ItemType} for immediately unambiguous items returns the full record, for others returns partial record with common properties of all possibilities"
-  (merge
-    blind-appearances
-    (reduce (fn [res [typekw typegrp]]
-              (reduce (fn [res {:keys [appearances name glyph] :as id}]
-                        (reduce (fn [res appearance]
-                                  (if (res appearance) ; ambiguous
-                                    (update-in res [appearance]
-                                               #((kw->itemtype typekw)
-                                                 (map-intersection % id)))
-                                    (assoc res appearance id)))
-                                res
-                                appearances))
-                      res
-                      typegrp))
-            {}
-            item-kinds)))

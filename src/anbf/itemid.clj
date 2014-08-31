@@ -32,6 +32,16 @@
        (remove nil?)
        (apply pldb/db)))
 
+(def blind-appearances
+  (into {} (map (fn [[generic-name typekw glyph]]
+                  [generic-name ((kw->itemtype typekw) {:glyph glyph})])
+                [["stone" :gem \*]
+                 ["gem" :gem \*]
+                 ["potion" :potion \!]
+                 ["wand" :wand \/]
+                 ["spellbook" :spellbook \+]
+                 ["scroll" :scroll \?]])))
+
 (defmacro query [game qr]
   `(pldb/with-db (:discoveries ~game) ~qr))
 
