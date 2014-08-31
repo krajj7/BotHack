@@ -7,7 +7,7 @@
             [anbf.dungeon :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
-            [anbf.itemtype :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.position :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]))
@@ -285,7 +285,7 @@
               (reset! has-item true)
               (swap! game #(update-curlvl-at % (:player %)
                              assoc :items items
-                                   :item-glyph (:glyph (itemtype % top-item))
+                                   :item-glyph (:glyph (item-id % top-item))
                                    :item-color nil)))
             (log/error "Unrecognized message list " (str lines))))
         ToplineMessageHandler
@@ -300,7 +300,7 @@
               (reset! has-item true)
               (swap! game #(update-curlvl-at % (:player %)
                              assoc :items [item]
-                                   :item-glyph (:glyph (itemtype % item))
+                                   :item-glyph (:glyph (item-id % item))
                                    :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
               (swap! game #(update-curlvl-at % (:player %)

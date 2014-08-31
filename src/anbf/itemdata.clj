@@ -1513,7 +1513,7 @@
         "uranium" "iron" "steel" "hexagonal" "short" "runed" "long" "curved"
         "forked" "spiked" "jeweled"]))
 
-(def gem-data
+(def stone-gems
   [{:name "Heart of Ahriman"
     :artifact true
     :base "luckstone"
@@ -1523,7 +1523,37 @@
     :fullname "The Heart of Ahriman"
     :appearances ["gray stone"]
     :material :mineral}
-   {:name "dilithium crystal"
+   {:name "luckstone"
+    :price 60
+    :weight 10
+    :hardness :soft
+    :appearances ["gray stone"]
+    :plural "luckstones"
+    :material :mineral}
+   {:name "touchstone"
+    :price 45
+    :weight 10
+    :hardness :soft
+    :appearances ["gray stone"]
+    :plural "touchstones"
+    :material :mineral}
+   {:name "flint stone"
+    :price 1
+    :weight 10
+    :hardness :soft
+    :appearances ["gray stone"]
+    :plural "flint stones"
+    :material :mineral}
+   {:name "loadstone"
+    :price 1
+    :weight 500
+    :hardness :soft
+    :appearances ["gray stone"]
+    :plural "loadstones"
+    :material :mineral}])
+
+(def gem-gems
+  [{:name "dilithium crystal"
     :price 4500
     :hardness :soft
     :appearances ["white gem"]
@@ -1708,42 +1738,19 @@
     :hardness :soft
     :appearances ["yellowish brown gem"]
     :plural "worthless pieces of yellowish brown glass"
-    :material :glass}
-   {:name "luckstone"
-    :price 60
-    :weight 10
-    :hardness :soft
-    :appearances ["gray stone"]
-    :plural "luckstones"
-    :material :mineral}
-   {:name "touchstone"
-    :price 45
-    :weight 10
-    :hardness :soft
-    :appearances ["gray stone"]
-    :plural "touchstones"
-    :material :mineral}
-   {:name "flint stone"
-    :price 1
-    :weight 10
-    :hardness :soft
-    :appearances ["gray stone"]
-    :plural "flint stones"
-    :material :mineral}
-   {:name "loadstone"
-    :price 1
-    :weight 500
-    :hardness :soft
-    :appearances ["gray stone"]
-    :plural "loadstones"
-    :material :mineral}
-   {:name "rock"
-    :price 0
-    :weight 10
-    :hardness :soft
-    :appearances ["rock"]
-    :plural "rocks"
-    :material :mineral}])
+    :material :glass}])
+
+(def gem-data
+  (concat
+    stone-gems
+    gem-gems
+    [{:name "rock"
+      :price 0
+      :weight 10
+      :hardness :soft
+      :appearances ["rock"]
+      :plural "rocks"
+      :material :mineral}]))
 
 (def cloaks ["tattered cape" "opera cloak" "ornamental cope" "piece of cloth"])
 (def helmets ["plumed helmet" "etched helmet" "crested helmet" "visored helmet"])
@@ -3404,3 +3411,13 @@
          :price 300}
         {:name "potion of paralysis"
          :price 300}]))
+
+(def exclusive-appearances
+  "appearances that are sticky to the given identity - rings or armor have exclusive appearances, gems, lamps or luck/flint/loadstones don't (gray stone)"
+  (into #{} (concat ring-appearances
+                    armor-appearances
+                    amulet-appearances
+                    scroll-appearances
+                    potion-appearances
+                    spellbook-appearances
+                    wands-appearances)))

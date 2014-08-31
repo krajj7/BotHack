@@ -5,6 +5,7 @@
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.item :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
@@ -82,7 +83,7 @@
   (if (:inhibited @(:delegator a))
     (unpause a)))
 
-(defn- g [] (-> a :game deref))
+(defn- g [] (or (some-> a :game deref) (new-game)))
 
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
@@ -103,14 +104,14 @@
   [game]
   (->> (curlvl game) :tiles (apply concat)
        (map :items) (apply concat)
-       (map #(vector (type (itemtype game %)) % (itemtype game %)))
+       (map #(vector (type (item-id game %)) % (item-id game %)))
        pprint))
 
 (defn print-inventory
   "Print detailed info about all items in bot's inventory"
   [game]
   (->> game :player :inventory vals
-       (map #(vector (type (itemtype game %)) % (itemtype game %)))
+       (map #(vector (type (item-id game %)) % (item-id game %)))
        pprint))
 
 (defn print-los [game]

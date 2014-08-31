@@ -123,9 +123,7 @@
   (apply concat (vals item-kinds)))
 
 (def name->item "{name => ItemType} for all items"
-  (reduce (fn [res item]
-            (assoc res (:name item) item))
-          {} items))
+  (into {} (map #(vector (:name %) %) items)))
 
 (def plural->singular "{plural => singular} for all stackable item appearances"
   (merge generic-plurals
@@ -134,6 +132,16 @@
                      :when plural]
                  [plural name]))))
 
+(def blind-appearances
+  (into {} (map (fn [[generic-name typekw glyph]]
+                  [generic-name ((kw->itemtype typekw) {:glyph glyph})])
+                [["stone" :gem \*]
+                 ["gem" :gem \*]
+                 ["potion" :potion \!]
+                 ["wand" :wand \/]
+                 ["spellbook" :spellbook \+]
+                 ["scroll" :scroll \?]])))
+
 (defn- map-intersection [m n]
   (into {}
         (for [[k v] m
@@ -141,16 +149,9 @@
               :when (= u v)]
           [k v])))
 
-(def default-identities "{name => ItemType} for immediately unambiguous items returns the full record, for others returns partial record with common properties of all possibilities"
+(def static-identities "{name => ItemType} for immediately unambiguous items returns the full record, for others returns partial record with common properties of all possibilities"
   (merge
-    (into {} (map (fn [[generic-name typekw glyph]]
-                    [generic-name ((kw->itemtype typekw) {:glyph glyph})])
-                  [["stone" :gem \*]
-                   ["gem" :gem \*]
-                   ["potion" :potion \!]
-                   ["wand" :wand \/]
-                   ["spellbook" :spellbook \+]
-                   ["scroll" :scroll \?]]))
+    blind-appearances
     (reduce (fn [res [typekw typegrp]]
               (reduce (fn [res {:keys [appearances name glyph] :as id}]
                         (reduce (fn [res appearance]
@@ -165,12 +166,3 @@
                       typegrp))
             {}
             item-kinds)))
-
-(defn itemtype [game item]
-  (or (name->item item) ; already identified
-      (name->item (:specific item)) ; unidentified but named artifacts
-      ((:discoveries game) (:name item))
-      (log/error "unknown itemtype for item:" item)))
-
-(defn know-identity? [game item]
-  (:name (itemtype game item)))

@@ -8,7 +8,7 @@
             [anbf.actions :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
-            [anbf.itemtype :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
@@ -22,7 +22,7 @@
    dungeon
    branch-id ; current
    dlvl ; current
-   discoveries ; {normalized appearance => ItemType}, ItemType may be only partial
+   discoveries ; database of facts about item identities and appearances, TODO elimination on change - if some exclusive appearance is left with only 1 possibility, nothing else can have that appearance
    fov
    turn
    score]
@@ -34,7 +34,7 @@
   (map->Game {:player (new-player)
               :dungeon (new-dungeon)
               :branch-id :main
-              :discoveries default-identities}))
+              :discoveries initial-discoveries}))
 
 (defn- update-game [game status]
   (->> game keys (select-keys status) (merge game)))
@@ -146,7 +146,7 @@
             changed (not= old-dlvl new-dlvl)]
         (if (and changed (some? old-dlvl))
           (swap! game #(assoc-in % [:dungeon :levels (branch-key %) (:dlvl %)
-                                    :explored] (log/spy (curlvl-exploration-index %)))))
+                                    :explored] (curlvl-exploration-index %))))
         (swap! game update-by-botl status)
         (when changed
           (dlvl-changed @delegator old-dlvl new-dlvl)

@@ -7,6 +7,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]
+                 [org.clojure/core.logic "0.8.8"]
                  [com.cemerick/pomegranate "0.3.0"]
                  [com.jcraft/jsch "0.1.42"]
                  [criterium "0.4.3"]
