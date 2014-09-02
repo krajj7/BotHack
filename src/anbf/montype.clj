@@ -484,15 +484,14 @@
               (update-in res [(:glyph monster) (:color monster)]
                          #(if % :ambiguous monster)))
             m monster-types)
-    (into {} (map (fn [glyph]
-                    [glyph (into {} (remove (fn [[color monster]]
-                                              (= :ambiguous monster))
-                                            (m glyph)))])
-                  (keys m)))
+    (into {} (for [glyph (keys m)]
+               [glyph (into {} (remove (fn [[color monster]]
+                                         (= :ambiguous monster))
+                                       (m glyph)))]))
     (assoc-in m [\space nil] (get-in m [\X nil]))))
 
 (def name->monster ; {name => MonsterType}
-  (into {} (map #(vector (:name %) %) monster-types)))
+  (into {} (for [{:keys [name] :as m} monster-types] [name m])))
 
 (def by-rank-map
   (reduce (fn [res [role ranks]]

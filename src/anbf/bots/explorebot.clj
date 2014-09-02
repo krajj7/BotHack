@@ -15,7 +15,7 @@
 (def hostile-dist-thresh 10)
 
 (defn- hostile-threats [{:keys [player] :as game}]
-  (->> (-> game curlvl-monsters vals)
+  (->> game curlvl-monsters vals
        (filter #(and (hostile? %)
                      (if (or (blind? player) (:hallu (:state player)))
                        (adjacent? player %)

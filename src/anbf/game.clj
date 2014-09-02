@@ -164,7 +164,7 @@
     InventoryHandler
     (inventory-list [_ inventory]
       (swap! game assoc-in [:player :inventory]
-             (into {} (map (partial apply slot-item) inventory))))
+             (into {} (for [[c i] inventory] (slot-item c i)))))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text

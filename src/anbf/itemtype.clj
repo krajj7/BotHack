@@ -123,7 +123,7 @@
   (apply concat (vals item-kinds)))
 
 (def name->item "{name => ItemType} for all items"
-  (into {} (map #(vector (:name %) %) items)))
+  (into {} (for [{:keys [name] :as i} items] [name i])))
 
 (def plural->singular "{plural => singular} for all stackable item appearances"
   (merge generic-plurals

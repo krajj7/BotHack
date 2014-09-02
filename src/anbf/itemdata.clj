@@ -21,8 +21,8 @@
 
 (def generic-plurals "{plural => singular} for non-identified stackable item appearances"
   (into {} (concat
-             (map #(vector (string/replace % #"^scroll" "scrolls") %)
-                  scroll-appearances)
+             (for [s scroll-appearances]
+               [(string/replace s #"^scroll" "scrolls") s])
              (map #(vector (str % \s) %)
                   (concat
                     ; weapons
