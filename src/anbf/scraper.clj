@@ -74,7 +74,7 @@
   (before-cursor? frame "--More--"))
 
 (defn- more-items [frame]
-  (let [xstart (->> (nth-line frame 0) (take-while #(= \space %)) count)
+  (let [xstart (max (- (-> frame :cursor :x) 9) 0)
         yend (-> frame :cursor :y)]
     (map #(-> % (subs xstart) string/trim)
          (take yend (:lines frame)))))
