@@ -67,9 +67,9 @@
       (update-in res [:qty] #(if (re-seq #"[0-9]+" %)
                                (Integer/parseInt %)
                                1))
-      (update-in res [:candles] #(if (and % (re-seq #"[0-9]+" %))
-                                   (Integer/parseInt %)
-                                   0))
+      (if (:candles raw)
+        (update-in res [:candles] #(Integer/parseInt %))
+        res)
       (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
       (reduce (fn to-int [res kw]
                 (if (seq (kw res))

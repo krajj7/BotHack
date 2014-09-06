@@ -178,6 +178,9 @@
 (defeventhandler MultilineMessageHandler
   (message-lines [handler ^clojure.lang.IPersistentList items]))
 
+(defeventhandler FoundItemsHandler
+  (found-items [handler ^clojure.lang.IPersistentList items]))
+
 ; command protocols:
 
 (defmacro ^:private defchoicehandler [protocol & proto-methods]

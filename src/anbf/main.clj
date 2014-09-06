@@ -40,6 +40,9 @@
           MultilineMessageHandler
           (message-lines [_ lines]
             (log/info "Multiline message:" (with-out-str (pprint lines))))
+          FoundItemsHandler
+          (found-items [_ items]
+            (log/info "Found items:" items))
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" action))

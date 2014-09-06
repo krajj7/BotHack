@@ -258,7 +258,7 @@
   (trigger [this] (str \c (vi-directions (enum->kw dir)))))
 
 (defaction Look []
-  (handler [_ {:keys [game] :as anbf}]
+  (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)]
       (swap! game #(if-not (blind? (:player %))
                      (update-curlvl-at % (:player %)
@@ -266,6 +266,8 @@
                      %))
       (update-on-known-position anbf
         (fn after-look [game]
+          (if @has-item
+            (send delegator found-items (:items (at-player game))))
           (as-> game res
             (if (->> (:player res) (at-curlvl res) :feature nil?)
               (update-curlvl-at res (:player res) assoc :feature :floor)
