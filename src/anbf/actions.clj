@@ -257,6 +257,18 @@
             nil)))))
   (trigger [this] (str \c (vi-directions (enum->kw dir)))))
 
+(defn- rogue-item-glyph [game glyph]
+  (case glyph
+    \$ \*
+    \% \:
+    \[ \]
+    glyph))
+
+(defn- item-glyph [game item]
+  (if (:rogue (curlvl-tags game))
+    (rogue-item-glyph (:glyph (item-id game item)))
+    (:glyph (item-id game item))))
+
 (defaction Look []
   (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)]
@@ -287,7 +299,7 @@
               (reset! has-item true)
               (swap! game #(update-curlvl-at % (:player %)
                              assoc :items items
-                                   :item-glyph (:glyph (item-id % top-item))
+                                   :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (log/error "Unrecognized message list " (str lines))))
         ToplineMessageHandler
@@ -302,7 +314,7 @@
               (reset! has-item true)
               (swap! game #(update-curlvl-at % (:player %)
                              assoc :items [item]
-                                   :item-glyph (:glyph (item-id % item))
+                                   :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
               (swap! game #(update-curlvl-at % (:player %)
