@@ -1,6 +1,9 @@
 (ns anbf.main
+  (:refer-clojure :exclude [==])
   (:require [clojure.tools.logging :as log]
             [clojure.pprint :refer [pprint]]
+            [clojure.core.logic :refer :all]
+            [clojure.core.logic.pldb :as pldb]
             [anbf.anbf :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
@@ -36,7 +39,7 @@
             (log/info "Topline message:" text))
           MultilineMessageHandler
           (message-lines [_ lines]
-            (log/info "Multiline message:" lines))
+            (log/info "Multiline message:" (with-out-str (pprint lines))))
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" action))
@@ -83,7 +86,9 @@
   (if (:inhibited @(:delegator a))
     (unpause a)))
 
-(defn- g [] (or (some-> a :game deref) (new-game)))
+(defn- g [] (or (some-> a :game deref)
+                (log/debug "making initial game state")
+                (new-game)))
 
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."

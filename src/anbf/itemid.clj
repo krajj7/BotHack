@@ -3,6 +3,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.core.logic :refer :all]
             [clojure.core.logic.pldb :as pldb]
+            [anbf.item :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.itemdata :refer :all]
             [anbf.util :refer :all]))
@@ -81,6 +82,7 @@
           (first recs)
           (rest recs)))
 
+; TODO memoized version?
 (defn item-id
   "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous)"
   [game item]
@@ -90,3 +92,31 @@
   "Can the item be unambiguously identified?"
   [game item]
   (:name (item-id game item)))
+
+(defn add-discovery [game appearance id]
+  (let [id (get jap->eng id id)]
+    (log/debug "adding discovery: >" appearance "< is >" id "<")
+    (update-in game [:discoveries]
+               (fn integrate-discovery [db]
+                 (if (exclusive-appearances appearance)
+                   (as-> db res
+                     (reduce #(pldb/db-retraction %1 itemid-appearance
+                                                  %2 appearance)
+                             res
+                             (query game
+                                    (run* [q]
+                                          (itemid-appearance q appearance))))
+                     (reduce #(pldb/db-retraction %1 itemid-appearance
+                                                  id %2)
+                             res
+                             (query game
+                                    (run* [q]
+                                          (itemid-appearance id q))))
+                     (pldb/db-fact res itemid-appearance id appearance))
+                   db))))) ; old gray stones will stay gray stones...
+
+(defn add-discoveries [game discoveries]
+  (reduce (fn [game [appearance id]]
+            (add-discovery game appearance id))
+          game
+          discoveries))

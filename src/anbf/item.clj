@@ -28,7 +28,7 @@
    :lit-candelabrum :lit :laid :chained :quivered :offhand :offhand-wielded
    :wielded :worn :cost1 :cost2 :cost3])
 
-(def ^:private jap->eng
+(def jap->eng
   {"wakizashi" "short sword"
    "ninja-to" "broadsword"
    "nunchaku" "flail"

@@ -400,9 +400,59 @@
 (def ^:private inventory-handler (memoize inventory-handler))
 
 (defn update-inventory
-  "Re-check inventory as soon as possible."
+  "Re-check inventory on the next action"
   [anbf]
   (register-handler anbf priority-top (inventory-handler anbf)))
+
+(def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*) \(([^\)]*)\)$|^([^(]+)$")
+
+(defn- discovery-demangle [section appearance]
+  (case section
+    "Gems" (if (= "gray" appearance)
+             (str appearance " stone")
+             (str appearance " gem"))
+    "Amulets" (str appearance " amulet")
+    "Wands" (str appearance " wand")
+    "Rings" (str appearance " ring")
+    "Potions" (str appearance " potion")
+    "Spellbooks" (str appearance " spellbook")
+    "Scrolls" (str "scroll labeled " appearance)
+    appearance))
+
+(defaction Discoveries []
+  (handler [_ {:keys [game] :as anbf}]
+    (reify MultilineMessageHandler
+      (message-lines [this lines-all]
+        (swap! game add-discoveries
+               (loop [section nil
+                      lines lines-all
+                      discoveries []]
+                 (if-let [line (first lines)]
+                   (let [[group id appearance _] (re-first-groups
+                                                   discoveries-re line)]
+                     (if group
+                       (recur group (rest lines) discoveries)
+                       (if (= section "Unique Items")
+                         (recur section (rest lines) discoveries)
+                         (recur section (rest lines)
+                                (conj discoveries
+                                      [(discovery-demangle
+                                         section appearance) id])))))
+                   discoveries))))))
+  (trigger [_] "\\"))
+
+(defn- discoveries-handler [anbf]
+  (reify ActionHandler
+    (choose-action [this game]
+      (deregister-handler anbf this)
+      (->Discoveries))))
+
+(def ^:private discoveries-handler (memoize discoveries-handler))
+
+(defn update-discoveries
+  "Re-check discoveries on the next action"
+  [anbf]
+  (register-handler anbf priority-top (discoveries-handler anbf)))
 
 (defn with-handler
   ([handler action]
