@@ -86,6 +86,7 @@
 (defn- s [] (stop a))
 
 (defn- u []
+  (r)
   (if (:inhibited @(:delegator a))
     (unpause a)))
 
