@@ -84,7 +84,7 @@
               :erosion1 :erosion2 :slot)
       (into {:label label} (filter (comp some? val) res)))))
 
-(defn item [label]
+(defn label->item [label]
   (map->Item (parse-label label)))
 
 (defn slot-item
@@ -93,4 +93,4 @@
    (if-let [[slot label] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
      (slot-item (.charAt slot 0) label)))
   ([chr label]
-   [chr (item label)]))
+   [chr (label->item label)]))
