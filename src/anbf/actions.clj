@@ -276,6 +276,7 @@
           (if @has-item
             (send delegator found-items (:items (at-player game))))
           (as-> game res
+            (update-curlvl-at res (:player res) assoc :examined (:turn game))
             (if (->> (:player res) (at-curlvl res) :feature nil?)
               (update-curlvl-at res (:player res) assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
@@ -371,7 +372,9 @@
     (when (and (not (blind? player))
                (or (not (:feature tile))
                    (= :trap (:feature tile))
-                   (:new-items tile)))
+                   (:new-items tile)
+                   (and (seq (:items tile))
+                        (not= (:turn game) (:examined tile)))))
       (log/debug "examining tile")
       (->Look))))
 
