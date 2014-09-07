@@ -80,8 +80,7 @@
                                         (erosion (:erosion1 res))
                                         (erosion (:erosion2 res)))]
                             (if (pos? deg) deg)))
-      (dissoc res :wielded :worn :cost1 :cost2 :cost3 :lit-candelabrum
-              :erosion1 :erosion2 :slot)
+      (dissoc res :cost1 :cost2 :cost3 :lit-candelabrum :erosion1 :erosion2 :slot)
       (into {:label label} (filter (comp some? val) res)))))
 
 (defn label->item [label]

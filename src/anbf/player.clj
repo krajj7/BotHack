@@ -82,3 +82,9 @@
     (find-first #(and (nameset (->> % val (item-id game) :name))
                       (or (not not-cursed) (not= :cursed (:buc (val %)))))
                 (inventory game))))
+
+(defn wielding
+  "Return the wielded item or nil"
+  [game]
+  (find-first #(:wielded (val %))
+              (inventory game)))

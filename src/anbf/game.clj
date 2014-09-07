@@ -170,6 +170,10 @@
       (or (condp re-seq text
             #"Your .* feels? somewhat better"
             (swap! game assoc-in [:player :leg-hurt] false)
+            #"You turn into a"
+            (-> anbf update-inventory update-items)
+            #"You now wield"
+            (update-inventory anbf)
             nil)
           (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))

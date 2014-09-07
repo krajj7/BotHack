@@ -413,6 +413,12 @@
   [anbf]
   (register-handler anbf priority-top (inventory-handler anbf)))
 
+(defn update-items
+  "Re-check current tile for items on the next action"
+  [anbf]
+  (update-on-known-position anbf #(update-curlvl-at % (:player %)
+                                                    assoc :new-items true)))
+
 (def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*) \(([^\)]*)\)$|^([^(]+)$")
 
 (defn- discovery-demangle [section appearance]

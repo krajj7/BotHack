@@ -149,7 +149,8 @@
     (let [w (first ws)
           dir (towards tile w)
           o (in-direction level tile (opposite dir))]
-      (if (and (= 1 (count ws))
+      (if (and (empty? (:items tile)) ; don't try to break blocked doors
+               (= 1 (count ws))
                (some walkable? (intersection
                                  (into #{} (diagonal-neighbors level tile))
                                  (into #{} (straight-neighbors level o)))))
