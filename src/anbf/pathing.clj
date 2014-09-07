@@ -439,7 +439,29 @@
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (or (log/debug "searching extremities") (:step p) (->Search))))))
+        (or (log/debug "searching extremity" (:target p))
+            (:step p)
+            (->Search))))))
+
+(defn can-dig? [game]
+  true) ; TODO not wielding cursed weapon, not poly'd...
+
+(defn have-pick [game]
+  (have game #{"pick axe" "dwarvish mattock"} :not-cursed true))
+
+(defn break-boulders [game level]
+  (if (can-dig? game)
+    (if-let [pick (have-pick game)]
+      (if-let [path (navigate game boulder? :adjacent)]
+        (or (log/debug "going to break a boulder")
+            (:step path)
+            (log/debug "hitting boulder")
+            (->ApplyAt pick (->> (at-player game)
+                                 (neighbors level)
+                                 (find-first boulder?)
+                                 (towards (:player game)))))
+        (log/debug "no boulders to break"))
+      (log/debug "don't have pickaxe"))))
 
 (defn search
   ([game] (search game 10))
@@ -450,9 +472,10 @@
            (if (= 1 mul) (push-boulders game level))
            (recheck-dead-ends game level (* mul 30))
            (search-extremities game level (* mul 20))
+           (if (= 1 mul) (break-boulders game level))
+           ; TODO dig towards unexplored-column
            (if (> mul 1) (search-corridors game level (* mul 5)))
            (search-walls game level (* mul 15))
-           ; TODO break boulders
            (if (> mul (dec max-iter))
              (log/debug "stuck :-(")
              (recur (inc mul))))))))

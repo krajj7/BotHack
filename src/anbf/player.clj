@@ -1,8 +1,9 @@
 (ns anbf.player
   "representation of the bot avatar"
-  (:require [anbf.util :refer [kw->enum]]
+  (:require [anbf.util :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
+            [anbf.itemid :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn hungry?
@@ -69,3 +70,15 @@
 
 (defn inventory-slot [game slot]
   (get-in game [:player :inventory slot]))
+
+(defn have
+  "Returns the [slot item] of one of items (by name) in player's inventory or nil
+   Options:
+    :not-cursed [true/false] - won't return known cursed items"
+  [game itemname-or-set & [{:keys [not-cursed]}]]
+  (let [nameset (if (set? itemname-or-set)
+                  itemname-or-set
+                  #{itemname-or-set})]
+    (find-first #(and (nameset (-> % val (partial item-id game) :name))
+                      (or (not not-cursed) (not= :cursed (:buc (val %)))))
+                (inventory game))))
