@@ -115,6 +115,26 @@
         (send write (str esc esc))))
   anbf)
 
+(def ^:private prompt-escape "Default responses for unhandled prompts"
+  (reify
+    EnterGehennomHandler
+    (enter-gehennom [_ _] true)
+    ; escape the rest by default
+    ApplyItemHandler
+    (apply-what [_ _] "")
+    TeleportWhereHandler
+    (teleport-where [_] "")
+    DieHandler
+    (die [_ _] "")
+    KeepSaveHandler
+    (keep-save [_ _] "")
+    ForceGodHandler
+    (force-god [_ _] "")
+    SeducedEquipRemoveHandler
+    (remove-equip [_ _] "")
+    CallItemHandler
+    (call-item [_ _] "")))
+
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))
   ([fname]
@@ -137,23 +157,7 @@
                                (send delegator #(choose-action % @game)))))
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
-         (register-handler priority-bottom
-                           (reify
-                             EnterGehennomHandler
-                             (enter-gehennom [_ _] true)
-                             ; escape the rest by default
-                             TeleportWhereHandler
-                             (teleport-where [_] "")
-                             DieHandler
-                             (die [_ _] "")
-                             KeepSaveHandler
-                             (keep-save [_ _] "")
-                             ForceGodHandler
-                             (force-god [_ _] "")
-                             SeducedEquipRemoveHandler
-                             (remove-equip [_ _] "")
-                             PromptHandler
-                             (call-object [_ _] "")))
+         (register-handler priority-bottom prompt-escape)
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [this _]

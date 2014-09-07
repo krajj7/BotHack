@@ -463,11 +463,30 @@
   [anbf]
   (register-handler anbf priority-top (discoveries-handler anbf)))
 
+(defaction Apply [slot]
+  (handler [_ _])
+  (trigger [_] (str \a slot)))
+
 (defn with-handler
   ([handler action]
    (with-handler action priority-default handler))
   ([priority handler action]
    (update-in action [:handlers] conj [priority handler])))
+
+(defn ->ApplyAt
+  "Apply something in the given direction (eg. pickaxe)"
+  [slot dir]
+  (with-handler priority-top
+    (fn [{:keys [game] :as anbf}]
+      (reify
+        DirectionHandler
+        (what-direction [_ _] dir)
+        ToplineMessageHandler
+        (message [_ msg]
+          (if (.startsWith msg "You make an opening")
+            (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                           assoc :dug true))))))
+    (->Apply slot)))
 
 (defn- -withHandler
   ([action handler]

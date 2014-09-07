@@ -108,7 +108,7 @@
 
 (defn- prompt-fn [msg]
   (condp re-seq msg
-    #"Call .*:" call-object
+    #"^Call .*:" call-item
     (throw (UnsupportedOperationException. "TODO prompt-fn - implement me")))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
@@ -127,6 +127,7 @@
     #"^Are you sure you want to enter\?" enter-gehennom
     #"^Die\?" die
     #"^Do you want to keep the save file\?" keep-save
+    #"^What do you want to use or apply" apply-what
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -215,7 +216,8 @@
                 (log/debug "Handling choice prompt")
                 (emit-botl delegator frame)
                 ; TODO prompt may re-appear in lastmsg+action as topline msg
-                (send delegator (choice-fn text) text)))
+                (send delegator (choice-fn text) text)
+                initial))
             (handle-more [frame]
               (or (when-let [item-list (more-list frame)]
                     (log/debug "Handling --More-- list")

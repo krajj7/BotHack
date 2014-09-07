@@ -246,5 +246,8 @@
   `(defprotocol-delegated String (partial respond-escapable newline-terminate)
      ~protocol ~@proto-methods))
 
-(defprompthandler PromptHandler
-  (call-object [handler ^String prompt]))
+(defprompthandler CallItemHandler
+  (call-item [handler ^String prompt]))
+
+(defprompthandler ApplyItemHandler
+  (apply-what [handler ^String prompt]))
