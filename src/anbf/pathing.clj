@@ -163,8 +163,20 @@
 
 (defn- kick-door [level tile dir]
   (if (= :door-open (:feature tile))
-    [8 (->Close dir)]
-    [5 (->Kick dir)]))
+    [10 (->Close dir)]
+    [8 (->Kick dir)]))
+
+(defn can-unlock? [game]
+  true) ; not poly'd...
+
+(defn have-key [game]
+  (have game #{"skeleton key" "lock pick" "credit card"}))
+
+(defn can-dig? [game]
+  true) ; TODO not wielding cursed weapon, not poly'd...
+
+(defn have-pick [game]
+  (have game #{"pick-axe" "dwarvish mattock"} :not-cursed true))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
@@ -209,9 +221,11 @@
                             (kick-door level to-tile dir))
                           (if (= :door-closed (:feature to-tile))
                             [3 (->Open dir)]
-                            (if (kickable-door? level to-tile opts)
-                              ; TODO unlocking
-                              (kick-door level to-tile dir)))))))]
+                            (if-let [k (and (can-unlock? game)
+                                            (some-> game have-key key))]
+                              [5 (->Unlock k dir)]
+                              (if (kickable-door? level to-tile opts)
+                                (kick-door level to-tile dir))))))))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
 (defrecord Path
@@ -443,15 +457,9 @@
             (:step p)
             (->Search))))))
 
-(defn can-dig? [game]
-  true) ; TODO not wielding cursed weapon, not poly'd...
-
-(defn have-pick [game]
-  (have game #{"pick axe" "dwarvish mattock"} :not-cursed true))
-
 (defn break-boulders [game level]
   (if (can-dig? game)
-    (if-let [pick (have-pick game)]
+    (if-let [pick (some-> game have-pick key)]
       (if-let [path (navigate game boulder? :adjacent)]
         (or (log/debug "going to break a boulder")
             (:step path)

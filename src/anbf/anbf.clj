@@ -120,6 +120,11 @@
     EnterGehennomHandler
     (enter-gehennom [_ _] true)
     ; escape the rest by default
+    LockHandler
+    (lock-it [_ _] "")
+    (unlock-it [_ _] "")
+    ForceLockHandler
+    (force-lock [_ _] "")
     ApplyItemHandler
     (apply-what [_ _] "")
     TeleportWhereHandler

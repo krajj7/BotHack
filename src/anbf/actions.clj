@@ -474,7 +474,7 @@
    (update-in action [:handlers] conj [priority handler])))
 
 (defn ->ApplyAt
-  "Apply something in the given direction (eg. pickaxe)"
+  "Apply something in the given direction (eg. pickaxe, key...)"
   [slot dir]
   (->> (->Apply slot)
        (with-handler priority-top
@@ -485,9 +485,30 @@
              ToplineMessageHandler
              (message [_ msg]
                ; TODO too hard to dig
+               ; TODO dug pit / hole
                (if (.startsWith msg "You make an opening")
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                 assoc :dug true)))))))))
+
+(defaction ->ForceLock []
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ForceLockHandler
+      (force-lock [_ _] true)))
+  (trigger [_] "#force\n"))
+
+(defn ->Unlock [slot dir]
+  (->> (->ApplyAt slot dir)
+       (with-handler priority-top
+         (fn [{:keys [game] :as anbf}]
+           (reify
+             ToplineMessageHandler
+             (message [_ msg]
+               (if (.startsWith msg "You succeed in unlocking the door")
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                                assoc :feature :door-closed))))
+             LockHandler
+             (lock-it [_ _] false)
+             (unlock-it [_ _] true))))))
 
 (defn- possible-autoid
   "Check if the item at slot may have auto-identified on use"

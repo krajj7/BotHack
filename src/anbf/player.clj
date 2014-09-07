@@ -79,6 +79,6 @@
   (let [nameset (if (set? itemname-or-set)
                   itemname-or-set
                   #{itemname-or-set})]
-    (find-first #(and (nameset (-> % val (partial item-id game) :name))
+    (find-first #(and (nameset (->> % val (item-id game) :name))
                       (or (not not-cursed) (not= :cursed (:buc (val %)))))
                 (inventory game))))

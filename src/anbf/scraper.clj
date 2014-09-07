@@ -128,6 +128,9 @@
     #"^Die\?" die
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
+    #"There is .*force its lock\?" force-lock
+    #"[Uu]nlock it\? " unlock-it
+    #"[Ll]ock it\? " lock-it
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -233,12 +236,15 @@
                     initial)
                   (when-let [text (more-prompt frame)]
                     (log/debug "Handling --More-- prompt")
-                    ; TODO You wrest one last charge from the worn-out wand. => no-mark?
-                    (let [res (case text
-                                "You don't have that object."
+                    (let [res (condp re-seq text
+                                #"^You don't have that object."
                                 handle-choice-prompt
-                                "To what position do you want to be teleported?"
+                                #"^To what position do you want to be teleported\?"
                                 location
+                                #"^You wrest one last "
+                                (do (send delegator message text) no-mark)
+                                #"^You now wield a "
+                                (do (send delegator message text) no-mark)
                                 (do (send delegator message text) initial))]
                       (send delegator write " ")
                       res))))
