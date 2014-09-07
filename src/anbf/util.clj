@@ -1,6 +1,11 @@
 (ns anbf.util
   (:require [clojure.string :as string]))
 
+(def vi-directions
+  {:NW \y :N \k :NE \u
+   :W  \h        :E \l
+   :SW \b :S \j :SE \n})
+
 (def priority-default 0)
 ; bots should not go beyond these (their interface specifies an int priority)
 (def priority-top (dec Integer/MIN_VALUE))

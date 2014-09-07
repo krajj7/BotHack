@@ -17,11 +17,6 @@
        (defn ~(symbol (str \- action)) ~args
          (~(symbol (str action \.)) ~@args))))
 
-(def vi-directions
-  {:NW \y :N \k :NE \u
-   :W  \h        :E \l
-   :SW \b :S \j :SE \n})
-
 (def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
 (defn- feature-here [msg rogue?]

@@ -92,6 +92,8 @@
 
 (defn- yesno [s] (if s "y" "n"))
 
+(defn- direction [s] (get vi-directions s s))
+
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
             (~invoke-fn ~protocol ~method ~delegator ~@args)
@@ -196,11 +198,18 @@
                                                       enter-position)
      ~protocol ~@proto-methods))
 
+(defmacro ^:private defdirhandler [protocol & proto-methods]
+  `(defprotocol-delegated String (partial respond-escapable direction)
+     ~protocol ~@proto-methods))
+
 (deflocationhandler TeleportWhereHandler
   (teleport-where [handler]))
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
+
+(defdirhandler DirectionHandler
+  (what-direction [handler prompt]))
 
 (defyesnohandler ReallyAttackHandler
   (really-attack [handler ^String text]))
