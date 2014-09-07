@@ -343,23 +343,26 @@
   (trigger [this]
     (str \; (to-position pos) \.)))
 
+(defn- handle-door-message [game dir text]
+  (let [door (in-direction (:player @game) dir)
+        new-feature (case text
+                      "You cannot lock an open door." :door-open
+                      "This door is locked." :door-locked
+                      "This door is already open." :door-open
+                      "The door opens." :door-open
+                      "This doorway has no door." nil
+                      "You see no door there." nil
+                      "You succeed in unlocking the door" :door-closed
+                      "You succeed in locking the door" :door-locked
+                      :nil)]
+    (if (not= :nil new-feature)
+      (swap! game update-curlvl-at door assoc :feature new-feature))))
+
 (defaction Open [dir]
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
-        (let [door (in-direction (:player @game) dir)]
-          (case text
-            "This door is locked." (swap! game update-curlvl-at door
-                                          assoc :feature :door-locked)
-            "This door is already open." (swap! game update-curlvl-at door
-                                                assoc :feature :door-open)
-            "The door opens." (swap! game update-curlvl-at door
-                                     assoc :feature :door-open)
-            "This doorway has no door." (swap! game update-curlvl-at door
-                                               assoc :feature nil)
-            "You see no door there." (swap! game update-curlvl-at door
-                                            assoc :feature nil)
-            nil)))))
+        (handle-door-message game dir text))))
   (trigger [_] (str \o (vi-directions (enum->kw dir)))))
 
 (defaction Inventory []
@@ -512,9 +515,7 @@
            (reify
              ToplineMessageHandler
              (message [_ msg]
-               (if (.startsWith msg "You succeed in unlocking the door")
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                                assoc :feature :door-closed))))
+               (handle-door-message game dir msg))
              LockHandler
              (lock-it [_ _] false)
              (unlock-it [_ _] true))))))
