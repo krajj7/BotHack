@@ -548,6 +548,20 @@
   (handler [_ anbf] (update-inventory anbf))
   (trigger [_] (str \T slot)))
 
+(defaction DropSingle [slot qty]
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (update-items anbf))
+  (trigger [_] (str \d (if (> qty 1) qty) slot)))
+
+(defn ->Drop
+  ([slot-or-list qty]
+   (if (char? slot-or-list)
+     (->DropSingle slot-or-list qty)
+     (throw (UnsupportedOperationException. "multidrop not yet implemented"))))
+  ([slot-or-list]
+   (->DropSingle slot-or-list 1)))
+
 (defn- -withHandler
   ([action handler]
    (-withHandler action priority-default handler))

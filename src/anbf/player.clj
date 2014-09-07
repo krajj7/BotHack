@@ -74,13 +74,16 @@
 (defn have
   "Returns the [slot item] of one of items (by name) in player's inventory or nil
    Options:
-    :not-cursed [true/false] - won't return known cursed items"
-  [game itemname-or-set & [{:keys [not-cursed]}]]
+    :not-cursed [true/false] - won't return known cursed items
+    :in-use [true/false]"
+  [game itemname-or-set & [{:keys [not-cursed in-use]}]]
   (let [nameset (if (set? itemname-or-set)
                   itemname-or-set
                   #{itemname-or-set})]
-    (find-first #(and (nameset (->> % val (item-id game) :name))
-                      (or (not not-cursed) (not= :cursed (:buc (val %)))))
+    (find-first (fn match [[slot item]]
+                  (and (nameset (->> item (item-id game) :name))
+                       (or (nil? in-use) (= in-use (some? (:in-use item))))
+                       (or (not not-cursed) (not= :cursed (:buc item)))))
                 (inventory game))))
 
 (defn wielding

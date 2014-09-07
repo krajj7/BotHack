@@ -179,6 +179,22 @@
 (defn have-pick [game]
   (have game #{"pick-axe" "dwarvish mattock"} :not-cursed true))
 
+(defn- enter-shop [game]
+  ; TODO stash rather than drop pick if we have a bag
+  (or (log/debug "trying to prepare for shop entry")
+      (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
+                              :in-use false)]
+        [5 (->Drop slot)])
+      (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
+                              :not-cursed true :in-use true)]
+        [5 (->Drop slot)])
+      (if-let [[slot _] (have game "ring of invisibility"
+                              :not-cursed true :in-use true)]
+        [5 (->Remove slot)])
+      (if-let [[slot _] (have game "cloak of invisibility"
+                              :not-cursed true :in-use true)]
+        [5 (->TakeOff slot)])))
+
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
@@ -196,10 +212,13 @@
                                (not (and (kickable-door? level to-tile opts)
                                          (blocked-door level to-tile)))))
                     (if-not monster
-                      [0 (->Move dir)]
+                      (or (and (shop? to-tile)
+                               (not (shop? from-tile))
+                               (enter-shop game))
+                          [0 (->Move dir)])
                       (if-not (:peaceful monster)
                         [30 (->Move dir)]
-                        (if ((fnil <= 0) (:blocked to-tile) 25) ; TODO moving thru shk while invis/with pick
+                        (if ((fnil <= 0) (:blocked to-tile) 25)
                           [50 (fidget game level to-tile)])))) ; hopefully will move
                   (if (kickable-door? level from-tile opts)
                     (if-let [odir (blocked-door level from-tile)]
