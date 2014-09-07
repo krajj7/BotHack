@@ -476,17 +476,50 @@
 (defn ->ApplyAt
   "Apply something in the given direction (eg. pickaxe)"
   [slot dir]
-  (with-handler priority-top
-    (fn [{:keys [game] :as anbf}]
-      (reify
-        DirectionHandler
-        (what-direction [_ _] dir)
-        ToplineMessageHandler
-        (message [_ msg]
-          (if (.startsWith msg "You make an opening")
-            (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                           assoc :dug true))))))
-    (->Apply slot)))
+  (->> (->Apply slot)
+       (with-handler priority-top
+         (fn [{:keys [game] :as anbf}]
+           (reify
+             DirectionHandler
+             (what-direction [_ _] dir)
+             ToplineMessageHandler
+             (message [_ msg]
+               ; TODO too hard to dig
+               (if (.startsWith msg "You make an opening")
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                                assoc :dug true)))))))))
+
+(defn- possible-autoid
+  "Check if the item at slot may have auto-identified on use"
+  [{:keys [game] :as anbf} slot]
+  (if-not (know-id? @game (inventory-slot @game slot))
+    (update-discoveries anbf)))
+
+(defaction Wield [slot]
+  (handler [_ {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (possible-autoid anbf slot))
+  (trigger [_] (str \w slot)))
+
+(defaction Wear [slot]
+  (handler [_ {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (possible-autoid anbf slot))
+  (trigger [_] (str \W slot)))
+
+(defaction PutOn [slot]
+  (handler [_ {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (possible-autoid anbf slot))
+  (trigger [_] (str \P slot)))
+
+(defaction Remove [slot]
+  (handler [_ anbf] (update-inventory anbf))
+  (trigger [_] (str \R slot)))
+
+(defaction TakeOff [slot]
+  (handler [_ anbf] (update-inventory anbf))
+  (trigger [_] (str \T slot)))
 
 (defn- -withHandler
   ([action handler]

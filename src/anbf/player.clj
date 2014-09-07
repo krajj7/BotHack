@@ -63,3 +63,9 @@
 
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil
+
+(defn inventory [game]
+  (-> game :player :inventory))
+
+(defn inventory-slot [game slot]
+  (get-in game [:player :inventory slot]))
