@@ -100,7 +100,7 @@
       level-blueprint
       (reflood-room (:cursor frame))
       (update-curlvl-at (:cursor frame) dissoc :blocked)
-      (update-curlvl-at (:cursor frame) assoc :walked true)))
+      (update-curlvl-at (:cursor frame) assoc :walked (:turn game))))
 
 (defn- looks-engulfed? [{:keys [cursor lines] :as frame}]
   (let [row-before (dec (:x cursor))
