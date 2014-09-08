@@ -343,8 +343,7 @@
                             max-steps)))))))))
 
 (defn- explorable-tile? [level tile]
-  (and (not (boulder? tile))
-       (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
+  (and (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
            (:new-items tile)
            (and (or (walkable? tile) (door? tile))
                 (some #(and (not (:seen %))
@@ -511,20 +510,6 @@
             (:step p)
             (->Search))))))
 
-(defn break-boulders [game level]
-  (if (can-dig? game)
-    (if-let [pick (some-> game have-pick key)]
-      (if-let [path (navigate game boulder? {:adjacent true})]
-        (or (log/debug "going to break a boulder")
-            (:step path)
-            (log/debug "hitting boulder")
-            (->ApplyAt pick (->> (at-player game)
-                                 (neighbors level)
-                                 (find-first boulder?)
-                                 (towards (:player game)))))
-        (log/debug "no boulders to break"))
-      (log/debug "don't have pickaxe"))))
-
 (defn search
   ([game] (search game 10))
   ([game max-iter]
@@ -534,7 +519,6 @@
            (if (= 1 mul) (push-boulders game level))
            (recheck-dead-ends game level (* mul 30))
            (search-extremities game level (* mul 20))
-           (if (= 1 mul) (break-boulders game level))
            ; TODO dig towards unexplored-column
            (if (> mul 1) (search-corridors game level (* mul 5)))
            (search-walls game level (* mul 15))
