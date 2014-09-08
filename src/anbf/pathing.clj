@@ -176,7 +176,8 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn can-dig? [game]
-  true) ; TODO not wielding cursed weapon, not poly'd...
+  ; TODO not wielding cursed weapon, not poly'd...
+  (not= :sokoban (branch-key game)))
 
 (defn have-pick [game]
   (have game #(and (#{"pick-axe" "dwarvish mattock"} (:name (item-id game %)))
@@ -201,16 +202,18 @@
                                          (can-remove? game %)))]
         [5 (->TakeOff slot)])))
 
-(defn- diggable? [game level tile]
-  (and (#{:rock :wall :door-closed :door-locked :door-secret} (:feature tile))
-       (not (:undiggable tile))
-       (not (shop? tile))
-       (dare-destroy? level tile)))
+(defn- diggable? [level tile]
+  (or (boulder? tile)
+      (and (#{:rock :wall :door-closed :door-locked :door-secret}
+                    (:feature tile))
+           (not (:undiggable tile))
+           (not (shop? tile))
+           (dare-destroy? level tile))))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
-   (move game level from to #{}))
+   (move game level from to {}))
   ([game level from to opts]
    (let [to-tile (at level to)
          from-tile (at level from)
@@ -258,13 +261,10 @@
                               [5 (->Unlock k dir)]
                               (if (kickable-door? level to-tile opts)
                                 (kick-door level to-tile dir)))))))
-                  (when-let [[slot pick] (and (not (:no-dig opts))
-                                              (not (:walking opts))
-                                              (diggable? game level to-tile)
-                                              (have-pick game))]
-                    (if (:in-use pick)
-                      [6 (->ApplyAt slot dir)]
-                      [15 (->ApplyAt slot dir)])))]
+                  (if (and (:pick opts) (diggable? level to-tile))
+                    (if (:in-use (val (:pick opts)))
+                      [5 (->ApplyAt (key (:pick opts)) dir)]
+                      [8 (->ApplyAt (key (:pick opts)) dir)])))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
 (defrecord Path
@@ -279,11 +279,11 @@
   (if (seq path)
     (nth (move-fn from (nth path 0)) 1)))
 
-(defn- get-a*-path [from to move-fn optset max-steps]
+(defn- get-a*-path [from to move-fn opts max-steps]
   (log/debug "a*")
   (if-let [path (a* from to move-fn max-steps)]
     (if (seq path)
-      (if (:adjacent optset)
+      (if (:adjacent opts)
         (->Path (path-step from move-fn path) (pop path) to)
         (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
              (->Path (path-step from move-fn path) path to)))
@@ -296,50 +296,61 @@
     :adjacent - path to closest adjacent tile instead of the target directly
     :explored - don't path through unknown tiles
     :max-steps <num> - don't navigate further than given number of steps
-    :no-dig - don't use pickaxe"
-  [{:keys [player] :as game} pos-or-goal-fn & opts]
-  [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
-  ;(log/debug "navigating" pos-or-goal-fn opts)
-  (let [optset (into #{} (filter keyword? opts))
-        max-steps (if (:max-steps optset)
-                    (nth opts (inc (.indexOf opts :max-steps))))
-        level (curlvl game)
-        move-fn #(move game level %1 %2 optset)]
-    (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
-      (get-a*-path player pos-or-goal-fn move-fn optset max-steps)
-      (let [goal-fn (if (set? pos-or-goal-fn)
-                      (comp (into #{} (map position pos-or-goal-fn))
-                            position)
-                      #(pos-or-goal-fn (at level %)))]
-        (if (:adjacent optset)
-          (let [goal-set (if (set? pos-or-goal-fn)
-                           (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
-                           (->> level :tiles (apply concat) (filter goal-fn)
-                                (mapcat neighbors) (into #{})))]
-            (case (count goal-set)
-              0 nil
-              1 (get-a*-path player (first goal-set) move-fn optset max-steps)
-              (if-let [path (dijkstra player goal-set move-fn max-steps)]
-                (->Path (path-step player move-fn path) path
-                        (->> (or (peek path) player) neighbors
-                             (find-first goal-fn))))))
-          ; not searching for adjacent
-          (if-let [goal-seq (if (set? pos-or-goal-fn)
-                              (->> pos-or-goal-fn (take 2) seq)
-                              (->> level :tiles (apply concat) (filter goal-fn)
-                                   (take 2) seq))]
-            (if (= 2 (count goal-seq))
-              (if-let [path (dijkstra player goal-fn move-fn max-steps)]
-                (->Path (path-step player move-fn path) path
-                        (or (peek path) (at-player game))))
-              (get-a*-path player (first goal-seq)
-                           move-fn optset max-steps))))))))
+    :no-dig - don't use the pickaxe or mattock"
+  ([game pos-or-goal-fn]
+   (navigate game pos-or-goal-fn {}))
+  ([{:keys [player] :as game} pos-or-goal-fn
+    {:keys [max-steps walking adjacent no-dig] :as opts}]
+   [{:pre [(or (fn? pos-or-goal-fn)
+               (set? pos-or-goal-fn)
+               (position pos-or-goal-fn))]}]
+   ;(log/debug "navigating" pos-or-goal-fn opts)
+   (let [opts (if-let [pick (and (not walking)
+                                 (not no-dig)
+                                 (have-pick game))]
+                (assoc opts :pick pick)
+                opts)
+         level (curlvl game)
+         move-fn #(move game level %1 %2 opts)]
+     (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
+       (get-a*-path player pos-or-goal-fn move-fn opts max-steps)
+       (let [goal-fn (if (set? pos-or-goal-fn)
+                       (comp (into #{} (map position pos-or-goal-fn))
+                             position)
+                       #(pos-or-goal-fn (at level %)))]
+         (if adjacent
+           (let [goal-set (if (set? pos-or-goal-fn)
+                            (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
+                            (->> level :tiles (apply concat) (filter goal-fn)
+                                 (mapcat neighbors) (into #{})))]
+             (case (count goal-set)
+               0 nil
+               1 (get-a*-path player (first goal-set) move-fn opts max-steps)
+               (if-let [path (dijkstra player goal-set move-fn max-steps)]
+                 (->Path (path-step player move-fn path) path
+                         (->> (or (peek path) player) neighbors
+                              (find-first goal-fn))))))
+           ; not searching for adjacent
+           (if-let [goal-seq (if (set? pos-or-goal-fn)
+                               (->> pos-or-goal-fn (take 2) seq)
+                               (->> level :tiles (apply concat) (filter goal-fn)
+                                    (take 2) seq))]
+             (if (= 2 (count goal-seq))
+               (if-let [path (dijkstra player goal-fn move-fn max-steps)]
+                 (->Path (path-step player move-fn path) path
+                         (or (peek path) (at-player game))))
+               (get-a*-path player (first goal-seq) move-fn opts
+                            max-steps)))))))))
 
 (defn- explorable-tile? [level tile]
-  (and (or (nil? (:feature tile))
+  (and (not (boulder? tile))
+       (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
            (:new-items tile)
-           (some #(and (not (:seen %)) (not (boulder? %)))
-                 (neighbors level tile)))
+           (and (or (walkable? tile) (door? tile))
+                (some #(and (not (:seen %))
+                            (not (boulder? %))
+                            (not (monster? (:glyph %) (:color %))))
+                      (neighbors level tile))))
        (some #(not= \space (:glyph %)) (neighbors level tile))))
 
 (defn dead-end? [level tile]
@@ -432,7 +443,7 @@
                                    (< (:searched tile) howmuch)
                                    (->> (neighbors level tile)
                                         (remove :seen) count
-                                        (< 1)))) :adjacent)]
+                                        (< 1)))) {:adjacent true})]
     (or (log/debug "searching walls") (:step p) (->Search))))
 
 (defn- search-corridors [game level howmuch]
@@ -496,14 +507,14 @@
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (or (log/debug "searching extremity" (:target p))
+        (or (log/debug "searching extremity" (or (:target p) "here"))
             (:step p)
             (->Search))))))
 
 (defn break-boulders [game level]
   (if (can-dig? game)
     (if-let [pick (some-> game have-pick key)]
-      (if-let [path (navigate game boulder? :adjacent)]
+      (if-let [path (navigate game boulder? {:adjacent true})]
         (or (log/debug "going to break a boulder")
             (:step path)
             (log/debug "hitting boulder")
@@ -540,11 +551,14 @@
       (explore game)
       (search game)))
 
-(defn seek [game smth & opts]
-  (log/debug "seeking")
-  (if-let [{:keys [step]} (apply navigate game smth opts)]
-    step
-    (or (explore game) (search game))))
+(defn seek
+  ([game smth]
+   (seek game smth {}))
+  ([game smth opts]
+   (log/debug "seeking")
+   (if-let [{:keys [step]} (navigate game smth opts)]
+     step
+     (or (explore game) (search game)))))
 
 (defn- switch-dlvl [game new-dlvl]
   (log/debug "switching within branch to" new-dlvl)
@@ -555,7 +569,7 @@
                 leader (-> level :blueprint :leader)]
             (when (and leader (not-any? :walked (neighbors level leader)))
               (log/debug "trying to seek out quest leader at" leader "before descending")
-              (seek game leader :adjacent :explored))))
+              (seek game leader {:adjacent true :explored true}))))
         (let [branch (branch-key game)
               [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
                                 [:stairs-up ->Ascend]

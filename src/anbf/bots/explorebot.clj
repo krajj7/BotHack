@@ -35,9 +35,9 @@
     (or (wield-weapon game)
         (->Move :E))
     (let [tgts (hostile-threats game)]
-      (when-let [{:keys [step target]} (navigate game tgts :walking
-                                                 :adjacent :max-steps
-                                                 hostile-dist-thresh)]
+      (when-let [{:keys [step target]} (navigate game tgts
+                                          {:walking true :adjacent true
+                                           :max-steps hostile-dist-thresh})]
         (log/debug "targetting enemy at" target)
         (or (wield-weapon game)
             step
