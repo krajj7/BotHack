@@ -326,7 +326,8 @@
                                    (take 2) seq))]
             (if (= 2 (count goal-seq))
               (if-let [path (dijkstra player goal-fn move-fn max-steps)]
-                (->Path (path-step player move-fn path) path (peek path)))
+                (->Path (path-step player move-fn path) path
+                        (or (peek path) (at-player game))))
               (get-a*-path player (first goal-seq)
                            move-fn optset max-steps))))))))
 
