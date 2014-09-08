@@ -190,11 +190,15 @@
                                          (or (not= :cursed (:buc %))
                                              (not (:in-use %)))))]
         [5 (->Drop slot)])
-      (if-let [[slot _] (have game "ring of invisibility"
-                              :not-cursed true :in-use true)]
+      (if-let [[slot _] (have game #(and (= "ring of invisibility"
+                                            (:name (item-id game %)))
+                                         (:in-use %)
+                                         (can-remove? game %)))]
         [5 (->Remove slot)])
-      (if-let [[slot _] (have game "cloak of invisibility"
-                              :not-cursed true :in-use true)]
+      (if-let [[slot _] (have game #(and (= "cloak of invisibility"
+                                            (:name (item-id game %)))
+                                         (:in-use %)
+                                         (can-remove? game %)))]
         [5 (->TakeOff slot)])))
 
 (defn- diggable? [game level tile]

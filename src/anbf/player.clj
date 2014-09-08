@@ -87,6 +87,9 @@
                                 :name (partial item-id game) val))
               (inventory game)))
 
+(defn can-remove? [game item]
+  (not= :cursed (:buc item))) ; TODO not obstructed by cursed item / weapon
+
 (defn wielding
   "Return the wielded item or nil"
   [game]
