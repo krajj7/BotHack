@@ -23,16 +23,27 @@
                             (> hostile-dist-thresh (distance player %))))))
        (into #{})))
 
+(defn- wield-weapon [{:keys [player] :as game}]
+  (if-let [[slot weapon] (or (have game "Excalibur")
+                             (have game "katana"))]
+    ; TODO can-wield?
+    (if-not (:wielded weapon)
+      (->Wield slot))))
+
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
-    (->Move :E)
+    (or (wield-weapon game)
+        (->Move :E))
     (let [tgts (hostile-threats game)]
-      (when-let [{:keys [step target]} (navigate game tgts :walking :adjacent
-                                         :max-steps hostile-dist-thresh)]
+      (when-let [{:keys [step target]} (navigate game tgts :walking
+                                                 :adjacent :max-steps
+                                                 hostile-dist-thresh)]
         (log/debug "targetting enemy at" target)
-        (or step (if (blind? player)
-                   (->Attack (towards player target))
-                   (->Move (towards player target))))))))
+        (or (wield-weapon game)
+            step
+            (if (blind? player)
+              (->Attack (towards player target))
+              (->Move (towards player target))))))))
 
 (defn- pray-for-food [game]
   (if (weak? (:player game))
@@ -44,8 +55,8 @@
         (->Wait))))
 
 (defn progress [game]
-  (or ;(explore game :mines)
-      ;(visit game :sokoban)
+  (or (explore game :mines)
+      ;(visit game :sokoban :end)
       (visit game :main :medusa)
       ;(visit game :quest :end)
       ;(visit game :mines :minetown)
