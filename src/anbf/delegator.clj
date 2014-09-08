@@ -80,7 +80,9 @@
 
 (defn- enter-position [s] (str (to-position (position-map s)) \.))
 
-(defn- newline-terminate [s] (if (.endsWith s "\n") s (str s \newline)))
+(defn- newline-terminate [s]
+  (let [t (str s)]
+    (if (.endsWith t "\n") t (str t \newline))))
 
 (defn- respond-escapable [res-transform protocol method delegator & args]
   (if-not (:inhibited delegator)
@@ -186,7 +188,7 @@
 ; command protocols:
 
 (defmacro ^:private defchoicehandler [protocol & proto-methods]
-  `(defprotocol-delegated String (partial respond-escapable identity)
+  `(defprotocol-delegated String (partial respond-escapable str)
      ~protocol ~@proto-methods))
 
 (defmacro ^:private defyesnohandler [protocol & proto-methods]
@@ -207,6 +209,9 @@
 
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
+
+(defchoicehandler ApplyItemHandler
+  (apply-what [handler ^String prompt]))
 
 (defdirhandler DirectionHandler
   (what-direction [handler prompt]))
@@ -255,6 +260,3 @@
 
 (defprompthandler CallItemHandler
   (call-item [handler ^String prompt]))
-
-(defprompthandler ApplyItemHandler
-  (apply-what [handler ^String prompt]))

@@ -476,8 +476,10 @@
   (register-handler anbf priority-top (discoveries-handler anbf)))
 
 (defaction Apply [slot]
-  (handler [_ _])
-  (trigger [_] (str \a slot)))
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ApplyItemHandler
+      (apply-what [_ _] slot)))
+  (trigger [_] "a"))
 
 (defn with-handler
   ([handler action]

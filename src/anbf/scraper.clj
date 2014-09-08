@@ -373,14 +373,16 @@
 
 (defn scraper-handler [scraper delegator]
   (reify
+    ApplyItemHandler
+    (apply-what [_ action]
+      (dosync
+        (ref-set scraper (new-scraper delegator :no-mark))
+        (log/debug "no-mark scraper")))
     ActionChosenHandler
     (action-chosen [_ action]
       (dosync
-        (log/debug "reset scraper")
-        (ref-set scraper
-                 (if (#{anbf.actions.Apply} (type action))
-                   (new-scraper delegator :no-mark)
-                   nil)))) ; escape sink
+        (ref-set scraper nil) ; escape sink
+        (log/debug "reset scraper")))
     RedrawHandler
     (redraw [_ frame]
       #_(dosync (alter scraper apply-scraper delegator frame))

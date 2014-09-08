@@ -173,5 +173,5 @@
                              (ended [_]
                                (deregister-handler anbf scraper))
                              (started [_]
-                               (register-handler anbf scraper)
+                               (register-handler anbf priority-top scraper)
                                (start-bot anbf))))))))
