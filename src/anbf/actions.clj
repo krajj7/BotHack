@@ -500,9 +500,17 @@
              (message [_ msg]
                ; TODO too hard to dig
                ; TODO dug pit / hole
-               (if (.startsWith msg "You make an opening")
+               (condp re-seq msg
+                 #"^You make an opening"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                                assoc :dug true)))))))))
+                                               assoc :dug true :feature :floor))
+                 #"^You succeed in cutting away some rock"
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                            assoc :dug true :feature :corridor))
+                 #"^You swing your pick"
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                                assoc :feature nil))
+                 nil)))))))
 
 (defaction ->ForceLock []
   (handler [_ {:keys [game] :as anbf}]
