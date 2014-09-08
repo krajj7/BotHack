@@ -72,19 +72,20 @@
   (get-in game [:player :inventory slot]))
 
 (defn have
-  "Returns the [slot item] of one of items (by name) in player's inventory or nil
-   Options:
-    :not-cursed [true/false] - won't return known cursed items
-    :in-use [true/false]"
-  [game itemname-or-set & [{:keys [not-cursed in-use]}]]
-  (let [nameset (if (set? itemname-or-set)
-                  itemname-or-set
-                  #{itemname-or-set})]
-    (find-first (fn match [[slot item]]
-                  (and (nameset (->> item (item-id game) :name))
-                       (or (nil? in-use) (= in-use (some? (:in-use item))))
-                       (or (not not-cursed) (not= :cursed (:buc item)))))
-                (inventory game))))
+  "Returns the [slot item] of matching item in player's inventory or nil.
+   First arg can be:
+     String (name of item)
+     #{String} (set of strings - item name alternatives with no preference)
+     fn - predicate function to filter items"
+  [game itemname-or-set-or-fn]
+  (find-first (cond (set? itemname-or-set-or-fn) (comp itemname-or-set-or-fn
+                                                       :name
+                                                       (partial item-id game)
+                                                       val)
+                    (fn? itemname-or-set-or-fn) (comp itemname-or-set-or-fn val)
+                    :else (comp (partial = itemname-or-set-or-fn)
+                                :name (partial item-id game) val))
+              (inventory game)))
 
 (defn wielding
   "Return the wielded item or nil"

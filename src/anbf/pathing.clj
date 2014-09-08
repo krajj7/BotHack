@@ -7,6 +7,7 @@
             [anbf.delegator :refer :all]
             [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.util :refer :all]
@@ -178,16 +179,16 @@
   true) ; TODO not wielding cursed weapon, not poly'd...
 
 (defn have-pick [game]
-  (have game #{"pick-axe" "dwarvish mattock"} :not-cursed true))
+  (have game #(and (#{"pick-axe" "dwarvish mattock"} (:name (item-id game %)))
+                   (or (not= :cursed (:buc %)) (:in-use %)))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
   (or (log/debug "trying to prepare for shop entry")
-      (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
-                              :in-use false)]
-        [5 (->Drop slot)])
-      (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
-                              :not-cursed true :in-use true)]
+      (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
+                                                       (:name (item-id game %)))
+                                         (or (not= :cursed (:buc %))
+                                             (not (:in-use %)))))]
         [5 (->Drop slot)])
       (if-let [[slot _] (have game "ring of invisibility"
                               :not-cursed true :in-use true)]
