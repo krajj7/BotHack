@@ -18,6 +18,7 @@
     (cond-> 1
       (traps feature) (+ 10) ; TODO trap types
       (diagonal dir) (+ 0.1)
+      (and (nil? feature) (not (:seen tile))) (+ 6)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
       (not (or (:dug tile) (:walked tile))) (+ 0.2)
       (and (not (:walked tile)) (= :floor feature)) (+ 0.5))))
@@ -136,7 +137,7 @@
   [level]
   (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
 
-(defn dare-kick? [level tile]
+(defn dare-destroy? [level tile]
   (and (not ((:tags level) :rogue))
        (or (not ((:tags level) :minetown))
            (safe-from-guards level))
@@ -159,7 +160,7 @@
 (defn- kickable-door? [level tile opts]
   (and (door? tile)
        (not (:walking opts))
-       (dare-kick? level tile)
+       (dare-destroy? level tile)
        (not (item? tile)))) ; don't try to break blocked doors
 
 (defn- kick-door [level tile dir]
@@ -195,6 +196,12 @@
                               :not-cursed true :in-use true)]
         [5 (->TakeOff slot)])))
 
+(defn- diggable? [game level tile]
+  (and (#{:rock :wall :door-closed :door-locked :door-secret} (:feature tile))
+       (not (:undiggable tile))
+       (not (shop? tile))
+       (dare-destroy? level tile)))
+
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
@@ -204,7 +211,7 @@
          from-tile (at level from)
          dir (towards from to-tile)
          monster (monster-at level to)]
-     (if-let [step ; TODO digging/levi
+     (if-let [step ; TODO levitation
               (or (if (or (and (unexplored? to-tile) (not (:explored opts))
                                (or (not (narrow? level from-tile to-tile))
                                    (not (:thick (:player game)))))
@@ -245,7 +252,14 @@
                                             (some-> game have-key key))]
                               [5 (->Unlock k dir)]
                               (if (kickable-door? level to-tile opts)
-                                (kick-door level to-tile dir))))))))]
+                                (kick-door level to-tile dir)))))))
+                  (when-let [[slot pick] (and (not (:no-dig opts))
+                                              (not (:walking opts))
+                                              (diggable? game level to-tile)
+                                              (have-pick game))]
+                    (if (:in-use pick)
+                      [6 (->ApplyAt slot dir)]
+                      [15 (->ApplyAt slot dir)])))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
 (defrecord Path
@@ -276,7 +290,8 @@
     :walking - don't use actions except Move (no door opening etc.)
     :adjacent - path to closest adjacent tile instead of the target directly
     :explored - don't path through unknown tiles
-    :max-steps <num> - don't navigate further than given number of steps"
+    :max-steps <num> - don't navigate further than given number of steps
+    :no-dig - don't use pickaxe"
   [{:keys [player] :as game} pos-or-goal-fn & opts]
   [{:pre [(or (fn? pos-or-goal-fn) (set? pos-or-goal-fn) (position pos-or-goal-fn))]}]
   ;(log/debug "navigating" pos-or-goal-fn opts)
@@ -315,9 +330,11 @@
                            move-fn optset max-steps))))))))
 
 (defn- explorable-tile? [level tile]
-  (or (not (:feature tile))
-      (:new-items tile)
-      (some #(and (not (:seen %)) (not (boulder? %))) (neighbors level tile))))
+  (and (or (nil? (:feature tile))
+           (:new-items tile)
+           (some #(and (not (:seen %)) (not (boulder? %)))
+                 (neighbors level tile)))
+       (some #(not= \space (:glyph %)) (neighbors level tile))))
 
 (defn dead-end? [level tile]
   (and (walkable? tile)
