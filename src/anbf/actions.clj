@@ -527,8 +527,16 @@
              (message [_ msg]
                (handle-door-message game dir msg))
              LockHandler
-             (lock-it [_ _] false)
-             (unlock-it [_ _] true))))))
+             (lock-it [_ _]
+               (if (dirmap dir)
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                                assoc :feature :door-closed)))
+               false)
+             (unlock-it [_ _]
+               (if (dirmap dir)
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                                assoc :feature :door-locked)))
+               true))))))
 
 (defn- possible-autoid
   "Check if the item at slot may have auto-identified on use"
