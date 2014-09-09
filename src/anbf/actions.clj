@@ -352,8 +352,8 @@
                       "The door opens." :door-open
                       "This doorway has no door." nil
                       "You see no door there." nil
-                      "You succeed in unlocking the door" :door-closed
-                      "You succeed in locking the door" :door-locked
+                      "You succeed in unlocking the door." :door-closed
+                      "You succeed in locking the door." :door-locked
                       :nil)]
     (if (not= :nil new-feature)
       (swap! game update-curlvl-at door assoc :feature new-feature))))
