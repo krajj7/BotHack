@@ -48,7 +48,8 @@
   "Return [character menu-item] pair for the menu line or nil for headers etc."
   [start line colors]
   (if-not (inverse? (nth colors start))
-    (let [[chr s] (re-first-groups #"^(.)  ?[-+#] (.*?)\s*$" (subs line start))]
+    (if-let [[chr s] (re-first-groups #"^(.)  ?[-+#] (.*?)\s*$"
+                                      (subs line start))]
       [(.charAt chr 0) s])))
 
 (defn- menu-options
