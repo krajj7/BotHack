@@ -166,8 +166,8 @@
 
 (defn- kick-door [level tile dir]
   (if (= :door-open (:feature tile))
-    [10 (->Close dir)]
-    [8 (->Kick dir)]))
+    [7 (->Close dir)]
+    [5 (->Kick dir)]))
 
 (defn can-unlock? [game]
   true) ; not poly'd...
@@ -262,9 +262,7 @@
                               (if (kickable-door? level to-tile opts)
                                 (kick-door level to-tile dir)))))))
                   (if (and (:pick opts) (diggable? level to-tile))
-                    (if (:in-use (val (:pick opts)))
-                      [5 (->ApplyAt (key (:pick opts)) dir)]
-                      [8 (->ApplyAt (key (:pick opts)) dir)])))]
+                    [8 (->ApplyAt (key (:pick opts)) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
 (defrecord Path
