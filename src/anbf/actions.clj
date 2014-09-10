@@ -584,6 +584,17 @@
   ([slot-or-list]
    (->DropSingle slot-or-list 1)))
 
+(defaction PickUp [label-or-list]
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (update-items anbf))
+  (trigger [_]
+    (let [l (if (string? label-or-list)
+              [label-or-list]
+              label-or-list)]
+      #_(register-handler priority-top)) ; TODO pickup menu handler
+    ","))
+
 (defn- -withHandler
   ([action handler]
    (-withHandler action priority-default handler))
