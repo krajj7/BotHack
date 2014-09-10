@@ -483,7 +483,7 @@
 (defn at-level? [game level]
   (and (= (:dlvl game) (:dlvl level)) (= (branch-key game) (branch-key game level))))
 
-(defn curlvl-exploration-index
+(defn- curlvl-exploration-index
   [game]
   (let [level (curlvl game)]
     (cond
@@ -493,12 +493,13 @@
 
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
-  [game branch tag-or-dlvl]
-  (if-let [level (get-level game branch tag-or-dlvl)]
-    (if (at-level? game level)
-      (curlvl-exploration-index game)
-      (get level :explored 0))
-    0))
+  ([game] (curlvl-exploration-index game))
+  ([game branch tag-or-dlvl]
+   (if-let [level (get-level game branch tag-or-dlvl)]
+     (if (at-level? game level)
+       (curlvl-exploration-index game)
+       (get level :explored 0))
+     0)))
 
 (defn- search-extremities [game level howmuch]
   (if (has-dead-ends? game level)
@@ -702,7 +703,7 @@
 
 (defn- explored?
   ([game]
-   (pos? (curlvl-exploration-index game)))
+   (pos? (exploration-index game)))
   ([game branch]
    (explored? game branch :end))
   ([game branch tag-or-dlvl]

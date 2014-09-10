@@ -146,7 +146,7 @@
             changed (not= old-dlvl new-dlvl)]
         (if (and changed (some? old-dlvl))
           (swap! game #(assoc-in % [:dungeon :levels (branch-key %) (:dlvl %)
-                                    :explored] (curlvl-exploration-index %))))
+                                    :explored] (exploration-index %))))
         (swap! game update-by-botl status)
         (when changed
           (dlvl-changed @delegator old-dlvl new-dlvl)
