@@ -180,24 +180,24 @@
   (not= :sokoban (branch-key game)))
 
 (defn have-pick [game]
-  (have game #(and (#{"pick-axe" "dwarvish mattock"} (:name (item-id game %)))
+  (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
                    (or (not= :cursed (:buc %)) (:in-use %)))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
   (or (log/debug "trying to prepare for shop entry")
       (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
-                                                       (:name (item-id game %)))
+                                                       (item-name game %))
                                          (or (not= :cursed (:buc %))
                                              (not (:in-use %)))))]
         [5 (->Drop slot)])
       (if-let [[slot _] (have game #(and (= "ring of invisibility"
-                                            (:name (item-id game %)))
+                                            (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
         [5 (->Remove slot)])
       (if-let [[slot _] (have game #(and (= "cloak of invisibility"
-                                            (:name (item-id game %)))
+                                            (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
         [5 (->TakeOff slot)])))

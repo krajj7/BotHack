@@ -88,10 +88,13 @@
   [game item]
   (merge-records (possible-ids game item)))
 
+(defn item-name [game item]
+  (:name (item-id game item)))
+
 (defn know-id?
   "Can the item be unambiguously identified?"
   [game item]
-  (:name (item-id game item)))
+  (some? (item-name game item)))
 
 (defn add-discovery [game appearance id]
   (let [id (get jap->eng id id)]

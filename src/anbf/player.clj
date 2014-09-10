@@ -79,12 +79,11 @@
      fn - predicate function to filter items"
   [game itemname-or-set-or-fn]
   (find-first (cond (set? itemname-or-set-or-fn) (comp itemname-or-set-or-fn
-                                                       :name
-                                                       (partial item-id game)
+                                                       (partial item-name game)
                                                        val)
                     (fn? itemname-or-set-or-fn) (comp itemname-or-set-or-fn val)
                     :else (comp (partial = itemname-or-set-or-fn)
-                                :name (partial item-id game) val))
+                                (partial item-name game) val))
               (inventory game)))
 
 (defn can-remove? [game item]
