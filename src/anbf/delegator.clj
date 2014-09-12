@@ -96,6 +96,9 @@
 
 (defn- direction [s] (get vi-directions s s))
 
+(defn- respond-menu [options]
+  (apply str (log/spy options)))
+
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
             (~invoke-fn ~protocol ~method ~delegator ~@args)
@@ -284,3 +287,11 @@
 
 (defprompthandler CallItemHandler
   (call-item [handler ^String prompt]))
+
+(defmacro ^:private defmenuhandler [protocol & proto-methods]
+  `(defprotocol-delegated clojure.lang.IPersistentSet
+     (partial respond-escapable respond-menu)
+     ~protocol ~@proto-methods))
+
+(defmenuhandler PickupHandler
+  (pick-up-what [handler ^clojure.lang.IPersistentMap options]))

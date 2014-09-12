@@ -26,7 +26,7 @@
     (topline frame)))
 
 (defn- menu-page
-  "Return [first last] page of a menu, if there is one displayed."
+  "Return [current last] page of a menu, if there is one displayed."
   [frame]
   (condp re-seq (before-cursor frame)
     #"\(end\) $" [1 1]
@@ -266,6 +266,23 @@
                                 (do (send delegator message text) initial))]
                       (send delegator write " ")
                       res))))
+            (handle-menu-response-start [frame]
+              (or (when (and (menu? frame)
+                             (= 1 (nth (menu-page frame) 0)))
+                    (log/debug "first page menu response")
+                    (handle-menu-response frame))
+                  (log/debug "menu response start - not yet rewound")))
+            (handle-menu-response [frame]
+              (or (when (menu? frame)
+                    (log/debug "responding to menu page")
+                    (send delegator (menu-fn @head) @items)
+                    (send delegator write \space)
+                    (when (menu-end? frame)
+                      (log/debug "last menu page response done")
+                      (ref-set items nil)
+                      initial))
+                  (log/debug "menu reponse - continuing")
+                  handle-menu-response))
             (handle-menu [frame]
               (when (menu? frame)
                 (log/debug "Handling menu")
@@ -279,11 +296,16 @@
                   (send delegator write " ")
                   (do (log/debug "Menu end")
                       (if @head
-                        (send delegator (menu-fn @head) @items)
+                        (let [[cur end] (menu-page frame)]
+                          (if (= 1 end)
+                            (handle-menu-response-start frame)
+                            (do (->> (repeat (dec (nth end 0)) \<)
+                                     (apply str)
+                                     (send delegator write)) ; rewind menu
+                                handle-menu-response-start)))
                         (do (send delegator inventory-list @items)
-                            (send delegator write " ")))
-                      (ref-set items nil)
-                      initial))))
+                            (send delegator write " ")
+                            initial))))))
             (handle-direction [frame]
               (when (and (zero? (-> frame :cursor :y))
                          (re-seq #"^In what direction.*\?" (topline frame)))
@@ -320,7 +342,8 @@
                   (handle-more frame)
                   (handle-menu frame)
                   (handle-choice-prompt frame)
-                  ;(handle-direction frame) ; XXX TODO (nevykresleny) handle-direction se zrusi pri ##
+                  ;(handle-direction frame)
+                  ;(handle-location frame)
                   ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
                   (when (status-drawn? frame)
                     ;(log/debug "writing ##' mark")

@@ -626,18 +626,19 @@
   ([slot-or-list]
    (->DropSingle slot-or-list 1)))
 
-(defaction PickUp [label-or-set]
+(defaction PickUp [label-or-list]
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
-    (let [l (if (string? label-or-set)
-              #{label-or-set}
-              label-or-set)]
+    (let [l (if (string? label-or-list)
+              [label-or-list]
+              label-or-list)]
       (reify PickupHandler
         (pick-up-what [_ options]
           (log/debug options)
           (log/debug "want" l)
-          "")))) ; TODO escape for now
+          ; TODO set of slots/options for the labels
+          #{})))) ; TODO escape for now
   (trigger [_] ","))
 
 (defaction Autotravel [pos]
