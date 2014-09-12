@@ -136,7 +136,7 @@
     ForceGodHandler
     (force-god [_ _] "")
     SeducedEquipRemoveHandler
-    (remove-equip [_ _] "")
+    (seduced-remove [_ _] "")
     CallItemHandler
     (call-item [_ _] "")))
 

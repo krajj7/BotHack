@@ -547,34 +547,55 @@
 (defaction Wield [slot]
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
-    (possible-autoid anbf slot))
-  (trigger [_] (str \w slot)))
+    (possible-autoid anbf slot)
+    (reify WieldItemHandler
+      (wield-what [_ _] slot)))
+  (trigger [_] "w"))
 
 (defaction Wear [slot]
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
-    (possible-autoid anbf slot))
-  (trigger [_] (str \W slot)))
+    (possible-autoid anbf slot)
+    (reify WearItemHandler
+      (wear-what [_ _] slot)))
+  (trigger [_] "W"))
 
 (defaction PutOn [slot]
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
-    (possible-autoid anbf slot))
-  (trigger [_] (str \P slot)))
+    (possible-autoid anbf slot)
+    (reify PutOnItemHandler
+      (put-on-what [_ _] slot)))
+  (trigger [_] "P"))
 
 (defaction Remove [slot]
-  (handler [_ anbf] (update-inventory anbf))
-  (trigger [_] (str \R slot)))
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (reify RemoveItemHandler
+      (remove-what [_ _] slot)))
+  (trigger [_] "R"))
 
 (defaction TakeOff [slot]
-  (handler [_ anbf] (update-inventory anbf))
-  (trigger [_] (str \T slot)))
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (reify TakeOffItemHandler
+      (take-off-what [_ _] slot)))
+  (trigger [_] "T"))
 
 (defaction DropSingle [slot qty]
   (handler [_ anbf]
     (update-inventory anbf)
-    (update-items anbf))
-  (trigger [_] (str \d (if (> qty 1) qty) slot)))
+    (update-items anbf)
+    (reify DropSingleHandler
+      (drop-single [_ _] (str (if (> qty 1) qty) slot))))
+  (trigger [_] "d"))
+
+(defaction Quiver [slot]
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (reify QuiverHandler
+      (ready-what [_ _] slot)))
+  (trigger [_] "Q"))
 
 (defn ->Drop
   ([slot-or-list qty]

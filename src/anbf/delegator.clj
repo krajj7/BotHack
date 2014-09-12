@@ -210,9 +210,6 @@
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
 
-(defchoicehandler ApplyItemHandler
-  (apply-what [handler ^String prompt]))
-
 (defdirhandler DirectionHandler
   (what-direction [handler prompt]))
 
@@ -220,7 +217,31 @@
   (really-attack [handler ^String text]))
 
 (defyesnohandler SeducedEquipRemoveHandler
-  (remove-equip [handler ^String text]))
+  (seduced-remove [handler ^String text]))
+
+(defchoicehandler ApplyItemHandler
+  (apply-what [handler ^String prompt]))
+
+(defchoicehandler WieldItemHandler
+  (wield-what [handler ^String text]))
+
+(defchoicehandler WearItemHandler
+  (wear-what [handler ^String text]))
+
+(defchoicehandler TakeOffItemHandler
+  (take-off-what [handler ^String text]))
+
+(defchoicehandler PutOnItemHandler
+  (put-on-what [handler ^String text]))
+
+(defchoicehandler RemoveItemHandler
+  (remove-what [handler ^String text]))
+
+(defchoicehandler DropSingleHandler
+  (drop-single [handler ^String text]))
+
+(defchoicehandler QuiverHandler
+  (ready-what [handler ^String text]))
 
 (defyesnohandler EnterGehennomHandler
   (enter-gehennom [handler ^String text]))

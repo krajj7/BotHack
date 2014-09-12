@@ -122,10 +122,16 @@
 
 (defn- choice-fn [msg]
   (condp re-first-group msg
-    #"^Shall I remove your|^Take off your |let me run my fingers" remove-equip
+    #"^Shall I remove your|^Take off your |let me run my fingers" seduced-remove
     #"^Force the gods to be pleased\?" force-god
     #"^Really attack .*\?" really-attack
     #"^Are you sure you want to enter\?" enter-gehennom
+    #"^What do you want to wield" wield-what
+    #"^What do you want to wear" wear-what
+    #"^What do you want to put on" put-on-what
+    #"^What do you want to take off" take-off-what
+    #"^What do you want to remove" remove-what
+    #"^What do you want to ready" ready-what
     #"^Die\?" die
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
