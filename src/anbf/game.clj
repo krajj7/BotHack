@@ -161,10 +161,6 @@
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game update-map frame))
-    InventoryHandler
-    (inventory-list [_ inventory]
-      (swap! game assoc-in [:player :inventory]
-             (into {} (for [[c i] inventory] (slot-item c i)))))
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text

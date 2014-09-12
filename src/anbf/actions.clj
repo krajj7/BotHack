@@ -381,7 +381,11 @@
 
 (defaction Inventory []
   (handler [_ {:keys [game] :as anbf}]
-    (swap! game update-in [:player] dissoc :thick)) ; TODO only on changes
+    (swap! game update-in [:player] dissoc :thick) ; TODO only on changes
+    (reify InventoryHandler
+      (inventory-list [_ inventory]
+        (swap! game assoc-in [:player :inventory]
+               (into {} (for [[c i] inventory] (slot-item c i)))))))
   (trigger [_] "i"))
 
 (defn- examine-tile [{:keys [player] :as game}]
@@ -622,15 +626,18 @@
   ([slot-or-list]
    (->DropSingle slot-or-list 1)))
 
-(defaction PickUp [label-or-list]
+(defaction PickUp [label-or-set]
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
-    (let [l (if (string? label-or-list)
-              [label-or-list]
-              label-or-list)]
+    (let [l (if (string? label-or-set)
+              #{label-or-set}
+              label-or-set)]
       (reify PickupHandler
-        (pick-up-what [_ _] "")))) ; TODO escape for now
+        (pick-up-what [_ options]
+          (log/debug options)
+          (log/debug "want" l)
+          "")))) ; TODO escape for now
   (trigger [_] ","))
 
 (defaction Autotravel [pos]
