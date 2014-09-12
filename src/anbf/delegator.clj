@@ -207,6 +207,9 @@
 (deflocationhandler TeleportWhereHandler
   (teleport-where [handler]))
 
+(deflocationhandler AutotravelHandler
+  (travel-where [handler]))
+
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
 

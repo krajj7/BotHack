@@ -63,6 +63,7 @@
 
 (defn- menu-fn [head]
   (condp re-seq head
+    #"Pick up what\?" pick-up-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- choice-prompt
@@ -96,10 +97,18 @@
   (when (more-prompt? frame)
     (string/replace (topline+ frame) #"--More--" "")))
 
-(defn- location-prompt? [frame]
-  (let [topline (topline frame)]
-    (or (re-seq #"^Unknown direction: ''' \(use hjkl or \.\)" topline)
-        (re-seq #"\(For instructions type a \?\)$" topline))))
+(defn- location-fn [msg]
+  (condp #(.startsWith %2 %1) msg
+    "Where do you want to travel to?" travel-where
+    "To what location" teleport-where
+    (throw (UnsupportedOperationException.
+             (str "unknown location message" msg)))))
+
+(def ^:private location-re #"^Unknown direction: ''' \(use hjkl or \.\)|.*\(For instructions type a \?\)$")
+
+(defn- location-prompt [frame]
+  (some-> (first (re-seq location-re (topline frame)))
+          location-fn))
 
 (defn- prompt
   [frame]
@@ -110,7 +119,7 @@
 (defn- prompt-fn [msg]
   (condp re-seq msg
     #"^Call .*:" call-item
-    (throw (UnsupportedOperationException. "TODO prompt-fn - implement me")))
+    (throw (UnsupportedOperationException. (str "unknown prompt msg" msg))))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
 ;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:     in|on|melted into) the (.*?) here\?/ => 'write_what',
@@ -202,11 +211,13 @@
     (send delegator message-lines @items)
     (ref-set items nil)))
 
-(defn- undrawn-direction? [frame]
+(defn- undrawn?
+  "Can the topline possibly be this not-yet-drawn message?"
+  [frame what]
   (let [topline (topline frame)
         len (count topline)
-        bnd (min len 17)]
-    (= topline (subs "In what direction" 0 bnd))))
+        bnd (min len (count what))]
+    (= topline (subs what 0 bnd))))
 
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
@@ -247,7 +258,7 @@
                                 #"^You don't have that object."
                                 handle-choice-prompt
                                 #"^To what position do you want to be teleported\?"
-                                location
+                                handle-location
                                 #"^You wrest one last "
                                 (do (send delegator message text) no-mark)
                                 #"^You now wield a "
@@ -291,7 +302,16 @@
                     (goodbye? frame) (-> delegator
                                          (send write \space)
                                          (send ended))))
-
+            (handle-location [frame]
+              (or (when-let [ev (location-prompt frame)]
+                    (log/debug "Handling location")
+                    (emit-botl delegator frame)
+                    (send delegator know-position frame)
+                    (flush-more-list delegator items)
+                    (send delegator write \<) ; to stop repeated botl/map updates while the prompt is active causing multiple commands
+                    (send delegator ev)
+                    initial)
+                  (log/debug "location expecting further redraw")))
             (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
               (log/debug "sink discarding redraw"))
             (initial [frame]
@@ -310,9 +330,11 @@
             ; v kontextech akci kde ##' muze byt destruktivni (direction prompt - kick,wand,loot,talk...) cekam dokud se neobjevi neco co prokazatelne neni zacatek direction promptu, pak poslu znacku.
             ; dany kontext musi eventualne neco napsat na topline
             (no-mark [frame]
-              (log/debug "no-mark maybe direction prompt")
-              (or (undrawn-direction? frame)
+              (log/debug "no-mark maybe direction/location prompt")
+              (or (undrawn? frame "In what direction")
                   (handle-direction frame)
+                  (undrawn? frame "Where do you want")
+                  (handle-location frame)
                   (log/debug "no-mark - not direction prompt")
                   (initial frame)))
             ; odeslal jsem marker, cekam jak se vykresli
@@ -354,17 +376,7 @@
                     (flush-more-list delegator items)
                     (send delegator full-frame frame)
                     sink)
-                  (log/debug "lastmsg expecting further redraw")))
-            (location [frame]
-              (or (when (location-prompt? frame)
-                    (log/debug "Handling location")
-                    (emit-botl delegator frame)
-                    (send delegator know-position frame)
-                    (flush-more-list delegator items)
-                    (send delegator write \<) ; to stop repeated botl/map updates while the prompt is active causing multiple commands
-                    (send delegator teleport-where)
-                    initial)
-                  (log/debug "location expecting further redraw")))]
+                  (log/debug "lastmsg expecting further redraw")))]
       (if (= mark-kw :no-mark)
         no-mark
         initial))))
@@ -388,8 +400,10 @@
     ActionChosenHandler
     (action-chosen [_ action]
       (dosync
-        (ref-set scraper nil) ; escape sink
-        (log/debug "reset scraper")))
+        (if (#{"anbf.actions.Autotravel"} (.getName (type action)))
+          (ref-set scraper (new-scraper delegator :no-mark))
+          (ref-set scraper nil)) ; escape sink
+        (log/debug "reset scraper for" (type action))))
     RedrawHandler
     (redraw [_ frame]
       #_(dosync (alter scraper apply-scraper delegator frame))

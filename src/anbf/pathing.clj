@@ -178,7 +178,7 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn can-dig? [game]
-  ; TODO not wielding cursed weapon, not poly'd...
+  ; TODO (can-wield? ...)
   (not= :sokoban (branch-key game)))
 
 (defn have-pick [game]
@@ -272,21 +272,34 @@
    path ; vector of remaining positions
    target]) ; position of target
 
-; TODO could use builtin pathfinding (_ command) if the path is all explored/unobstructed
-; stop on: trap, nil feature, monster, unwalkable
-; don't use _ if the target was just _'d, or path is short
-(defn- path-step [from move-fn path]
-  (if (seq path)
-    (nth (move-fn from (nth path 0)) 1)))
+(defn autonavigable? [level pos]
+  (let [tile (at level pos)]
+    (and (not (trap? tile))
+         (some? (:feature tile))
+         (not (monster-at level pos))
+         (walkable? tile))))
 
-(defn- get-a*-path [from to move-fn opts max-steps]
-  (log/debug "a*")
+; TODO option to disable
+(defn- path-step [game level from move-fn path]
+  (if-let [start (first path)]
+    (let [autonavigable (into [] (take-while (partial autonavigable? level)
+                                             path))
+          autonav-target (some-> (peek autonavigable) position)
+          last-autonav (:last-autonav game)]
+      (if (and autonav-target
+               (not= last-autonav (position from))
+               (< 3 (count autonavigable))
+               (not-any? (partial monster-at level) (neighbors from)))
+        (->Autotravel autonav-target)
+        (nth (move-fn from start) 1)))))
+
+(defn- get-a*-path [game level from to move-fn opts max-steps]
   (if-let [path (a* from to move-fn max-steps)]
     (if (seq path)
       (if (:adjacent opts)
-        (->Path (path-step from move-fn path) (pop path) to)
+        (->Path (path-step game level from move-fn path) (pop path) to)
         (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
-             (->Path (path-step from move-fn path) path to)))
+             (->Path (path-step game level from move-fn path) path to)))
       (->Path nil [] to))))
 
 (defn navigate
@@ -304,7 +317,7 @@
    [{:pre [(or (fn? pos-or-goal-fn)
                (set? pos-or-goal-fn)
                (position pos-or-goal-fn))]}]
-   ;(log/debug "navigating" pos-or-goal-fn opts)
+   (log/debug "navigating" pos-or-goal-fn opts)
    (let [opts (if-let [pick (and (not walking)
                                  (not no-dig)
                                  (have-pick game))]
@@ -313,7 +326,7 @@
          level (curlvl game)
          move-fn #(move game level %1 %2 opts)]
      (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
-       (get-a*-path player pos-or-goal-fn move-fn opts max-steps)
+       (get-a*-path game level player pos-or-goal-fn move-fn opts max-steps)
        (let [goal-fn (if (set? pos-or-goal-fn)
                        (comp (into #{} (map position pos-or-goal-fn))
                              position)
@@ -325,9 +338,10 @@
                                  (mapcat neighbors) (into #{})))]
              (case (count goal-set)
                0 nil
-               1 (get-a*-path player (first goal-set) move-fn opts max-steps)
+               1 (get-a*-path game level player (first goal-set)
+                              move-fn opts max-steps)
                (if-let [path (dijkstra player goal-set move-fn max-steps)]
-                 (->Path (path-step player move-fn path) path
+                 (->Path (path-step game level player move-fn path) path
                          (->> (or (peek path) player) neighbors
                               (find-first goal-fn))))))
            ; not searching for adjacent
@@ -337,9 +351,9 @@
                                     (take 2) seq))]
              (if (= 2 (count goal-seq))
                (if-let [path (dijkstra player goal-fn move-fn max-steps)]
-                 (->Path (path-step player move-fn path) path
+                 (->Path (path-step game level player move-fn path) path
                          (or (peek path) (at-player game))))
-               (get-a*-path player (first goal-seq) move-fn opts
+               (get-a*-path game level player (first goal-seq) move-fn opts
                             max-steps)))))))))
 
 (defn- explorable-tile? [level tile]
@@ -496,12 +510,14 @@
       :else (->> (:tiles level) (apply concat) (map :searched) (reduce + 1)))))
 
 (defn reset-exploration-index
-  "Performance optimization - curlvl-exploration-index is useful but expensive so cache the result with delay"
+  "Performance optimization - curlvl-exploration-index is useful but expensive so is wrapped in a future"
   [anbf]
   (reify AboutToChooseActionHandler
     (about-to-choose [_ game]
-      (swap! (:game anbf) assoc :explored-cache
-             (delay (curlvl-exploration-index game))))))
+      (swap! (:game anbf) update-in [:explored-cache]
+             #(do (when (some? %)
+                    (future-cancel %))
+                  (future (curlvl-exploration-index game)))))))
 
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
@@ -738,17 +754,17 @@
 (defn explore
   ([game]
    (let [level (curlvl game)]
-     (if-not (pos? (exploration-index game))
-       (or (search-dead-end game 15)
-           (when-let [path (navigate game (partial explorable-tile? level))]
-             (log/debug "chose exploration target" (at level (:target path)))
-             (:step path))
-           ; TODO search for shops if heard but not found
-           (when (unexplored-column game level)
-             (log/debug "level not explored enough, searching")
-             (search game 2))
-           (log/debug "nothing to explore"))
-       (log/debug "positive exploration index"))))
+     (or (search-dead-end game 20)
+         (if-not (pos? (exploration-index game))
+           (or (when-let [path (navigate game (partial explorable-tile? level))]
+                 (log/debug "chose explore target" (at level (:target path)))
+                 (:step path))
+               ; TODO search for shops if heard but not found
+               (when (unexplored-column game level)
+                 (log/debug "level not explored enough, searching")
+                 (search game 2))
+               (log/debug "nothing to explore"))
+           (log/debug "positive exploration index")))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]

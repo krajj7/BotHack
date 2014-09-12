@@ -78,6 +78,7 @@
      #{String} (set of strings - item name alternatives with no preference)
      fn - predicate function to filter items"
   [game itemname-or-set-or-fn]
+  ;(log/debug "have")
   (find-first (cond (set? itemname-or-set-or-fn) (comp itemname-or-set-or-fn
                                                        (partial item-name game)
                                                        val)

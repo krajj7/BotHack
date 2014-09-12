@@ -5,6 +5,7 @@
             [anbf.player :refer :all]
             [anbf.montype :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.level :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
             [anbf.itemid :refer :all]
@@ -68,6 +69,53 @@
                 (throw (IllegalArgumentException.
                          (str "Invalid direction: " dir)))))))
 
+(defn- move-message-handler
+  [{:keys [game] :as anbf} level portal-atom msg]
+  (condp re-seq msg
+        #".*: \"Closed for inventory\"" ; TODO possible degradation
+        (update-on-known-position
+          anbf (fn mark-shop [game]
+                 (reduce #(if (or (door? %2) (= :wall (:feature %2)))
+                            (update-curlvl-at %1 %2 assoc :room :shop)
+                            %1)
+                         (add-curlvl-tag game :shop-closed)
+                         (neighbors level (:player game)))))
+        #"You crawl to the edge of the pit\.|You disentangle yourself\."
+        (swap! game assoc-in [:player :trapped] false)
+        #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit"
+        (do (swap! game assoc-in [:player :trapped] true)
+            (update-on-known-position anbf
+              #(update-curlvl-at % (:player %) assoc :feature :trap)))
+        #"trap door in the .*and a rock falls on you|trigger a rolling boulder" ; TODO dart/arrow/..
+        (update-on-known-position anbf
+          #(update-curlvl-at % (:player %) assoc :feature :trap))
+        #"You are carrying too much to get through"
+        (swap! game assoc-in [:player :thick] true)
+        #"activated a magic portal!"
+        (do (reset! portal-atom true)
+            (update-on-known-position anbf
+              #(update-curlvl-at % (:player %) assoc :feature :portal)))
+        #"You feel a strange vibration"
+        (update-on-known-position anbf
+          #(update-curlvl-at % (:player %) assoc :vibrating true))
+        #"Wait!  That's a .*mimic!"
+        (update-on-known-position
+          anbf (fn [game]
+                 (reduce #(if (= \m (:glyph (monster-at level %2)))
+                            (update-curlvl-at %1 %2 assoc :feature nil)
+                            %1)
+                         game
+                         (neighbors (:player game)))))
+        nil))
+
+(defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
+  (or ; TODO planes
+      (if (subbranches (branch-key @game level))
+        (swap! game assoc :branch-id :main))
+      (if (= "Home" (subs new-dlvl 0 4))
+        (swap! game assoc :branch-id :quest))
+      (log/error "entered unknown portal!")))
+
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
@@ -81,7 +129,7 @@
                  (trap? (at-player @game)))
            %
            (assoc-in % [:player :trapped] false)))
-      (if (and (diagonal dir) (item? target))
+      (if (and (not (:trapped old-player)) (diagonal dir) (item? target))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
                     (not (curlvl-monster-at % target))
@@ -95,34 +143,7 @@
         ToplineMessageHandler
         (message [_ msg]
           (reset! got-message true)
-          (or (condp re-seq msg
-                #".*: \"Closed for inventory\"" ; TODO possible degradation
-                (update-on-known-position
-                  anbf (fn mark-shop [game]
-                         (reduce #(if (or (door? %2) (= :wall (:feature %2)))
-                                    (update-curlvl-at %1 %2 assoc :room :shop)
-                                    %1)
-                                 (add-curlvl-tag game :shop-closed)
-                                 (neighbors level (:player game)))))
-                #"You crawl to the edge of the pit\.|You disentangle yourself\."
-                (swap! game assoc-in [:player :trapped] false)
-                #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\."
-                (do (swap! game assoc-in [:player :trapped] true)
-                    (update-on-known-position anbf
-                      #(update-curlvl-at % (:player %) assoc :feature :trap)))
-                #"trap door in the .*and a rock falls on you|trigger a rolling boulder" ; TODO dart/arrow/..
-                (update-on-known-position anbf
-                  #(update-curlvl-at % (:player %) assoc :feature :trap))
-                #"You are carrying too much to get through"
-                (swap! game assoc-in [:player :thick] true)
-                #"activated a magic portal!"
-                (do (reset! portal true)
-                    (update-on-known-position anbf
-                      #(update-curlvl-at % (:player %) assoc :feature :portal)))
-                #"You feel a strange vibration"
-                (update-on-known-position anbf
-                      #(update-curlvl-at % (:player %) assoc :vibrating true))
-                nil)
+          (or (move-message-handler anbf level portal msg)
               (when-not (dizzy? old-player)
                 (condp re-seq msg
                   no-monster-re
@@ -136,18 +157,11 @@
                              assoc :feature :rock)))
                   #"It's a wall\."
                   (swap! game update-curlvl-at target assoc :feature :wall)
-                  #"Wait!  That's a .*mimic!"
-                  (swap! game update-curlvl-at target assoc :feature nil)
                   nil))))
         DlvlChangeHandler
         (dlvl-changed [_ old-dlvl new-dlvl]
           (if @portal
-            (or ; TODO planes
-                (if (subbranches (branch-key @game level))
-                  (swap! game assoc :branch-id :main))
-                (if (= "Home" (subs new-dlvl 0 4))
-                  (swap! game assoc :branch-id :quest))
-                (log/error "entered unknown portal!"))))
+            (portal-handler anbf level new-dlvl)))
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
@@ -611,13 +625,30 @@
 (defaction PickUp [label-or-list]
   (handler [_ anbf]
     (update-inventory anbf)
-    (update-items anbf))
-  (trigger [_]
+    (update-items anbf)
     (let [l (if (string? label-or-list)
               [label-or-list]
               label-or-list)]
-      #_(register-handler priority-top)) ; TODO pickup menu handler
-    ","))
+      (reify PickupHandler
+        (pick-up-what [_ _] "")))) ; TODO escape for now
+  (trigger [_] ","))
+
+(defaction Autotravel [pos]
+  (handler [_ {:keys [game] :as anbf}]
+    (swap! (:game anbf) #(assoc % :last-autonav (position (:player %))))
+    (let [level (curlvl @game)
+          portal (atom nil)]
+      (reify
+        ToplineMessageHandler
+        (message [_ msg]
+          (move-message-handler anbf level portal msg))
+        DlvlChangeHandler
+        (dlvl-changed [_ old-dlvl new-dlvl]
+          (if @portal
+            (portal-handler anbf level new-dlvl)))
+        AutotravelHandler
+        (travel-where [_] pos))))
+  (trigger [_] "_"))
 
 (defn- -withHandler
   ([action handler]
