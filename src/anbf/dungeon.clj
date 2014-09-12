@@ -369,6 +369,7 @@
       (shop-types (re-first-group room-re msg))))
 
 (defn mark-room [game kind]
+  (log/debug "marking room as" kind)
   (-> game
       (add-curlvl-tag kind)
       (#(if-let [roomkeeper (and (shops kind) (closest-roomkeeper %))]
