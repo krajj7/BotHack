@@ -31,6 +31,7 @@
   "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
   ([from to move-fn] (a* from to move-fn nil))
   ([from to move-fn max-steps]
+   (log/debug "a*")
    (loop [closed {}
           open (priority-map-keyfn first (position from) [0 0])]
      (if-not (empty? open)
@@ -57,6 +58,7 @@
 (defn- dijkstra
   ([from goal? move-fn] (dijkstra from goal? move-fn nil))
   ([from goal? move-fn max-steps]
+   (log/debug "dijkstra")
    (loop [closed {}
           open (priority-map-keyfn first (position from) [0])]
      (if-let [[node [dist prev]] (peek open)]
@@ -481,23 +483,33 @@
       (disj res nil))))
 
 (defn at-level? [game level]
-  (and (= (:dlvl game) (:dlvl level)) (= (branch-key game) (branch-key game level))))
+  (and (= (:dlvl game) (:dlvl level))
+       (= (branch-key game) (branch-key game level))))
 
 (defn- curlvl-exploration-index
   [game]
   (let [level (curlvl game)]
+    (log/debug "calc exploration index")
     (cond
       (unexplored-column game level) 0
       (navigate game (partial explorable-tile? level)) 0
       :else (->> (:tiles level) (apply concat) (map :searched) (reduce + 1)))))
 
+(defn reset-exploration-index
+  "Performance optimization - curlvl-exploration-index is useful but expensive so cache the result with delay"
+  [anbf]
+  (reify AboutToChooseActionHandler
+    (about-to-choose [_ game]
+      (swap! (:game anbf) assoc :explored-cache
+             (delay (curlvl-exploration-index game))))))
+
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
-  ([game] (curlvl-exploration-index game))
+  ([game] @(:explored-cache game))
   ([game branch tag-or-dlvl]
    (if-let [level (get-level game branch tag-or-dlvl)]
      (if (at-level? game level)
-       (curlvl-exploration-index game)
+       (exploration-index game)
        (get level :explored 0))
      0)))
 
@@ -726,15 +738,17 @@
 (defn explore
   ([game]
    (let [level (curlvl game)]
-     (or (search-dead-end game 15)
-         (when-let [path (navigate game (partial explorable-tile? level))]
-           (log/debug "chose exploration target" (at level (:target path)))
-           (:step path))
-         ; TODO search for shops if heard but not found
-         (when (unexplored-column game level)
-           (log/debug "level not explored enough, searching")
-           (search game 2))
-         (log/debug "nothing to explore"))))
+     (if-not (pos? (exploration-index game))
+       (or (search-dead-end game 15)
+           (when-let [path (navigate game (partial explorable-tile? level))]
+             (log/debug "chose exploration target" (at level (:target path)))
+             (:step path))
+           ; TODO search for shops if heard but not found
+           (when (unexplored-column game level)
+             (log/debug "level not explored enough, searching")
+             (search game 2))
+           (log/debug "nothing to explore"))
+       (log/debug "positive exploration index"))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]
