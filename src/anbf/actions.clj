@@ -501,6 +501,9 @@
                ; TODO too hard to dig
                ; TODO dug pit / hole
                (condp re-seq msg
+                 #"^This wall seems too hard to dig into\."
+                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
+                                               assoc :undiggable true))
                  #"^You make an opening"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :dug true :feature :floor))
