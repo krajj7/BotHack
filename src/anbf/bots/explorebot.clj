@@ -61,12 +61,8 @@
    #{"Book of the Dead"}
    #{"Amulet of Yendor"}])
 
-(defn entering-shop? [game] ; bit of a hack to avoid state
-  (let [level (curlvl game)
-        player (at-player game)
-        shop-nbrs (filter shop? (neighbors level player))]
-    (and (= 1 (count shop-nbrs))
-         (> 3 (- (:turn game) (or (:walked (first shop-nbrs)) 0))))))
+(defn entering-shop? [game]
+  (some->> (nth (last-path game) 1) (at-curlvl game) shop?))
 
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
@@ -98,7 +94,7 @@
         (when (pos? (exploration-index game)) ; all explored
           (log/debug "considering all items on level")
           (when-let [{:keys [step target]}
-                     (:step (navigate game #(some to-take? (:items %))))]
+                     (navigate game #(some to-take? (:items %)))]
             (log/debug "going to get item at" target)
             step)))))
 

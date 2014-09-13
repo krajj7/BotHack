@@ -339,7 +339,7 @@
                     (emit-botl delegator frame)
                     (send delegator know-position frame)
                     (flush-more-list delegator items)
-                    (send delegator write \<) ; to stop repeated botl/map updates while the prompt is active causing multiple commands
+                    (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands
                     (send delegator ev)
                     initial)
                   (log/debug "location expecting further redraw")))

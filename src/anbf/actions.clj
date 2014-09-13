@@ -38,8 +38,17 @@
         "grave" :grave
         (trap-names feature)))))
 
+(defn update-before-action
+  "Before the next action is chosen call (apply swap! game f args).  This happens when game state is updated and player position is known."
+  [anbf f & args]
+  (register-handler anbf priority-top
+    (reify AboutToChooseActionHandler
+      (about-to-choose [this _]
+        (apply swap! (:game anbf) f args)
+        (deregister-handler anbf this)))))
+
 (defn update-on-known-position
-  "When player position on map is known call (apply swap! game f args)"
+  "When player position on map is known call (apply swap! game f args).  Game state may not be fully updated yet for the turn."
   [anbf f & args]
   (register-handler anbf priority-top
     (reify
@@ -73,7 +82,7 @@
   [{:keys [game] :as anbf} level portal-atom msg]
   (condp re-seq msg
         #".*: \"Closed for inventory\"" ; TODO possible degradation
-        (update-on-known-position
+        (update-before-action
           anbf (fn mark-shop [game]
                  (reduce #(if (or (door? %2) (= :wall (:feature %2)))
                             (update-curlvl-at %1 %2 assoc :room :shop)
@@ -99,7 +108,7 @@
         (update-on-known-position anbf
           #(update-curlvl-at % (:player %) assoc :vibrating true))
         #"Wait!  That's a .*mimic!"
-        (update-on-known-position
+        (update-before-action
           anbf (fn [game]
                  (reduce #(if (= \m (:glyph (monster-at level %2)))
                             (update-curlvl-at %1 %2 assoc :feature nil)
@@ -381,7 +390,6 @@
 
 (defaction Inventory []
   (handler [_ {:keys [game] :as anbf}]
-    (swap! game update-in [:player] dissoc :thick) ; TODO only on changes
     (reify InventoryHandler
       (inventory-list [_ inventory]
         (swap! game assoc-in [:player :inventory]
@@ -516,16 +524,15 @@
              (what-direction [_ _] dir)
              ToplineMessageHandler
              (message [_ msg]
-               ; TODO too hard to dig
                ; TODO dug pit / hole
                (condp re-seq msg
-                 #"^This wall seems too hard to dig into\."
+                 #"This wall seems too hard to dig into\."
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :undiggable true))
-                 #"^You make an opening"
+                 #"You make an opening"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :dug true :feature :floor))
-                 #"^You succeed in cutting away some rock"
+                 #"You succeed in cutting away some rock"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                             assoc :dug true :feature :corridor))
                  #"^You swing your pick"
@@ -607,6 +614,7 @@
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
+    (swap! (:game anbf) update-in [:player] dissoc :thick)
     (reify DropSingleHandler
       (drop-single [_ _] (str (if (> qty 1) qty) slot))))
   (trigger [_] "d"))

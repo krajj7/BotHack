@@ -326,25 +326,33 @@
     (add-level game (new-level dlvl (branch-key game)))
     game))
 
+(defn- shopkeeper? [game tile]
+  (and (not= (position (:player game) (position tile)))
+       (= \@ (:glyph tile))
+       (= :white (:color tile))))
+
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
-  (loop [res game
-         closed #{}
-         open #{(at-curlvl game pos)}]
-    ;(log/debug (count open) open)
-    (if-let [x (first open)]
-      (recur (update-curlvl-at res x assoc :room kind)
-             (conj closed x)
-             (if (or (door? x) (= :wall (:feature x)))
-               (disj open x)
-               (into (disj open x)
-                     ; walking triggers more refloods to mark unexplored tiles
-                     (->> (neighbors (curlvl res) x)
-                          (remove #(or (= \space (:glyph %))
-                                       (:dug %)
-                                       (= :corridor (:feature %))
-                                       (closed %)))))))
-      res)))
+  (let [level (curlvl game)]
+    (loop [res game
+           closed #{}
+           open (into #{(at level pos)}
+                      (if (shopkeeper? game (at level pos))
+                        (neighbors level pos)))]
+      ;(log/debug (count open) open)
+      (if-let [x (first open)]
+        (recur (update-curlvl-at res x assoc :room kind)
+               (conj closed x)
+               (if (or (door? x) (= :wall (:feature x)))
+                 (disj open x)
+                 (into (disj open x)
+                       ; walking triggers more refloods to mark unexplored tiles
+                       (->> (neighbors level x)
+                            (remove #(or (= \space (:glyph %))
+                                         (:dug %)
+                                         (= :corridor (:feature %))
+                                         (closed %)))))))
+        res))))
 
 (defn reflood-room [game pos]
   (let [tile (at-curlvl game pos)]
@@ -357,9 +365,8 @@
   "Presumes having just entered a room"
   [game]
   (min-by #(distance (:player game) %)
-          (filter #(and (= \@ (:glyph %)) ; can also find nurses
-                        (= :white (:color %)))
-                  (vals (curlvl-monsters game)))))
+          (for [m (vals (curlvl-monsters game))
+                :when (shopkeeper? game m)] m)))
 
 (def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
 

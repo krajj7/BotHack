@@ -174,4 +174,4 @@
           (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))
           (if-let [room (room-type text)]
-            (update-on-known-position anbf mark-room room))))))
+            (update-before-action anbf mark-room room))))))

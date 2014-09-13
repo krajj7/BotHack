@@ -287,6 +287,7 @@
           autonav-target (some-> (peek autonavigable) position)
           last-autonav (:last-autonav game)]
       (if (and autonav-target
+               (not (shop? (at level from)))
                (not= last-autonav (position from))
                (< 3 (count autonavigable))
                (not-any? (partial monster-at level) (neighbors from)))
