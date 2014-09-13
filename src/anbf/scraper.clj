@@ -143,6 +143,7 @@
     #"^What do you want to take off" take-off-what
     #"^What do you want to remove" remove-what
     #"^What do you want to ready" ready-what
+    #"^What do you want to drop" drop-single
     #"^Die\?" die
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
