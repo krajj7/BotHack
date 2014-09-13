@@ -630,15 +630,22 @@
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
-    (let [l (if (string? label-or-list)
+    (let [labels (if (string? label-or-list)
               [label-or-list]
               label-or-list)]
       (reify PickupHandler
         (pick-up-what [_ options]
           (log/debug options)
-          (log/debug "want" l)
-          ; TODO set of slots/options for the labels
-          #{})))) ; TODO escape for now
+          (log/debug "want" labels)
+          (loop [lbls labels
+                 remaining options
+                 res #{}]
+            (if-let [l (log/spy (peek lbls))]
+              (if-let [slot (some->> remaining log/spy (find-first #(= l (val %))) log/spy key)]
+                (recur (pop lbls) (dissoc remaining slot) (conj res slot))
+                (do (log/warn "item for PickUp not present:" l)
+                    (recur (pop lbls) options res)))
+              res))))))
   (trigger [_] ","))
 
 (defaction Autotravel [pos]

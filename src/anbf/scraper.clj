@@ -33,6 +33,8 @@
     #"\(([0-9]+) of ([0-9]+)\)$" :>> #(-> % first (subvec 1))
     nil))
 
+(defn- menu-curpage [frame] (nth (menu-page frame) 0))
+
 (defn- menu-end?
   "Is this the last page of a menu?"
   [frame]
@@ -222,7 +224,8 @@
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
         head (ref nil)
-        items (ref nil)]
+        items (ref nil)
+        menu-nextpage (ref nil)]
     (letfn [(handle-game-start [frame]
               (when (game-beginning? frame)
                 (log/debug "Handling game start")
@@ -235,6 +238,7 @@
             (handle-choice-prompt [frame]
               (when-let [text (choice-prompt frame)]
                 (log/debug "Handling choice prompt")
+                (ref-set menu-nextpage nil)
                 (emit-botl delegator frame)
                 ; TODO prompt may re-appear in lastmsg+action as topline msg
                 (send delegator (choice-fn text) text)
@@ -242,6 +246,7 @@
             (handle-more [frame]
               (or (when-let [item-list (more-list frame)]
                     (log/debug "Handling --More-- list")
+                    (ref-set menu-nextpage nil)
                     (if (nil? @items)
                       (ref-set items []))
                     (alter items into item-list)
@@ -268,15 +273,18 @@
                       res))))
             (handle-menu-response-start [frame]
               (or (when (and (menu? frame)
-                             (= 1 (nth (menu-page frame) 0)))
+                             (= 1 (menu-curpage frame)))
                     (log/debug "first page menu response")
+                    (ref-set menu-nextpage 1)
                     (handle-menu-response frame))
                   (log/debug "menu response start - not yet rewound")))
             (handle-menu-response [frame]
-              (or (when (menu? frame)
-                    (log/debug "responding to menu page")
+              (or (when (and (menu? frame)
+                             (= @menu-nextpage (menu-curpage frame)))
+                    (log/debug "responding to menu page" @menu-nextpage)
                     (send delegator (menu-fn @head) @items)
                     (send delegator write \space)
+                    (alter menu-nextpage inc)
                     (when (menu-end? frame)
                       (log/debug "last menu page response done")
                       (ref-set items nil)
@@ -284,7 +292,8 @@
                   (log/debug "menu reponse - continuing")
                   handle-menu-response))
             (handle-menu [frame]
-              (when (menu? frame)
+              (when (and (menu? frame)
+                         (nil? @menu-nextpage))
                 (log/debug "Handling menu")
                 (when (nil? @items)
                   (ref-set head (menu-head frame))
