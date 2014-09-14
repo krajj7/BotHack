@@ -149,6 +149,7 @@
     ActionChosenHandler
     (action-chosen [_ action]
       (swap! game #(assoc % :last-action action
+                          :last-position (position (:player %))
                           :last-path (get action :path (:last-path %)))))
     RedrawHandler
     (redraw [_ frame]

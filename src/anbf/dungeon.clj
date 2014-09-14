@@ -377,11 +377,14 @@
 
 (defn mark-room [game kind]
   (log/debug "marking room as" kind)
-  (-> game
-      (add-curlvl-tag kind)
-      (#(if-let [roomkeeper (and (shops kind) (closest-roomkeeper %))]
-        (floodfill-room % roomkeeper kind)
-        %))))
+  (as-> game res
+      (add-curlvl-tag res kind)
+      (if-let [roomkeeper (and (shops kind) (closest-roomkeeper res))]
+        (floodfill-room res roomkeeper kind)
+        res)
+      (if (and (adjacent? (:last-position game) (:player game)))
+        (update-curlvl-at res (:last-position game) assoc :room nil)
+        res)))
 
 (defn- match-level
   "Returns true if the level matches the blueprint :dlvl, :branch and :tag (if present)"
