@@ -222,6 +222,7 @@
          dir (towards from to-tile)
          monster (monster-at level to)]
      (if-let [step ; TODO levitation
+              ; TODO options to re-wield weapon, rings
               (or (if (or (and (unexplored? to-tile) (not (:explored opts))
                                (or (not (narrow? level from-tile to-tile))
                                    (not (:thick (:player game)))))
@@ -234,7 +235,7 @@
                                (enter-shop game))
                           [0 (->Move dir)])
                       (if-not (:peaceful monster)
-                        [30 (->Move dir)]
+                        [6 (->Move dir)]
                         (if ((fnil <= 0) (:blocked to-tile) 25)
                           [50 (fidget game level to-tile)])))) ; hopefully will move
                   (if (kickable-door? level from-tile opts)
@@ -279,20 +280,26 @@
          (not (monster-at level pos))
          (walkable? tile))))
 
-; TODO option to disable
+; TODO option to disable autotravel?
 (defn- path-step [game level from move-fn path]
   (if-let [start (first path)]
     (let [autonavigable (into [] (take-while (partial autonavigable? level)
                                              path))
           autonav-target (some-> (peek autonavigable) position)
-          last-autonav (:last-autonav game)]
-      (if (and autonav-target
+          last-autonav (let [a (:last-action game)
+                             last-target (:pos a)]
+                         (if (and last-target
+                                  (= "anbf.actions.Autotravel"
+                                     (.getName (type a))))
+                           last-target))]
+      (-> (if (and autonav-target
                (not (shop? (at level from)))
                (not= last-autonav (position from))
                (< 3 (count autonavigable))
                (not-any? (partial monster-at level) (neighbors from)))
-        (->Autotravel autonav-target)
-        (nth (move-fn from start) 1)))))
+            (->Autotravel autonav-target)
+            (nth (move-fn from start) 1))
+          (assoc :path path)))))
 
 (defn- get-a*-path [game level from to move-fn opts max-steps]
   (if-let [path (a* from to move-fn max-steps)]

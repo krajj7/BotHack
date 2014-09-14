@@ -36,12 +36,12 @@
         (->Wait))))
 
 (defn progress [game]
-  (or (explore game :mines)
+  (or (explore game :main "Dlvl:1")
+      (explore game :mines :minetown)
       ;(visit game :sokoban :end)
       (visit game :main :medusa)
       ;(visit game :quest :end)
       ;(visit game :mines :minetown)
-      ;(explore game :main "Dlvl:2")
       ;(visit game :mines :end)
       ;(visit game :quest :end)
       ;(explore game :mines)
@@ -62,7 +62,7 @@
    #{"Amulet of Yendor"}])
 
 (defn entering-shop? [game]
-  (some->> (nth (last-path game) 1) (at-curlvl game) shop?))
+  (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
 
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
@@ -99,12 +99,19 @@
             step)))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (let [level (curlvl game)]
-    (if (not-any? #(not (walkable? (at level %))) (last-path game))
-      (if-let [[slot weapon] (some (partial have game) desired-weapons)]
-        ; TODO can-wield?
-        (if-not (:wielded weapon)
-          (->Wield slot))))))
+  (if-let [[slot weapon] (some (partial have game) desired-weapons)]
+    ; TODO can-wield?
+    (when-not (:wielded weapon)
+      (log/debug "wielding better weapon -" (:label weapon))
+      (->Wield slot))))
+
+(defn- maybe-wield-weapon [{:keys [last-path] :as game}]
+  (let [level (curlvl game)
+        step (some->> (nth last-path 0) (at level))]
+    (if (and (not-any? #(not (walkable? (at level %))) last-path)
+             step
+             (not (:dug step)))
+      (wield-weapon game))))
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
@@ -140,7 +147,7 @@
                                (handle-impairment game))))
       (register-handler 1 (reify ActionHandler
                              (choose-action [_ game]
-                               (wield-weapon game))))
+                               (maybe-wield-weapon game))))
       (register-handler 2 (reify ActionHandler
                              (choose-action [_ game]
                                (consider-items game))))

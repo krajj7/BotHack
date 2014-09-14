@@ -146,6 +146,10 @@
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
+    ActionChosenHandler
+    (action-chosen [_ action]
+      (swap! game #(assoc % :last-action action
+                          :last-path (get action :path (:last-path %)))))
     RedrawHandler
     (redraw [_ frame]
       (swap! game assoc-in [:frame] frame))

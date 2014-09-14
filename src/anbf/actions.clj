@@ -659,8 +659,7 @@
   (trigger [_] ","))
 
 (defaction Autotravel [pos]
-  (handler [_ {:keys [game] :as anbf}]
-    (swap! (:game anbf) #(assoc % :last-autonav (position (:player %))))
+  (handler [this {:keys [game] :as anbf}]
     (let [level (curlvl @game)
           portal (atom nil)]
       (reify
