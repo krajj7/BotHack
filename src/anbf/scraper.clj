@@ -283,7 +283,7 @@
               (or (when (and (menu? frame)
                              (= @menu-nextpage (menu-curpage frame)))
                     (log/debug "responding to menu page" @menu-nextpage)
-                    (send delegator (menu-fn @head) @items)
+                    (send delegator (menu-fn @head) (menu-options frame))
                     (send delegator write \space)
                     (alter menu-nextpage inc)
                     (when (menu-end? frame)

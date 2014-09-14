@@ -95,7 +95,7 @@
                                    :let [i (item-name game item)]
                                    :when (to-take? item)]
                                (:label item)))]
-          (->PickUp (into [] to-get))
+          (->PickUp (->> to-get (into #{}) (into [])))
           (log/debug "no desired items here"))
         (when (pos? (exploration-index game)) ; all explored
           (log/debug "considering all items on level")

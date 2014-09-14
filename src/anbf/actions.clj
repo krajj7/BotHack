@@ -1,5 +1,6 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
+            [multiset.core :refer [multiset]]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]
@@ -641,20 +642,20 @@
     (update-inventory anbf)
     (update-items anbf)
     (let [labels (if (string? label-or-list)
-              [label-or-list]
-              label-or-list)]
+              (multiset label-or-list)
+              (into (multiset) label-or-list))
+          remaining (atom labels)]
       (reify PickupHandler
         (pick-up-what [_ options]
           (log/debug options)
-          (log/debug "want" labels)
-          (loop [lbls labels
-                 remaining options
+          (log/debug "want" remaining)
+          (loop [opts options
                  res #{}]
-            (if-let [l (log/spy (peek lbls))]
-              (if-let [slot (some->> remaining log/spy (find-first #(= l (val %))) log/spy key)]
-                (recur (pop lbls) (dissoc remaining slot) (conj res slot))
-                (do (log/warn "item for PickUp not present:" l)
-                    (recur (pop lbls) options res)))
+            (if-let [[slot lbl] (first opts)]
+              (if (contains? @remaining lbl)
+                (do (swap! remaining disj lbl)
+                    (recur (rest opts) (conj res slot)))
+                (recur (rest opts) res))
               res))))))
   (trigger [_] ","))
 
