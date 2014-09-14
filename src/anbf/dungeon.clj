@@ -326,10 +326,10 @@
     (add-level game (new-level dlvl (branch-key game)))
     game))
 
-(defn- shopkeeper? [game tile]
-  (and (not= (position (:player game) (position tile)))
-       (= \@ (:glyph tile))
-       (= :white (:color tile))))
+(defn- shopkeeper? [game tile-or-monster]
+  (and (not= (position (:player game)) (position tile-or-monster))
+       (= \@ (:glyph tile-or-monster))
+       (= :white (:color tile-or-monster))))
 
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)

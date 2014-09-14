@@ -208,6 +208,8 @@
   (or (boulder? tile)
       (and (#{:rock :wall :door-closed :door-locked :door-secret}
                     (:feature tile))
+           (< 0 (:x tile) 79)
+           (< 0 (:y tile) 20)
            (not (:undiggable tile))
            (not (shop? tile))
            (dare-destroy? level tile))))

@@ -528,7 +528,7 @@
              (message [_ msg]
                ; TODO dug pit / hole
                (condp re-seq msg
-                 #"This wall seems too hard to dig into\."
+                 #"This wall (seems|is) too hard to dig into\."
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :undiggable true))
                  #"You make an opening"
