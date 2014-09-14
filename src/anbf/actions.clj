@@ -403,6 +403,8 @@
                    (= :trap (:feature tile))
                    (:new-items tile)
                    (and (seq (:items tile))
+                        (not= "anbf.actions.Search"
+                              (some-> game :last-action type .getName))
                         (not= (:turn game) (:examined tile)))))
       (log/debug "examining tile")
       (->Look))))
