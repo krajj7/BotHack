@@ -124,7 +124,6 @@
   ([{:keys [player] :as game} level target]
    (with-handler priority-top
      (fn [anbf]
-       (log/debug "fidgeting")
        (if (some? target)
          (reify AboutToChooseActionHandler
            (about-to-choose [_ new-game]
@@ -132,8 +131,9 @@
                (log/debug "blocked by peaceful" target)
                (swap! (:game anbf) update-curlvl-at target
                       update-in [:blocked] (fnil inc 0)))))))
-     (or (random-move game level)
-         (->Search)))))
+     (with-reason "fidgeting to make peacefuls move"
+       (or (random-move game level)
+           (->Search))))))
 
 (defn- safe-from-guards
   "Much more pessimistic than this could be, but just enough to handle the most usual corner-case where the only door in the first room is locked."
@@ -187,22 +187,21 @@
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
-  (or (log/debug "trying to prepare for shop entry")
-      (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
+  (or (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
                                                        (item-name game %))
                                          (or (not= :cursed (:buc %))
                                              (not (:in-use %)))))]
-        [5 (->Drop slot)])
+        [5 (with-reason "dropping pick to enter shop" (->Drop slot))])
       (if-let [[slot _] (have game #(and (= "ring of invisibility"
                                             (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
-        [5 (->Remove slot)])
+        [5 (with-reason "removing invis to enter shop" (->Remove slot))])
       (if-let [[slot _] (have game #(and (= "cloak of invisibility"
                                             (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
-        [5 (->TakeOff slot)])))
+        [5 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn- diggable? [level tile]
   (or (boulder? tile)

@@ -680,6 +680,14 @@
   ([action priority handler]
    (with-handler action priority handler)))
 
+(defn with-reason
+  "Creates an action with attached description (for debugging purposes)"
+  [reason action]
+  (-> (if (fn? action)
+        (action)
+        action)
+      (assoc :reason reason)))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions
