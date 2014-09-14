@@ -358,7 +358,8 @@
                             max-steps)))))))))
 
 (defn- explorable-tile? [level tile]
-  (and (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
+  (and (not (and (:dug tile) (boulder? tile)))
+       (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
            (:new-items tile)
            (and (or (walkable? tile) (door? tile))
                 (some #(and (not (:seen %))

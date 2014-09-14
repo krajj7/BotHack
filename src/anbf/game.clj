@@ -45,11 +45,22 @@
       (update-in [:player] update-player status)
       (update-game status)))
 
-(defn- update-visible-tile [tile rogue?]
+(defn- update-visible-tile [game level tile]
   (assoc tile
          :seen true
+         :dug (if (and (= :mines (branch-key game))
+                       (not-any? #{:end :minetown} (:tags level))
+                       (or (= :corridor (:feature tile))
+                           (and (->> (neighbors level tile)
+                                     (filter :dug) count (< 2))
+                                (or (boulder? tile)
+                                    (and (= \* (:glyph tile))
+                                         (nil? (:color tile)))))))
+                true
+                (:dug tile))
          :feature (if (and (= (:glyph tile) \space)
-                           (or (nil? (:feature tile)) (not rogue?)))
+                           (or (nil? (:feature tile))
+                               (not ((:tags level) :rogue))))
                     :rock
                     (:feature tile))))
 
@@ -59,8 +70,7 @@
                (partial map-tiles (fn [tile]
                                     (if (and (visible? game level tile)
                                              (not (boulder? tile)))
-                                      (update-visible-tile
-                                        tile ((:tags level) :rogue))
+                                      (update-visible-tile game level tile)
                                       tile))))))
 
 (defn- rogue-ghost? [game tile glyph]
