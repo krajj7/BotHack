@@ -99,10 +99,12 @@
             step)))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (if-let [[slot weapon] (some (partial have game) desired-weapons)]
-    ; TODO can-wield?
-    (if-not (:wielded weapon)
-      (->Wield slot))))
+  (let [level (curlvl game)]
+    (if (not-any? #(not (walkable? (at level %))) (last-path game))
+      (if-let [[slot weapon] (some (partial have game) desired-weapons)]
+        ; TODO can-wield?
+        (if-not (:wielded weapon)
+          (->Wield slot))))))
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
@@ -136,6 +138,9 @@
       (register-handler -3 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
+      (register-handler 1 (reify ActionHandler
+                             (choose-action [_ game]
+                               (wield-weapon game))))
       (register-handler 2 (reify ActionHandler
                              (choose-action [_ game]
                                (consider-items game))))
