@@ -378,6 +378,12 @@
   (and (walkable? tile)
        (not (trap? tile))
        (not (:dug tile))
+       ; isolated diagonal corridors - probably dug:
+       (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
+                                 (= :corridor (:feature %))
+                                 (boulder? %))
+                             (not-any? walkable? (straight-neighbors level %)))
+                       (diagonal-neighbors level tile))))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
          (and (or (some walkable? snbr)
