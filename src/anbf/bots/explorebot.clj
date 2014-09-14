@@ -41,10 +41,10 @@
 
 (defn progress [game]
   (or (explore game :main "Dlvl:1")
-      (explore game :mines :minetown)
-      ;(visit game :sokoban :end)
+      (explore-level game :mines :minetown)
+      (explore-level game :quest :end)
       (visit game :main :medusa)
-      ;(visit game :quest :end)
+      ;(visit game :sokoban :end)
       ;(visit game :mines :minetown)
       ;(visit game :mines :end)
       ;(visit game :quest :end)
@@ -97,7 +97,7 @@
                                (:label item)))]
           (->PickUp (->> to-get (into #{}) (into [])))
           (log/debug "no desired items here"))
-        (when (pos? (exploration-index game)) ; all explored
+        (when (explored? game)
           (log/debug "considering all items on level")
           (when-let [{:keys [step target]}
                      (navigate game #(some to-take? (:items %)))]

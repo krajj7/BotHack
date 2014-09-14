@@ -105,18 +105,28 @@
                 (not (#{:rock :wall :tree :door-closed :cloud} feature))
                 (or feature monster (seq items)))))
 
+(defn diggable? [tile]
+  (or (boulder? tile)
+      (and (#{:rock :wall :door-closed :door-locked :door-secret}
+                    (:feature tile))
+           (< 0 (:x tile) 79)
+           (< 0 (:y tile) 20)
+           (not (:undiggable tile)))))
+
 (defn searched [level tile]
   "How many times the tile has been searched directly (not by searching a neighbor)"
   (apply min (map :searched (neighbors level tile))))
 
 (defn walkable-by [{:keys [feature] :as tile} glyph]
-  (assoc-in tile [:feature]
-            (cond
-              (and (not (#{\X \P} glyph))
-                   (door? tile)) :door-open
-              (and (not= \X glyph)
-                   (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
-              :else feature)))
+  (-> tile
+      (assoc :feature (cond
+                        (and (not (#{\X \P} glyph))
+                             (door? tile)) :door-open
+                        (and (not= \X glyph)
+                             (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
+                        :else feature)
+             :dug (or (:dug tile)
+                      (and (diggable? tile) (#{\p \h \r} glyph))))))
 
 (defn- door-or-wall [current new-glyph new-color]
   (cond

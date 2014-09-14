@@ -115,7 +115,8 @@
            (#(if (seq %) % nil))
            rand-nth
            (towards player)
-           ->Move))
+           ->Move
+           (with-reason "random direction")))
 
 (defn fidget
   "Move around randomly or wait to make a peaceful move out of the way"
@@ -189,27 +190,17 @@
                                                        (item-name game %))
                                          (or (not= :cursed (:buc %))
                                              (not (:in-use %)))))]
-        [5 (with-reason "dropping pick to enter shop" (->Drop slot))])
+        [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
       (if-let [[slot _] (have game #(and (= "ring of invisibility"
                                             (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
-        [5 (with-reason "removing invis to enter shop" (->Remove slot))])
+        [2 (with-reason "removing invis to enter shop" (->Remove slot))])
       (if-let [[slot _] (have game #(and (= "cloak of invisibility"
                                             (item-name game %))
                                          (:in-use %)
                                          (can-remove? game %)))]
-        [5 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
-
-(defn diggable? [level tile]
-  (or (boulder? tile)
-      (and (#{:rock :wall :door-closed :door-locked :door-secret}
-                    (:feature tile))
-           (< 0 (:x tile) 79)
-           (< 0 (:y tile) 20)
-           (not (:undiggable tile))
-           (not (shop? tile))
-           (dare-destroy? level tile))))
+        [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
@@ -243,7 +234,8 @@
                         [3 (->Search)]
                         [1 (->Move odir)])))
                   (if (:trapped (:player game))
-                    (if-let [step (random-move game level)]
+                    (if-let [step (with-reason "untrapping self"
+                                    (random-move game level))]
                       [0 step]))
                   (when (and (door? to-tile) (not monster)
                              (or (not (:walking opts))
@@ -263,7 +255,8 @@
                               [5 (->Unlock k dir)]
                               (if (kickable-door? level to-tile opts)
                                 (kick-door game level to-tile dir)))))))
-                  (if (and (:pick opts) (diggable? level to-tile))
+                  (if (and (:pick opts) (diggable? to-tile)
+                           (dare-destroy? level to-tile))
                     [8 (->ApplyAt (key (:pick opts)) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile))))))
 
@@ -279,7 +272,6 @@
          (not (monster-at level pos))
          (walkable? tile))))
 
-; TODO option to disable autotravel?
 (defn- path-step [game level from move-fn path]
   (if-let [start (first path)]
     (let [autonavigable (into [] (take-while (partial autonavigable? level)
@@ -292,10 +284,10 @@
                                      (.getName (type a))))
                            last-target))]
       (-> (if (and autonav-target
-               (not (shop? (at level from)))
-               (not= last-autonav (position from))
-               (< 3 (count autonavigable))
-               (not-any? (partial monster-at level) (neighbors from)))
+                   (not (shop? (at level from)))
+                   (not= last-autonav (position (peek path)))
+                   (< 3 (count autonavigable))
+                   (not-any? (partial monster-at level) (neighbors from)))
             (->Autotravel autonav-target)
             (nth (move-fn from start) 1))
           (assoc :path path)))))
@@ -402,8 +394,7 @@
     (when (and (has-dead-ends? game level)
                (< (:searched tile) num-search)
                (dead-end? level tile))
-      (log/debug "searching dead end")
-      (->Search))))
+      (with-reason "searching dead end" ->Search))))
 
 (defn- pushable-through [game level from to]
   (and (or (or (walkable? to) (#{:water :lava} (:feature to)))
@@ -743,7 +734,7 @@
           (switch-dlvl game tag-or-dlvl)))
       (seek-branch game new-branch))))
 
-(defn- explored?
+(defn explored?
   ([game]
    (pos? (exploration-index game)))
   ([game branch]
@@ -764,6 +755,11 @@
           (take-while #(not= (:dlvl %) dlvl))
           (remove #(explored? game branch (:dlvl %)))
           first :dlvl))))
+
+(defn explore-level [game branch tag-or-dlvl]
+  (if-not (explored? game branch tag-or-dlvl)
+    (or (seek-level game branch tag-or-dlvl)
+        (explore game))))
 
 (defn explore
   ([game]

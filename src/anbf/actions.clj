@@ -126,6 +126,18 @@
         (swap! game assoc :branch-id :quest))
       (log/error "entered unknown portal!")))
 
+(defn update-trapped-status [{:keys [game] :as anbf} old-pos]
+  (update-on-known-position anbf
+    #(if (or (= (position (:player %)) old-pos)
+             (trap? (at-player @game)))
+       %
+       (assoc-in % [:player :trapped] false))))
+
+(defn- direction-trigger [dir]
+  (str (or (vi-directions (enum->kw dir))
+           (throw (IllegalArgumentException.
+                    (str "Invalid direction: " dir))))))
+
 (defaction Move [dir]
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
@@ -134,11 +146,7 @@
           old-pos (position old-player)
           level (curlvl @game)
           target (in-direction level old-pos dir)]
-      (update-on-known-position anbf
-        #(if (or (= (position (:player %)) old-pos)
-                 (trap? (at-player @game)))
-           %
-           (assoc-in % [:player :trapped] false)))
+      (update-trapped-status anbf old-pos)
       (if (and (not (:trapped old-player)) (diagonal dir) (item? target))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
@@ -177,10 +185,7 @@
           (swap! game update-curlvl-monster (in-direction old-pos dir)
                  assoc :peaceful true)
           nil))))
-  (trigger [_]
-    (str (or (vi-directions (enum->kw dir))
-             (throw (IllegalArgumentException.
-                      (str "Invalid direction: " dir)))))))
+  (trigger [_] (direction-trigger dir)))
 
 (defaction Pray []
   ; TODO mark for timeout est.
@@ -376,6 +381,7 @@
                       "The door opens." :door-open
                       "This doorway has no door." nil
                       "You see no door there." nil
+                      "You succeed in picking the lock." :door-closed
                       "You succeed in unlocking the door." :door-closed
                       "You succeed in locking the door." :door-locked
                       :nil)]

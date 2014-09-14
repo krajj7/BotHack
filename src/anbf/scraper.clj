@@ -30,7 +30,8 @@
   [frame]
   (condp re-seq (before-cursor frame)
     #"\(end\) $" [1 1]
-    #"\(([0-9]+) of ([0-9]+)\)$" :>> #(-> % first (subvec 1))
+    #"\(([0-9]+) of ([0-9]+)\)$" :>> #(-> % first (subvec 1)
+                                          ((partial mapv parse-int)))
     nil))
 
 (defn- menu-curpage [frame] (nth (menu-page frame) 0))
@@ -103,6 +104,7 @@
   (condp #(.startsWith %2 %1) msg
     "Where do you want to travel to?" travel-where
     "To what location" teleport-where
+    "(For instructions type a ?)" teleport-where ; assuming there was a topline msg "To what position do you want to be teleported?--More--"
     (throw (UnsupportedOperationException.
              (str "unknown location message" msg)))))
 
@@ -178,11 +180,11 @@
       {:nickname (status 0)
        :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
        :alignment (-> (status 7) string/lower-case keyword)
-       :score (some-> (status 8) Integer/parseInt)}
+       :score (-> (status 8) parse-int)}
       (log/error "failed to parse botl1 " botl1))
     (if-let [status (re-first-groups botl2-re botl2)]
       (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
-              (conj (map #(if % (Integer/parseInt %)) (subvec status 1 10))
+              (conj (map parse-int (subvec status 1 10))
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
     {:state (reduce #(if (.contains ^String botl2 (key %2))
@@ -309,7 +311,7 @@
                         (let [[cur end] (menu-page frame)]
                           (if (= 1 end)
                             (handle-menu-response-start frame)
-                            (do (->> (repeat (dec (nth end 0)) \<)
+                            (do (->> (repeat (dec end) \<)
                                      (apply str)
                                      (send delegator write)) ; rewind menu
                                 handle-menu-response-start)))

@@ -47,12 +47,12 @@
 
 (defn- update-visible-tile [game level tile]
   (assoc tile
-         :seen true
+         :seen (or (:seen tile) (if-not (boulder? tile) true))
          :dug (if (and (= :mines (branch-key game))
                        (not-any? #{:end :minetown} (:tags level))
                        (or (= :corridor (:feature tile))
-                           (and (->> (neighbors level tile)
-                                     (filter :dug) count (< 2))
+                           (and (some #(or (:dug %) (= :corridor (:feature %)))
+                                      (neighbors level tile) )
                                 (or (boulder? tile)
                                     (and (= \* (:glyph tile))
                                          (nil? (:color tile)))))))
@@ -68,8 +68,7 @@
   (let [level (curlvl game)]
     (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
                (partial map-tiles (fn [tile]
-                                    (if (and (visible? game level tile)
-                                             (not (boulder? tile)))
+                                    (if (visible? game level tile)
                                       (update-visible-tile game level tile)
                                       tile))))))
 
