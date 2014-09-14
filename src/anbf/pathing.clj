@@ -17,7 +17,7 @@
   {:pre [(and (some? level) (some? dir) (some? tile))]}
   (let [feature (:feature tile)]
     (cond-> 1
-      (traps feature) (+ 10) ; TODO trap types
+      (traps feature) (+ 15) ; TODO trap types
       (diagonal dir) (+ 0.1)
       (and (nil? feature) (not (:seen tile))) (+ 6)
       (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
@@ -166,10 +166,12 @@
        (dare-destroy? level tile)
        (not (item? tile)))) ; don't try to break blocked doors
 
-(defn- kick-door [level tile dir]
+(defn- kick-door [{:keys [player] :as game} level tile dir]
   (if (= :door-open (:feature tile))
-    [7 (->Close dir)]
-    [5 (->Kick dir)]))
+    [7 (with-reason "closing door to kick it" (->Close dir))]
+    (if (:leg-hurt player)
+      [30 (with-reason "waiting out :leg-hurt" ->Search)]
+      [5 (->Kick dir)])))
 
 (defn can-unlock? [game]
   true) ; not poly'd...
@@ -203,7 +205,7 @@
                                          (can-remove? game %)))]
         [5 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
-(defn- diggable? [level tile]
+(defn diggable? [level tile]
   (or (boulder? tile)
       (and (#{:rock :wall :door-closed :door-locked :door-secret}
                     (:feature tile))
@@ -254,17 +256,17 @@
                           [10 (->Search)]) ; TODO stethoscope
                         (and (kickable-door? level to-tile opts)
                              (blocked-door level to-tile)
-                             (kick-door level to-tile dir))
+                             (kick-door game level to-tile dir))
                         (if (diagonal dir)
                           (if (kickable-door? level to-tile opts)
-                            (kick-door level to-tile dir))
+                            (kick-door game level to-tile dir))
                           (if (= :door-closed (:feature to-tile))
                             [3 (->Open dir)]
                             (if-let [k (and (can-unlock? game)
                                             (some-> game have-key key))]
                               [5 (->Unlock k dir)]
                               (if (kickable-door? level to-tile opts)
-                                (kick-door level to-tile dir)))))))
+                                (kick-door game level to-tile dir)))))))
                   (if (and (:pick opts) (diggable? level to-tile))
                     [8 (->ApplyAt (key (:pick opts)) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile))))))
