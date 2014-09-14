@@ -179,6 +179,10 @@
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text
+            #"You feel feverish"
+            (swap! game assoc-in [:player :lycantrophy] true)
+            #"You feel purified"
+            (swap! game assoc-in [:player :lycantrophy] false)
             #"Your .* feels? somewhat better"
             (swap! game assoc-in [:player :leg-hurt] false)
             #"You turn into a"

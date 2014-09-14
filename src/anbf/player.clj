@@ -33,6 +33,7 @@
    trapped
    leg-hurt
    state ; subset #{:stun :conf :hallu :blind :ill}
+   lycantrophy
    stats ; :str :dex :con :int :wis :cha
    alignment] ; :lawful :neutral :chaotic
   anbf.bot.IPlayer

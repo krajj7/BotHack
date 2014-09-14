@@ -31,7 +31,9 @@
     (with-reason "praying for food" ->Pray)))
 
 (defn- handle-impairment [{:keys [player] :as game}]
-  (or (when-let [[slot _] (and (unihorn-recoverable? game)
+  (or (if (:lycantrophy player)
+        (with-reason "curing lycantrophy" ->Pray))
+      (when-let [[slot _] (and (unihorn-recoverable? game)
                                (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
       (when (or (impaired? player) (:leg-hurt player))
