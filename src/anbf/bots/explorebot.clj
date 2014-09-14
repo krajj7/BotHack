@@ -28,12 +28,14 @@
 
 (defn- pray-for-food [game]
   (if (weak? (:player game))
-    (->Pray)))
+    (with-reason "praying for food" ->Pray)))
 
-(defn- handle-impairment [{:keys [player]}]
-  (or (when (or (impaired? player) (:leg-hurt player))
-        (log/debug "waiting out imparment")
-        (->Wait))))
+(defn- handle-impairment [{:keys [player] :as game}]
+  (or (when-let [[slot _] (and (unihorn-recoverable? game)
+                               (have-unihorn game))]
+        (with-reason "applying unihorn to recover" (->Apply slot)))
+      (when (or (impaired? player) (:leg-hurt player))
+        (with-reason "waiting out impairment" ->Wait))))
 
 (defn progress [game]
   (or (explore game :main "Dlvl:1")
@@ -56,6 +58,8 @@
   [(ordered-set "pick-axe" "dwarvish mattock")
    (ordered-set "skeleton key" "lock pick" "credit card")
    desired-weapons
+   #{"blindfold" "towel"}
+   #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
    #{"Bell of Opening"}
    #{"Book of the Dead"}

@@ -183,10 +183,6 @@
   ; TODO (can-wield? ...)
   (not= :sokoban (branch-key game)))
 
-(defn have-pick [game]
-  (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
-                   (or (not= :cursed (:buc %)) (:in-use %)))))
-
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
   (or (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}

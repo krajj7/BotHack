@@ -87,6 +87,20 @@
                                 (partial item-name game) val))
               (inventory game)))
 
+(defn have-unihorn [game]
+  (have game #(and (= "unicorn horn" (item-name game %))
+                   (not= :cursed (:buc %)))))
+
+(defn have-pick [game]
+  (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
+                   (or (not= :cursed (:buc %)) (:in-use %)))))
+
+(defn unihorn-recoverable? [{:keys [player] :as game}]
+  (or (some (:state player) #{:conf :stun :hallu :ill})
+      (and (:blind (:state player))
+           (not (have game #(and (#{"towel" "blindfold"} (item-name game %))
+                                 (:in-use %)))))))
+
 (defn can-remove? [game item]
   (not= :cursed (:buc item))) ; TODO not obstructed by cursed item / weapon
 
