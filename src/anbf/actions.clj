@@ -290,7 +290,7 @@
 
 (defn- item-glyph [game item]
   (if (:rogue (curlvl-tags game))
-    (rogue-item-glyph (:glyph (item-id game item)))
+    (rogue-item-glyph game (:glyph (item-id game item)))
     (:glyph (item-id game item))))
 
 (defaction Look []
@@ -413,15 +413,15 @@
                         (not= "anbf.actions.Search"
                               (some-> game :last-action type .getName))
                         (not= (:turn game) (:examined tile)))))
-      (log/debug "examining tile")
-      (->Look))))
+      (with-reason "examining tile" ->Look))))
 
 (defn- examine-traps [game]
   (some->> (curlvl game) :tiles (apply concat)
            (find-first #(and (= :trap (:feature %))
                              (not (item? %))
                              (not (monster? (:glyph %) (:color %)))))
-           (->FarLook)))
+           ->FarLook
+           (with-reason "examining unknown trap")))
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (:hallu (:state player))
@@ -431,8 +431,7 @@
                                    (some? (:peaceful %))
                                    (#{\I \1 \2 \3 \4 \5} (:glyph %))))
                       first)]
-      (log/debug "examining monster" m)
-      (->FarLook m))))
+      (with-reason "examining monster" (->FarLook m)))))
 
 (defn examine-handler [anbf]
   (reify ActionHandler
@@ -688,12 +687,17 @@
    (with-handler action priority handler)))
 
 (defn with-reason
-  "Creates an action with attached description (for debugging purposes)"
-  [reason action]
-  (-> (if (fn? action)
-        (action)
-        action)
-      (assoc :reason reason)))
+  "Updates an action to attach reasoning (for debugging purposes)"
+  [& reason+action]
+  (let [action-idx (dec (count reason+action))
+        action (nth reason+action action-idx)
+        reason (->> reason+action (take action-idx)
+                    (interpose \space) (apply str))]
+    (if-let [a (and (some? action)
+                    (if (fn? action)
+                      (action)
+                      action))]
+      (update-in a [:reason] (fnil conj []) reason))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

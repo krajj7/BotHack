@@ -427,16 +427,17 @@
 (defn- push-boulders [{:keys [player] :as game} level]
   (if (some #(unblocked-boulder? game level %) (apply concat (:tiles level)))
     (if-let [path (navigate game #(pushable-from game level %))]
-      (or (log/debug "going to push a boulder")
-          (:step path)
-          (->Move (towards player (first (pushable-from game level player))))))
+      (with-reason "going to push a boulder"
+        (or (:step path)
+            (->> (pushable-from game level player) first
+                 (towards player) ->Move))))
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
   (if (has-dead-ends? game level)
     (if-let [p (navigate game #(and (< (searched level %) howmuch)
                                     (dead-end? level %)))]
-      (or (log/debug "re-checking dead ends") (:step p) (->Search)))))
+      (with-reason "re-checking dead ends" (or (:step p) (->Search))))))
 
 (defn- searchable-position? [pos]
   (and (< 2 (:y pos) 20)
@@ -462,14 +463,16 @@
                                    (->> (neighbors level tile)
                                         (remove :seen) count
                                         (< 1)))) {:adjacent true})]
-    (or (log/debug "searching walls") (:step p) (->Search))))
+    (with-reason "searching walls"
+      (or (:step p) (->Search)))))
 
 (defn- search-corridors [game level howmuch]
   (if-let [p (navigate game (fn searchable? [{:keys [feature] :as tile}]
                               (and (= :corridor feature)
                                    (searchable-position? tile)
                                    (< (searched level tile) howmuch))))]
-    (or (log/debug "searching corridors") (:step p) (->Search))))
+    (with-reason "searching corridors"
+      (or (:step p) (->Search)))))
 
 (defn- searchable-extremity [level y xs howmuch]
   (if-let [tile (->> xs (map #(at level % y)) (find-first walkable?))]
@@ -538,9 +541,9 @@
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (or (log/debug "searching extremity" (or (:target p) "here"))
-            (:step p)
-            (->Search))))))
+        (with-reason "searching extremity" (or (:target p) "here")
+          (or (:step p)
+              (->Search)))))))
 
 (defn search
   ([game] (search game 10))
@@ -561,40 +564,40 @@
 (declare explore)
 
 (defn seek-portal [game]
-  (log/debug "seeking portal")
-  (or (:step (navigate game #(= :portal (:feature %))))
-      (:step (navigate game #(and (not (:walked %)) (not (door? %)))))
-      (explore game)
-      (search game)))
+  (with-reason "seeking portal"
+    (or (:step (navigate game #(= :portal (:feature %))))
+        (:step (navigate game #(and (not (:walked %)) (not (door? %)))))
+        (explore game)
+        (search game))))
 
 (defn seek
   ([game smth]
    (seek game smth {}))
   ([game smth opts]
-   (log/debug "seeking")
-   (if-let [{:keys [step]} (navigate game smth opts)]
-     step
-     (or (explore game) (search game)))))
+   (with-reason "seeking"
+     (if-let [{:keys [step]} (navigate game smth opts)]
+       step
+       (or (explore game) (search game))))))
 
 (defn- switch-dlvl [game new-dlvl]
-  (log/debug "switching within branch to" new-dlvl)
-  (if (= (:dlvl game) new-dlvl)
-    (log/debug "got to dlvl" new-dlvl)
-    (or (if (= "Home 1" (:dlvl game)) ; may need to chat with quest leader first
-          (let [level (curlvl game)
-                leader (-> level :blueprint :leader)]
-            (when (and leader (not-any? :walked (neighbors level leader)))
-              (log/debug "trying to seek out quest leader at" leader "before descending")
-              (seek game leader {:adjacent true :explored true}))))
-        (let [branch (branch-key game)
-              [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
-                                [:stairs-up ->Ascend]
-                                [:stairs-down ->Descend])
-              step (seek game #(and (= stairs (:feature %))
-                                    (if-let [b (branch-key game %)]
-                                      (= b branch)
-                                      true)))]
-          (or step (action))))))
+  (with-reason "switching within branch to" new-dlvl
+    (if-not (= (:dlvl game) new-dlvl)
+      (or (if (= "Home 1" (:dlvl game)) ; may need to chat with quest leader first
+            (let [level (curlvl game)
+                  leader (-> level :blueprint :leader)]
+              (when (and leader (not-any? :walked (neighbors level leader)))
+                (with-reason
+                  "trying to seek out quest leader at" leader "before descending"
+                  (seek game leader {:adjacent true :explored true})))))
+          (let [branch (branch-key game)
+                [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
+                                  [:stairs-up ->Ascend]
+                                  [:stairs-down ->Descend])
+                step (seek game #(and (= stairs (:feature %))
+                                      (if-let [b (branch-key game %)]
+                                        (= b branch)
+                                        true)))]
+            (or step (action)))))))
 
 (defn- escape-branch [game]
   (let [levels (get-branch game)
@@ -603,11 +606,11 @@
         [stair-action stairs] (if (upwards? branch)
                                 [->Descend :stairs-down]
                                 [->Ascend :stairs-up])]
-    (log/debug "escaping subbranch" branch)
-    (if (and (= dlvl (first (keys levels))) (portal-branches branch))
-      (seek-portal game)
-      (or (seek game #(= stairs (:feature %)))
-          (stair-action)))))
+    (with-reason "escaping subbranch" branch
+      (if (and (= dlvl (first (keys levels))) (portal-branches branch))
+        (seek-portal game)
+        (or (seek game #(= stairs (:feature %)))
+            (stair-action))))))
 
 (defn- least-explored [game branch dlvls]
   {:pre [(#{:main :mines} branch)]}
@@ -689,7 +692,7 @@
                            (dlvl-range branch)))))))
 
 (defn- enter-branch [game branch]
-  (log/debug "entering branch" branch)
+  ;(log/debug "entering branch" branch)
   (if (not= :main (branch-key game))
     (or (explore game) (search game)) ; unknown subbranch
     (let [branch (branch-key game branch)
@@ -697,13 +700,13 @@
                                   [->Ascend :stairs-up]
                                   [->Descend :stairs-down])
           new-dlvl (dlvl-candidate game branch)]
-      (log/debug "trying to enter" branch "from" new-dlvl)
-      (or (switch-dlvl game new-dlvl)
-          (if (portal-branches branch)
-            (seek-portal game)
-            (or (seek game #(and (= stairs (:feature %))
-                                 (not= :main (branch-key game %))))
-                (stair-action)))))))
+      (with-reason "trying to enter" branch "from" new-dlvl
+        (or (switch-dlvl game new-dlvl)
+            (if (portal-branches branch)
+              (seek-portal game)
+              (or (seek game #(and (= stairs (:feature %))
+                                   (not= :main (branch-key game %))))
+                  (stair-action))))))))
 
 (defn seek-branch
   [game new-branch-id]
@@ -711,28 +714,28 @@
         level (curlvl game)
         branch (branch-key game level)
         dlvl (:dlvl level)]
-    (log/debug "seeking branch" new-branch-id "(" new-branch ")")
-    (if (not= branch new-branch)
-      (if (subbranches branch)
-        (escape-branch game)
-        (enter-branch game new-branch)))))
+    (with-reason "seeking branch" new-branch-id "(" new-branch ")"
+      (if (not= branch new-branch)
+        (if (subbranches branch)
+          (escape-branch game)
+          (enter-branch game new-branch))))))
 
 (defn seek-level
   "Navigate to a branch or dlvl/tagged level within one, neither needs to be found previously."
   [game new-branch-id tag-or-dlvl]
-  (log/debug "seeking level" new-branch-id tag-or-dlvl)
-  (let [level (curlvl game)
-        branch (branch-key game level)
-        new-branch (branch-key game new-branch-id)
-        new-level (get-level game new-branch tag-or-dlvl)
-        dlvl (:dlvl level)]
-    (if (= branch new-branch)
-      (if new-level
-        (switch-dlvl game (:dlvl new-level))
-        (if (keyword? tag-or-dlvl)
-          (switch-dlvl game (dlvl-candidate game new-branch tag-or-dlvl))
-          (switch-dlvl game tag-or-dlvl)))
-      (seek-branch game new-branch))))
+  (with-reason "seeking level" new-branch-id tag-or-dlvl
+    (let [level (curlvl game)
+          branch (branch-key game level)
+          new-branch (branch-key game new-branch-id)
+          new-level (get-level game new-branch tag-or-dlvl)
+          dlvl (:dlvl level)]
+      (if (= branch new-branch)
+        (if new-level
+          (switch-dlvl game (:dlvl new-level))
+          (if (keyword? tag-or-dlvl)
+            (switch-dlvl game (dlvl-candidate game new-branch tag-or-dlvl))
+            (switch-dlvl game tag-or-dlvl)))
+        (seek-branch game new-branch)))))
 
 (defn explored?
   ([game]
@@ -767,33 +770,32 @@
      (or (search-dead-end game 20)
          (if-not (pos? (exploration-index game))
            (or (when-let [path (navigate game (partial explorable-tile? level))]
-                 (log/debug "chose explore target" (at level (:target path)))
-                 (:step path))
+                 (with-reason "exploring" (pr-str (at level (:target path)))
+                   (:step path)))
                ; TODO search for shops if heard but not found
                (when (unexplored-column game level)
-                 (log/debug "level not explored enough, searching")
-                 (search game 2))
+                 (with-reason "level not explored enough, searching"
+                   (search game 2)))
                (log/debug "nothing to explore"))
            (log/debug "positive exploration index")))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]
-   (log/debug "exploring" branch "until" tag-or-dlvl)
-   (or (if-let [l (and (not= :main (branch-key game branch))
-                       (shallower-unexplored game branch))]
-         (or (log/debug "first exploring main until branch entrance")
-             (seek-level game :main l)
-             (explore game)))
-       (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
-         (or (log/debug "first exploring previous levels of" branch)
-             (seek-level game branch l)
-             (explore game)))
-       (if-not (explored? game branch tag-or-dlvl)
-         (or (log/debug "seeking target")
-             (seek-level game branch tag-or-dlvl)
-             (log/debug "exploring target")
-             (explore game)))
-       (log/debug "all explored"))))
+   (with-reason "exploring" branch "until" tag-or-dlvl
+     (or (if-let [l (and (not= :main (branch-key game branch))
+                         (shallower-unexplored game branch))]
+           (with-reason "first exploring main until branch entrance"
+             (or (seek-level game :main l)
+                 (explore game))))
+         (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
+           (with-reason "first exploring previous levels of branch"
+             (or (seek-level game branch l)
+                 (explore game))))
+         (if-not (explored? game branch tag-or-dlvl)
+           (or (with-reason "seeking exploration target"
+                 (seek-level game branch tag-or-dlvl))
+               (explore game)))
+         (log/debug "all explored")))))
 
 (defn visit
   ([game branch]

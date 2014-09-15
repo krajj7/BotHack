@@ -45,7 +45,8 @@
             (log/info "Found items:" items))
           ActionChosenHandler
           (action-chosen [_ action]
-            (log/info "Performing action:" action))
+            (log/info "Performing action:" (dissoc action :reason)
+                      "\n reasons:" (with-out-str (pprint (:reason action)))))
           InventoryHandler
           (inventory-list [_ inventory]
             (log/spy inventory))
