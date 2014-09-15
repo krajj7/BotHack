@@ -183,7 +183,8 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn can-dig? [game]
-  (and (not= "Home 1" (:dlvl game))
+  (and ;(not= "Home 1" (:dlvl game))
+       (not= :quest (branch-key game))
        (not= :sokoban (branch-key game))))
 
 (defn- enter-shop [game]
