@@ -126,7 +126,7 @@
         #"Wait!  That's a .*mimic!"
         (update-before-action
           anbf (fn [game]
-                 (reduce #(if (= \m (:glyph (monster-at level %2)))
+                 (reduce #(if (= \m (:glyph (at-curlvl %1 %2)))
                             (update-curlvl-at %1 %2 assoc :feature nil)
                             %1)
                          game
@@ -298,6 +298,7 @@
 
 (defn- rogue-item-glyph [game glyph]
   (case glyph
+    \" \,
     \$ \*
     \% \:
     \[ \]
