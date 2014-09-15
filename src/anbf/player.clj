@@ -97,6 +97,20 @@
   (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
                    (or (not= :cursed (:buc %)) (:in-use %)))))
 
+(defn have-key [game]
+  (have game #{"skeleton key" "lock pick" "credit card"}))
+
+(defn have-levi-on [game]
+  (have game #(and (#{"boots of levitation" "ring of levitation"}
+                             (item-name game %))
+                   (:in-use %))))
+
+(defn have-levi [game]
+  (have game #(and (#{"boots of levitation" "ring of levitation"}
+                             (item-name game %))
+                   #_(can-use? %) ; TODO
+                   (or (#{:blessed :uncursed} (:buc %)) (:in-use %)))))
+
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (some (:state player) #{:conf :stun :hallu :ill})
       (and (:blind (:state player))

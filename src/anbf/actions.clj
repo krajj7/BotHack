@@ -698,6 +698,29 @@
   ([action priority handler]
    (with-handler action priority handler)))
 
+(defn- use-action [item]
+  (case (typekw item)
+    :ring ->PutOn
+    :amulet ->PutOn
+    :tool ->PutOn
+    :armor ->Wear))
+
+(defn make-use [game slot]
+  (let [item (inventory-slot game slot)]
+    ; TODO if already occupied
+    ((use-action item) slot)))
+
+(defn- remove-action [item]
+  (case (typekw item)
+    :ring ->Remove
+    :amulet ->Remove
+    :tool ->Remove
+    :armor ->TakeOff))
+
+(defn remove-use [game slot]
+  (let [item (inventory-slot game slot)]
+    ((remove-action item) slot)))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

@@ -107,6 +107,9 @@
     (and (walkable? to-tile)
          (edge-passable-walking? game level from-tile to-tile))))
 
+(defn needs-levi? [tile]
+  (#{:water :lava :ice :hole :trapdoor} (:feature tile)))
+
 (defn- random-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
            (remove (partial monster-at level))
@@ -179,9 +182,6 @@
 (defn can-unlock? [game]
   true) ; not poly'd...
 
-(defn have-key [game]
-  (have game #{"skeleton key" "lock pick" "credit card"}))
-
 (defn can-dig? [game]
   (and ;(not= "Home 1" (:dlvl game))
        (not= :quest (branch-key game))
@@ -214,8 +214,7 @@
          from-tile (at level from)
          dir (towards from to-tile)
          monster (monster-at level to)]
-     (if-let [step ; TODO levitation
-              ; TODO options to re-wield weapon, rings
+     (if-let [step
               (or (if (or (and (unexplored? to-tile) (not (:explored opts))
                                (or (not (narrow? level from-tile to-tile))
                                    (not (:thick (:player game)))))
@@ -240,6 +239,11 @@
                     (if-let [step (with-reason "untrapping self"
                                     (random-move game level))]
                       [0 step]))
+                  (if (needs-levi? to-tile)
+                    (if-let [[slot item] (:levi opts)]
+                      (if (:in-use item)
+                        [1 (with-reason "assuming levitation" (->Move dir))]
+                        [4 (make-use game [slot item])])))
                   (when (and (door? to-tile) (not monster)
                              (or (not (:walking opts))
                                  (= :door-open (:feature to-tile))))
@@ -311,21 +315,27 @@
     :adjacent - path to closest adjacent tile instead of the target directly
     :explored - don't path through unknown tiles
     :max-steps <num> - don't navigate further than given number of steps
-    :no-dig - don't use the pickaxe or mattock"
+    :no-dig - don't use the pickaxe or mattock
+    :no-levitation - when navigating deliberately into a hole/trapdoor"
   ([game pos-or-goal-fn]
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
-    {:keys [max-steps walking adjacent no-dig] :as opts}]
+    {:keys [max-steps walking adjacent no-dig no-levitation] :as opts}]
    [{:pre [(or (fn? pos-or-goal-fn)
                (set? pos-or-goal-fn)
                (position pos-or-goal-fn))]}]
    (log/debug "navigating" pos-or-goal-fn opts)
-   (let [opts (if-let [pick (and (not walking)
-                                 (not no-dig)
-                                 (can-dig? game)
-                                 (have-pick game))]
-                (assoc opts :pick pick)
-                opts)
+   (let [levi (and (not no-levitation)
+                   (not walking)
+                   (or (have-levi-on game)
+                       (have-levi game)))
+         pick (and (not walking)
+                   (not no-dig)
+                   (can-dig? game)
+                   (have-pick game))
+         opts (cond-> opts
+                levi (assoc :levi levi)
+                pick (assoc :pick pick))
          level (curlvl game)
          move-fn #(move game level %1 %2 opts)]
      (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))

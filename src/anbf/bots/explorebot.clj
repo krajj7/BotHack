@@ -41,9 +41,10 @@
 
 (defn progress [game]
   (or (explore game :main "Dlvl:1")
-      (explore-level game :mines :minetown)
-      (explore-level game :quest :end)
-      (visit game :main :medusa)
+      ;(explore-level game :mines :minetown)
+      ;(explore-level game :quest :end)
+      ;(visit game :main :medusa)
+      (visit game :main :end)
       ;(visit game :sokoban :end)
       ;(visit game :mines :minetown)
       ;(visit game :mines :end)
@@ -60,6 +61,7 @@
   [(ordered-set "pick-axe" "dwarvish mattock")
    (ordered-set "skeleton key" "lock pick" "credit card")
    desired-weapons
+   #{"ring of levitation" "boots of levitation"}
    #{"blindfold" "towel"}
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
@@ -109,13 +111,19 @@
       (with-reason "wielding better weapon -" (:label weapon)
         (->Wield slot)))))
 
-(defn- maybe-wield-weapon [{:keys [last-path] :as game}]
+(defn- reequip [{:keys [last-path] :as game}]
   (let [level (curlvl game)
-        step (some->> (nth last-path 0) (at level))]
-    (if (and (not-any? #(not (walkable? (at level %))) last-path)
+        tile-path (mapv (partial at level) last-path)
+        step (first tile-path)]
+    (if (and (not-any? (complement walkable?) tile-path)
              step
              (not (:dug step)))
-      (wield-weapon game))))
+      (with-reason "reequip - weapon"
+        (wield-weapon game)))
+    (if-let [[slot _] (and (not-any? needs-levi? tile-path)
+                           (have-levi-on game))]
+      (with-reason "reequip - don't need levi"
+        (remove-use game slot)))))
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
@@ -151,7 +159,7 @@
                                (handle-impairment game))))
       (register-handler 1 (reify ActionHandler
                              (choose-action [_ game]
-                               (maybe-wield-weapon game))))
+                               (reequip game))))
       (register-handler 2 (reify ActionHandler
                              (choose-action [_ game]
                                (consider-items game))))
