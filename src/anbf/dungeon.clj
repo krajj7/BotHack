@@ -135,6 +135,13 @@
   (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
              #(apply update-at % pos update-fn args)))
 
+(defn update-at-player
+  "Update the tile at player's position by applying update-fn to its current value and args"
+  [game update-fn & args]
+  {:pre [(:dungeon game)]}
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
+             #(apply update-at % (:player game) update-fn args)))
+
 (defn at-curlvl [game pos]
   {:pre [(:dungeon game)]}
   (at (curlvl game) pos))
@@ -307,6 +314,8 @@
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
+      (and (<= 5 dlvl 9) (= :stairs-up (:feature (at level 3 2)))
+           (tags :minetown)) (add-curlvl-tag :minetown-grotto)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
@@ -326,7 +335,7 @@
     (add-level game (new-level dlvl (branch-key game)))
     game))
 
-(defn- shopkeeper? [game tile-or-monster]
+(defn- shopkeeper-look? [game tile-or-monster]
   (and (not= (position (:player game)) (position tile-or-monster))
        (= \@ (:glyph tile-or-monster))
        (= :white (:color tile-or-monster))))
@@ -337,7 +346,7 @@
     (loop [res game
            closed #{}
            open (into #{(at level pos)}
-                      (if (shopkeeper? game (at level pos))
+                      (if (shopkeeper-look? game (at level pos))
                         (neighbors level pos)))]
       ;(log/debug (count open) open)
       (if-let [x (first open)]
@@ -366,7 +375,7 @@
   [game]
   (min-by #(distance (:player game) %)
           (for [m (vals (curlvl-monsters game))
-                :when (shopkeeper? game m)] m)))
+                :when (shopkeeper-look? game m)] m)))
 
 (def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
 

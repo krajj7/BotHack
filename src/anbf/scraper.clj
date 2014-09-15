@@ -340,7 +340,8 @@
               (or (when-let [ev (location-prompt frame)]
                     (log/debug "Handling location")
                     (emit-botl delegator frame)
-                    (send delegator know-position frame)
+                    (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
+                      (send delegator know-position frame))
                     (flush-more-list delegator items)
                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands
                     (send delegator ev)

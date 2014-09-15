@@ -128,10 +128,12 @@
        (if (some? target)
          (reify AboutToChooseActionHandler
            (about-to-choose [_ new-game]
-             (when (:peaceful (curlvl-monster-at new-game target)) ; target did not move
-               (log/debug "blocked by peaceful" target)
-               (swap! (:game anbf) update-curlvl-at target
-                      update-in [:blocked] (fnil inc 0)))))))
+             (if-let [m (curlvl-monster-at new-game target)]
+               (when (:peaceful m) ; target did not move
+                 (log/debug "blocked by peaceful" target)
+                 (if-not (shopkeeper? m) ; shks may need more patience
+                   (swap! (:game anbf) update-curlvl-at target
+                          update-in [:blocked] (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
        (or (random-move game level)
            (->Search))))))
@@ -181,8 +183,8 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn can-dig? [game]
-  ; TODO (can-wield? ...)
-  (not= :sokoban (branch-key game)))
+  (and (not= "Home 1" (:dlvl game))
+       (not= :sokoban (branch-key game))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
@@ -285,7 +287,7 @@
                            last-target))]
       (-> (if (and autonav-target
                    (not (shop? (at level from)))
-                   (not= last-autonav (position (peek path)))
+                   (not= last-autonav autonav-target)
                    (< 3 (count autonavigable))
                    (not-any? (partial monster-at level) (neighbors from)))
             (->Autotravel autonav-target)
@@ -319,6 +321,7 @@
    (log/debug "navigating" pos-or-goal-fn opts)
    (let [opts (if-let [pick (and (not walking)
                                  (not no-dig)
+                                 (can-dig? game)
                                  (have-pick game))]
                 (assoc opts :pick pick)
                 opts)
@@ -557,8 +560,7 @@
            ; TODO dig towards unexplored-column
            (if (> mul 1) (search-corridors game level (* mul 5)))
            (search-walls game level (* mul 15))
-           (if (> mul (dec max-iter))
-             (log/debug "stuck :-(")
+           (if-not (> mul (dec max-iter))
              (recur (inc mul))))))))
 
 (declare explore)
@@ -593,10 +595,11 @@
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
                                   [:stairs-up ->Ascend]
                                   [:stairs-down ->Descend])
-                step (seek game #(and (= stairs (:feature %))
-                                      (if-let [b (branch-key game %)]
-                                        (= b branch)
-                                        true)))]
+                step (with-reason "looking for the" stairs
+                       (seek game #(and (= stairs (:feature %))
+                                        (if-let [b (branch-key game %)]
+                                          (= b branch)
+                                          true))))]
             (or step (action)))))))
 
 (defn- escape-branch [game]
@@ -775,7 +778,7 @@
                ; TODO search for shops if heard but not found
                (when (unexplored-column game level)
                  (with-reason "level not explored enough, searching"
-                   (search game 2)))
+                   (search game (if (= :mines (branch-key game)) 10 2))))
                (log/debug "nothing to explore"))
            (log/debug "positive exploration index")))))
   ([game branch]
@@ -785,16 +788,13 @@
      (or (if-let [l (and (not= :main (branch-key game branch))
                          (shallower-unexplored game branch))]
            (with-reason "first exploring main until branch entrance"
-             (or (seek-level game :main l)
-                 (explore game))))
+             (explore-level game :main l)))
          (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
            (with-reason "first exploring previous levels of branch"
-             (or (seek-level game branch l)
-                 (explore game))))
+             (explore-level game branch l)))
          (if-not (explored? game branch tag-or-dlvl)
-           (or (with-reason "seeking exploration target"
-                 (seek-level game branch tag-or-dlvl))
-               (explore game)))
+           (with-reason "seeking exploration target"
+             (explore-level game branch tag-or-dlvl)))
          (log/debug "all explored")))))
 
 (defn visit

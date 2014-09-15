@@ -97,7 +97,7 @@
 (defn- direction [s] (get vi-directions s s))
 
 (defn- respond-menu [options]
-  (apply str (log/spy options)))
+  (apply str options))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]

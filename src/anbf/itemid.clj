@@ -2,19 +2,19 @@
   (:refer-clojure :exclude [==])
   (:require [clojure.tools.logging :as log]
             [clojure.core.logic :refer :all]
-            [clojure.core.logic.pldb :as pldb]
+            [clojure.core.logic.pldb :refer :all]
             [anbf.item :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.itemdata :refer :all]
             [anbf.util :refer :all]))
 
-(pldb/db-rel itemid ^:index i)
-(pldb/db-rel itemid-appearance ^:index i ^:index a)
-(pldb/db-rel itemid-zaptype ^:index i z)
-(pldb/db-rel itemid-price ^:index i p)
-(pldb/db-rel appearance ^:index a)
-(pldb/db-rel appearance-price ^:index a ^:index p) ; for exclusive appearances, for non-exclusive only cost matters
-(pldb/db-rel appearance-zaptype ^:index a ^:index z)
+(db-rel itemid ^:index i)
+(db-rel itemid-appearance ^:index i ^:index a)
+(db-rel itemid-zaptype ^:index i z)
+(db-rel itemid-price ^:index i p)
+(db-rel appearance ^:index a)
+(db-rel appearance-price ^:index a ^:index p) ; for exclusive appearances, for non-exclusive only cost matters
+(db-rel appearance-zaptype ^:index a ^:index z)
 
 (def initial-discoveries
   (->> (for [{:keys [name appearances price zaptype] :as i} items]
@@ -24,14 +24,14 @@
                   [itemid-price name price])
                 (if zaptype
                   [itemid-zaptype name zaptype])
-                (if-not (:artifact i)
+                (if-not (and (:artifact i) (:base i))
                   (apply concat
                          (for [a appearances]
                            [[appearance a]
                             [itemid-appearance name a]])))))
        (apply concat)
        (remove nil?)
-       (apply pldb/db)))
+       (apply db)))
 
 (def blind-appearances
   (into {} (for [[generic-name typekw glyph] [["stone" :gem \*]
@@ -43,7 +43,7 @@
              [generic-name ((kw->itemtype typekw) {:glyph glyph})])))
 
 (defmacro query [game qr]
-  `(pldb/with-db (:discoveries ~game) ~qr))
+  `(with-db (:discoveries ~game) ~qr))
 
 (defn- possibilities ; TODO consider price/cost, zaptype, etc.
   "Only for actual appearances, not identified names"
@@ -103,19 +103,19 @@
                (fn integrate-discovery [db]
                  (if (exclusive-appearances appearance)
                    (as-> db res
-                     (reduce #(pldb/db-retraction %1 itemid-appearance
+                     (reduce #(db-retraction %1 itemid-appearance
                                                   %2 appearance)
                              res
                              (query game
                                     (run* [q]
                                           (itemid-appearance q appearance))))
-                     (reduce #(pldb/db-retraction %1 itemid-appearance
+                     (reduce #(db-retraction %1 itemid-appearance
                                                   id %2)
                              res
                              (query game
                                     (run* [q]
                                           (itemid-appearance id q))))
-                     (pldb/db-fact res itemid-appearance id appearance))
+                     (db-fact res itemid-appearance id appearance))
                    db))))) ; old gray stones will stay gray stones...
 
 (defn add-discoveries [game discoveries]

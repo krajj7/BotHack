@@ -93,6 +93,7 @@
                    (not= :cursed (:buc %)))))
 
 (defn have-pick [game]
+  ; TODO (can-wield? ...)
   (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
                    (or (not= :cursed (:buc %)) (:in-use %)))))
 

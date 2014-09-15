@@ -62,6 +62,24 @@
         (apply swap! (:game anbf) f args)
         (deregister-handler anbf this)))))
 
+(defn update-at-player-when-known
+  "Update the tile at player's next known position by applying update-fn to its current value and args"
+  [anbf update-fn & args]
+  (update-on-known-position anbf #(apply update-at-player % update-fn args)))
+
+(defn with-reason
+  "Updates an action to attach reasoning (purely for debugging purposes)"
+  [& reason+action]
+  (let [action-idx (dec (count reason+action))
+        action (nth reason+action action-idx)
+        reason (->> reason+action (take action-idx)
+                    (interpose \space) (apply str))]
+    (if-let [a (and (some? action)
+                    (if (fn? action)
+                      (action)
+                      action))]
+      (update-in a [:reason] (fnil conj []) reason))))
+
 (def no-monster-re #"You .* (thin air|empty water)" )
 
 (defaction Attack [dir]
@@ -94,20 +112,17 @@
         (swap! game assoc-in [:player :trapped] false)
         #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit"
         (do (swap! game assoc-in [:player :trapped] true)
-            (update-on-known-position anbf
-              #(update-curlvl-at % (:player %) assoc :feature :trap)))
+            (update-at-player-when-known anbf update-in [:feature]
+                                         #(if (traps %) % :trap)))
         #"trap door in the .*and a rock falls on you|trigger a rolling boulder" ; TODO dart/arrow/..
-        (update-on-known-position anbf
-          #(update-curlvl-at % (:player %) assoc :feature :trap))
+        (update-at-player-when-known anbf assoc :feature :trap)
         #"You are carrying too much to get through"
         (swap! game assoc-in [:player :thick] true)
         #"activated a magic portal!"
         (do (reset! portal-atom true)
-            (update-on-known-position anbf
-              #(update-curlvl-at % (:player %) assoc :feature :portal)))
+            (update-at-player-when-known anbf assoc :feature :portal))
         #"You feel a strange vibration"
-        (update-on-known-position anbf
-          #(update-curlvl-at % (:player %) assoc :vibrating true))
+        (update-at-player-when-known assoc :vibrating true)
         #"Wait!  That's a .*mimic!"
         (update-before-action
           anbf (fn [game]
@@ -297,20 +312,19 @@
   (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)]
       (swap! game #(if-not (blind? (:player %))
-                     (update-curlvl-at % (:player %)
-                       assoc :seen true :new-items false)
+                     (update-at-player % assoc :seen true :new-items false)
                      %))
       (update-on-known-position anbf
         (fn after-look [game]
           (if @has-item
             (send delegator found-items (:items (at-player game))))
           (as-> game res
-            (update-curlvl-at res (:player res) assoc :examined (:turn game))
+            (update-at-player res assoc :examined (:turn game))
             (if (->> (:player res) (at-curlvl res) :feature nil?)
-              (update-curlvl-at res (:player res) assoc :feature :floor)
+              (update-at-player res assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
             (if-not @has-item
-              (update-curlvl-at res (:player res) assoc :items [])
+              (update-at-player res assoc :items [])
               res))))
       ; XXX note: items on tile HAVE to be determined via this command only, topline messages on Move are not reliable due to teletraps
       (reify
@@ -322,7 +336,7 @@
                   top-item (nth items 0)]
               (log/debug "Items here:" (log/spy items))
               (reset! has-item true)
-              (swap! game #(update-curlvl-at % (:player %)
+              (swap! game #(update-at-player %
                              assoc :items items
                                    :item-glyph (item-glyph % top-item)
                                    :item-color nil)))
@@ -337,16 +351,14 @@
                                      label->item)]
               (log/debug "Single item here:" item)
               (reset! has-item true)
-              (swap! game #(update-curlvl-at % (:player %)
+              (swap! game #(update-at-player %
                              assoc :items [item]
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
-              (swap! game #(update-curlvl-at % (:player %)
-                                             assoc :feature feature))
+              (swap! game update-at-player assoc :feature feature)
               (if (= :trap (:feature (at-player @game)))
-                (swap! game #(update-curlvl-at % (:player %)
-                                               assoc :feature :floor)))))))))
+                (swap! game update-at-player assoc :feature :floor))))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
@@ -413,7 +425,7 @@
                         (not= "anbf.actions.Search"
                               (some-> game :last-action type .getName))
                         (not= (:turn game) (:examined tile)))))
-      (with-reason "examining tile" ->Look))))
+      (with-reason "examining tile" (pr-str tile) ->Look))))
 
 (defn- examine-traps [game]
   (some->> (curlvl game) :tiles (apply concat)
@@ -456,8 +468,7 @@
 (defn update-items
   "Re-check current tile for items on the next action"
   [anbf]
-  (update-on-known-position anbf #(update-curlvl-at % (:player %)
-                                                    assoc :new-items true)))
+  (update-at-player-when-known anbf assoc :new-items true))
 
 (def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*) \(([^\)]*)\)$|^([^(]+)$")
 
@@ -685,19 +696,6 @@
    (-withHandler action priority-default handler))
   ([action priority handler]
    (with-handler action priority handler)))
-
-(defn with-reason
-  "Updates an action to attach reasoning (for debugging purposes)"
-  [& reason+action]
-  (let [action-idx (dec (count reason+action))
-        action (nth reason+action action-idx)
-        reason (->> reason+action (take action-idx)
-                    (interpose \space) (apply str))]
-    (if-let [a (and (some? action)
-                    (if (fn? action)
-                      (action)
-                      action))]
-      (update-in a [:reason] (fnil conj []) reason))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

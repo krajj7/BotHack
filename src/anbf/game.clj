@@ -58,11 +58,12 @@
                                          (nil? (:color tile)))))))
                 true
                 (:dug tile))
-         :feature (if (and (= (:glyph tile) \space)
-                           (or (nil? (:feature tile))
-                               (not ((:tags level) :rogue))))
-                    :rock
-                    (:feature tile))))
+         :feature (cond (and (= (:glyph tile) \space) ; rogue lvl ghost
+                             (some? (:item-glyph tile))) :floor
+                        (and (= (:glyph tile) \space)
+                             (or (nil? (:feature tile))
+                                 (not ((:tags level) :rogue)))) :rock
+                        :else (:feature tile))))
 
 (defn- update-explored [game]
   (let [level (curlvl game)]

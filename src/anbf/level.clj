@@ -73,6 +73,9 @@
                {:x 6 :y 2} :door-secret
                {:x 10 :y 5} :door-secret
                {:x 8 :y 7} :door-secret}}
+   {:branch :mines
+    :tag :minetown-grotto
+    :features {{:x 48 :y 4} :stairs-down}}
    {:role "samurai"
     :dlvl "Home 3"
     :branch :quest

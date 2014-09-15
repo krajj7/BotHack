@@ -54,3 +54,5 @@
                    :friendly (boolean (inverse? color))
                    :peaceful (default-peaceful? type)
                    :remembered false})))
+
+(defn shopkeeper? [m] (= "shopkeeper" (get-in m [:type :name])))

@@ -2162,7 +2162,7 @@
     :material :iron
     :appearances ["hard hat"]
     :subtype :helmet}
-   {:name :helmet
+   {:name "helmet"
     :price 10
     :weight 30
     :ac 1
