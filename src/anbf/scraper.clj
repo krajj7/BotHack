@@ -220,9 +220,8 @@
   "Can the topline possibly be this not-yet-drawn message?"
   [frame what]
   (let [topline (topline frame)
-        len (count topline)
-        bnd (min len (count what))]
-    (= topline (subs what 0 bnd))))
+        len (min (count topline) (count what))]
+    (= (subs topline 0 len) (subs what 0 len))))
 
 (defn new-scraper [delegator & [mark-kw]]
   (let [player (ref nil)
@@ -345,8 +344,7 @@
                     (flush-more-list delegator items)
                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands
                     (send delegator ev)
-                    initial)
-                  (log/debug "location expecting further redraw")))
+                    initial)))
             (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
               (log/debug "sink discarding redraw"))
             (initial [frame]
@@ -367,11 +365,11 @@
             ; dany kontext musi eventualne neco napsat na topline
             (no-mark [frame]
               (log/debug "no-mark maybe direction/location prompt")
-              (or (undrawn? frame "In what direction")
-                  (handle-direction frame)
-                  (undrawn? frame "Where do you want")
+              (or (handle-direction frame)
+                  (undrawn? frame "In what direction")
                   (handle-location frame)
-                  (log/debug "no-mark - not direction prompt")
+                  (undrawn? frame "Where do you want")
+                  (log/debug "no-mark - not direction/location prompt")
                   (initial frame)))
             ; odeslal jsem marker, cekam jak se vykresli
             (marked [frame]
