@@ -1,7 +1,8 @@
 (ns anbf.itemtype
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
-            [anbf.itemdata :refer :all]))
+            [anbf.itemdata :refer :all]
+            [anbf.util :refer :all]))
 
 (defmulti kw->itemtype
   "{keyword => some ItemType map factory function}"
@@ -13,7 +14,8 @@
   ([recname varname recfields datamap]
    `(defitemtype ~recname ~varname ~recfields ~datamap {}))
   ([recname varname recfields datamap defaults]
-   `(do (defrecord ~recname ~recfields)
+   `(do (defrecord ~recname ~recfields
+          anbf.util.Type (typekw [~'_] ~(keyword (string/lower-case recname))))
         (defmethod kw->itemtype
           ~(keyword (string/replace varname #"s$" "")) [~'_]
           ~(symbol (str "map->" recname)))

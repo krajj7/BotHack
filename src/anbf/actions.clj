@@ -1,5 +1,6 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
             [multiset.core :refer [multiset]]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
@@ -15,7 +16,11 @@
             [anbf.util :refer :all]))
 
 (defmacro ^:private defaction [action args & impl]
-  `(do (defrecord ~action ~args anbf.bot.IAction ~@impl)
+  `(do (defrecord ~action ~args
+         anbf.util.Type
+         (~'typekw [~'_] ~(keyword (string/lower-case action)))
+         anbf.bot.IAction
+         ~@impl)
        (defn ~(symbol (str \- action)) ~args
          (~(symbol (str action \.)) ~@args))))
 
@@ -423,8 +428,7 @@
                    (= :trap (:feature tile))
                    (:new-items tile)
                    (and (seq (:items tile))
-                        (not= "anbf.actions.Search"
-                              (some-> game :last-action type .getName))
+                        (not= :search (some-> game :last-action typekw))
                         (not= (:turn game) (:examined tile)))))
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
@@ -706,7 +710,7 @@
     :armor ->Wear))
 
 (defn make-use [game slot]
-  (let [item (inventory-slot game slot)]
+  (let [item (item-id game (inventory-slot game slot))]
     ; TODO if already occupied
     ((use-action item) slot)))
 

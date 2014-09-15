@@ -2,6 +2,7 @@
   (:require [clojure.data.priority-map :refer [priority-map-keyfn]]
             [clojure.tools.logging :as log]
             [clojure.set :refer [intersection]]
+            [anbf.action :refer :all]
             [anbf.position :refer :all]
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]
@@ -286,9 +287,7 @@
           autonav-target (some-> (peek autonavigable) position)
           last-autonav (let [a (:last-action game)
                              last-target (:pos a)]
-                         (if (and last-target
-                                  (= "anbf.actions.Autotravel"
-                                     (.getName (type a))))
+                         (if (and last-target (= :autotravel (typekw a)))
                            last-target))]
       (-> (if (and autonav-target
                    (not (shop? (at level from)))

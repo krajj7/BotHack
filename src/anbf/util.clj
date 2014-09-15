@@ -63,3 +63,5 @@
 (defn find-first [p s] (first (filter p s)))
 
 (defn parse-int [x] (if x (Integer/parseInt x)))
+
+(defprotocol Type (typekw [this]))

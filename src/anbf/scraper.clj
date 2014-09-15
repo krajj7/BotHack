@@ -4,6 +4,7 @@
             [clojure.string :as string]
             [anbf.util :refer :all]
             [anbf.frame :refer :all]
+            [anbf.action :refer :all]
             [anbf.actions :refer :all]
             [anbf.delegator :refer :all]))
 
@@ -434,7 +435,7 @@
     ActionChosenHandler
     (action-chosen [_ action]
       (dosync
-        (if (#{"anbf.actions.Autotravel"} (.getName (type action)))
+        (if (= :autotravel (typekw action))
           (ref-set scraper (new-scraper delegator :no-mark))
           (ref-set scraper nil)) ; escape sink
         (log/debug "reset scraper for" (type action))))
