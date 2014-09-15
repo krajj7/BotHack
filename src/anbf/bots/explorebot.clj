@@ -74,7 +74,7 @@
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
   [game]
-  (loop [cs (if (entering-shop? game)
+  (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
               (rest desired-items) ; don't pick that pickaxe back up
               desired-items)
          res #{}]
@@ -97,19 +97,17 @@
                                (:label item)))]
           (->PickUp (->> to-get (into #{}) (into [])))
           (log/debug "no desired items here"))
-        (when (explored? game)
-          (log/debug "considering all items on level")
-          (when-let [{:keys [step target]}
-                     (navigate game #(some to-take? (:items %)))]
-            (log/debug "going to get item at" target)
-            step)))))
+        (when-let [{:keys [step target]}
+                   (navigate game #(some to-take? (:items %)))]
+          (with-reason "want item at" target step))
+        (log/debug "no desirable items anywhere"))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
   (if-let [[slot weapon] (some (partial have game) desired-weapons)]
     ; TODO can-wield?
     (when-not (:wielded weapon)
-      (log/debug "wielding better weapon -" (:label weapon))
-      (->Wield slot))))
+      (with-reason "wielding better weapon -" (:label weapon)
+        (->Wield slot)))))
 
 (defn- maybe-wield-weapon [{:keys [last-path] :as game}]
   (let [level (curlvl game)
@@ -121,18 +119,18 @@
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)
-    (or (wield-weapon game)
-        (->Move :E))
+    (with-reason "killing engulfer" (or (wield-weapon game)
+                                        (->Move :E)))
     (let [tgts (hostile-threats game)]
       (when-let [{:keys [step target]} (navigate game tgts
                                           {:walking true :adjacent true
                                            :max-steps hostile-dist-thresh})]
-        (log/debug "targetting enemy at" target)
-        (or (wield-weapon game)
+        (with-reason "targetting enemy at" target
+          (or (wield-weapon game)
             step
             (if (blind? player)
               (->Attack (towards player target))
-              (->Move (towards player target))))))))
+              (->Move (towards player target)))))))))
 
 (defn init [anbf]
   (-> anbf
