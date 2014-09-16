@@ -244,7 +244,7 @@
                     (if-let [[slot item] (:levi opts)]
                       (if (:in-use item)
                         [1 (with-reason "assuming levitation" (->Move dir))]
-                        [4 (make-use game [slot item])])))
+                        [4 (make-use game slot)])))
                   (when (and (door? to-tile) (not monster)
                              (or (not (:walking opts))
                                  (= :door-open (:feature to-tile))))
@@ -554,7 +554,7 @@
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (with-reason "searching extremity" (or (:target p) "here")
+        (with-reason "searching extremity" (or (pr-str (:target p)) "here")
           (or (:step p)
               (->Search)))))))
 

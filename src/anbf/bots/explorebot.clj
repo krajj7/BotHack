@@ -58,16 +58,16 @@
   (ordered-set "Grayswandir" "Excalibur" "katana" "long sword"))
 
 (def desired-items
-  [(ordered-set "pick-axe" "dwarvish mattock")
+  [(ordered-set "pick-axe" "dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
-   desired-weapons
-   #{"ring of levitation" "boots of levitation"}
-   #{"blindfold" "towel"}
+   (ordered-set "ring of levitation" "boots of levitation")
+   (ordered-set "blindfold" "towel")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
    #{"Bell of Opening"}
    #{"Book of the Dead"}
-   #{"Amulet of Yendor"}])
+   #{"Amulet of Yendor"}
+   desired-weapons])
 
 (defn entering-shop? [game]
   (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
@@ -97,7 +97,9 @@
                                    :let [i (item-name game item)]
                                    :when (to-take? item)]
                                (:label item)))]
-          (->PickUp (->> to-get (into #{}) (into [])))
+          (or (with-reason "removing levitation to pick up item"
+                (some->> (have-levi-on game) key (remove-use game)))
+              (->PickUp (->> to-get (into #{}) (into []))))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
                    (navigate game #(some to-take? (:items %)))]
@@ -115,15 +117,16 @@
   (let [level (curlvl game)
         tile-path (mapv (partial at level) last-path)
         step (first tile-path)]
-    (if (and (not-any? (complement walkable?) tile-path)
-             step
-             (not (:dug step)))
-      (with-reason "reequip - weapon"
-        (wield-weapon game)))
-    (if-let [[slot _] (and (not-any? needs-levi? tile-path)
-                           (have-levi-on game))]
-      (with-reason "reequip - don't need levi"
-        (remove-use game slot)))))
+    (or (if (and (not-any? (complement walkable?) tile-path)
+                 step
+                 (not (:dug step)))
+          (with-reason "reequip - weapon"
+            (wield-weapon game)))
+        (if-let [[slot _] (and (not (needs-levi? (at-player game)))
+                               (not-any? needs-levi? tile-path)
+                               (have-levi-on game))]
+          (with-reason "reequip - don't need levi"
+            (remove-use game slot))))))
 
 (defn- fight [{:keys [player] :as game}]
   (if (:engulfed player)

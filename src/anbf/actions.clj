@@ -424,6 +424,7 @@
 (defn- examine-tile [{:keys [player] :as game}]
   (let [tile (at-player game)]
     (when (and (not (blind? player))
+               (not (have-levi-on game))
                (or (not (:feature tile))
                    (= :trap (:feature tile))
                    (:new-items tile)
@@ -710,9 +711,9 @@
     :armor ->Wear))
 
 (defn make-use [game slot]
-  (let [item (item-id game (inventory-slot game slot))]
+  (if-let [itemtype (some->> slot (inventory-slot game) (item-id game))]
     ; TODO if already occupied
-    ((use-action item) slot)))
+    ((use-action itemtype) slot)))
 
 (defn- remove-action [item]
   (case (typekw item)
@@ -722,8 +723,10 @@
     :armor ->TakeOff))
 
 (defn remove-use [game slot]
-  (let [item (inventory-slot game slot)]
-    ((remove-action item) slot)))
+  (let [item (inventory-slot game slot)
+        itemtype (item-id game item)]
+    (if (and itemtype (not= :cursed (:buc item)))
+      ((remove-action itemtype) slot))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class
