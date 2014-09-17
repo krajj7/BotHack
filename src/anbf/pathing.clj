@@ -14,10 +14,13 @@
             [anbf.util :refer :all]
             [anbf.tile :refer :all]))
 
-(defn base-cost [level dir tile]
+(defn base-cost [level dir tile opts]
   {:pre [(and (some? level) (some? dir) (some? tile))]}
   (let [feature (:feature tile)]
     (cond-> 1
+      (and (:prefer-items opts) (not (:new-items tile))) (+ 0.5)
+      (and (:prefer-items opts) (:pick opts) (boulder? tile)
+           (:new-items tile)) (- 5) ; partially negate digging penalization
       (traps feature) (+ 15) ; TODO trap types
       (diagonal dir) (+ 0.1)
       (and (nil? feature) (not (:seen tile))) (+ 6)
@@ -148,10 +151,11 @@
   (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
-  (and (not ((:tags level) :rogue))
-       (or (not ((:tags level) :minetown))
-           (safe-from-guards level))
-       (not (shop? tile))))
+  (or (boulder? tile)
+      (and (not ((:tags level) :rogue))
+           (or (not ((:tags level) :minetown))
+               (safe-from-guards level))
+           (not (shop? tile)))))
 
 (defn- blocked-door
   "If this is a kickable door blocked from one side, return direction from which to kick it"
@@ -174,11 +178,12 @@
        (not (item? tile)))) ; don't try to break blocked doors
 
 (defn- kick-door [{:keys [player] :as game} level tile dir]
-  (if (= :door-open (:feature tile))
-    [7 (with-reason "closing door to kick it" (->Close dir))]
-    (if (:leg-hurt player)
-      [30 (with-reason "waiting out :leg-hurt" ->Search)]
-      [5 (->Kick dir)])))
+  (if-not (have-levi-on game)
+    (if (= :door-open (:feature tile))
+      [7 (with-reason "closing door to kick it" (->Close dir))]
+      (if (:leg-hurt player)
+        [30 (with-reason "waiting out :leg-hurt" ->Search)]
+        [5 (->Kick dir)]))))
 
 (defn can-unlock? [game]
   true) ; not poly'd...
@@ -266,7 +271,7 @@
                   (if (and (:pick opts) (diggable? to-tile)
                            (dare-destroy? level to-tile))
                     [8 (->ApplyAt (key (:pick opts)) dir)]))]
-       (update-in step [0] + (base-cost level dir to-tile))))))
+       (update-in step [0] + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
   [step ; next Action to perform to move along path
@@ -315,7 +320,8 @@
     :explored - don't path through unknown tiles
     :max-steps <num> - don't navigate further than given number of steps
     :no-dig - don't use the pickaxe or mattock
-    :no-levitation - when navigating deliberately into a hole/trapdoor"
+    :no-levitation - when navigating deliberately into a hole/trapdoor
+    :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)"
   ([game pos-or-goal-fn]
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
@@ -782,7 +788,8 @@
    (let [level (curlvl game)]
      (or (search-dead-end game 20)
          (if-not (pos? (exploration-index game))
-           (or (when-let [path (navigate game (partial explorable-tile? level))]
+           (or (when-let [path (navigate game (partial explorable-tile? level)
+                                         {:prefer-items true})]
                  (with-reason "exploring" (pr-str (at level (:target path)))
                    (:step path)))
                ; TODO search for shops if heard but not found
