@@ -35,6 +35,7 @@
                  :y y
                  :glyph (:glyph type)
                  :color (:color type)
+                 :known 0
                  :type type
                  :awake false
                  :friendly false

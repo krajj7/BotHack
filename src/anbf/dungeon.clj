@@ -291,6 +291,11 @@
            (not-any? #(or (not= :water (:feature (at level 7 %)))
                           (not= :floor (:feature (at level 6 %))))
                      [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
+      (and (= :main branch) (<= 25 dlvl 29)
+           (not (tags :castle))
+           (= (map :feature (map (partial apply at level)
+                                 [[12 12] [13 12] [14 12]]))
+              '(:floor :water :drawbridge-raised))) (add-curlvl-tag :castle)
       (and (= :sokoban branch)
            (not (some #{:soko-1a :soko-1b :soko-2a :soko-2b
                         :soko-3a :soko-3b :soko-4a :soko-4b}

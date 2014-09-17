@@ -188,8 +188,9 @@
 (defn can-unlock? [game]
   true) ; not poly'd...
 
-(defn can-dig? [game]
+(defn can-dig? [game level]
   (and ;(not= "Home 1" (:dlvl game))
+       (not-any? #{:votd :castle} (:tags level))
        (not= :quest (branch-key game))
        (not= :sokoban (branch-key game))))
 
@@ -231,7 +232,8 @@
                       (or (and (shop? to-tile)
                                (not (shop? from-tile))
                                (enter-shop game))
-                          [0 (->Move dir)])
+                          (if-not (and (:levi opts) (needs-levi? to-tile))
+                            [0 (->Move dir)])) ; trapdoors/holes are escapable
                       (if-not (:peaceful monster)
                         [6 (->Move dir)]
                         (if ((fnil <= 0) (:blocked to-tile) 25)
@@ -245,7 +247,8 @@
                     (if-let [step (with-reason "untrapping self"
                                     (random-move game level))]
                       [0 step]))
-                  (if (needs-levi? to-tile)
+                  (if (and (edge-passable-walking? game level from-tile to-tile)
+                           (needs-levi? to-tile))
                     (if-let [[slot item] (:levi opts)]
                       (if (:in-use item)
                         [1 (with-reason "assuming levitation" (->Move dir))]
@@ -294,14 +297,14 @@
                              last-target (:pos a)]
                          (if (and last-target (= :autotravel (typekw a)))
                            last-target))]
-      (-> (if (and autonav-target
-                   (not (shop? (at level from)))
-                   (not= last-autonav autonav-target)
-                   (< 3 (count autonavigable))
-                   (not-any? (partial monster-at level) (neighbors from)))
-            (->Autotravel autonav-target)
-            (nth (move-fn from start) 1))
-          (assoc :path path)))))
+      (some-> (if (and autonav-target
+                       (not (shop? (at level from)))
+                       (not= last-autonav autonav-target)
+                       (< 3 (count autonavigable))
+                       (not-any? (partial monster-at level) (neighbors from)))
+                (->Autotravel autonav-target)
+                (nth (move-fn from start) 1))
+              (assoc :path path)))))
 
 (defn- get-a*-path [game level from to move-fn opts max-steps]
   (if-let [path (a* from to move-fn max-steps)]
@@ -330,18 +333,18 @@
                (set? pos-or-goal-fn)
                (position pos-or-goal-fn))]}]
    (log/debug "navigating" pos-or-goal-fn opts)
-   (let [levi (and (not no-levitation)
+   (let [level (curlvl game)
+         levi (and (not no-levitation)
                    (not walking)
                    (or (have-levi-on game)
                        (have-levi game)))
          pick (and (not walking)
                    (not no-dig)
-                   (can-dig? game)
+                   (can-dig? game level)
                    (have-pick game))
          opts (cond-> opts
                 levi (assoc :levi levi)
                 pick (assoc :pick pick))
-         level (curlvl game)
          move-fn #(move game level %1 %2 opts)]
      (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
        (get-a*-path game level player pos-or-goal-fn move-fn opts max-steps)
@@ -505,7 +508,8 @@
 (defn unexplored-column
   "Look for a column of unexplored tiles on segments of the screen."
   [game level]
-  (if (#{:mines :main} (branch-key game level))
+  (if (and (#{:mines :main} (branch-key game level))
+           (not (:castle (:tags level))))
     (first (remove (fn column-explored? [x]
                      (some :feature (for [y (range 2 19)]
                                       (at level x y))))
@@ -571,7 +575,7 @@
   [game level]
   (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
     (with-reason "going to a trapdoor/hole" (or step (->Move \>)))
-    (if-let [[slot pick] (and (can-dig? game)
+    (if-let [[slot pick] (and (can-dig? game level)
                               (diggable-floor? game level)
                               (have-pick game))]
       (if-let [{:keys [step]}
