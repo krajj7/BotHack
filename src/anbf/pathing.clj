@@ -288,31 +288,36 @@
          (not (monster-at level pos))
          (walkable? tile))))
 
-(defn- path-step [game level from move-fn path]
+(defn- autonav-target [game from level path]
+  (let [autonavigable (into [] (take-while (partial autonavigable? level)
+                                           path))
+        target (some-> (peek autonavigable) position)
+        last-autonav (let [a (:last-action game)
+                           last-target (:pos a)]
+                       (if (and last-target (= :autotravel (typekw a)))
+                         last-target))]
+    (if (and target
+             (not (shop? (at level from)))
+             (not= last-autonav target)
+             (< 3 (count autonavigable))
+             (not-any? (partial monster-at level) (neighbors from)))
+      target)))
+
+(defn- path-step [game level from move-fn path opts]
   (if-let [start (first path)]
-    (let [autonavigable (into [] (take-while (partial autonavigable? level)
-                                             path))
-          autonav-target (some-> (peek autonavigable) position)
-          last-autonav (let [a (:last-action game)
-                             last-target (:pos a)]
-                         (if (and last-target (= :autotravel (typekw a)))
-                           last-target))]
-      (some-> (if (and autonav-target
-                       (not (shop? (at level from)))
-                       (not= last-autonav autonav-target)
-                       (< 3 (count autonavigable))
-                       (not-any? (partial monster-at level) (neighbors from)))
-                (->Autotravel autonav-target)
-                (nth (move-fn from start) 1))
-              (assoc :path path)))))
+    (some-> (if-let [target (and (not (:no-autonav opts))
+                                 (autonav-target game from level path))]
+              (->Autotravel target)
+              (nth (move-fn from start) 1))
+            (assoc :path path))))
 
 (defn- get-a*-path [game level from to move-fn opts max-steps]
   (if-let [path (a* from to move-fn max-steps)]
     (if (seq path)
       (if (:adjacent opts)
-        (->Path (path-step game level from move-fn path) (pop path) to)
+        (->Path (path-step game level from move-fn path opts) (pop path) to)
         (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
-             (->Path (path-step game level from move-fn path) path to)))
+             (->Path (path-step game level from move-fn path opts) path to)))
       (->Path nil [] to))))
 
 (defn navigate
@@ -324,7 +329,8 @@
     :max-steps <num> - don't navigate further than given number of steps
     :no-dig - don't use the pickaxe or mattock
     :no-levitation - when navigating deliberately into a hole/trapdoor
-    :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)"
+    :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)
+    :no-autonav - don't use _ autotravel (when fighting monsters)"
   ([game pos-or-goal-fn]
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
@@ -362,7 +368,7 @@
                1 (get-a*-path game level player (first goal-set)
                               move-fn opts max-steps)
                (if-let [path (dijkstra player goal-set move-fn max-steps)]
-                 (->Path (path-step game level player move-fn path) path
+                 (->Path (path-step game level player move-fn path opts) path
                          (->> (or (peek path) player) neighbors
                               (find-first goal-fn))))))
            ; not searching for adjacent
@@ -372,7 +378,7 @@
                                     (take 2) seq))]
              (if (= 2 (count goal-seq))
                (if-let [path (dijkstra player goal-fn move-fn max-steps)]
-                 (->Path (path-step game level player move-fn path) path
+                 (->Path (path-step game level player move-fn path opts) path
                          (or (peek path) (at-player game))))
                (get-a*-path game level player (first goal-seq) move-fn opts
                             max-steps)))))))))

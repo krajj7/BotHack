@@ -135,6 +135,7 @@
     (let [tgts (hostile-threats game)]
       (when-let [{:keys [step target]} (navigate game tgts
                                           {:walking true :adjacent true
+                                           :no-autonav true
                                            :max-steps hostile-dist-thresh})]
         (with-reason "targetting enemy at" target
           (or (wield-weapon game)
