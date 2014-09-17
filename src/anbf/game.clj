@@ -179,6 +179,8 @@
     ToplineMessageHandler
     (message [_ text]
       (or (condp re-seq text
+            #"You feel more confident"
+            (swap! game assoc-in [:player :can-enhance] true)
             #"You feel feverish"
             (swap! game assoc-in [:player :lycantrophy] true)
             #"You feel purified"
@@ -187,7 +189,7 @@
             (swap! game assoc-in [:player :leg-hurt] false)
             #"You turn into a"
             (-> anbf update-inventory update-items)
-            #"You now wield"
+            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode"
             (update-inventory anbf)
             nil)
           (if-let [level (level-msg text)]
