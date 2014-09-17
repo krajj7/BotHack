@@ -119,7 +119,7 @@
         (do (swap! game assoc-in [:player :trapped] true)
             (update-at-player-when-known anbf update-in [:feature]
                                          #(if (traps %) % :trap)))
-        #"trap door in the .*and a rock falls on you|trigger a rolling boulder" ; TODO dart/arrow/..
+        #"trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots at you|gush of water hits|tower of flame erupts"
         (update-at-player-when-known anbf assoc :feature :trap)
         #"You are carrying too much to get through"
         (swap! game assoc-in [:player :thick] true)
