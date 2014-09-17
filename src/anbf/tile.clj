@@ -37,7 +37,8 @@
    (or (and (= \~ glyph) (= :brown color))
        (and (monster? glyph) (or (some? color) (not= \: glyph)))))
   ([glyph]
-   (or (and (Character/isLetterOrDigit ^Character glyph) (not= \8 glyph))
+   (or (and (Character/isLetterOrDigit ^Character glyph)
+            (not= \8 glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph))))
 
 ; bot should never get to see :trap - auto-examine

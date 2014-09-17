@@ -135,7 +135,7 @@
     KeepSaveHandler
     (keep-save [_ _] "")
     ForceGodHandler
-    (force-god [_ _] "")
+    (force-god [_ _] true)
     SeducedEquipRemoveHandler
     (seduced-remove [_ _] "")
     CallItemHandler
