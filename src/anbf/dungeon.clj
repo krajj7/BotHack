@@ -443,3 +443,7 @@
       (assoc-in game [:dungeon :levels (branch-key game new-level)
                       (:dlvl new-level)] new-level)
       game)))
+
+(defn diggable-floor? [game level]
+  (not (or (#{:quest :sokoban} (branch-key game level))
+           (#{:undiggable-floor :end :castle :votd} (:tags level)))))

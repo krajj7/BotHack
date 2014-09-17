@@ -549,7 +549,6 @@
              (what-direction [_ _] dir)
              ToplineMessageHandler
              (message [_ msg]
-               ; TODO dug pit / hole
                (condp re-seq msg
                  #"This wall (seems|is) too hard to dig into\."
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
@@ -563,6 +562,12 @@
                  #"^You swing your pick"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                 assoc :feature nil))
+                 #"here is too hard to"
+                 (swap! game add-curlvl-tag :undiggable-floor)
+                 #"You dig a pit"
+                 (swap! game update-at-player assoc :feature :pit)
+                 #"You dig a hole through"
+                 (swap! game update-at-player assoc :feature :hole)
                  nil)))))))
 
 (defaction ->ForceLock []

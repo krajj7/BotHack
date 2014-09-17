@@ -556,7 +556,9 @@
        (get level :explored 0))
      0)))
 
-(defn- search-extremities [game level howmuch]
+(defn- search-extremities
+  "Search near where there are large blank spaces on the map"
+  [game level howmuch]
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
@@ -564,20 +566,38 @@
           (or (:step p)
               (->Search)))))))
 
+(defn go-down
+  "Go through a hole or trapdoor or dig down if possible"
+  [game level]
+  (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
+    (with-reason "going to a trapdoor/hole" (or step (->Move \>)))
+    (if-let [[slot pick] (and (can-dig? game)
+                              (diggable-floor? game level)
+                              (have-pick game))]
+      (if-let [{:keys [step]}
+               (navigate game #(and (#{:pit :floor} (:feature %))
+                                    (->> (straight-neighbors level %)
+                                         (filter (comp (partial = :wall)
+                                                       :feature))
+                                         count (<= 2))))]
+        (or (with-reason "finding a corner to dig down" step)
+            (with-reason "digging down" (->ApplyAt slot \>)))))))
+
 (defn search
   ([game] (search game 10))
   ([game max-iter]
-   (let [level (curlvl game)]
-     (loop [mul 1]
-       (or (log/debug "search iteration" mul)
-           (if (= 1 mul) (push-boulders game level))
-           (recheck-dead-ends game level (* mul 30))
-           (search-extremities game level (* mul 20))
-           ; TODO dig towards unexplored-column
-           (if (> mul 1) (search-corridors game level (* mul 5)))
-           (search-walls game level (* mul 15))
-           (if-not (> mul (dec max-iter))
-             (recur (inc mul))))))))
+   (with-reason "searching - max-iter =" max-iter
+     (let [level (curlvl game)]
+       (loop [mul 1]
+         (or (log/debug "search iteration" mul)
+             (if (= 1 mul) (push-boulders game level))
+             (recheck-dead-ends game level (* mul 30))
+             (search-extremities game level (* mul 20))
+             ; TODO dig towards unexplored-column
+             (if (> mul 1) (search-corridors game level (* mul 5)))
+             (search-walls game level (* mul 15))
+             (if-not (> mul (dec max-iter))
+               (recur (inc mul)))))))))
 
 (declare explore)
 
@@ -592,10 +612,13 @@
   ([game smth]
    (seek game smth {}))
   ([game smth opts]
-   (with-reason "seeking"
-     (if-let [{:keys [step]} (navigate game smth opts)]
-       step
-       (or (explore game) (search game))))))
+   (if-let [{:keys [step]} (navigate game smth opts)]
+     (with-reason "seek going directly" step)
+     (with-reason "seeking"
+       (or (explore game)
+           (and (:go-down opts) (with-reason "can't find downstairs"
+                                  (go-down game (curlvl game))))
+           (search game))))))
 
 (defn- switch-dlvl [game new-dlvl]
   (with-reason "switching within branch to" new-dlvl
@@ -615,7 +638,8 @@
                        (seek game #(and (= stairs (:feature %))
                                         (if-let [b (branch-key game %)]
                                           (= b branch)
-                                          true))))]
+                                          true))
+                             (if (= :stairs-down stairs) {:go-down true})))]
             (or step (action)))))))
 
 (defn- escape-branch [game]
