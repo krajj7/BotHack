@@ -340,18 +340,31 @@
        (= \@ (:glyph tile-or-monster))
        (= :white (:color tile-or-monster))))
 
+(defn- room-rectangle [game NW-corner SE-corner kind]
+  (log/debug "room rectangle:" NW-corner SE-corner kind)
+  (when (< 8 (max (- (:x SE-corner) (:x NW-corner))
+                  (- (:y SE-corner) (:y NW-corner))))
+    (log/error "spilled room at" (:dlvl game) (branch-key game)))
+  (reduce #(update-curlvl-at %1 %2 assoc :room kind)
+          game
+          (rectangle NW-corner SE-corner)))
+
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
   (let [level (curlvl game)]
-    (loop [res game
-           closed #{}
+    (loop [closed #{}
+           NW-corner (at level pos)
+           SE-corner (at level pos)
            open (into #{(at level pos)}
                       (if (shopkeeper-look? game (at level pos))
                         (neighbors level pos)))]
       ;(log/debug (count open) open)
       (if-let [x (first open)]
-        (recur (update-curlvl-at res x assoc :room kind)
-               (conj closed x)
+        (recur (conj closed x)
+               {:x (min (:x NW-corner) (:x x))
+                :y (min (:y NW-corner) (:y x))}
+               {:x (max (:x SE-corner) (:x x))
+                :y (max (:y SE-corner) (:y x))}
                (if (or (door? x) (= :wall (:feature x)))
                  (disj open x)
                  (into (disj open x)
@@ -361,11 +374,12 @@
                                          (:dug %)
                                          (= :corridor (:feature %))
                                          (closed %)))))))
-        res))))
+        (room-rectangle game NW-corner SE-corner kind)))))
 
 (defn reflood-room [game pos]
   (let [tile (at-curlvl game pos)]
-    (if (and (:room tile) (not (:walked tile)))
+    ; shops are lit so shouldn't be necessary
+    (if (and (:room tile) (not (shop? tile)) (not (:walked tile)))
       (do (log/debug "room reflood from:" pos "type:" (:room tile))
           (floodfill-room game pos (:room tile)))
       game)))
