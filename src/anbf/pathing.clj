@@ -188,9 +188,11 @@
 (defn can-unlock? [game]
   true) ; not poly'd...
 
-(defn can-dig? [game level]
+(defn can-dig?
+  "Are the walls diggable on this level?"
+  [game level]
   (and ;(not= "Home 1" (:dlvl game))
-       (not-any? #{:votd :castle} (:tags level))
+       (not-any? #{:medusa-2 :votd :castle} (:tags level))
        (not= :quest (branch-key game))
        (not= :sokoban (branch-key game))))
 
