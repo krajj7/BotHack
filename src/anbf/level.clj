@@ -73,6 +73,14 @@
                {:x 6 :y 2} :door-secret
                {:x 10 :y 5} :door-secret
                {:x 8 :y 7} :door-secret}}
+   {:branch :main
+    :tag :asmodeus
+    :features {{:x 28 :y 8} :door-secret
+               {:x 19 :y 8} :spikepit
+               {:x 17 :y 16} :door-secret
+               {:x 20 :y 12} :door-secret
+               {:x 22 :y 12} :firetrap
+               {:x 27 :y 13} :stairs-down}}
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}

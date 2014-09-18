@@ -321,6 +321,8 @@
            has-features?) (add-curlvl-tag :minetown)
       (and (<= 5 dlvl 9) (= :stairs-up (:feature (at level 3 2)))
            (tags :minetown)) (add-curlvl-tag :minetown-grotto)
+      (and (<= 27 dlvl 36) (not (:asmodeus (:tags level)))
+           (door? (at level 66 12))) (add-curlvl-tag :asmodeus)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
