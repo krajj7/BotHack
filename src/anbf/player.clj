@@ -35,7 +35,8 @@
    state ; subset #{:stun :conf :hallu :blind :ill}
    lycantrophy
    stats ; :str :dex :con :int :wis :cha
-   alignment] ; :lawful :neutral :chaotic
+   alignment ; :lawful :neutral :chaotic
+   can-enhance]
   anbf.bot.IPlayer
   ; TODO expose stats etc.
   (alignment [this] (kw->enum anbf.bot.Alignment (:alignment this)))

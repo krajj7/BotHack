@@ -30,6 +30,15 @@
   (if (weak? (:player game))
     (with-reason "praying for food" ->Pray)))
 
+(defn- enhance-handler [anbf]
+  (reify ActionHandler
+    (choose-action [_ game]
+      (if (:can-enhance (:player game))
+        (log/warn "TODO implement Enhance")
+        #_(->Enhance)))
+    ; TODO EnhanceHandler
+    ))
+
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
         (with-reason "curing lycantrophy" ->Pray))
@@ -152,6 +161,7 @@
                             "nsm"))) ; choose samurai
       (register-handler (reify ReallyAttackHandler
                           (really-attack [_ _] false)))
+      (register-handler -15 (enhance-handler anbf))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (pray-for-food game))))
