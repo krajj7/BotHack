@@ -173,9 +173,12 @@
                     (not (curlvl-monster-at % target))
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
-             (do (log/debug "stuck on diagonal movement => door at" target)
-                 (update-curlvl-at % (in-direction old-pos dir)
-                                   assoc :feature :door-open))
+             (if (:feature target)
+               (log/error "seemingly non diagonally walkable feature at" target)
+               (do (log/debug "stuck on diagonal movement => possibly door at"
+                              target)
+                   (update-curlvl-at % (in-direction old-pos dir)
+                                     assoc :feature :door-open)))
              %)))
       (reify
         ToplineMessageHandler

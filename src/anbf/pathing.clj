@@ -28,8 +28,8 @@
       (not (or (:dug tile) (:walked tile))) (+ 0.2)
       (and (not (:walked tile)) (= :floor feature)) (+ 0.5))))
 
-(defn diagonal-walkable? [game {:keys [feature] :as tile}]
-  (not= :door-open feature))
+(defn diagonal-walkable? [game tile]
+  (not= :door-open (:feature tile)))
 
 (defn- a*
   "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
@@ -105,11 +105,9 @@
 
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters"
-  [game level from to]
-  (let [from-tile (at level from)
-        to-tile (at level to)]
-    (and (walkable? to-tile)
-         (edge-passable-walking? game level from-tile to-tile))))
+  [game level from-tile to-tile]
+  (and (walkable? to-tile)
+       (edge-passable-walking? game level from-tile to-tile)))
 
 (defn needs-levi? [tile]
   (#{:water :lava :ice :hole :trapdoor} (:feature tile)))
@@ -117,7 +115,7 @@
 (defn- random-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
            (remove (partial monster-at level))
-           (filterv #(or (passable-walking? game level player %)
+           (filterv #(or (passable-walking? game level (at level player) %)
                          (unexplored? %)))
            (#(if (seq %) % nil))
            rand-nth
@@ -224,12 +222,13 @@
          dir (towards from to-tile)
          monster (monster-at level to)]
      (if-let [step
-              (or (if (or (and (unexplored? to-tile) (not (:explored opts))
-                               (or (not (narrow? level from-tile to-tile))
-                                   (not (:thick (:player game)))))
-                          (and (passable-walking? game level from to)
-                               (not (and (kickable-door? level to-tile opts)
-                                         (blocked-door level to-tile)))))
+              (or (if (and (or (passable-walking? game level from-tile to-tile)
+                               (and (unexplored? to-tile)
+                                    (not (:explored opts))))
+                           (or (not (narrow? level from-tile to-tile))
+                               (not (:thick (:player game))))
+                           (not (and (kickable-door? level to-tile opts)
+                                     (blocked-door level to-tile))))
                     (if-not monster
                       (or (and (shop? to-tile)
                                (not (shop? from-tile))
