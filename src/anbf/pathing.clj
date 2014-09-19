@@ -190,7 +190,8 @@
   "Are the walls diggable on this level?"
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
-       (not-any? #{:medusa-2 :votd :castle} (:tags level))
+       ; TODO some of these are partially diggable
+       (not-any? #{:asmodeus :medusa-2 :votd :castle} (:tags level))
        (not= :quest (branch-key game))
        (not= :sokoban (branch-key game))))
 
@@ -388,7 +389,7 @@
   (and (not (and (:dug tile) (boulder? tile)))
        (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
            (:new-items tile)
-           (and (or (walkable? tile) (door? tile))
+           (and (or (walkable? tile) (door? tile) (needs-levi? tile))
                 (some #(and (not (:seen %))
                             (not (boulder? %))
                             (not (monster? (:glyph %) (:color %))))
@@ -412,7 +413,7 @@
               (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
 
 (defn- has-dead-ends? [game level]
-  (and (not (:bigroom (:tags level)))
+  (and (not-any? #{:bigroom :juiblex} (:tags level))
        (or (not (subbranches (branch-key game level)))
            (:minetown (:tags level)))))
 
@@ -586,12 +587,22 @@
                               (diggable-floor? game level)
                               (have-pick game))]
       (if-let [{:keys [step]}
-               (navigate game #(and (#{:pit :floor} (:feature %))
-                                    (->> (straight-neighbors level %)
-                                         (filter (comp (partial = :wall)
-                                                       :feature))
-                                         count (<= 2))))]
-        (or (with-reason "finding a corner to dig down" step)
+               (or (navigate game #(and (#{:pit :floor} (:feature %))
+                                        (not-any? (comp (partial = :water)
+                                                        :feature)
+                                                  (neighbors level %))
+                                        (->> (straight-neighbors level %)
+                                             (filter (comp (partial = :wall)
+                                                           :feature))
+                                             count (<= 2))))
+                   (navigate game #(and (#{:floor :corridor} (:feature %))
+                                        (not-any? (comp (partial = :water)
+                                                        :feature)
+                                                  (neighbors level %))
+                                        (->> (straight-neighbors level %)
+                                             (filter walkable?)
+                                             count (<= 3)))))]
+        (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (->ApplyAt slot \>)))))))
 
 (defn search
