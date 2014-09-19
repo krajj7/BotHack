@@ -185,7 +185,7 @@
 
 (defn- has-features? [level]
   "checks for features not occuring in the mines (except town/end)"
-  (some #(main-features (:feature %)) (apply concat (:tiles level))))
+  (some main-features (feature-seq level)))
 
 (defn- same-glyph-diag-walls
   " the check we make is that any level where there are diagonally adjacent

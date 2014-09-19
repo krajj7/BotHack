@@ -3,6 +3,7 @@
   (:require [clojure.tools.logging :as log]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.level :refer :all]
             [anbf.fov :refer :all]
             [anbf.monster :refer :all]
             [anbf.actions :refer :all]
@@ -89,7 +90,7 @@
                     (vector (position tile)
                             (new-monster (:x tile) (:y tile)
                                          (:turn game) glyph color))))
-                (->> (:tiles (curlvl game)) (apply concat))
+                (tile-seq (curlvl game))
                 (->> (:lines frame) (drop 1) (apply concat))
                 (->> (:colors frame) (drop 1) (apply concat)))))
 

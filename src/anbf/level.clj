@@ -38,6 +38,14 @@
 (defn reset-monster [level monster]
   (assoc-in level [:monsters (position monster)] monster))
 
+(defn tile-seq
+  "a seq of all 80x20 tiles on the level, left to right, top to bottom"
+  [level]
+  (apply concat (:tiles level)))
+
+(defn feature-seq [level]
+  (map :feature (tile-seq level)))
+
 (def blueprints
   [{:branch :main
     :tag :medusa-1

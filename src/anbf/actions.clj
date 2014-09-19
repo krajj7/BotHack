@@ -437,7 +437,7 @@
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
 (defn- examine-traps [game]
-  (some->> (curlvl game) :tiles (apply concat)
+  (some->> (curlvl game) tile-seq
            (find-first #(and (= :trap (:feature %))
                              (not (item? %))
                              (not (monster? (:glyph %) (:color %)))))

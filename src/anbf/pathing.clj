@@ -362,7 +362,7 @@
          (if adjacent
            (let [goal-set (if (set? pos-or-goal-fn)
                             (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
-                            (->> level :tiles (apply concat) (filter goal-fn)
+                            (->> (tile-seq level) (filter goal-fn)
                                  (mapcat neighbors) (into #{})))]
              (case (count goal-set)
                0 nil
@@ -375,7 +375,7 @@
            ; not searching for adjacent
            (if-let [goal-seq (if (set? pos-or-goal-fn)
                                (->> pos-or-goal-fn (take 2) seq)
-                               (->> level :tiles (apply concat) (filter goal-fn)
+                               (->> (tile-seq level) (filter goal-fn)
                                     (take 2) seq))]
              (if (= 2 (count goal-seq))
                (if-let [path (dijkstra player goal-fn move-fn max-steps)]
@@ -454,7 +454,7 @@
 
 ; TODO check if it makes sense, the boulder might not block
 (defn- push-boulders [{:keys [player] :as game} level]
-  (if (some #(unblocked-boulder? game level %) (apply concat (:tiles level)))
+  (if (some #(unblocked-boulder? game level %) (tile-seq level))
     (if-let [path (navigate game #(pushable-from game level %))]
       (with-reason "going to push a boulder"
         (or (:step path)
@@ -545,7 +545,7 @@
     (cond
       (unexplored-column game level) 0
       (navigate game (partial explorable-tile? level)) 0
-      :else (->> (:tiles level) (apply concat) (map :searched) (reduce + 1)))))
+      :else (->> (tile-seq level) (map :searched) (reduce + 1)))))
 
 (defn reset-exploration-index
   "Performance optimization - curlvl-exploration-index is useful but expensive so is wrapped in a future"

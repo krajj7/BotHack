@@ -47,7 +47,7 @@
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" (dissoc action :reason)
-                      "\n reasons:" (with-out-str (pprint (:reason action)))))
+                      "\n reasons:\n" (with-out-str (pprint (:reason action)))))
           InventoryHandler
           (inventory-list [_ inventory]
             (log/spy inventory))
@@ -113,8 +113,7 @@
 (defn print-items
   "Print detailed info about all items on the ground of the current level"
   [game]
-  (->> (curlvl game) :tiles (apply concat)
-       (map :items) (apply concat)
+  (->> (curlvl game) tile-seq (map :items) (apply concat)
        (map #(vector (type (item-id game %)) % (item-id game %)))
        pprint))
 
