@@ -151,7 +151,9 @@
     #(if (or (= (position (:player %)) old-pos)
              (trap? (at-player @game)))
        %
-       (assoc-in % [:player :trapped] false))))
+       (do (if (:trapped (:player %))
+             (log/debug "player moved => not :trapped anymore"))
+           (assoc-in % [:player :trapped] false)))))
 
 (defn- direction-trigger [dir]
   (str (or (vi-directions (enum->kw dir))
@@ -553,6 +555,8 @@
              ToplineMessageHandler
              (message [_ msg]
                (condp re-seq msg
+                 #"you can't dig while entangled"
+                 (swap! game assoc-in [:player :trapped] true)
                  #"This wall (seems|is) too hard to dig into\."
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :undiggable true))
