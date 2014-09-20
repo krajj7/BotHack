@@ -127,7 +127,8 @@
         (do (reset! portal-atom true)
             (update-at-player-when-known anbf assoc :feature :portal))
         #"You feel a strange vibration"
-        (update-at-player-when-known assoc :vibrating true)
+        (do (swap! game add-curlvl-tag :end)
+            (update-at-player-when-known anbf assoc :vibrating true))
         #"Wait!  That's a .*mimic!"
         (update-before-action
           anbf (fn [game]

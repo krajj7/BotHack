@@ -611,6 +611,11 @@
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
              (if (= 1 mul) (push-boulders game level))
+             (if (< 43 (dlvl-number (:dlvl game)))
+               (with-reason "no stairs, possibly :main :end"
+                 (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
+                                             (not (:walked %))
+                                             (not= :wall (:feature %)))))))
              (recheck-dead-ends game level (* mul 30))
              (search-extremities game level (* mul 20))
              ; TODO dig towards unexplored-column

@@ -507,4 +507,4 @@
   (not (or (#{:wiztower :vlad :astral :earth :fire :air :water :sokoban}
                     (branch-key game level))
            (:undiggable-floor (:blueprint level))
-           (#{:undiggable-floor :end} (:tags level)))))
+           (some #{:undiggable-floor :end} (:tags level)))))
