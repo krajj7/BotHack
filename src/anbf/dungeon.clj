@@ -326,6 +326,17 @@
       (and (<= 29 dlvl 36) (not (:juiblex (:tags level)))
            (->> (feature-seq level) (filter #(= :water %)) (take 25)
                 count (= 25))) (add-curlvl-tag :juiblex)
+      (and (<= 31 dlvl 38) (not (tags :baalzebub))
+           (not-any? (fn [[x y]]
+                       (= :wall (:feature (at level x y))))
+                     [[31 11] [32 11] [33 11] [34 11]
+                      [31 13] [32 13] [33 13] [34 13]])
+           (not-any? (fn [[x y]]
+                       (let [tile (at level x y)]
+                         (or (not= :wall (:feature tile)) (:dug tile))))
+                     [[30 10] [35 10] [30 11] [35 11]
+                      [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
+                                                           :baalzebub)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 

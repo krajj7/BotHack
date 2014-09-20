@@ -89,6 +89,12 @@
                {:x 20 :y 12} :door-secret
                {:x 22 :y 12} :firetrap
                {:x 27 :y 13} :stairs-down}}
+   {:branch :main
+    :tag :baalzebub
+    :features {{:x 38 :y 12} :door-secret
+               {:x 57 :y 11} :door-secret
+               {:x 62 :y 14} :door-secret
+               {:x 70 :y 12} :door-secret}}
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
