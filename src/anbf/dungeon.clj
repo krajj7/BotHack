@@ -353,6 +353,9 @@
                      [[30 10] [35 10] [30 11] [35 11]
                       [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
                                                            :baalzebub)
+      (and (<= 40 dlvl 51) (not (:fake-wiztower tags))
+           (some (partial = :water)
+                 (feature-seq level))) (add-curlvl-tag :fake-wiztower)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 

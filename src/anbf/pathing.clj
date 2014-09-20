@@ -715,6 +715,26 @@
   ([game branch]
    (or (branch-entry game branch)
        (case branch
+         :wiztower (or (->> (get-branch game :main) vals
+                            (filter (fn unexplored-tower? [level]
+                                      (and (:fake-wiztower (:tags level))
+                                           (let [center (:feature
+                                                          (at level 38 12))]
+                                             (or (nil? center)
+                                                 (= :portal center))))))
+                            (map :dlvl) seq)
+                       (if-let [end (:dlvl (get-level game :main :end))]
+                         (as-> end res
+                           (change-dlvl #(- % 4) res)
+                           (dlvl-range :main res 4)
+                           (least-explored game :main res)))
+                       (if-let [geh (dlvl-from-tag game :main :gehennom)]
+                         (as-> geh res
+                           (change-dlvl (partial + 15) res)
+                           (dlvl-range :main res 8)
+                           (least-explored game :main res)))
+                       (->> (dlvl-range :main "Dlvl:40" 12)
+                            (least-explored game :main)))
          :vlad (least-explored game :main
                       ; TODO check for double upstairs in vlad range
                                (if-let [vlad (dlvl-from-tag game :main :votd 9)]

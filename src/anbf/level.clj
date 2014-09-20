@@ -102,6 +102,12 @@
                {:x 57 :y 11} :door-secret
                {:x 62 :y 14} :door-secret
                {:x 70 :y 12} :door-secret}}
+   {:branch :main
+    :tag :fake-wiztower
+    :features {{:x 39 :y 12} :squeaky
+               {:x 37 :y 12} :squeaky
+               {:x 38 :y 13} :squeaky
+               {:x 38 :y 11} :squeaky}}
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
