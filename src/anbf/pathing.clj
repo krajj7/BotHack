@@ -191,7 +191,7 @@
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
        (not (:undiggable (:blueprint level)))
-       (not (#{:sokoban :quest} (branch-key game)))))
+       (not (#{:wiztower :vlad :astral :sokoban :quest} (branch-key game)))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
@@ -685,24 +685,6 @@
                        (max 1 (- res 1200)) ; add threshold not to switch levels too often
                        res))
                   dlvls)))
-
-(defn- dlvl-range
-  "Only works for :main and :mines"
-  ([branch]
-   (dlvl-range branch "Dlvl:1"))
-  ([branch start]
-   (dlvl-range branch start 60))
-  ([branch start howmany]
-   (for [x (range howmany)]
-     (change-dlvl #(+ % x) start))))
-
-(defn- dlvl-from-entrance [game branch in-branch-depth]
-  (some->> (get-branch game branch) keys first
-           (change-dlvl #(+ % (dec in-branch-depth)))))
-
-(defn- dlvl-from-tag [game branch tag after-tag-depth]
-  (some->> (get-level game branch tag) :dlvl
-           (change-dlvl #(+ % (dec after-tag-depth)))))
 
 (defn- possibly-oracle? [game dlvl]
   (if-let [level (get-level game :main dlvl)]

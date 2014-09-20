@@ -236,7 +236,7 @@
   (if-let [l (get-level game :main (branch-key game branch))]
     (:dlvl l)))
 
-(defn- merge-branch-id
+(defn merge-branch-id
   "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
   [{:keys [dungeon] :as game} branch-id branch]
   (log/debug "merging branch-id" branch-id "to branch" branch)
@@ -364,6 +364,24 @@
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (gen-branch-id)))
 
+(defn dlvl-range
+  "Only works for :main and :mines"
+  ([branch]
+   (dlvl-range branch "Dlvl:1"))
+  ([branch start]
+   (dlvl-range branch start 60))
+  ([branch start howmany]
+   (for [x (range howmany)]
+     (change-dlvl #(+ % x) start))))
+
+(defn dlvl-from-entrance [game branch in-branch-depth]
+  (some->> (get-branch game branch) keys first
+           (change-dlvl #(+ % (dec in-branch-depth)))))
+
+(defn dlvl-from-tag [game branch tag after-tag-depth]
+  (some->> (get-level game branch tag) :dlvl
+           (change-dlvl #(+ % (dec after-tag-depth)))))
+
 (defn ensure-curlvl
   "If current branch-id + dlvl has no level associated, create a new empty level"
   [{:keys [dlvl] :as game}]
@@ -486,6 +504,7 @@
       game)))
 
 (defn diggable-floor? [game level]
-  (not (or (= :sokoban (branch-key game level))
+  (not (or (#{:wiztower :vlad :astral :earth :fire :air :water :sokoban}
+                    (branch-key game level))
            (:undiggable-floor (:blueprint level))
            (#{:undiggable-floor :end} (:tags level)))))

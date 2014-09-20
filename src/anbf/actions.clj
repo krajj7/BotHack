@@ -242,7 +242,8 @@
   (let [old-game (-> anbf :game deref)
         old-branch (branch-key old-game)
         old-dlvl (:dlvl old-game)
-        old-stairs (at-player old-game)]
+        old-stairs (at-player old-game)
+        entered-vlad (atom false)]
     (update-on-known-position anbf
       (fn [{new-branch :branch-id new-dlvl :dlvl :as new-game}]
         (log/debug "asc/desc from" old-dlvl "to" new-dlvl "new-branch is" new-branch)
@@ -257,11 +258,18 @@
               (mark-branch-entrance new-stairs old-branch
                                     (:feature old-stairs)))
           new-game)))
-    (reify DlvlChangeHandler
+    (reify
+      ToplineMessageHandler
+      (message [_ text]
+        (if (.contains text "heat and smoke are gone.")
+          (reset! entered-vlad true)))
+      DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
         (swap! (:game anbf)
-               #(let [new-branch (get old-stairs :branch-id
-                                      (initial-branch-id % new-dlvl))]
+               #(let [new-branch (if @entered-vlad
+                                   :vlad
+                                   (get old-stairs :branch-id
+                                        (initial-branch-id % new-dlvl)))]
                   (-> %
                       (update-in [:dungeon :levels old-branch old-dlvl :tags]
                                  conj new-branch)
