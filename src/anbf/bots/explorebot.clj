@@ -53,7 +53,7 @@
       ;(explore-level game :mines :minetown)
       ;(explore-level game :quest :end)
       ;(visit game :main :medusa)
-      (explore-level game :vlad :end)
+      ;(explore-level game :vlad :end)
       (visit game :main :end)
       ;(visit game :sokoban :end)
       ;(visit game :mines :minetown)

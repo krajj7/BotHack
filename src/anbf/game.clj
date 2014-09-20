@@ -195,6 +195,9 @@
             (-> anbf update-inventory update-items)
             #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode"
             (update-inventory anbf)
+            #"shop appears to be deserted"
+            (if (< 33 (dlvl-number (:dlvl @game)))
+              (swap! game add-curlvl-tag :orcus))
             nil)
           (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))
