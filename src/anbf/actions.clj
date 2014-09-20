@@ -544,7 +544,8 @@
    (update-in action [:handlers] conj [priority handler])))
 
 (defn ->ApplyAt
-  "Apply something in the given direction (eg. pickaxe, key...)"
+  "Apply something in the given direction (eg. pickaxe, key...).
+  Assumes the thing is already wielded (if it has to be like a pickaxe), otherwise resulting direction prompt may be misparsed after auto-wield if something happens during the wielding"
   [slot dir]
   (->> (->Apply slot)
        (with-handler priority-top
@@ -714,6 +715,11 @@
    (-withHandler action priority-default handler))
   ([action priority handler]
    (with-handler action priority handler)))
+
+(defn dig [[slot item] dir]
+  (if (:in-use item)
+    (->ApplyAt slot dir)
+    (->Wield slot)))
 
 (defn- use-action [item]
   (case (typekw item)

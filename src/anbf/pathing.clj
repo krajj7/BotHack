@@ -3,10 +3,10 @@
             [clojure.tools.logging :as log]
             [clojure.set :refer [intersection]]
             [anbf.action :refer :all]
+            [anbf.actions :refer :all]
             [anbf.position :refer :all]
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]
-            [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.itemid :refer :all]
             [anbf.level :refer :all]
@@ -273,7 +273,7 @@
                                 (kick-door game level to-tile dir)))))))
                   (if (and (:pick opts) (diggable? to-tile)
                            (dare-destroy? level to-tile))
-                    [8 (->ApplyAt (key (:pick opts)) dir)]))]
+                    [8 (dig (:pick opts) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
@@ -581,9 +581,9 @@
   [game level]
   (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
     (with-reason "going to a trapdoor/hole" (or step (->Move \>)))
-    (if-let [[slot pick] (and (can-dig? game level)
-                              (diggable-floor? game level)
-                              (have-pick game))]
+    (if-let [pick (and (can-dig? game level)
+                       (diggable-floor? game level)
+                       (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
                                         (not-any? (comp (partial = :water)
@@ -601,7 +601,7 @@
                                              (filter walkable?)
                                              count (<= 3)))))]
         (or (with-reason "finding somewhere to dig down" step)
-            (with-reason "digging down" (->ApplyAt slot \>)))))))
+            (with-reason "digging down" (dig pick \>)))))))
 
 (defn search
   ([game] (search game 10))

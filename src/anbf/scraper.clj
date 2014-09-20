@@ -269,8 +269,6 @@
                                 handle-location
                                 #"^You wrest one last "
                                 (do (send delegator message text) no-mark)
-                                #"^You now wield a "
-                                (do (send delegator message text) no-mark)
                                 (do (send delegator message text) initial))]
                       (send delegator write " ")
                       res))))
