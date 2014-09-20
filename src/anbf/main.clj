@@ -133,6 +133,12 @@
 (defn print-transparent [game]
   (print-tiles transparent? (curlvl game)))
 
+(defn print-position
+  ([game x y] (print-position game (position x y)))
+  ([game pos]
+   (print-tiles #(= (position %) (position pos)) (curlvl game)
+                (constantly \X))))
+
 (defn print-path
   ([game]
    (if-let [path (:last-path game)]

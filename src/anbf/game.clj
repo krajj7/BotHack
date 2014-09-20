@@ -37,14 +37,14 @@
               :branch-id :main
               :discoveries initial-discoveries}))
 
-(defn- update-game [game status]
+(defn- update-game-status [game status]
   (->> game keys (select-keys status) (merge game)))
 
 (defn- update-by-botl [game status]
   (-> game
       (assoc :dlvl (:dlvl status))
       (update-in [:player] update-player status)
-      (update-game status)))
+      (update-game-status status)))
 
 (defn- update-visible-tile [game level tile]
   (assoc tile

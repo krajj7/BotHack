@@ -106,12 +106,16 @@
   {:pre [(:dungeon game)]}
   (-> game curlvl :tags))
 
-(defn remove-curlvl-monster [game pos]
+(defn remove-curlvl-monster
+  "Removes a monster from the given position"
+  [game pos]
   {:pre [(:dungeon game)]}
   (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :monsters]
              dissoc (position pos)))
 
-(defn reset-curlvl-monster [game monster]
+(defn reset-curlvl-monster
+  "Sets the monster at the given position to the new value"
+  [game monster]
   {:pre [(:dungeon game)]}
   (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
              reset-monster monster))
@@ -125,28 +129,38 @@
                          (:dlvl game) :monsters (position pos)]
          update-fn args))
 
-(defn curlvl-monster-at [game pos]
+(defn curlvl-monster-at
+  "Returns the monster at the position on the current level"
+  [game pos]
   (-> game curlvl (monster-at pos)))
 
+(defn update-curlvl
+  "Update the current Level by applying update-fn to its current value and args"
+  [game update-fn & args]
+  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
+             #(apply update-fn % args)))
+
 (defn update-curlvl-at
-  "Update the tile on current level at given position by applying update-fn to its current value and args"
+  "Update the Tile on current level at given position by applying update-fn to its current value and args"
   [game pos update-fn & args]
   {:pre [(:dungeon game)]}
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
-             #(apply update-at % pos update-fn args)))
+  (apply update-curlvl game update-at pos update-fn args))
 
 (defn update-at-player
-  "Update the tile at player's position by applying update-fn to its current value and args"
+  "Update the Tile at player's position by applying update-fn to its current value and args"
   [game update-fn & args]
   {:pre [(:dungeon game)]}
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
-             #(apply update-at % (:player game) update-fn args)))
+  (apply update-curlvl-at game (:player game) update-fn args))
 
-(defn at-curlvl [game pos]
+(defn at-curlvl
+  "Returns the Tile at the given position on the current level"
+  [game pos]
   {:pre [(:dungeon game)]}
   (at (curlvl game) pos))
 
-(defn at-player [game]
+(defn at-player
+  "Returns the Tile at the player's position"
+  [game]
   {:pre [(:dungeon game)]}
   (at-curlvl game (:player game)))
 
@@ -222,7 +236,9 @@
   (if-let [l (get-level game :main (branch-key game branch))]
     (:dlvl l)))
 
-(defn- merge-branch-id [{:keys [dungeon] :as game} branch-id branch]
+(defn- merge-branch-id
+  "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
+  [{:keys [dungeon] :as game} branch-id branch]
   (log/debug "merging branch-id" branch-id "to branch" branch)
   ;(log/debug dungeon)
   (-> game
@@ -343,7 +359,7 @@
 (defn initial-branch-id
   "Choose branch-id for a new dlvl reached by stairs."
   [game dlvl]
-  ; TODO could check for already found parallel branches and disambiguate
+  ; TODO could check for already found parallel branches and disambiguate, also check if going up or down and disambiguate soko/mines
   (or (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (gen-branch-id)))
@@ -431,7 +447,7 @@
         res)))
 
 (defn- match-level
-  "Returns true if the level matches the blueprint :dlvl, :branch and :tag (if present)"
+  "Returns true if the level matches the blueprint's :dlvl, :branch and :tag (if present)"
   [game level blueprint]
   (and (or (not (:role blueprint))
            true) ; TODO check :role !
@@ -442,7 +458,9 @@
        (or (not (:tag blueprint))
            ((:tags level) (:tag blueprint)))))
 
-(defn- match-blueprint [game level]
+(defn- match-blueprint
+  "Apply the matching blueprint to the level"
+  [game level]
   (when-let [blueprint (find-first (partial match-level game level) blueprints)]
     (log/debug "applying blueprint, level:" (:dlvl level)
                "; branch:" (branch-key game level) "; tags:" (:tags level))
@@ -457,7 +475,9 @@
               res
               (:monsters blueprint)))))
 
-(defn level-blueprint [game]
+(defn level-blueprint
+  "If the current level doesn't have a blueprint, check for a match and apply it"
+  [game]
   (let [level (curlvl game)]
     (if-let [new-level (and (not (:blueprint level))
                             (match-blueprint game level))]
