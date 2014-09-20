@@ -190,10 +190,8 @@
   "Are the walls diggable on this level?"
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
-       ; TODO some of these are partially diggable
-       (not-any? #{:asmodeus :medusa-2 :votd :castle} (:tags level))
-       (not= :quest (branch-key game))
-       (not= :sokoban (branch-key game))))
+       (not (:undiggable (:blueprint level)))
+       (not (#{:sokoban :quest} (branch-key game)))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag

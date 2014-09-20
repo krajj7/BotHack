@@ -486,5 +486,6 @@
       game)))
 
 (defn diggable-floor? [game level]
-  (not (or (#{:quest :sokoban} (branch-key game level))
-           (#{:undiggable-floor :end :castle :votd} (:tags level)))))
+  (not (or (= :sokoban (branch-key game level))
+           (:undiggable-floor (:blueprint level))
+           (#{:undiggable-floor :end} (:tags level)))))

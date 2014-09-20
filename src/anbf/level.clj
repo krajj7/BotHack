@@ -57,6 +57,7 @@
                {:x 28 :y 12} :stairs-down}}
    {:branch :main
     :tag :medusa-2
+    :undiggable true
     :monsters {{:x 70 :y 12} (name->monster "Medusa")}
     :features {{:x 3 :y 7} :door-secret
                {:x 8 :y 16} :door-secret
@@ -67,6 +68,8 @@
                {:x 70 :y 12} :stairs-down}}
    {:branch :main
     :tag :castle
+    :undiggable true
+    :undiggable-floor true
     :features {{:x 55 :y 10} :door-secret
                {:x 55 :y 12} :door-secret
                {:x 46 :y 11} :door-secret
@@ -77,11 +80,14 @@
                {:x 63 :y 12} :trapdoor}}
    {:branch :main
     :tag :votd
+    :undiggable true
+    :undiggable-floor true
     :features {{:x 68 :y 18} :stairs-up
                {:x 6 :y 2} :door-secret
                {:x 10 :y 5} :door-secret
                {:x 8 :y 7} :door-secret}}
    {:branch :main
+    :undiggable true
     :tag :asmodeus
     :features {{:x 28 :y 8} :door-secret
                {:x 19 :y 8} :spikepit
@@ -90,6 +96,7 @@
                {:x 22 :y 12} :firetrap
                {:x 27 :y 13} :stairs-down}}
    {:branch :main
+    :undiggable true
     :tag :baalzebub
     :features {{:x 38 :y 12} :door-secret
                {:x 57 :y 11} :door-secret
@@ -105,6 +112,7 @@
                {:x 51 :y 8} :door-secret}}
    {:role "samurai"
     :dlvl "Home 1"
+    :undiggable true
     :branch :quest
     :leader {:y 6, :x 22}
     :monsters {{:y 6, :x 22} (name->monster "Lord Sato")}
