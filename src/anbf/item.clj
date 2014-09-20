@@ -68,7 +68,7 @@
                                (parse-int %)
                                1))
       (if (:candles raw)
-        (update-in res [:candles] parse-int)
+        (update-in res [:candles] #(if (= % "no") 0 (parse-int %)))
         res)
       (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
       (reduce (fn to-int [res kw]
