@@ -697,8 +697,12 @@
      (change-dlvl #(+ % x) start))))
 
 (defn- dlvl-from-entrance [game branch in-branch-depth]
-  (some->> (get-branch game :mines) keys first
+  (some->> (get-branch game branch) keys first
            (change-dlvl #(+ % (dec in-branch-depth)))))
+
+(defn- dlvl-from-tag [game branch tag after-tag-depth]
+  (some->> (get-level game branch tag) :dlvl
+           (change-dlvl #(+ % (dec after-tag-depth)))))
 
 (defn- possibly-oracle? [game dlvl]
   (if-let [level (get-level game :main dlvl)]
@@ -724,6 +728,11 @@
   ([game branch]
    (or (branch-entry game branch)
        (case branch
+         :vlad (least-explored game :main
+                      ; TODO check for double upstairs in vlad range
+                               (if-let [vlad (dlvl-from-tag game :main :votd 9)]
+                                 (dlvl-range :main vlad 5)
+                                 (dlvl-range :main "Dlvl:34" 9)))
          :sokoban (or (if-let [oracle (:dlvl (get-level game :main :oracle))]
                         (next-dlvl :main oracle))
                       ; TODO check for double upstairs in soko range
