@@ -67,6 +67,7 @@
 
 (defn- menu-fn [head]
   (condp re-seq head
+    #"What do you wish to do\?" name-menu
     #"Pick up what\?" pick-up-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
@@ -123,6 +124,7 @@
 
 (defn- prompt-fn [msg]
   (condp re-seq msg
+    #"^What do you want to name this" name-item
     #"^Call .*:" call-item
     (throw (UnsupportedOperationException. (str "unknown prompt msg" msg))))
   ; TODO
@@ -150,6 +152,7 @@
     #"^Die\?" die
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
+    #"^What do you want to name\?" name-what
     #"There is .*force its lock\?" force-lock
     #"[Uu]nlock it\? " unlock-it
     #"[Ll]ock it\? " lock-it

@@ -295,3 +295,12 @@
 
 (defmenuhandler PickupHandler
   (pick-up-what [handler ^clojure.lang.IPersistentMap options]))
+
+(defmenuhandler NameMenuHandler
+  (name-menu [handler ^clojure.lang.IPersistentMap options]))
+
+(defchoicehandler NameWhatHandler
+  (name-what [handler ^String prompt]))
+
+(defprompthandler NameItemHandler
+  (name-item [handler ^String prompt]))

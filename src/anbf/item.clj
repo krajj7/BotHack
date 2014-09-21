@@ -61,7 +61,7 @@
         res)
       (update-in res [:name] #(get jap->eng % %))
       (update-in res [:name] #(get plural->singular % %))
-      (assoc res :lit (some #{:lit :lit-candelabrum} res))
+      (assoc res :lit (some? ((some-fn :lit :lit-candelabrum) res)))
       (assoc res :in-use (find-first some? (map res [:wielded :worn])))
       (assoc res :cost (find-first some? (map res [:cost1 :cost2 :cost3])))
       (update-in res [:qty] #(if (re-seq #"[0-9]+" %)

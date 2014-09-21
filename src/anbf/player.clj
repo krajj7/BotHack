@@ -80,14 +80,19 @@
      String (name of item)
      #{String} (set of strings - item name alternatives with no preference)
      fn - predicate function to filter items"
-  [game itemname-or-set-or-fn]
+  [game name-or-set-or-fn]
   ;(log/debug "have")
-  (find-first (cond (set? itemname-or-set-or-fn) (comp itemname-or-set-or-fn
-                                                       (partial item-name game)
-                                                       val)
-                    (fn? itemname-or-set-or-fn) (comp itemname-or-set-or-fn val)
-                    :else (comp (partial = itemname-or-set-or-fn)
-                                (partial item-name game) val))
+  (find-first (comp
+                (cond (fn? name-or-set-or-fn) name-or-set-or-fn
+                      (set? name-or-set-or-fn) (some-fn
+                                                 (comp name-or-set-or-fn
+                                                       (partial item-name game))
+                                                 (comp name-or-set-or-fn :name))
+                      :else (some-fn
+                              (comp (partial = name-or-set-or-fn) :name)
+                              (comp (partial = name-or-set-or-fn)
+                                    (partial item-name game))))
+                val)
               (inventory game)))
 
 (defn have-unihorn [game]

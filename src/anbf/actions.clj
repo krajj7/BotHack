@@ -546,9 +546,38 @@
   [anbf]
   (register-handler anbf priority-top (discoveries-handler anbf)))
 
+(defaction Name [slot name]
+  (handler [_ {:keys [game] :as anbf}]
+    (update-items anbf)
+    (reify
+      NameMenuHandler
+      (name-menu [_ _] \b)
+      NameWhatHandler
+      (name-what [_ _] slot)
+      NameItemHandler
+      (name-item [_ _] name)))
+  (trigger [_] "#name\n"))
+
+(defn update-name [anbf slot name]
+  "Name an item on the next action"
+  (register-handler anbf priority-top
+                    (reify ActionHandler
+                      (choose-action [this game]
+                        (deregister-handler anbf this)
+                        (->Name slot name)))))
+
 (defaction Apply [slot]
   (handler [_ {:keys [game] :as anbf}]
-    (reify ApplyItemHandler
+    (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"has no oil|ran out of power"
+          (update-name anbf slot "empty")
+          #" lamp is now (on|off)"
+          (update-inventory anbf)
+          nil))
+      ApplyItemHandler
       (apply-what [_ _] slot)))
   (trigger [_] "a"))
 

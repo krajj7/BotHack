@@ -66,7 +66,7 @@
       (log/debug "progress end")))
 
 (def desired-weapons
-  (ordered-set "Grayswandir" "Excalibur" "katana" "long sword"))
+  (ordered-set "Grayswandir" "Excalibur" "Stormbringer" "katana" "long sword"))
 
 (def desired-items
   [(ordered-set "pick-axe" "dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -124,7 +124,13 @@
       (with-reason "wielding better weapon -" (:label weapon)
         (->Wield slot)))))
 
-(defn- reequip [game]
+(defn light? [game item]
+  (let [id (item-id game item)]
+    (and (not= "empty" (:specific item))
+         (= :light (:subtype id))
+         (= :copper (:material id)))))
+
+(defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)]
@@ -133,13 +139,18 @@
                  (not-any? (complement walkable?) tile-path))
           (with-reason "reequip - weapon"
             (wield-weapon game)))
+        (if-not (have game (every-pred (partial light? game) :lit))
+          (or (if-let [[slot lamp] (have game "magic lamp")]
+                (with-reason "using magic lamp" (->Apply slot)))
+              (if-let [[slot lamp] (have game (partial light? game))]
+                (with-reason "using any light source" (->Apply slot)))))
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
           (with-reason "reequip - don't need levi"
             (remove-use game slot))))))
 
-(defn- fight [{:keys [player] :as game}]
+(defn fight [{:keys [player] :as game}]
   (if (:engulfed player)
     (with-reason "killing engulfer" (or (wield-weapon game)
                                         (->Move :E)))
