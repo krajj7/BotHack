@@ -33,6 +33,7 @@
    trapped
    leg-hurt
    state ; subset #{:stun :conf :hallu :blind :ill}
+   stat-drained
    lycantrophy
    stats ; :str :dex :con :int :wis :cha
    alignment ; :lawful :neutral :chaotic
@@ -113,7 +114,8 @@
                    (or (#{:blessed :uncursed} (:buc %)) (:in-use %)))))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
-  (or (some (:state player) #{:conf :stun :hallu :ill})
+  (or (:stat-drained player)
+      (some (:state player) #{:conf :stun :hallu :ill})
       (and (:blind (:state player))
            (not (have game #(and (#{"towel" "blindfold"} (item-name game %))
                                  (:in-use %)))))))

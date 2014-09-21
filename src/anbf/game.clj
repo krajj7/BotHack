@@ -187,6 +187,10 @@
       (or (condp re-seq text
             #"You feel more confident"
             (swap! game assoc-in [:player :can-enhance] true)
+            #"You feel weaker"
+            (swap! game assoc-in [:player :stat-drained] true)
+            #"makes you feel great"
+            (swap! game assoc-in [:player :stat-drained] false)
             #"You feel feverish"
             (swap! game assoc-in [:player :lycantrophy] true)
             #"You feel purified"
