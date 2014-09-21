@@ -173,9 +173,9 @@
                    (= "Dlvl" (subs new-dlvl 0 4)))
             (swap! game assoc :branch-id :main) ; kicked out of quest
             (swap! game ensure-curlvl))
-          (if (and (= :vlad (:branch-id @game))
-                   (= new-dlvl (dlvl-from-entrance @game :vlad -1)))
-            (swap! game add-curlvl-tag :end)))))
+          (if-let [branch (#{:wiztower :vlad} (branch-key @game))]
+            (if (= new-dlvl (dlvl-from-entrance @game branch -1))
+              (swap! game add-curlvl-tag :end))))))
     KnowPositionHandler
     (know-position [_ frame]
       (swap! game update-in [:player] into (:cursor frame)))

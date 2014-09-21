@@ -25,7 +25,7 @@
 
 (def upwards-branches #{:sokoban :vlad})
 
-(def portal-branches #{:quest :ludios :air :fire :water :astral})
+(def portal-branches #{:quest :wiztower :ludios :air :fire :water :astral})
 
 (defn upwards? [branch] (upwards-branches branch))
 
@@ -199,7 +199,7 @@
 
 (defn- has-features? [level]
   "checks for features not occuring in the mines (except town/end)"
-  (some main-features (feature-seq level)))
+  (some (comp main-features :feature) (tile-seq level)))
 
 (defn- same-glyph-diag-walls
   " the check we make is that any level where there are diagonally adjacent
@@ -284,6 +284,16 @@
             soko-recog)
       (throw (IllegalStateException. "unrecognized sokoban level!"))))
 
+(def fake-wiztower-water
+  [{:y 9 :x 35} {:y 9 :x 36} {:y 9 :x 37} {:y 9 :x 38} {:y 9 :x 39} {:y 9 :x 40}
+   {:y 9 :x 41} {:y 10 :x 35} {:y 10 :x 36} {:y 10 :x 40} {:y 10 :x 41}
+   {:y 11 :x 35} {:y 11 :x 41} {:y 12 :x 35} {:y 12 :x 41} {:y 13 :x 35}
+   {:y 13 :x 41} {:y 14 :x 35} {:y 14 :x 36} {:y 14 :x 40} {:y 14 :x 41}
+   {:y 15 :x 35} {:y 15 :x 36} {:y 15 :x 37} {:y 15 :x 38} {:y 15 :x 39}
+   {:y 15 :x 40} {:y 15 :x 41}])
+
+(def fake-wiztower-portal {:x 38 :y 12})
+
 (defn infer-tags [game]
   (let [level (curlvl game)
         dlvl (dlvl level)
@@ -339,7 +349,7 @@
       (and (<= 27 dlvl 36) (not (:asmodeus (:tags level)))
            (door? (at level 66 12))) (add-curlvl-tag :asmodeus)
       (and (<= 29 dlvl 36) (not (:juiblex (:tags level)))
-           (->> (feature-seq level) (filter #(= :water %)) (take 25)
+           (->> (tile-seq level) (filter water?) (take 25)
                 count (= 25))) (add-curlvl-tag :juiblex)
       (and (<= 31 dlvl 38) (not (tags :baalzebub))
            (not-any? (fn [[x y]]
@@ -353,8 +363,8 @@
                       [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
                                                            :baalzebub)
       (and (<= 40 dlvl 51) (not (:fake-wiztower tags))
-           (some (partial = :water)
-                 (feature-seq level))) (add-curlvl-tag :fake-wiztower)
+           (->> fake-wiztower-water (map (partial at level))
+                (some water?))) (add-curlvl-tag :fake-wiztower)
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 

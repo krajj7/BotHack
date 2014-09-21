@@ -141,10 +141,15 @@
 
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
   (or ; TODO planes
-      (if (subbranches (branch-key @game level))
+      (when (subbranches (branch-key @game level))
+        (log/debug "leaving subbranch via portal")
         (swap! game assoc :branch-id :main))
-      (if (= "Home" (subs new-dlvl 0 4))
+      (when (= "Home" (subs new-dlvl 0 4))
+        (log/debug "entering quest portal")
         (swap! game assoc :branch-id :quest))
+      (when (> (dlvl-number new-dlvl) 40)
+        (log/debug "entering wiztower portal")
+        (swap! game assoc :branch-id :wiztower))
       (log/error "entered unknown portal!")))
 
 (defn update-trapped-status [{:keys [game] :as anbf} old-pos]
@@ -379,7 +384,7 @@
                                    :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
               (swap! game update-at-player assoc :feature feature)
-              (if (unknown-trap? (at-player @game))
+              (if (trap? (at-player @game))
                 (swap! game update-at-player assoc :feature :floor))))))))
   (trigger [this] ":"))
 
@@ -443,6 +448,7 @@
                (not (have-levi-on game))
                (or ((some-fn unknown? unknown-trap? :new-items) tile)
                    (and (seq (:items tile))
+                        (not= (:last-position game) (position player))
                         (not= :search (some-> game :last-action typekw))
                         (not= (:turn game) (:examined tile)))))
       (with-reason "examining tile" (pr-str tile) ->Look))))

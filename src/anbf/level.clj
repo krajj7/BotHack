@@ -43,29 +43,26 @@
   [level]
   (apply concat (:tiles level)))
 
-(defn feature-seq [level]
-  (map :feature (tile-seq level)))
-
 (def blueprints
   [{:branch :main
     :tag :medusa-1
-    :monsters {{:x 28 :y 12} (name->monster "Medusa")}
-    :features {{:x 32 :y 14} :door-secret
+    :monsters {{:x 38 :y 12} (name->monster "Medusa")}
+    :features {{:x 38 :y 12} :stairs-down
+               {:x 32 :y 14} :door-secret
                {:x 48 :y 9} :door-secret
                {:x 30 :y 14} :squeaky
-               {:x 30 :y 9} :squeaky
-               {:x 28 :y 12} :stairs-down}}
+               {:x 30 :y 9} :squeaky}}
    {:branch :main
     :tag :medusa-2
     :undiggable true
     :monsters {{:x 70 :y 12} (name->monster "Medusa")}
-    :features {{:x 3 :y 7} :door-secret
+    :features {{:x 70 :y 12} :stairs-down
+               {:x 3 :y 7} :door-secret
                {:x 8 :y 16} :door-secret
                {:x 62 :y 7} :door-secret
                {:x 68 :y 10} :door-secret
                {:x 75 :y 16} :door-secret
-               {:x 5 :y 14} :magictrap
-               {:x 70 :y 12} :stairs-down}}
+               {:x 5 :y 14} :magictrap}}
    {:branch :main
     :tag :castle
     :undiggable true
@@ -104,7 +101,8 @@
                {:x 70 :y 12} :door-secret}}
    {:branch :main
     :tag :fake-wiztower
-    :features {{:x 39 :y 12} :squeaky
+    :features {{:x 38 :y 12} :portal
+               {:x 39 :y 12} :squeaky
                {:x 37 :y 12} :squeaky
                {:x 38 :y 13} :squeaky
                {:x 38 :y 11} :squeaky}}

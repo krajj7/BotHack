@@ -154,15 +154,15 @@
   (apply min (map :searched (neighbors level tile))))
 
 (defn walkable-by [{:keys [feature] :as tile} glyph]
-  (-> tile
-      (assoc :feature (cond
-                        (and (not (#{\X \P} glyph))
-                             (door? tile)) :door-open
-                        (and (not= \X glyph)
-                             (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
-                        :else feature)
-             :dug (or (:dug tile)
-                      (and (diggable? tile) (#{\p \h \r} glyph))))))
+  (assoc tile
+         :feature (cond
+                    (and (not (#{\E \X \P} glyph))
+                         (door? tile)) :door-open
+                    (and (not (#{\E \X} glyph))
+                         (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
+                         :else feature)
+         :dug (or (:dug tile)
+                  (and (diggable? tile) (#{\p \h \r} glyph)))))
 
 (defn- door-or-wall [current new-glyph new-color]
   (cond

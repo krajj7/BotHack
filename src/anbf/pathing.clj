@@ -223,8 +223,6 @@
               (or (if (and (or (passable-walking? game level from-tile to-tile)
                                (and (unexplored? to-tile)
                                     (not (:explored opts))))
-                           (or (not (narrow? level from-tile to-tile))
-                               (not (:thick (:player game))))
                            (not (and (kickable-door? level to-tile opts)
                                      (blocked-door level to-tile))))
                     (if-not monster
@@ -247,7 +245,7 @@
                                     (random-move game level))]
                       [0 step]))
                   (if (and (edge-passable-walking? game level from-tile to-tile)
-                           (needs-levi? to-tile))
+                           (needs-levi? to-tile) (not monster))
                     (if-let [[slot item] (:levi opts)]
                       (if (:in-use item)
                         [1 (with-reason "assuming levitation" (->Move dir))]
@@ -272,7 +270,7 @@
                               [5 (->Unlock k dir)]
                               (if (kickable-door? level to-tile opts)
                                 (kick-door game level to-tile dir)))))))
-                  (if (and (:pick opts) (diggable? to-tile)
+                  (if (and (:pick opts) (diggable? to-tile) (not monster)
                            (dare-destroy? level to-tile))
                     [8 (dig (:pick opts) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile opts))))))
@@ -624,7 +622,12 @@
 (defn seek-portal [game]
   (with-reason "seeking portal"
     (or (:step (navigate game portal?))
-        (:step (navigate game (complement (some-fn :walked door?))))
+        (if (> (dlvl-number (:dlvl game)) 35)
+          (if (unknown? (at-curlvl game fake-wiztower-portal))
+            (with-reason "seeking fake wiztower portal"
+              (:step (navigate game fake-wiztower-portal))))
+          (with-reason "stepping everywhere to find portal"
+            (:step (navigate game (complement (some-fn :walked door?))))))
         (explore game)
         (search game))))
 
@@ -694,6 +697,13 @@
                      (at level x y))))
     true))
 
+(defn- possibly-wiztower? [game dlvl]
+  (if-let [level (get-level game :main dlvl)]
+    (if (not-any? #{:orcus :asmodeus :juiblex :baalzebub} (:tags level))
+      (->> fake-wiztower-water (map (partial at level))
+           (remove (some-fn unknown? water?)) count (> 5)))
+    true))
+
 (defn visited?
   ([game branch]
    (get-branch game branch))
@@ -713,23 +723,23 @@
          :wiztower (or (->> (get-branch game :main) vals
                             (filter (fn unexplored-tower? [level]
                                       (and (:fake-wiztower (:tags level))
-                                           ((some-fn unknown? portal?)
-                                            (at level 38 12)))))
-                            (map :dlvl) seq)
-                       (if-let [end (:dlvl (get-level game :main :end))]
-                         (as-> end res
-                           (change-dlvl #(- % 4) res)
-                           (dlvl-range :main res 4)
-                           (least-explored game :main res)))
-                       (if-let [geh (dlvl-from-tag game :main :gehennom)]
-                         (as-> geh res
-                           (change-dlvl (partial + 15) res)
-                           (dlvl-range :main res 8)
-                           (least-explored game :main res)))
-                       (->> (dlvl-range :main "Dlvl:40" 12)
-                            (least-explored game :main)))
+                                           (portal? (at level 38 12)))))
+                            (map :dlvl) first)
+                       (some->>
+                         (or (if-let [end (:dlvl (get-level game :main :end))]
+                               (as-> end res
+                                 (change-dlvl #(- % 4) res)
+                                 (dlvl-range :main res 4)))
+                             (if-let [geh (:dlvl (get-level game :main
+                                                            :gehennom))]
+                               (as-> geh res
+                                 (change-dlvl (partial + 15) res)
+                                 (dlvl-range :main res 8)))
+                             (->> (dlvl-range :main "Dlvl:40" 12)))
+                         (filter (partial possibly-wiztower? game))
+                         (least-explored game :main)))
          :vlad (least-explored game :main
-                      ; TODO check for double upstairs in vlad range
+                               ; TODO check for double upstairs in vlad range
                                (if-let [vlad (dlvl-from-tag game :main :votd 9)]
                                  (dlvl-range :main vlad 5)
                                  (dlvl-range :main "Dlvl:34" 9)))
@@ -775,10 +785,10 @@
       (with-reason "trying to enter" branch "from" new-dlvl
         (or (switch-dlvl game new-dlvl)
             (if (portal-branches branch)
-              (seek-portal game)
-              (or (seek game #(and (= stairs (:feature %))
-                                   (not= :main (branch-key game %))))
-                  (stair-action))))))))
+              (seek-portal game))
+            (seek game #(and (= stairs (:feature %))
+                             (not= :main (branch-key game %))))
+            (stair-action))))))
 
 (defn seek-branch
   [game new-branch-id]

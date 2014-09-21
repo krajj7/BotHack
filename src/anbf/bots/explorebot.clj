@@ -49,13 +49,13 @@
         (with-reason "waiting out impairment" ->Wait))))
 
 (defn progress [game]
-  (or #_(explore game :main "Dlvl:1")
+  (or ;(explore game :main "Dlvl:1")
       ;(explore-level game :mines :minetown)
       ;(explore-level game :quest :end)
       ;(visit game :main :medusa)
       ;(explore-level game :vlad :end)
-      (explore-level game :main :end)
-      (visit game :wiztower)
+      ;(explore-level game :main :end)
+      (explore-level game :wiztower :end)
       ;(visit game :sokoban :end)
       ;(visit game :mines :minetown)
       ;(visit game :mines :end)
