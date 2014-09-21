@@ -70,8 +70,8 @@
             (println frame))))))
 
 (defn- register-javabot-jars []
-  (doseq [l (filter #(-> % .getName (.endsWith ".jar"))
-                    (file-seq (io/file "javabots/bot-jars")))]
+  (doseq [l (file-seq (io/file "javabots/bot-jars"))
+          :when (-> l .getName (.endsWith ".jar"))]
     (pom/add-classpath l)))
 
 (defn -main [& args] []

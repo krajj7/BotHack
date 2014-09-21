@@ -108,7 +108,7 @@
         #".*: \"Closed for inventory\"" ; TODO possible degradation
         (update-before-action
           anbf (fn mark-shop [game]
-                 (reduce #(if (or (door? %2) (= :wall (:feature %2)))
+                 (reduce #(if ((some-fn door? wall?) %2)
                             (update-curlvl-at %1 %2 assoc :room :shop)
                             %1)
                          (add-curlvl-tag game :shop-closed)
@@ -177,7 +177,9 @@
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (if (:feature target)
-               (log/error "seemingly non diagonally walkable feature at" target)
+               (do (log/error "seemingly non diagonally walkable feature at"
+                              target)
+                   %)
                (do (log/debug "stuck on diagonal movement => possibly door at"
                               target)
                    (update-curlvl-at % (in-direction old-pos dir)
@@ -236,7 +238,7 @@
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
     (->> (conj (neighbors tile) tile)
-         (remove #(= origin-feature (:feature %)))
+         (remove (partial has-feature? origin-feature))
          (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch) game))))
 
 (defn stairs-handler [anbf]
@@ -340,7 +342,7 @@
             (send delegator found-items (:items (at-player game))))
           (as-> game res
             (update-at-player res assoc :examined (:turn game))
-            (if (->> (:player res) (at-curlvl res) :feature nil?)
+            (if (unknown? (at-player res))
               (update-at-player res assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
             (if-not @has-item
@@ -377,7 +379,7 @@
                                    :item-color nil)))
             (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
               (swap! game update-at-player assoc :feature feature)
-              (if (= :trap (:feature (at-player @game)))
+              (if (unknown-trap? (at-player @game))
                 (swap! game update-at-player assoc :feature :floor))))))))
   (trigger [this] ":"))
 
@@ -392,7 +394,7 @@
               (swap! game update-curlvl-at pos assoc :feature
                      (or (trap-names trap)
                          (throw (IllegalArgumentException.  (str "unknown farlook trap: " text " >>> " trap))))))
-            (when-let [desc (and (monster? (nth text 0))
+            (when-let [desc (and (monster-glyph? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
               (let [peaceful? (.startsWith ^String desc "peaceful")
                     type (by-description desc)]
@@ -439,9 +441,7 @@
   (let [tile (at-player game)]
     (when (and (not (blind? player))
                (not (have-levi-on game))
-               (or (not (:feature tile))
-                   (= :trap (:feature tile))
-                   (:new-items tile)
+               (or ((some-fn unknown? unknown-trap? :new-items) tile)
                    (and (seq (:items tile))
                         (not= :search (some-> game :last-action typekw))
                         (not= (:turn game) (:examined tile)))))
@@ -449,19 +449,19 @@
 
 (defn- examine-traps [game]
   (some->> (curlvl game) tile-seq
-           (find-first #(and (= :trap (:feature %))
-                             (not (item? %))
-                             (not (monster? (:glyph %) (:color %)))))
+           (find-first (every-pred unknown-trap?
+                                   (complement item?)
+                                   (complement monster?)))
            ->FarLook
            (with-reason "examining unknown trap")))
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (:hallu (:state player))
     (when-let [m (->> (curlvl-monsters game) vals
-                      (remove #(or (:remembered %)
-                                   (:friendly %)
-                                   (some? (:peaceful %))
-                                   (#{\I \1 \2 \3 \4 \5} (:glyph %))))
+                      (remove (some-fn :remembered
+                                       :fiendly
+                                       (comp some? :peaceful)
+                                       (comp #{\I \1 \2 \3 \4 \5} :glyph)))
                       first)]
       (with-reason "examining monster" (->FarLook m)))))
 

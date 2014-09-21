@@ -16,20 +16,19 @@
 
 (defn base-cost [level dir tile opts]
   {:pre [(and (some? level) (some? dir) (some? tile))]}
-  (let [feature (:feature tile)]
-    (cond-> 1
-      (and (:prefer-items opts) (not (:new-items tile))) (+ 0.5)
-      (and (:prefer-items opts) (:pick opts) (boulder? tile)
-           (:new-items tile)) (- 5) ; partially negate digging penalization
-      (traps feature) (+ 15) ; TODO trap types
-      (diagonal dir) (+ 0.1)
-      (and (nil? feature) (not (:seen tile))) (+ 6)
-      (not (#{:stairs-up :stairs-down} feature)) (+ 0.1)
-      (not (or (:dug tile) (:walked tile))) (+ 0.2)
-      (and (not (:walked tile)) (= :floor feature)) (+ 0.5))))
+  (cond-> 1
+    (and (:prefer-items opts) (not (:new-items tile))) (+ 0.5)
+    (and (:prefer-items opts) (:pick opts) (boulder? tile)
+         (:new-items tile)) (- 5) ; partially negate digging penalization
+    (trap? tile) (+ 15) ; TODO trap types
+    (diagonal dir) (+ 0.1)
+    (and (unknown? tile) (not (:seen tile))) (+ 6)
+    (not (stairs? tile)) (+ 0.1)
+    (not (or (:dug tile) (:walked tile))) (+ 0.2)
+    (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
 
 (defn diagonal-walkable? [game tile]
-  (not= :door-open (:feature tile)))
+  (not (door-open? tile)))
 
 (defn- a*
   "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
@@ -81,8 +80,7 @@
                                      [nbr [(+ dist cost) node]]))))))))))
 
 (defn- unexplored? [tile]
-  (and (not (boulder? tile))
-       (nil? (:feature tile))))
+  (and (not (boulder? tile)) (unknown? tile)))
 
 (defn- narrow?
   "Only works for adjacent diagonals"
@@ -158,7 +156,8 @@
 (defn- blocked-door
   "If this is a kickable door blocked from one side, return direction from which to kick it"
   [level tile]
-  (if-let [ws (seq (filter walkable? (straight-neighbors level tile)))]
+  (if-let [ws (seq (filter (some-fn walkable? blank?)
+                           (straight-neighbors level tile)))]
     (let [w (first ws)
           dir (towards tile w)
           o (in-direction level tile (opposite dir))]
@@ -177,7 +176,7 @@
 
 (defn- kick-door [{:keys [player] :as game} level tile dir]
   (if-not (have-levi-on game)
-    (if (= :door-open (:feature tile))
+    (if (door-open? tile)
       [7 (with-reason "closing door to kick it" (->Close dir))]
       (if (:leg-hurt player)
         [30 (with-reason "waiting out :leg-hurt" ->Search)]
@@ -254,17 +253,19 @@
                         [1 (with-reason "assuming levitation" (->Move dir))]
                         [4 (make-use game slot)])))
                   (when (and (door? to-tile) (not monster)
-                             (or (not (:walking opts))
-                                 (= :door-open (:feature to-tile))))
-                    (or (if (= :door-secret (:feature to-tile))
+                             (or (not (:walking opts)) (door-open? to-tile)))
+                    (or (if (door-secret? to-tile)
                           [10 (->Search)]) ; TODO stethoscope
                         (and (kickable-door? level to-tile opts)
                              (blocked-door level to-tile)
-                             (kick-door game level to-tile dir))
+                             (->> (partial with-reason
+                                           "the door is blocked from one side")
+                                  (update-in (kick-door game level to-tile dir)
+                                             [1])))
                         (if (diagonal dir)
                           (if (kickable-door? level to-tile opts)
                             (kick-door game level to-tile dir))
-                          (if (= :door-closed (:feature to-tile))
+                          (if (door-closed? to-tile)
                             [3 (->Open dir)]
                             (if-let [k (and (can-unlock? game)
                                             (some-> game have-key key))]
@@ -284,7 +285,7 @@
 (defn autonavigable? [level pos]
   (let [tile (at level pos)]
     (and (not (trap? tile))
-         (some? (:feature tile))
+         (not (unknown? tile))
          (not (monster-at level pos))
          (walkable? tile))))
 
@@ -384,15 +385,13 @@
                             max-steps)))))))))
 
 (defn- explorable-tile? [level tile]
-  (and (not (and (:dug tile) (boulder? tile)))
-       (or (and (nil? (:feature tile)) (not= \space (:glyph tile)))
+  (and (not (and (dug? tile) (boulder? tile)))
+       (or (and (unknown? tile) (not (blank? tile)))
            (:new-items tile)
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
-                (some #(and (not (:seen %))
-                            (not (boulder? %))
-                            (not (monster? (:glyph %) (:color %))))
+                (some (complement (some-fn :seen boulder? monster?))
                       (neighbors level tile))))
-       (some #(not= \space (:glyph %)) (neighbors level tile))))
+       (some (complement blank?) (neighbors level tile))))
 
 (defn dead-end? [level tile]
   (and (walkable? tile)
@@ -400,15 +399,14 @@
        (not (:dug tile))
        ; isolated diagonal corridors - probably dug:
        (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
-                                 (= :corridor (:feature %))
-                                 (boulder? %))
+                                 (corridor? %) (boulder? %))
                              (not-any? walkable? (straight-neighbors level %)))
                        (diagonal-neighbors level tile))))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
          (and (or (some walkable? snbr)
                   (not-any? walkable? (neighbors level tile)))
-              (> 2 (count (remove #(#{:rock :wall} (:feature %)) snbr)))))))
+              (> 2 (count (remove (some-fn rock? wall?) snbr)))))))
 
 (defn- has-dead-ends? [game level]
   (and (not-any? #{:bigroom :juiblex} (:tags level))
@@ -425,13 +423,13 @@
       (with-reason "searching dead end" ->Search))))
 
 (defn- pushable-through [game level from to]
-  (and (or (or (walkable? to) (#{:water :lava} (:feature to)))
+  (and (or ((some-fn walkable? water? lava?) to)
            (and (not (boulder? to))
-                (nil? (:feature to)))) ; try to push via unexplored tiles
+                (unknown? to))) ; try to push via unexplored tiles
        (or (straight (towards from to))
            (and (not= :sokoban (branch-key game))
-                (not= :door-open (:feature from))
-                (not= :door-open (:feature to))))))
+                (not (door-open? from))
+                (not (door-open? to))))))
 
 (defn- pushable-from [game level pos]
   (seq (filter #(if (boulder? %)
@@ -472,18 +470,18 @@
        (< 1 (:x pos) 78)))
 
 (defn- wall-end? [level tile]
-  (and (= :wall (:feature tile))
+  (and (wall? tile)
        (< 0 (:x tile) 80)
        (< 0 (:y tile) 22)
        (not
-         (or (and (= :wall (:feature (at level (dec (:x tile)) (:y tile))))
-                  (= :wall (:feature (at level (inc (:x tile)) (:y tile)))))
-             (and (= :wall (:feature (at level (:x tile) (dec (:y tile)))))
-                  (= :wall (:feature (at level (:x tile) (inc (:y tile))))))))))
+         (or (and (wall? (at level (dec (:x tile)) (:y tile)))
+                  (wall? (at level (inc (:x tile)) (:y tile))))
+             (and (wall? (at level (:x tile) (dec (:y tile))))
+                  (wall? (at level (:x tile) (inc (:y tile)))))))))
 
 (defn- search-walls [game level howmuch]
-  (if-let [p (navigate game (fn searchable? [{:keys [feature] :as tile}]
-                              (and (= :wall feature)
+  (if-let [p (navigate game (fn searchable? [tile]
+                              (and (wall? tile)
                                    (searchable-position? tile)
                                    (not (shop? tile))
                                    (not (wall-end? level tile))
@@ -495,8 +493,8 @@
       (or (:step p) (->Search)))))
 
 (defn- search-corridors [game level howmuch]
-  (if-let [p (navigate game (fn searchable? [{:keys [feature] :as tile}]
-                              (and (= :corridor feature)
+  (if-let [p (navigate game (fn searchable? [tile]
+                              (and (corridor? tile)
                                    (searchable-position? tile)
                                    (< (searched level tile) howmuch))))]
     (with-reason "searching corridors"
@@ -504,7 +502,7 @@
 
 (defn- searchable-extremity [level y xs howmuch]
   (if-let [tile (->> xs (map #(at level % y)) (find-first walkable?))]
-    (if (and (= :floor (:feature tile))
+    (if (and (floor? tile)
              (< (:searched tile) howmuch)
              (not= \- (:glyph (at level (update-in tile [:x] dec))))
              (not= \- (:glyph (at level (update-in tile [:x] inc))))
@@ -586,17 +584,12 @@
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
-                                        (not-any? (comp (partial = :water)
-                                                        :feature)
-                                                  (neighbors level %))
+                                        (not-any? water?  (neighbors level %))
                                         (->> (straight-neighbors level %)
-                                             (filter (comp (partial = :wall)
-                                                           :feature))
+                                             (filter wall?)
                                              count (<= 2))))
                    (navigate game #(and (#{:floor :corridor} (:feature %))
-                                        (not-any? (comp (partial = :water)
-                                                        :feature)
-                                                  (neighbors level %))
+                                        (not-any? water?  (neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter walkable?)
                                              count (<= 3)))))]
@@ -615,7 +608,7 @@
                (with-reason "no stairs, possibly :main :end"
                  (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
                                              (not (:walked %))
-                                             (not= :wall (:feature %)))))))
+                                             (not (wall? %)))))))
              (recheck-dead-ends game level (* mul 30))
              (search-extremities game level (* mul 20))
              ; TODO dig towards unexplored-column
@@ -628,8 +621,8 @@
 
 (defn seek-portal [game]
   (with-reason "seeking portal"
-    (or (:step (navigate game #(= :portal (:feature %))))
-        (:step (navigate game #(and (not (:walked %)) (not (door? %)))))
+    (or (:step (navigate game portal?))
+        (:step (navigate game (complement (some-fn :walked door?))))
         (explore game)
         (search game))))
 
@@ -660,7 +653,7 @@
                                   [:stairs-up ->Ascend]
                                   [:stairs-down ->Descend])
                 step (with-reason "looking for the" stairs
-                       (seek game #(and (= stairs (:feature %))
+                       (seek game #(and (has-feature? % stairs)
                                         (if-let [b (branch-key game %)]
                                           (= b branch)
                                           true))
@@ -677,7 +670,7 @@
     (with-reason "escaping subbranch" branch
       (if (and (= dlvl (first (keys levels))) (portal-branches branch))
         (seek-portal game)
-        (or (seek game #(= stairs (:feature %)))
+        (or (seek game #(has-feature? % stairs))
             (stair-action))))))
 
 (defn- least-explored [game branch dlvls]
@@ -693,7 +686,7 @@
 
 (defn- possibly-oracle? [game dlvl]
   (if-let [level (get-level game :main dlvl)]
-    (and (not-any? #(= :corridor (:feature %))
+    (and (not-any? corridor?
                    (for [y [7 8 14 15]
                          x (range 34 45)]
                      (at level x y))))
@@ -718,10 +711,8 @@
          :wiztower (or (->> (get-branch game :main) vals
                             (filter (fn unexplored-tower? [level]
                                       (and (:fake-wiztower (:tags level))
-                                           (let [center (:feature
-                                                          (at level 38 12))]
-                                             (or (nil? center)
-                                                 (= :portal center))))))
+                                           ((some-fn unknown? portal?)
+                                            (at level 38 12)))))
                             (map :dlvl) seq)
                        (if-let [end (:dlvl (get-level game :main :end))]
                          (as-> end res

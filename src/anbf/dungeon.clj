@@ -258,7 +258,7 @@
         game)))) ; failed to recognize
 
 (defn in-maze-corridor? [level pos]
-  (->> (neighbors level pos) (filter #(= (:feature %) :wall)) count (< 5)))
+  (->> (neighbors level pos) (filter wall?) count (< 5)))
 
 (def soko2a-16 "                          |...|..8-.8.^^^^^^^^^^^^.|")
 (def soko2b-16 "                        |....|..8.8.^^^^^^^^^^^^^^^.|")
@@ -293,19 +293,19 @@
     (cond-> game
       (and (= :main branch) (<= 25 dlvl 29)
            (not (some tags #{:medusa :votd :castle}))
-           (not-any? #(not (or (= :water (:feature (at level 2 %)))
+           (not-any? #(not (or (water? (at level 2 %))
                                (monster-at level (position 2 %))))
                      (range 8 15))) (add-curlvl-tag :castle)
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
-           (not-any? #(not (or (= :water (:feature (at level 2 %)))
+           (not-any? #(not (or (water? (at level 2 %))
                                (monster-at level (position 2 %))))
                      (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
-           (nil? (:feature (at level 5 20)))
-           (not-any? #(or (not= :water (:feature (at level 7 %)))
-                          (not= :floor (:feature (at level 6 %))))
+           (unknown? (at level 5 20))
+           (not-any? #(or (not (water? (at level 7 %)))
+                          (not (floor? (at level 6 %))))
                      [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
       (and (= :main branch) (<= 25 dlvl 29)
            (not (tags :castle))
@@ -326,8 +326,7 @@
            (some (fn lots-floors? [row]
                    (->> (for [x (range 3 78)] (at level x row))
                         (take-while #(not= :corridor %))
-                        (filter #(or (= :floor (:feature %))
-                                     (monster-at level %)))
+                        (filter #(or (floor? %) (monster-at level %)))
                         count (<= 46)))
                  [8 16])) (add-curlvl-tag :bigroom)
       (and (= :main branch) (<= 5 dlvl 9)
@@ -335,7 +334,7 @@
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (<= 5 dlvl 9) (= :stairs-up (:feature (at level 3 2)))
+      (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
            (tags :minetown)) (add-curlvl-tag :minetown-grotto)
       (and (<= 27 dlvl 36) (not (:asmodeus (:tags level)))
            (door? (at level 66 12))) (add-curlvl-tag :asmodeus)
@@ -344,12 +343,12 @@
                 count (= 25))) (add-curlvl-tag :juiblex)
       (and (<= 31 dlvl 38) (not (tags :baalzebub))
            (not-any? (fn [[x y]]
-                       (= :wall (:feature (at level x y))))
+                       (wall? (at level x y)))
                      [[31 11] [32 11] [33 11] [34 11]
                       [31 13] [32 13] [33 13] [34 13]])
            (not-any? (fn [[x y]]
                        (let [tile (at level x y)]
-                         (or (not= :wall (:feature tile)) (:dug tile))))
+                         (or (not (wall? tile)) (dug? tile))))
                      [[30 10] [35 10] [30 11] [35 11]
                       [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
                                                            :baalzebub)
@@ -423,15 +422,12 @@
                 :y (min (:y NW-corner) (:y x))}
                {:x (max (:x SE-corner) (:x x))
                 :y (max (:y SE-corner) (:y x))}
-               (if (or (door? x) (= :wall (:feature x)))
+               (if (or (door? x) (wall? x))
                  (disj open x)
                  (into (disj open x)
                        ; walking triggers more refloods to mark unexplored tiles
-                       (->> (neighbors level x)
-                            (remove #(or (= \space (:glyph %))
-                                         (:dug %)
-                                         (= :corridor (:feature %))
-                                         (closed %)))))))
+                       (remove (some-fn blank? :dug corridor? closed)
+                               (neighbors level x)))))
         (room-rectangle game NW-corner SE-corner kind)))))
 
 (defn reflood-room [game pos]

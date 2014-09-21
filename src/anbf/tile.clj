@@ -32,14 +32,17 @@
               :items []
               :new-items false}))
 
+(defn monster-glyph? [glyph]
+  (or (and (Character/isLetterOrDigit ^Character glyph)
+            (not= \8 glyph) (not= \0 glyph))
+       (#{\& \@ \' \; \:} glyph)))
+
 (defn monster?
+  ([tile]
+   (monster? (:glyph tile) (:color tile)))
   ([glyph color] ; works better on rogue level and for worm tails
    (or (and (= \~ glyph) (= :brown color))
-       (and (monster? glyph) (or (some? color) (not= \: glyph)))))
-  ([glyph]
-   (or (and (Character/isLetterOrDigit ^Character glyph)
-            (not= \8 glyph) (not= \0 glyph))
-       (#{\& \@ \' \; \:} glyph))))
+       (and (monster-glyph? glyph) (or (some? color) (not= \: glyph))))))
 
 ; bot should never get to see :trap - auto-examine
 (def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web})
@@ -75,6 +78,12 @@
        (and (= \_ glyph) (some? color))
        (and (= \: glyph) (nil? color)))))
 
+(defn dug? [tile]
+  (:dug tile))
+
+(defn unknown? [tile]
+  (nil? (:feature tile)))
+
 (defn boulder? [tile]
   (and (= (:glyph tile) \8) (nil? (:color tile))))
 
@@ -90,8 +99,33 @@
     :stairs-down
     :stairs-up))
 
+(defn has-feature? [tile feature]
+  (= feature (:feature tile)))
+
+(defmacro ^:private def-feature-pred [feature]
+  `(defn ~(symbol (str (.getName feature) \?)) [~'tile]
+     (has-feature? ~'tile ~feature)))
+
+#_(pprint (macroexpand-1 '(def-feature-pred :wall)))
+
+(defmacro ^:private def-feature-preds []
+  `(do ~@(for [feature [:rock :floor :wall :stairs-up :stairs-down :corridor
+                        :altar :water :door-open :door-closed :door-locked
+                        :door-secret :sink :fountain :grave :throne :bars :tree
+                        :drawbridge-raised :drawbridge-lowered :lava :ice
+                        :portal]]
+           `(def-feature-pred ~feature))))
+
+(def-feature-preds)
+
 (defn trap? [tile]
   (traps (:feature tile)))
+
+(defn unknown-trap? [tile]
+  (= :trap (:feature tile)))
+
+(defn blank? [tile]
+  (= \space (:glyph tile)))
 
 (defn walkable? [{:keys [feature] :as tile}]
   (and (not (boulder? tile))

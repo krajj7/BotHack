@@ -51,18 +51,18 @@
          :seen (or (:seen tile) (if-not (boulder? tile) true))
          :dug (if (and (= :mines (branch-key game))
                        (not-any? #{:end :minetown} (:tags level))
-                       (or (= :corridor (:feature tile))
-                           (and (some #(or (:dug %) (= :corridor (:feature %)))
+                       (or (corridor? tile)
+                           (and (some (some-fn :dug corridor?)
                                       (neighbors level tile) )
                                 (or (boulder? tile)
                                     (and (= \* (:glyph tile))
                                          (nil? (:color tile)))))))
                 true
                 (:dug tile))
-         :feature (cond (and (= (:glyph tile) \space) ; rogue lvl ghost
+         :feature (cond (and (blank? tile) ; rogue lvl ghost
                              (some? (:item-glyph tile))) :floor
-                        (and (= (:glyph tile) \space)
-                             (or (nil? (:feature tile))
+                        (and (blank? tile)
+                             (or (unknown? tile)
                                  (not ((:tags level) :rogue)))) :rock
                         :else (:feature tile))))
 
@@ -193,6 +193,8 @@
             (swap! game assoc-in [:player :leg-hurt] false)
             #"You turn into a"
             (-> anbf update-inventory update-items)
+            #"You are almost hit"
+            (update-items anbf)
             #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode"
             (update-inventory anbf)
             #"shop appears to be deserted"
