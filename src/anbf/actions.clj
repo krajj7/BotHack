@@ -476,7 +476,7 @@
   (reify ActionHandler
     (choose-action [this game]
       (deregister-handler anbf this)
-      (->Inventory))))
+      (with-reason "requested inventory update" (->Inventory)))))
 
 (def ^:private inventory-handler (memoize inventory-handler))
 

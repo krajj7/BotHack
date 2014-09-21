@@ -584,7 +584,9 @@
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
-                                        (not-any? water?  (neighbors level %))
+                                        (not-any? water? (neighbors level %))
+                                        (some wall?
+                                              (diagonal-neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter wall?)
                                              count (<= 2))))

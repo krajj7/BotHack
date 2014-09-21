@@ -124,13 +124,13 @@
       (with-reason "wielding better weapon -" (:label weapon)
         (->Wield slot)))))
 
-(defn- reequip [{:keys [last-path] :as game}]
+(defn- reequip [game]
   (let [level (curlvl game)
-        tile-path (mapv (partial at level) last-path)
+        tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)]
-    (or (if (and (not-any? (complement walkable?) tile-path)
-                 step
-                 (not (:dug step)))
+    (or (if (and (not= :wield (some-> game :last-action typekw))
+                 step (not (:dug step))
+                 (not-any? (complement walkable?) tile-path))
           (with-reason "reequip - weapon"
             (wield-weapon game)))
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
