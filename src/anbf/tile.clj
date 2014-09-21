@@ -45,7 +45,7 @@
        (and (monster-glyph? glyph) (or (some? color) (not= \: glyph))))))
 
 ; bot should never get to see :trap - auto-examine
-(def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web})
+(def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web :statuetrap})
 
 (def trap-names
   {"magic portal" :portal
@@ -60,6 +60,7 @@
    "polymorph trap" :polytrap
    "fire trap" :firetrap
    "arrow trap" :arrowtrap
+   "statue trap" :statuetrap
    "land mine" :mine
    "dart trap" :darttrap
    "sleeping gas trap" :sleeptrap

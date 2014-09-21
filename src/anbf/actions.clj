@@ -24,7 +24,7 @@
        (defn ~(symbol (str \- action)) ~args
          (~(symbol (str action \.)) ~@args))))
 
-(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
+(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
 (defn- feature-here [msg rogue?]
   (condp re-seq msg
@@ -347,7 +347,7 @@
             (send delegator found-items (:items (at-player game))))
           (as-> game res
             (update-at-player res assoc :examined (:turn game))
-            (if (unknown? (at-player res))
+            (if ((some-fn unknown? unknown-trap?) (at-player res))
               (update-at-player res assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
             (if-not @has-item
@@ -398,7 +398,7 @@
         (or (when-let [trap (re-first-group farlook-trap-re text)]
               (swap! game update-curlvl-at pos assoc :feature
                      (or (trap-names trap)
-                         (throw (IllegalArgumentException.  (str "unknown farlook trap: " text " >>> " trap))))))
+                         (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
             (when-let [desc (and (monster-glyph? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
               (let [peaceful? (.startsWith ^String desc "peaceful")
@@ -724,6 +724,12 @@
         AutotravelHandler
         (travel-where [_] pos))))
   (trigger [_] "_"))
+
+(defaction Enhance []
+  (handler [this {:keys [game] :as anbf}]
+    (log/error "TODO")
+    #_(swap! game (assoc-in [:player :can-enhance] nil)))
+  (trigger [_] "#enhance\n"))
 
 (defn- -withHandler
   ([action handler]
