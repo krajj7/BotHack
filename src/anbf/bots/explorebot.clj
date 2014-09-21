@@ -20,6 +20,7 @@
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> game curlvl-monsters vals
        (filter #(and (hostile? %)
+                     (not= \j (:glyph %))
                      (if (or (blind? player) (:hallu (:state player)))
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
@@ -33,9 +34,8 @@
 (defn- enhance-handler [anbf]
   (reify ActionHandler
     (choose-action [_ game]
-      (if (:can-enhance (:player game))
-        (log/warn "TODO implement Enhance")
-        #_(->Enhance)))
+      (if (#{"long sword" "broadsword"} (:can-enhance (:player game)))
+        (->Enhance)))
     ; TODO EnhanceHandler
     ))
 
