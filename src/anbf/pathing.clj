@@ -622,12 +622,8 @@
 (defn seek-portal [game]
   (with-reason "seeking portal"
     (or (:step (navigate game portal?))
-        (if (> (dlvl-number (:dlvl game)) 35)
-          (if (unknown? (at-curlvl game fake-wiztower-portal))
-            (with-reason "seeking fake wiztower portal"
-              (:step (navigate game fake-wiztower-portal))))
-          (with-reason "stepping everywhere to find portal"
-            (:step (navigate game (complement (some-fn :walked door?))))))
+        (with-reason "stepping everywhere to find portal"
+          (:step (navigate game (complement (some-fn :walked door?)))))
         (explore game)
         (search game))))
 
@@ -723,7 +719,8 @@
          :wiztower (or (->> (get-branch game :main) vals
                             (filter (fn unexplored-tower? [level]
                                       (and (:fake-wiztower (:tags level))
-                                           (portal? (at level 38 12)))))
+                                           (->> (at level fake-wiztower-portal)
+                                                portal?))))
                             (map :dlvl) first)
                        (some->>
                          (or (if-let [end (:dlvl (get-level game :main :end))]
