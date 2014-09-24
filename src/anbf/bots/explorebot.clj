@@ -139,11 +139,19 @@
                  (not-any? (complement walkable?) tile-path))
           (with-reason "reequip - weapon"
             (wield-weapon game)))
-        (if-not (have game (every-pred (partial light? game) :lit))
-          (or (if-let [[slot lamp] (have game "magic lamp")]
-                (with-reason "using magic lamp" (->Apply slot)))
-              (if-let [[slot lamp] (have game (partial light? game))]
-                (with-reason "using any light source" (->Apply slot)))))
+        ; TODO multidrop
+        (if-let [[slot _] (have game #(= "empty" (:specific %)))]
+          (with-reason "dropping junk" (->Drop slot)))
+        (if-let [[slot item] (have game (every-pred (partial light? game)
+                                                    :lit))]
+          (if (and (not= "magic lamp" (item-name game item))
+                   (explored? game))
+            (with-reason "saving energy" (->Apply slot)))
+          (if-not (explored? game)
+            (or (if-let [[slot lamp] (have game "magic lamp")]
+                  (with-reason "using magic lamp" (->Apply slot)))
+                (if-let [[slot lamp] (have game (partial light? game))]
+                  (with-reason "using any light source" (->Apply slot))))))
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
