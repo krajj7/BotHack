@@ -2278,7 +2278,7 @@
     :ac 2
     :mc 0
     :material :silver
-    :appearances ["polished silver shield"]
+    :appearances ["polished silver shield" "smooth shield"]
     :subtype :shield}
    {:name "low boots"
     :price 8

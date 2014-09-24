@@ -98,7 +98,7 @@
 (defn- direction [s] (get vi-directions s s))
 
 (defn- respond-menu [options]
-  (if (seq options)
+  (if (coll? options)
     (apply str options)
     (str options)))
 

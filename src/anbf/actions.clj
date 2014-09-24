@@ -115,11 +115,11 @@
                          (neighbors level (:player game)))))
         #"You crawl to the edge of the pit\.|You disentangle yourself\."
         (swap! game assoc-in [:player :trapped] false)
-        #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit"
+        #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
         (do (swap! game assoc-in [:player :trapped] true)
             (update-at-player-when-known anbf update-in [:feature]
                                          #(if (traps %) % :trap)))
-        #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts"
+        #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
         (update-at-player-when-known anbf assoc :feature :trap)
         #"You are carrying too much to get through"
         (swap! game assoc-in [:player :thick] true)
@@ -548,7 +548,7 @@
 
 (defaction Name [slot name]
   (handler [_ {:keys [game] :as anbf}]
-    (update-items anbf)
+    (update-inventory anbf)
     (reify
       NameMenuHandler
       (name-menu [_ _] \b)
@@ -572,7 +572,7 @@
       ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
-          #"has no oil|ran out of power"
+          #"has no oil|has run out of power"
           (update-name anbf slot "empty")
           #" lamp is now (on|off)"
           (update-inventory anbf)

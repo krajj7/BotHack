@@ -60,12 +60,13 @@
 (def blueprints
   [{:branch :main
     :tag :medusa-1
+    :undiggable true
     :monsters {{:x 38 :y 12} (name->monster "Medusa")}
     :features {{:x 38 :y 12} :stairs-down
                {:x 32 :y 14} :door-secret
                {:x 48 :y 9} :door-secret
-               {:x 30 :y 14} :squeaky
-               {:x 30 :y 9} :squeaky}}
+               {:x 40 :y 14} :squeaky
+               {:x 40 :y 9} :squeaky}}
    {:branch :main
     :tag :medusa-2
     :undiggable true

@@ -510,7 +510,8 @@
               res
               (:undiggable-tiles blueprint))
       (reduce (fn mark-feature [level [pos feature]]
-                (update-at level pos assoc :feature feature))
+                (update-at level pos assoc :feature
+                           (or (:feature (at level pos)) feature)))
               res
               (:features blueprint))
       (reduce (fn add-monster [level [pos monster]]

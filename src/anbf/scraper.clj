@@ -71,6 +71,11 @@
     #"Pick up what\?" pick-up-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
+(defn- multi-menu?
+  "Do we need to confirm menu selections (=> true), or does single selection close the menu? (=> false)"
+  [head]
+  (re-seq #"What do you wish to do\?" head))
+
 (defn- choice-prompt
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
@@ -287,7 +292,8 @@
                              (= @menu-nextpage (menu-curpage frame)))
                     (log/debug "responding to menu page" @menu-nextpage)
                     (send delegator (menu-fn @head) (menu-options frame))
-                    (send delegator write \space)
+                    (when-not (multi-menu? @head)
+                      (send delegator write \space))
                     (alter menu-nextpage inc)
                     (when (menu-end? frame)
                       (log/debug "last menu page response done")

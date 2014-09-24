@@ -67,7 +67,8 @@
       (log/debug "progress end")))
 
 (def desired-weapons
-  (ordered-set "Grayswandir" "Excalibur" "Stormbringer" "katana" "long sword"))
+  (ordered-set "Grayswandir" "Mjollnir" "Excalibur" "Stormbringer"
+               "katana" "long sword"))
 
 (def desired-items
   [(ordered-set "pick-axe" "dwarvish mattock") ; currenty-desired presumes this is the first category

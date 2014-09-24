@@ -128,7 +128,9 @@
 (defn blank? [tile]
   (= \space (:glyph tile)))
 
-(defn walkable? [tile]
+(defn walkable?
+  "Considers unexplored tiles walkable"
+  [tile]
   (and (not (boulder? tile))
        (or (unknown? tile)
            (trap? tile)
@@ -136,7 +138,7 @@
               :throne :grave :stairs-up :stairs-down} (:feature tile)))))
 
 (defn likely-walkable?
-  "Less optimistic about unexplored squares than pathable?, but still returns true for item in an (unknown) wall."
+  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
   [tile]
   (and (walkable? tile)
        (or (:feature tile) (item? tile))))
