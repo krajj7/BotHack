@@ -544,7 +544,7 @@
 (defn update-discoveries
   "Re-check discoveries on the next action"
   [anbf]
-  (register-handler anbf priority-top (discoveries-handler anbf)))
+  (register-handler anbf (dec priority-top) (discoveries-handler anbf)))
 
 (defaction Name [slot name]
   (handler [_ {:keys [game] :as anbf}]
