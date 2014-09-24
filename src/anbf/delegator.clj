@@ -1,6 +1,7 @@
 (ns anbf.delegator
   "The delegator delegates event and command invocations to all registered handlers which implement the protocol for the given event type, or the first handler that implements the command protocol.  For commands it writes responses back to the terminal.  Handlers are invoked in order of their priority, for handlers of the same priority order of invocation is not specified. "
   (:require [clojure.data.priority-map :refer [priority-map]]
+            [clojure.pprint :refer [pprint]]
             [anbf.action :refer :all]
             [anbf.util :refer :all]
             [clojure.string :as string]
@@ -13,7 +14,7 @@
   NetHackWriter
   (write [this cmd] "Write a string to the NetHack terminal as if typed."
     (when-not (:inhibited this)
-      (log/debug "writing" cmd)
+      (log/debug "writing to terminal:" (with-out-str (pprint cmd)))
       ((:writer this) cmd))
     this))
 
@@ -97,7 +98,9 @@
 (defn- direction [s] (get vi-directions s s))
 
 (defn- respond-menu [options]
-  (apply str options))
+  (if (seq options)
+    (apply str options)
+    (str options)))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
   `(~method [~delegator ~@args]
