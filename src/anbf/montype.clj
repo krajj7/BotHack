@@ -528,7 +528,8 @@
           (name->monster "high priest"))
         (if (= desc "mimic")
           (name->monster "large mimic")) ; could be any mimic really
-        (if-let [[desc god] (and (not (.contains desc "Minion of Huhetotl"))
+        (if-let [[desc god] (and (not (re-seq #"Minion of Huhetotl| Yendor"
+                                              desc))
                                  (not ghost-or-called)
                                  ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]

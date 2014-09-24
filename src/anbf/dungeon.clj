@@ -23,7 +23,7 @@
 
 (def subbranches #{:mines :sokoban :ludios :vlad :quest :earth :wiztower})
 
-(def upwards-branches #{:sokoban :vlad})
+(def upwards-branches #{:sokoban :vlad :wiztower})
 
 (def portal-branches #{:quest :wiztower :ludios :air :fire :water :astral})
 
@@ -342,6 +342,11 @@
       (and (= :main branch) (<= 5 dlvl 9)
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
+      (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
+           (let [wiztower (map #(at level %) wiztower-rect)]
+             (and (->> wiztower (filter (some-fn wall? :dug)) count (< 15))
+                  (->> wiztower (filter (every-pred floor? (complement :dug)))
+                       count (> 5))))) (add-curlvl-tag :wiztower-level)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
       (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
@@ -362,9 +367,17 @@
                      [[30 10] [35 10] [30 11] [35 11]
                       [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
                                                            :baalzebub)
-      (and (<= 40 dlvl 51) (not (:fake-wiztower tags))
+      (and (= branch :main) (<= 40 dlvl 51) (not (:fake-wiztower tags))
            (->> fake-wiztower-water (map (partial at level))
                 (some water?))) (add-curlvl-tag :fake-wiztower)
+      (and (= branch :wiztower)
+           ((complement #{:wiztower-bottom :wiztower-middle :wiztower-top})
+            tags)) (add-curlvl-tag (get {0 :wiztower-bottom
+                                         1 :wiztower-middle
+                                         2 :wiztower-top}
+                                        (- (->> (get-branch game :wiztower)
+                                                keys first dlvl-number)
+                                           dlvl)))
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
@@ -493,6 +506,9 @@
                "; branch:" (branch-key game level) "; tags:" (:tags level))
     (as-> level res
       (assoc res :blueprint blueprint)
+      (reduce #(update-at %1 %2 assoc :undiggable true)
+              res
+              (:undiggable-tiles blueprint))
       (reduce (fn mark-feature [level [pos feature]]
                 (update-at level pos assoc :feature feature))
               res

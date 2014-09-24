@@ -191,7 +191,7 @@
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
        (not (:undiggable (:blueprint level)))
-       (not (#{:wiztower :vlad :astral :sokoban :quest} (branch-key game)))))
+       (not (#{:vlad :astral :sokoban :quest} (branch-key game)))))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
@@ -271,6 +271,8 @@
                               (if (kickable-door? level to-tile opts)
                                 (kick-door game level to-tile dir)))))))
                   (if (and (:pick opts) (diggable? to-tile) (not monster)
+                           (or (not= (:branch-id level) :wiztower)
+                               (some water? (neighbors level to-tile)))
                            (dare-destroy? level to-tile))
                     [8 (dig (:pick opts) dir)]))]
        (update-in step [0] + (base-cost level dir to-tile opts))))))
@@ -629,8 +631,12 @@
 (defn seek-portal [game]
   (with-reason "seeking portal"
     (or (:step (navigate game portal?))
-        (with-reason "stepping everywhere to find portal"
-          (:step (navigate game (complement (some-fn :walked door?)))))
+        (if (> (dlvl-number (:dlvl game)) 35)
+          (if (unknown? (at-curlvl game fake-wiztower-portal))
+            (with-reason "seeking fake wiztower portal"
+              (:step (navigate game fake-wiztower-portal))))
+          (with-reason "stepping everywhere to find portal"
+            (:step (navigate game (complement (some-fn :walked door?))))))
         (explore game)
         (search game))))
 
@@ -702,7 +708,8 @@
 
 (defn- possibly-wiztower? [game dlvl]
   (if-let [level (get-level game :main dlvl)]
-    (if (not-any? #{:orcus :asmodeus :juiblex :baalzebub} (:tags level))
+    (if (not-any? #{:wiztower-level :orcus :asmodeus :juiblex :baalzebub}
+                  (:tags level))
       (->> fake-wiztower-water (map (partial at level))
            (remove (some-fn unknown? water?)) count (> 5)))
     true))

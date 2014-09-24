@@ -43,6 +43,20 @@
   [level]
   (apply concat (:tiles level)))
 
+(def wiztower-rect (into #{} (flatten (concat (for [y (range 5 20)]
+                                                [(position 23 y)
+                                                 (position 51 y)])
+                                              (for [x (range 23 52)]
+                                                [(position x 5)
+                                                 (position x 19)])))))
+
+(def wiztower-inner-rect (into #{} (flatten (concat (for [y (range 6 19)]
+                                                      [(position 24 y)
+                                                       (position 51 y)])
+                                                    (for [x (range 24 52)]
+                                                      [(position x 6)
+                                                       (position x 18)])))))
+
 (def blueprints
   [{:branch :main
     :tag :medusa-1
@@ -100,6 +114,9 @@
                {:x 62 :y 14} :door-secret
                {:x 70 :y 12} :door-secret}}
    {:branch :main
+    :tag :wiztower-level
+    :undiggable-tiles wiztower-inner-rect}
+   {:branch :main
     :tag :fake-wiztower
     :features {{:x 38 :y 12} :portal
                {:x 39 :y 12} :squeaky
@@ -109,6 +126,19 @@
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
+   {:branch :wiztower
+    :tag :wiztower-bottom
+    :features {{:x 43 :y 17} :door-secret
+               {:x 42 :y 11} :door-secret
+               {:x 40 :y 7} :door-secret
+               {:x 48 :y 8} :door-secret
+               {:x 27 :y 10} :door-secret
+               {:x 30 :y 16} :door-secret
+               {:x 35 :y 13} :stairs-up
+               {:x 34 :y 13} :squeaky
+               {:x 36 :y 13} :squeaky
+               {:x 35 :y 12} :squeaky
+               {:x 35 :y 14} :squeaky}}
    {:role "samurai"
     :dlvl "Home 3"
     :branch :quest
