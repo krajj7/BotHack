@@ -102,7 +102,7 @@
                (not (:thick (:player game)))))))
 
 (defn passable-walking?
-  "Only needs Move action, no door opening etc., will path through monsters"
+  "Only needs Move action, no door opening etc., will path through monsters and unexplored tiles"
   [game level from-tile to-tile]
   (and (walkable? to-tile)
        (edge-passable-walking? game level from-tile to-tile)))
@@ -156,16 +156,17 @@
 (defn- blocked-door
   "If this is a kickable door blocked from one side, return direction from which to kick it"
   [level tile]
-  (if-let [ws (seq (filter (some-fn walkable? blank?)
-                           (straight-neighbors level tile)))]
+  (if-let [ws (seq (filter walkable? (straight-neighbors level tile)))]
     (let [w (first ws)
           dir (towards tile w)
           o (in-direction level tile (opposite dir))]
       (if (and (empty? (:items tile)) ; don't try to break blocked doors
                (= 1 (count ws))
-               (some walkable? (intersection
-                                 (into #{} (diagonal-neighbors level tile))
-                                 (into #{} (straight-neighbors level o)))))
+               (some (every-pred walkable?
+                                 (complement blank?))
+                     (intersection
+                       (into #{} (diagonal-neighbors level tile))
+                       (into #{} (straight-neighbors level o)))))
         dir))))
 
 (defn- kickable-door? [level tile opts]
@@ -220,9 +221,8 @@
          dir (towards from to-tile)
          monster (monster-at level to)]
      (if-let [step
-              (or (if (and (or (passable-walking? game level from-tile to-tile)
-                               (and (unexplored? to-tile)
-                                    (not (:explored opts))))
+              (or (if (and (passable-walking? game level from-tile to-tile)
+                           (or (:feature to-tile) (not (:explored opts)))
                            (not (and (kickable-door? level to-tile opts)
                                      (blocked-door level to-tile))))
                     (if-not monster
@@ -280,23 +280,29 @@
    path ; vector of remaining positions
    target]) ; position of target
 
-(defn autonavigable? [level pos]
-  (let [tile (at level pos)]
-    (and (not (trap? tile))
-         (not (unknown? tile))
-         (not (monster-at level pos))
-         (walkable? tile))))
+(defn autonavigable? [game level [from to]]
+  (and (not (shop? from))
+       (not (trap? to))
+       (not (unknown? to))
+       (edge-passable-walking? game level from to)
+       (walkable? to)
+       (not (monster-at level to))))
 
 (defn- autonav-target [game from level path]
-  (let [autonavigable (into [] (take-while (partial autonavigable? level)
-                                           path))
+  (let [path-tiles (map (partial at level) path)
+        steps (->> path-tiles
+                   (interleave (conj path-tiles (at level from)))
+                   (partition 2))
+        autonavigable (into [] (->> steps
+                                    (take-while
+                                      (partial autonavigable? game level))
+                                    (map second)))
         target (some-> (peek autonavigable) position)
         last-autonav (let [a (:last-action game)
                            last-target (:pos a)]
                        (if (and last-target (= :autotravel (typekw a)))
                          last-target))]
     (if (and target
-             (not (shop? (at level from)))
              (not= last-autonav target)
              (< 3 (count autonavigable))
              (not-any? (partial monster-at level) (neighbors from)))
@@ -386,7 +392,7 @@
   (and (not (and (dug? tile) (boulder? tile)))
        (or (and (unknown? tile) (not (blank? tile)))
            (:new-items tile)
-           (and (or (walkable? tile) (door? tile) (needs-levi? tile))
+           (and (or (likely-walkable? tile) (door? tile) (needs-levi? tile))
                 (some (complement (some-fn :seen boulder? monster?))
                       (neighbors level tile))))
        (some (complement blank?) (neighbors level tile))))
@@ -398,7 +404,8 @@
        ; isolated diagonal corridors - probably dug:
        (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
                                  (corridor? %) (boulder? %))
-                             (not-any? walkable? (straight-neighbors level %)))
+                             (not-any? likely-walkable?
+                                       (straight-neighbors level %)))
                        (diagonal-neighbors level tile))))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
@@ -589,7 +596,7 @@
                                              (filter wall?)
                                              count (<= 2))))
                    (navigate game #(and (#{:floor :corridor} (:feature %))
-                                        (not-any? water?  (neighbors level %))
+                                        (not-any? water? (neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter walkable?)
                                              count (<= 3)))))]

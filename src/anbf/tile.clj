@@ -128,12 +128,18 @@
 (defn blank? [tile]
   (= \space (:glyph tile)))
 
-(defn walkable? [{:keys [feature] :as tile}]
+(defn walkable? [tile]
   (and (not (boulder? tile))
-       (or (and (item? tile) (nil? feature))
-           (traps feature)
+       (or (unknown? tile)
+           (trap? tile)
            (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
-              :throne :grave :stairs-up :stairs-down} feature))))
+              :throne :grave :stairs-up :stairs-down} (:feature tile)))))
+
+(defn likely-walkable?
+  "Less optimistic about unexplored squares than pathable?, but still returns true for item in an (unknown) wall."
+  [tile]
+  (and (walkable? tile)
+       (or (:feature tile) (item? tile))))
 
 (defn transparent?
   "For unexplored tiles just a guess"

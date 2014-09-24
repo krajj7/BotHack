@@ -75,7 +75,7 @@
                                       tile))))))
 
 (defn- rogue-ghost? [game tile glyph]
-  (and (or (:feature tile) (seq (:items tile)))
+  (and (or (:feature tile) (:item-glyph tile))
        (not (#{:rock :wall} (:feature tile)))
        (= glyph \space)
        (:rogue (curlvl-tags game))
