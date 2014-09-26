@@ -422,12 +422,20 @@
 
 (defn- room-rectangle [game NW-corner SE-corner kind]
   (log/debug "room rectangle:" NW-corner SE-corner kind)
-  (when (< 8 (max (- (:x SE-corner) (:x NW-corner))
-                  (- (:y SE-corner) (:y NW-corner))))
+  (when (< 20 (max (- (:x SE-corner) (:x NW-corner))
+                   (- (:y SE-corner) (:y NW-corner))))
     (log/error "spilled room at" (:dlvl game) (branch-key game)))
-  (reduce #(update-curlvl-at %1 %2 assoc :room kind)
-          game
-          (rectangle NW-corner SE-corner)))
+  (as-> game res
+    (reduce #(update-curlvl-at %1 %2 assoc :room kind)
+            res
+            (rectangle NW-corner SE-corner))
+    (if (shops kind)
+      (reduce #(if (unknown? (at-curlvl game %2))
+                 (update-curlvl-at %1 %2 assoc :feature :wall)
+                 %1)
+              res
+              (rectangle-boundary NW-corner SE-corner))
+      res)))
 
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)

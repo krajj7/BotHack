@@ -414,7 +414,7 @@
 
 (defn- handle-door-message [game dir text]
   (let [door (in-direction (:player @game) dir)
-        new-feature (case text
+        new-feature (condp #(.contains %2 %1) text
                       "You cannot lock an open door." :door-open
                       "This door is locked." :door-locked
                       "This door is already open." :door-open

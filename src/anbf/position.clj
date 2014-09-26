@@ -77,3 +77,10 @@
   (for [x (range (:x NW-corner) (inc (:x SE-corner)))
         y (range (:y NW-corner) (inc (:y SE-corner)))]
     (position x y)))
+
+(defn rectangle-boundary [NW-corner SE-corner]
+  (for [x (range (:x NW-corner) (inc (:x SE-corner)))
+        y (range (:y NW-corner) (inc (:y SE-corner)))
+        :when (or (#{(:x NW-corner) (:x SE-corner)} x)
+                  (#{(:y NW-corner) (:y SE-corner)} y))]
+    (position x y)))

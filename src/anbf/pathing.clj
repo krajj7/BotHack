@@ -134,7 +134,8 @@
              (if-let [m (curlvl-monster-at new-game target)]
                (when (:peaceful m) ; target did not move
                  (log/debug "blocked by peaceful" target)
-                 (if-not (shopkeeper? m) ; shks may need more patience
+                 (if-not (and (shopkeeper? m) ; shks may need more patience
+                              (shop? (at-player new-game)))
                    (swap! (:game anbf) update-curlvl-at target
                           update-in [:blocked] (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
@@ -147,9 +148,9 @@
   (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
-  (or (boulder? tile)
-      (and (not ((:tags level) :rogue))
-           (or (not ((:tags level) :minetown))
+  (or (not ((:tags level) :rogue))
+      (boulder? tile)
+      (and (or (not ((:tags level) :minetown))
                (safe-from-guards level))
            (not (shop? tile)))))
 
@@ -178,10 +179,10 @@
 (defn- kick-door [{:keys [player] :as game} level tile dir]
   (if-not (have-levi-on game)
     (if (door-open? tile)
-      [7 (with-reason "closing door to kick it" (->Close dir))]
+      [8 (with-reason "closing door to kick it" (->Close dir))]
       (if (:leg-hurt player)
         [30 (with-reason "waiting out :leg-hurt" ->Search)]
-        [5 (->Kick dir)]))))
+        [6 (->Kick dir)]))))
 
 (defn can-unlock? [game]
   true) ; not poly'd...
@@ -220,62 +221,66 @@
          from-tile (at level from)
          dir (towards from to-tile)
          monster (monster-at level to)]
-     (if-let [step
-              (or (if (and (passable-walking? game level from-tile to-tile)
-                           (or (:feature to-tile) (not (:explored opts)))
-                           (not (and (kickable-door? level to-tile opts)
-                                     (blocked-door level to-tile))))
-                    (if-not monster
-                      (or (and (shop? to-tile)
-                               (not (shop? from-tile))
-                               (enter-shop game))
-                          (if-not (and (:levi opts) (needs-levi? to-tile))
-                            [0 (->Move dir)])) ; trapdoors/holes are escapable
-                      (if-not (:peaceful monster)
-                        [6 (->Move dir)]
-                        (if ((fnil <= 0) (:blocked to-tile) 25)
-                          [50 (fidget game level to-tile)])))) ; hopefully will move
-                  (if (kickable-door? level from-tile opts)
-                    (if-let [odir (blocked-door level from-tile)]
-                      (if (monster-at level (in-direction from-tile odir))
-                        [3 (->Search)]
-                        [1 (->Move odir)])))
-                  (if (:trapped (:player game))
-                    (if-let [step (with-reason "untrapping self"
-                                    (random-move game level))]
-                      [0 step]))
-                  (if (and (edge-passable-walking? game level from-tile to-tile)
-                           (needs-levi? to-tile) (not monster))
-                    (if-let [[slot item] (:levi opts)]
-                      (if (:in-use item)
-                        [1 (with-reason "assuming levitation" (->Move dir))]
-                        [4 (make-use game slot)])))
-                  (when (and (door? to-tile) (not monster)
-                             (or (not (:walking opts)) (door-open? to-tile)))
-                    (or (if (door-secret? to-tile)
-                          [10 (->Search)]) ; TODO stethoscope
-                        (and (kickable-door? level to-tile opts)
-                             (blocked-door level to-tile)
-                             (->> (partial with-reason
-                                           "the door is blocked from one side")
-                                  (update-in (kick-door game level to-tile dir)
-                                             [1])))
-                        (if (diagonal dir)
-                          (if (kickable-door? level to-tile opts)
-                            (kick-door game level to-tile dir))
-                          (if (door-closed? to-tile)
-                            [3 (->Open dir)]
-                            (if-let [k (and (can-unlock? game)
-                                            (some-> game have-key key))]
-                              [5 (->Unlock k dir)]
-                              (if (kickable-door? level to-tile opts)
-                                (kick-door game level to-tile dir)))))))
-                  (if (and (:pick opts) (diggable? to-tile) (not monster)
-                           (or (not= (:branch-id level) :wiztower)
-                               (some water? (neighbors level to-tile)))
-                           (dare-destroy? level to-tile))
-                    [8 (dig (:pick opts) dir)]))]
-       (update-in step [0] + (base-cost level dir to-tile opts))))))
+     (some-> (or (if (and (passable-walking? game level from-tile to-tile)
+                          (or (:feature to-tile) (not (:explored opts)))
+                          (not (and (kickable-door? level to-tile opts)
+                                    (blocked-door level to-tile))))
+                   (if monster
+                     (if (:peaceful monster)
+                       (if ((fnil <= 0) (:blocked to-tile) 25)
+                         [50 (fidget game level to-tile)]) ; hopefully will move
+                       [6 (->Move dir)])
+                     (or (and (shop? to-tile)
+                              (not (shop? from-tile))
+                              (enter-shop game))
+                         (if-not (and (:levi opts) (needs-levi? to-tile))
+                           [0 (->Move dir)])))) ; trapdoors/holes are escapable
+                 (if (kickable-door? level from-tile opts)
+                   (if-let [odir (blocked-door level from-tile)]
+                     (if (monster-at level (in-direction from-tile odir))
+                       [3 (with-reason
+                            "waiting for monster to move to kick door at my position"
+                            (->Search))]
+
+                       [1 (with-reason "moving to kick blocked door at my position"
+                            (->Move odir))])))
+                 (if (:trapped (:player game))
+                   (if-let [step (with-reason "untrapping self"
+                                   (random-move game level))]
+                     [0 step]))
+                 (if (and (edge-passable-walking? game level from-tile to-tile)
+                          (needs-levi? to-tile) (not monster))
+                   (if-let [[slot item] (:levi opts)]
+                     (if (:in-use item)
+                       [1 (with-reason "assuming levitation" (->Move dir))]
+                       [4 (with-reason "need levitation for next move"
+                            (make-use game slot))])))
+                 (if (and (door? to-tile) (not monster) (not (:walking opts)))
+                   (or (if (door-secret? to-tile)
+                         [10 (->Search)]) ; TODO stethoscope
+                       (and (kickable-door? level to-tile opts)
+                            (blocked-door level to-tile)
+                            (->> (partial with-reason
+                                          "the door is blocked from one side")
+                                 (update-in (kick-door game level to-tile dir)
+                                            [1])))
+                       (if (diagonal dir)
+                         (if (kickable-door? level to-tile opts)
+                           (kick-door game level to-tile dir))
+                         (if (door-closed? to-tile)
+                           [3 (->Open dir)]
+                           (if-let [[slot _] (and (door-locked? to-tile)
+                                                  (can-unlock? game)
+                                                  (have-key game))]
+                             [4 (->Unlock slot dir)]
+                             (if (kickable-door? level to-tile opts)
+                               (kick-door game level to-tile dir)))))))
+                 (if (and (:pick opts) (diggable? to-tile) (not monster)
+                          (or (not= (:branch-id level) :wiztower)
+                              (some water? (neighbors level to-tile)))
+                          (dare-destroy? level to-tile))
+                   [8 (dig (:pick opts) dir)]))
+             (update-in [0] + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
   [step ; next Action to perform to move along path
@@ -284,6 +289,7 @@
 
 (defn autonavigable? [game level opts [from to]]
   (and (not (shop? from))
+       (not (shop? to))
        (not (trap? to))
        (not (unknown? to))
        (edge-passable-walking? game level from to)
@@ -293,6 +299,7 @@
 
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))
+           (not (shop? (at level from)))
            (not= :autotravel (some-> game :last-action typekw)))
     (let [path-tiles (map (partial at level) path)
           steps (->> path-tiles
@@ -398,7 +405,7 @@
        (some (complement blank?) (neighbors level tile))))
 
 (defn dead-end? [level tile]
-  (and (walkable? tile)
+  (and (likely-walkable? tile)
        (not (trap? tile))
        (not (:dug tile))
        ; isolated diagonal corridors - probably dug:
@@ -506,7 +513,7 @@
       (or (:step p) (->Search)))))
 
 (defn- searchable-extremity [level y xs howmuch]
-  (if-let [tile (->> xs (map #(at level % y)) (find-first walkable?))]
+  (if-let [tile (->> xs (map #(at level % y)) (find-first likely-walkable?))]
     (if (and (floor? tile)
              (< (:searched tile) howmuch)
              (not= \- (:glyph (at level (update-in tile [:x] dec))))
@@ -540,12 +547,18 @@
   (and (= (:dlvl game) (:dlvl level))
        (= (branch-key game) (branch-key game level))))
 
+(defn explore-wiztower [game level]
+  (if (and (:wiztower-top (:tags level))
+           (unknown? (at level {:x 40 :y 11})))
+    (seek game {:x 40 :y 11})))
+
 (defn- curlvl-exploration-index
   [game]
   (let [level (curlvl game)]
     (log/debug "calc exploration index")
     (cond
       (unexplored-column game level) 0
+      (explore-wiztower game level) 0
       (navigate game (partial explorable-tile? level)) 0
       :else (->> (tile-seq level) (map :searched) (reduce + 1)))))
 
@@ -845,10 +858,11 @@
    (let [branch (branch-key game branch)
          dlvl (or (:dlvl (get-level game branch tag-or-dlvl))
                   (next-dlvl branch (:dlvl game)))]
-     (->> (get-branch game branch) vals
-          (take-while #(not= (:dlvl %) dlvl))
-          (remove #(explored? game branch (:dlvl %)))
-          first :dlvl))))
+     (->> (get-branch game branch) keys first
+          (iterate (partial next-dlvl branch))
+          (take-while (partial not= dlvl))
+          (remove (partial explored? game branch))
+          first))))
 
 (defn explore-level [game branch tag-or-dlvl]
   (if-not (explored? game branch tag-or-dlvl)
@@ -868,6 +882,7 @@
                (when (unexplored-column game level)
                  (with-reason "level not explored enough, searching"
                    (search game (if (= :mines (branch-key game)) 10 2))))
+               (explore-wiztower game level)
                (log/debug "nothing to explore"))
            (log/debug "positive exploration index")))))
   ([game branch]
@@ -875,14 +890,14 @@
   ([game branch tag-or-dlvl]
    (with-reason "exploring" branch "until" tag-or-dlvl
      (or (if-let [l (and (not= :main (branch-key game branch))
-                         (shallower-unexplored game branch))]
+                         (shallower-unexplored game :main branch))]
            (with-reason "first exploring main until branch entrance"
              (explore-level game :main l)))
          (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
            (with-reason "first exploring previous levels of branch"
              (explore-level game branch l)))
          (if-not (explored? game branch tag-or-dlvl)
-           (with-reason "seeking exploration target"
+           (with-reason "reaching exploration target"
              (explore-level game branch tag-or-dlvl)))
          (log/debug "all explored")))))
 
