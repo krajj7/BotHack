@@ -740,9 +740,19 @@
 
 (defaction Autotravel [pos]
   (handler [this {:keys [game] :as anbf}]
-    (let [level (curlvl @game)
-          portal (atom nil)]
+    (let [pos (position pos)
+          level (curlvl @game)
+          portal (atom nil)
+          path (into #{} (rest (:path this)))]
+      (swap! game assoc :last-autonav pos :autonav-stuck false)
       (reify
+        KnowPositionHandler
+        (know-position [this {:keys [cursor]}]
+          (when (and (seq path) (not= pos cursor)
+                     (not-any? path (neighbors cursor)))
+            ; when autonav diverges from the intended path, this should prevent a cycle
+            (log/debug "autonav stuck")
+            (swap! game assoc :autonav-stuck true)))
         ToplineMessageHandler
         (message [_ msg]
           (move-message-handler anbf level portal msg))

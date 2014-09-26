@@ -292,7 +292,8 @@
        (not (monster-at level to))))
 
 (defn- autonav-target [game from level path opts]
-  (if (not (:no-autonav opts))
+  (if (and (not (:no-autonav opts))
+           (not= :autotravel (some-> game :last-action typekw)))
     (let [path-tiles (map (partial at level) path)
           steps (->> path-tiles
                      (interleave (conj path-tiles (at level from)))
@@ -300,13 +301,9 @@
           autonavigable (->> steps (take-while
                                      (partial autonavigable? game level opts))
                              (map second) (into []))
-          target (some-> (peek autonavigable) position)
-          last-autonav (let [a (:last-action game)
-                             last-target (:pos a)]
-                         (if (and last-target (= :autotravel (typekw a)))
-                           last-target))]
+          target (some-> (peek autonavigable) position)]
       (if (and target
-               (not= last-autonav target)
+               (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
                (< 3 (count autonavigable))
                (not-any? (partial monster-at level) (neighbors from)))
         target))))
