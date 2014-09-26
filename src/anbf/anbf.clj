@@ -121,6 +121,8 @@
     EnterGehennomHandler
     (enter-gehennom [_ _] true)
     ; escape the rest by default
+    OfferHandler
+    (offer-how-much [_ _] "")
     LockHandler
     (lock-it [_ _] "")
     (unlock-it [_ _] "")

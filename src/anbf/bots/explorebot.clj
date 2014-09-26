@@ -173,13 +173,22 @@
               (->Attack (towards player target))
               (->Move (towards player target)))))))))
 
+(defn- bribe-demon [prompt]
+  (->> prompt
+       (re-first-group #"demands ([0-9][0-9]*) zorkmids for safe passage")
+       parse-int))
+
 (defn init [anbf]
   (-> anbf
       (register-handler (reify ChooseCharacterHandler
                           (choose-character [this]
                             (deregister-handler anbf this)
                             "nsm"))) ; choose samurai
-      (register-handler (reify ReallyAttackHandler
+      (register-handler (reify
+                          OfferHandler
+                          (offer-how-much [_ _]
+                            (bribe-demon (:last-topline @(:game anbf))))
+                          ReallyAttackHandler
                           (really-attack [_ _] false)))
       (register-handler -15 (enhance-handler anbf))
       (register-handler -10 (reify ActionHandler

@@ -131,7 +131,8 @@
   (condp re-seq msg
     #"^What do you want to name this" name-item
     #"^Call .*:" call-item
-    (throw (UnsupportedOperationException. (str "unknown prompt msg" msg))))
+    #"^How much will you offer\?" offer-how-much
+    (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
 ;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:     in|on|melted into) the (.*?) here\?/ => 'write_what',

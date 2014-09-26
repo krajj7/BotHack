@@ -307,3 +307,6 @@
 
 (defprompthandler NameItemHandler
   (name-item [handler ^String prompt]))
+
+(defprompthandler OfferHandler
+  (offer-how-much [handler ^String prompt]))

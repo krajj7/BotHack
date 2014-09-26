@@ -184,6 +184,7 @@
       (swap! game update-map frame))
     ToplineMessageHandler
     (message [_ text]
+      (swap! game assoc :last-topline text)
       (or (condp re-seq text
             #"You feel more confident"
             (swap! game assoc-in [:player :can-enhance] true)
