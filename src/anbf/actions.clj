@@ -207,7 +207,8 @@
                       (swap! game update-curlvl-at boulder-target
                              assoc :feature :rock)))
                   #"It's a wall\."
-                  (swap! game update-curlvl-at target assoc :feature :wall)
+                  (swap! game update-curlvl-at target
+                         #(assoc % :feature (if (blank? %) :rock :wall)))
                   nil))))
         DlvlChangeHandler
         (dlvl-changed [_ old-dlvl new-dlvl]

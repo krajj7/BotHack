@@ -46,6 +46,13 @@
       (update-in [:player] update-player status)
       (update-game-status status)))
 
+(defn- rogue-ghost? [game level tile]
+  (and (blank? tile)
+       (adjacent? (:player game) tile)
+       (or (and (:feature tile) (not= :rock (:feature tile)))
+           (:item-glyph tile)
+           (not-any? (some-fn unknown? rock?) (neighbors level tile)))))
+
 (defn- update-visible-tile [game level tile]
   (assoc tile
          :seen (or (:seen tile) (if-not (boulder? tile) true))
@@ -59,11 +66,9 @@
                                          (nil? (:color tile)))))))
                 true
                 (:dug tile))
-         :feature (cond (and (blank? tile) ; rogue lvl ghost
-                             (some? (:item-glyph tile))) :floor
-                        (and (blank? tile)
-                             (or (unknown? tile)
-                                 (not ((:tags level) :rogue)))) :rock
+         :feature (cond (and (blank? tile) (unknown? tile)
+                             (or (not (:rogue (:tags level)))
+                                 (not (rogue-ghost? game level tile)))) :rock
                         :else (:feature tile))))
 
 (defn- update-explored [game]
@@ -74,25 +79,20 @@
                                       (update-visible-tile game level tile)
                                       tile))))))
 
-(defn- rogue-ghost? [game tile glyph]
-  (and (or (:feature tile) (:item-glyph tile))
-       (not (#{:rock :wall} (:feature tile)))
-       (= glyph \space)
-       (:rogue (curlvl-tags game))
-       (adjacent? (:player game) tile)))
-
 (defn gather-monsters [game frame]
-  (into {} (map (fn monster-entry [tile glyph color]
-                  (if (or (rogue-ghost? game tile glyph)
-                          (and (monster? glyph color)
-                               (not= (position tile)
-                                     (position (:player game)))))
-                    (vector (position tile)
-                            (new-monster (:x tile) (:y tile)
-                                         (:turn game) glyph color))))
-                (tile-seq (curlvl game))
-                (->> (:lines frame) (drop 1) (apply concat))
-                (->> (:colors frame) (drop 1) (apply concat)))))
+  (let [level (curlvl game)
+        rogue? (:rogue (:tags level))]
+    (into {} (map (fn monster-entry [tile glyph color]
+                    (if (or (and rogue? (rogue-ghost? game level tile))
+                            (and (monster? glyph color)
+                                 (not= (position tile)
+                                       (position (:player game)))))
+                      (vector (position tile)
+                              (new-monster (:x tile) (:y tile)
+                                           (:turn game) glyph color))))
+                  (tile-seq level)
+                  (->> (:lines frame) (drop 1) (apply concat))
+                  (->> (:colors frame) (drop 1) (apply concat))))))
 
 (defn- parse-map [game frame]
   (-> game
