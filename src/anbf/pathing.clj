@@ -402,7 +402,7 @@
            (and (or (likely-walkable? tile) (door? tile) (needs-levi? tile))
                 (some (complement (some-fn :seen boulder? monster?))
                       (neighbors level tile))))
-       (some (complement blank?) (neighbors level tile))))
+       (some (some-fn (complement blank?) :feature) (neighbors level tile))))
 
 (defn dead-end? [level tile]
   (and (likely-walkable? tile)
@@ -491,18 +491,21 @@
              (and (wall? (at level (:x tile) (dec (:y tile))))
                   (wall? (at level (:x tile) (inc (:y tile)))))))))
 
+(defn- searchable-tile? [level howmuch tile]
+  (and (searchable-position? tile)
+       (wall? tile)
+       (< (:searched tile) howmuch)
+       (not (wall-end? level tile))
+       (->> (neighbors level tile) (remove :seen) (take 2) count (< 1))))
+
 (defn- search-walls [game level howmuch]
-  (if-let [p (navigate game (fn searchable? [tile]
-                              (and (wall? tile)
-                                   (searchable-position? tile)
-                                   (not (shop? tile))
-                                   (not (wall-end? level tile))
-                                   (< (:searched tile) howmuch)
-                                   (->> (neighbors level tile)
-                                        (remove :seen) count
-                                        (< 1)))) {:adjacent true})]
-    (with-reason "searching walls"
-      (or (:step p) (->Search)))))
+  (let [searchable? (every-pred (partial searchable-tile? level howmuch)
+                                (if (= :wiztower (branch-key game))
+                                  (comp not wiztower-inner-rect position)
+                                  (complement shop?)))]
+    (if-let [p (navigate game searchable? {:adjacent true})]
+      (with-reason "searching walls"
+        (or (:step p) (->Search))))))
 
 (defn- search-corridors [game level howmuch]
   (if-let [p (navigate game (fn searchable? [tile]

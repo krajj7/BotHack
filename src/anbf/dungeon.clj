@@ -343,10 +343,12 @@
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
-           (let [wiztower (map #(at level %) wiztower-rect)]
-             (and (->> wiztower (filter (some-fn wall? :dug)) count (< 15))
-                  (->> wiztower (filter (every-pred floor? (complement :dug)))
-                       count (> 5))))) (add-curlvl-tag :wiztower-level)
+           (or (some :undiggable (map #(at level %) wiztower-inner-rect))
+               (let [wiztower (map #(at level %) wiztower-rect)]
+                 (and (->> wiztower (filter (some-fn wall? :dug)) count (< 15))
+                      (->> wiztower
+                           (filter (every-pred floor? (complement :dug)))
+                           count (> 5)))))) (add-curlvl-tag :wiztower-level)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
       (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
@@ -519,7 +521,11 @@
               (:undiggable-tiles blueprint))
       (reduce (fn mark-feature [level [pos feature]]
                 (update-at level pos assoc :feature
-                           (or (:feature (at level pos)) feature)))
+                           (if (= :door-secret feature)
+                             (if ((some-fn unknown? wall?) (at level pos))
+                               :door-secret
+                               (:feature (at level pos)))
+                             (or (:feature (at level pos)) feature))))
               res
               (:features blueprint))
       (reduce (fn add-monster [level [pos monster]]

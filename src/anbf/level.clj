@@ -140,6 +140,33 @@
                {:x 36 :y 13} :squeaky
                {:x 35 :y 12} :squeaky
                {:x 35 :y 14} :squeaky}}
+   {:branch :wiztower
+    :tag :wiztower-middle
+    :features {{:x 42 :y 17} :door-secret
+               {:x 43 :y 14} :door-secret
+               {:x 46 :y 14} :door-secret
+               {:x 35 :y 16} :door-secret
+               {:x 30 :y 16} :door-secret
+               {:x 48 :y 8} :door-secret
+               {:x 40 :y 8} :door-secret
+               {:x 49 :y 11} :door-secret
+               {:x 26 :y 13} :door-secret
+               {:x 28 :y 10} :door-secret
+               {:x 31 :y 10} :door-secret
+               {:x 32 :y 7} :door-secret}}
+   {:branch :wiztower
+    :tag :wiztower-top
+    :features {{:x 29 :y 9} :door-secret
+               {:x 32 :y 8} :door-secret
+               {:x 27 :y 14} :door-secret
+               {:x 35 :y 17} :door-secret
+               {:x 47 :y 16} :door-secret
+               {:x 49 :y 16} :door-secret
+               {:x 49 :y 9} :door-secret
+               {:x 41 :y 11} :squeaky
+               {:x 39 :y 11} :squeaky
+               {:x 40 :y 12} :squeaky
+               {:x 40 :y 10} :squeaky}}
    {:role "samurai"
     :dlvl "Home 3"
     :branch :quest

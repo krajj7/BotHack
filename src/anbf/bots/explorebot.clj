@@ -59,7 +59,10 @@
       ;(explore-level game :vlad :end)
       ;(explore-level game :main :end)
       ;(visit game :wiztower)
-      (visit game :wiztower :end)
+      (explore-level game :wiztower :end)
+      (if (and (:wiztower-top (curlvl-tags game))
+               (unknown? (at-curlvl game {:x 40 :y 11})))
+        (seek game {:x 40 :y 11}))
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
 
