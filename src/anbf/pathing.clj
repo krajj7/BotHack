@@ -148,8 +148,7 @@
   (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
-  (or (not ((:tags level) :rogue))
-      (boulder? tile)
+  (or (boulder? tile)
       (and (or (not ((:tags level) :minetown))
                (safe-from-guards level))
            (not (shop? tile)))))
@@ -193,10 +192,11 @@
 (defn can-unlock? [game]
   true) ; not poly'd...
 
-(defn can-dig?
+(defn diggable-walls?
   "Are the walls diggable on this level?"
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
+       (not ((:tags level) :rogue))
        (not (:undiggable (:blueprint level)))
        (not (#{:vlad :astral :sokoban :quest} (branch-key game)))))
 
@@ -234,12 +234,15 @@
                    (if monster
                      (if (:peaceful monster)
                        (if ((fnil <= 0) (:blocked to-tile) 25)
-                         [50 (fidget game level to-tile)]) ; hopefully will move
-                       [6 (->Move dir)])
+                         [50 (with-reason "peaceful blocker" monster
+                               (fidget game level to-tile))]) ; hopefully will move
+                       [6 (with-reason "pathing through" monster
+                            (->Move dir))])
                      (or (and (shop? to-tile)
                               (not (shop? from-tile))
                               (enter-shop game))
-                         (if-not (and (:levi opts) (needs-levi? to-tile))
+                         (if-not (or (and (:levi opts) (needs-levi? to-tile))
+                                     (and (:no-traps opts) (trap? to-tile)))
                            [0 (->Move dir)])))) ; trapdoors/holes are escapable
                  (if (kickable-door? level from-tile opts)
                    (if-let [odir (blocked-door level from-tile)]
@@ -250,10 +253,6 @@
 
                        [1 (with-reason "moving to kick blocked door at my position"
                             (->Move odir))])))
-                 (if (:trapped (:player game))
-                   (if-let [step (with-reason "untrapping self"
-                                   (random-move game level))]
-                     [0 step]))
                  (if (and (edge-passable-walking? game level from-tile to-tile)
                           (needs-levi? to-tile) (not monster))
                    (if-let [[slot item] (:levi opts)]
@@ -283,7 +282,8 @@
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
                           (or (not= (:branch-id level) :wiztower)
-                              (some water? (neighbors level to-tile)))
+                              (some (some-fn water? ice?)
+                                    (neighbors level to-tile)))
                           (dare-destroy? level to-tile))
                    [8 (dig (:pick opts) dir)]))
              (update-in [0] + (base-cost level dir to-tile opts))))))
@@ -323,10 +323,13 @@
 
 (defn- path-step [game level from move-fn path opts]
   (if-let [start (first path)]
-    (some-> (if-let [target (and (not (:no-autonav opts))
-                                 (autonav-target game from level path opts))]
-              (->Autotravel target)
-              (nth (move-fn from start) 1))
+    (some-> (or (if-let [target (and (not (:no-autonav opts))
+                                     (autonav-target game from level path opts))]
+                  (->Autotravel target))
+                (if (:trapped (:player game))
+                  (with-reason "untrapping self"
+                    (random-move game level)))
+                (nth (move-fn from start) 1))
             (assoc :path path))))
 
 (defn- get-a*-path [game level from to move-fn opts max-steps]
@@ -345,6 +348,7 @@
     :adjacent - path to closest adjacent tile instead of the target directly
     :explored - don't path through unknown tiles
     :max-steps <num> - don't navigate further than given number of steps
+    :no-traps - more trap avoidance
     :no-dig - don't use the pickaxe or mattock
     :no-levitation - when navigating deliberately into a hole/trapdoor
     :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)
@@ -364,7 +368,7 @@
                        (have-levi game)))
          pick (and (not walking)
                    (not no-dig)
-                   (can-dig? game level)
+                   (diggable-walls? game level)
                    (have-pick game))
          opts (cond-> opts
                 levi (assoc :levi levi)
@@ -474,7 +478,7 @@
       (with-reason "going to push a boulder"
         (or (:step path)
             (->> (pushable-from game level player) first
-                 (towards player) ->Move))))
+                 (towards player) ->Move (without-levitation game)))))
     (log/debug "no boulders to push")))
 
 (defn- recheck-dead-ends [{:keys [player] :as game} level howmuch]
@@ -556,18 +560,12 @@
   (and (= (:dlvl game) (:dlvl level))
        (= (branch-key game) (branch-key game level))))
 
-(defn explore-wiztower [game level]
-  (if (and (:wiztower-top (:tags level))
-           (unknown? (at level {:x 40 :y 11})))
-    (seek game {:x 40 :y 11})))
-
 (defn- curlvl-exploration-index
   [game]
   (let [level (curlvl game)]
     (log/debug "calc exploration index")
     (cond
       (unexplored-column game level) 0
-      (explore-wiztower game level) 0
       (navigate game (partial explorable-tile? level)) 0
       :else (->> (tile-seq level) (map :searched) (reduce + 1)))))
 
@@ -601,13 +599,16 @@
           (or (:step p)
               (->Search)))))))
 
+(defn- descend [game]
+  (without-levitation game (->Descend)))
+
 (defn go-down
   "Go through a hole or trapdoor or dig down if possible"
   [game level]
   (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
-    (with-reason "going to a trapdoor/hole" (or step (->Move \>)))
-    (if-let [pick (and (can-dig? game level)
-                       (diggable-floor? game level)
+    (with-reason "going to a trapdoor/hole"
+      (or step (descend game)))
+    (if-let [pick (and (diggable-floor? game level)
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
@@ -617,7 +618,7 @@
                                         (->> (straight-neighbors level %)
                                              (filter wall?)
                                              count (<= 2))))
-                   (navigate game #(and (#{:floor :corridor} (:feature %))
+                   (navigate game #(and (#{:pit :floor :corridor} (:feature %))
                                         (not-any? water? (neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter walkable?)
@@ -626,7 +627,7 @@
             (with-reason "digging down" (dig pick \>)))))))
 
 (defn search
-  ([game] (search game 10))
+  ([game] (or (search game 10) (throw (IllegalStateException. "stuck :-("))))
   ([game max-iter]
    (with-reason "searching - max-iter =" max-iter
      (let [level (curlvl game)]
@@ -671,9 +672,6 @@
            (and (:go-down opts) (with-reason "can't find downstairs"
                                   (go-down game (curlvl game))))
            (search game))))))
-
-(defn- descend [game]
-  (without-levitation game (->Descend)))
 
 (defn- switch-dlvl [game new-dlvl]
   (with-reason "switching within branch to" new-dlvl
@@ -812,17 +810,17 @@
   (if (not= :main (branch-key game))
     (or (explore game) (search game)) ; unknown subbranch
     (let [branch (branch-key game branch)
-          [stair-action stairs] (if (upwards? branch)
-                                  [->Ascend :stairs-up]
-                                  [->Descend :stairs-down])
+          [stairs stair-action] (if (upwards? branch)
+                                  [:stairs-up (->Ascend)]
+                                  [:stairs-down (descend game)])
           new-dlvl (dlvl-candidate game branch)]
       (with-reason "trying to enter" branch "from" new-dlvl
         (or (switch-dlvl game new-dlvl)
             (if (portal-branches branch)
               (seek-portal game))
-            (seek game #(and (= stairs (:feature %))
+            (seek game #(and (has-feature? % stairs)
                              (not= :main (branch-key game %))))
-            (stair-action))))))
+            stair-action)))))
 
 (defn seek-branch
   [game new-branch-id]
@@ -894,7 +892,6 @@
                (when (unexplored-column game level)
                  (with-reason "level not explored enough, searching"
                    (search game (if (= :mines (branch-key game)) 10 2))))
-               (explore-wiztower game level)
                (log/debug "nothing to explore"))
            (log/debug "positive exploration index")))))
   ([game branch]

@@ -34,7 +34,7 @@
 
 (defn monster-glyph? [glyph]
   (or (and (Character/isLetterOrDigit ^Character glyph)
-            (not= \8 glyph) (not= \0 glyph))
+           (not= \8 glyph) (not= \0 glyph))
        (#{\& \@ \' \; \:} glyph)))
 
 (defn monster?

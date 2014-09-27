@@ -54,13 +54,13 @@
       ;(explore-level game :mines :minetown)
       ;(explore game :mines :minetown)
       ;(visit game :sokoban :end)
-      ;(explore game :mines)
-      ;(explore-level game :quest :end)
+      (explore game :mines)
+      (explore game :quest :end)
       ;(visit game :main :medusa)
       ;(explore-level game :vlad :end)
       ;(explore-level game :main :end)
       ;(visit game :wiztower)
-      (explore-level game :wiztower :end)
+      (explore game :wiztower :end)
       (if (and (:wiztower-top (curlvl-tags game))
                (unknown? (at-curlvl game {:x 40 :y 11})))
         (seek game {:x 40 :y 11}))
@@ -167,8 +167,8 @@
                                         (->Move :E)))
     (let [tgts (hostile-threats game)]
       (when-let [{:keys [step target]} (navigate game tgts
-                                          {:walking true :adjacent true
-                                           :no-autonav true
+                                          {:adjacent true :walking true
+                                           :no-traps true :no-autonav true
                                            :max-steps hostile-dist-thresh})]
         (with-reason "targetting enemy at" target
           (or (wield-weapon game)

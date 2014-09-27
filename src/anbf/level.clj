@@ -82,9 +82,9 @@
     :tag :castle
     :undiggable true
     :undiggable-floor true
-    :features {{:x 55 :y 10} :door-secret
-               {:x 55 :y 12} :door-secret
-               {:x 46 :y 11} :door-secret
+    :features {{:x 55 :y 11} :door-secret
+               {:x 55 :y 13} :door-secret
+               {:x 46 :y 12} :door-secret
                {:x 48 :y 12} :trapdoor
                {:x 52 :y 12} :trapdoor
                {:x 56 :y 12} :trapdoor
@@ -94,10 +94,10 @@
     :tag :votd
     :undiggable true
     :undiggable-floor true
-    :features {{:x 68 :y 18} :stairs-up
-               {:x 6 :y 2} :door-secret
-               {:x 10 :y 5} :door-secret
-               {:x 8 :y 7} :door-secret}}
+    :features {{:x 68 :y 19} :stairs-up
+               {:x 6 :y 3} :door-secret
+               {:x 10 :y 6} :door-secret
+               {:x 8 :y 8} :door-secret}}
    {:branch :main
     :undiggable true
     :tag :asmodeus

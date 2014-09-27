@@ -47,11 +47,13 @@
       (update-game-status status)))
 
 (defn- rogue-ghost? [game level tile]
-  (and (blank? tile)
+  (and ;(blank? tile) - not yet updated
+       (= \space (get-in game [:frame :lines (:y tile) (:x tile)]))
        (adjacent? (:player game) tile)
        (or (and (:feature tile) (not= :rock (:feature tile)))
            (:item-glyph tile)
-           (not-any? (some-fn unknown? rock?) (neighbors level tile)))))
+           (not-any? (some-fn unknown? rock? corridor?)
+                     (neighbors level tile)))))
 
 (defn- update-visible-tile [game level tile]
   (assoc tile
@@ -79,14 +81,14 @@
                                       (update-visible-tile game level tile)
                                       tile))))))
 
-(defn gather-monsters [game frame]
+(defn- gather-monsters [game frame]
   (let [level (curlvl game)
         rogue? (:rogue (:tags level))]
     (into {} (map (fn monster-entry [tile glyph color]
-                    (if (or (and rogue? (rogue-ghost? game level tile))
-                            (and (monster? glyph color)
-                                 (not= (position tile)
-                                       (position (:player game)))))
+                    (if (and (not= (position tile)
+                                   (position (:player game)))
+                             (or (and rogue? (rogue-ghost? game level tile))
+                                 (monster? glyph color)))
                       (vector (position tile)
                               (new-monster (:x tile) (:y tile)
                                            (:turn game) glyph color))))

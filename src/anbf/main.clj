@@ -44,6 +44,9 @@
           FoundItemsHandler
           (found-items [_ items]
             (log/info "Found items:" items))
+          AboutToChooseActionHandler
+          (about-to-choose [_ game]
+            (log/info "current updated tile:" (at-player game)))
           ActionChosenHandler
           (action-chosen [_ action]
             (log/info "Performing action:" (dissoc action :reason)
@@ -53,7 +56,8 @@
             (log/spy inventory))
           KnowPositionHandler
           (know-position [_ frame]
-            (log/info "current player position:" (:cursor frame)))
+            (log/info "current player position:" (:cursor frame))
+            (log/info "current tile (not yet updated):" (at-player @(:game anbf))))
           BOTLHandler
           (botl [_ status]
             (log/info "new botl status:" status))

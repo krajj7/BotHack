@@ -185,8 +185,8 @@
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (if (:feature target)
-               (do (log/error "seemingly non diagonally walkable feature at"
-                              target)
+               (do (log/warn "seemingly non diagonally walkable feature at"
+                             target)
                    %)
                (do (log/debug "stuck on diagonal movement => possibly door at"
                               target)
