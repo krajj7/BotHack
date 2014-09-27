@@ -102,6 +102,10 @@
                 (throw (IllegalArgumentException.
                          (str "Invalid direction: " dir)))))))
 
+(defn mark-trap-here [anbf]
+  (update-at-player-when-known anbf update-in [:feature]
+                               #(if (traps %) % :trap)))
+
 (defn- move-message-handler
   [{:keys [game] :as anbf} level portal-atom msg]
   (condp re-seq msg
@@ -117,10 +121,9 @@
         (swap! game assoc-in [:player :trapped] false)
         #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
         (do (swap! game assoc-in [:player :trapped] true)
-            (update-at-player-when-known anbf update-in [:feature]
-                                         #(if (traps %) % :trap)))
+            (mark-trap-here anbf))
         #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
-        (update-at-player-when-known anbf assoc :feature :trap)
+        (mark-trap-here anbf)
         #"You are carrying too much to get through"
         (swap! game assoc-in [:player :thick] true)
         #"activated a magic portal!"
@@ -444,14 +447,15 @@
   (trigger [_] "i"))
 
 (defn- examine-tile [{:keys [player] :as game}]
-  (let [tile (at-player game)]
-    (when (and (not (blind? player))
-               (not (have-levi-on game))
-               (or ((some-fn unknown? unknown-trap? :new-items) tile)
-                   (and (seq (:items tile))
-                        (not= (:last-position game) (position player))
-                        (not= :search (some-> game :last-action typekw))
-                        (not= (:turn game) (:examined tile)))))
+  (if-let [tile (and (not (blind? player))
+                     (at-player game))]
+    (if (or ((some-fn unknown? unknown-trap?) tile)
+            (and (not (have-levi-on game))
+                 (or (:new-items tile)
+                     (and (seq (:items tile))
+                          (not= (:last-position game) (position player))
+                          (not= :search (some-> game :last-action typekw))
+                          (not= (:turn game) (:examined tile))))))
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
 (defn- examine-traps [game]
