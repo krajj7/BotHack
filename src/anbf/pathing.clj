@@ -176,13 +176,19 @@
        (dare-destroy? level tile)
        (not (item? tile)))) ; don't try to break blocked doors
 
+(defn- without-levitation [game action]
+  ; XXX doesn't work for intrinsic levitation
+  (if-let [[slot _] (have-levi-on game)]
+    (with-reason "action" (typekw action) "forbids levitation"
+      (remove-use game slot))
+    action))
+
 (defn- kick-door [{:keys [player] :as game} level tile dir]
-  (if-not (have-levi-on game)
-    (if (door-open? tile)
-      [8 (with-reason "closing door to kick it" (->Close dir))]
-      (if (:leg-hurt player)
-        [30 (with-reason "waiting out :leg-hurt" ->Search)]
-        [6 (->Kick dir)]))))
+  (if (door-open? tile)
+    [8 (with-reason "closing door to kick it" (->Close dir))]
+    (if (:leg-hurt player)
+      [30 (with-reason "waiting out :leg-hurt" ->Search)]
+      [6 (without-levitation game (->Kick dir))])))
 
 (defn can-unlock? [game]
   true) ; not poly'd...
@@ -666,6 +672,9 @@
                                   (go-down game (curlvl game))))
            (search game))))))
 
+(defn- descend [game]
+  (without-levitation game (->Descend)))
+
 (defn- switch-dlvl [game new-dlvl]
   (with-reason "switching within branch to" new-dlvl
     (if-not (= (:dlvl game) new-dlvl)
@@ -678,28 +687,28 @@
                   (seek game leader {:adjacent true :explored true})))))
           (let [branch (branch-key game)
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
-                                  [:stairs-up ->Ascend]
-                                  [:stairs-down ->Descend])
+                                  [:stairs-up (->Ascend)]
+                                  [:stairs-down (descend game)])
                 step (with-reason "looking for the" stairs
                        (seek game #(and (has-feature? % stairs)
                                         (if-let [b (branch-key game %)]
                                           (= b branch)
                                           true))
                              (if (= :stairs-down stairs) {:go-down true})))]
-            (or step (action)))))))
+            (or step action))))))
 
 (defn- escape-branch [game]
   (let [levels (get-branch game)
         branch (branch-key game)
         dlvl (:dlvl game)
-        [stair-action stairs] (if (upwards? branch)
-                                [->Descend :stairs-down]
-                                [->Ascend :stairs-up])]
+        [stairs stair-action] (if (upwards? branch)
+                                [:stairs-down (descend game)]
+                                [:stairs-up (->Ascend)])]
     (with-reason "escaping subbranch" branch
       (if (and (= dlvl (first (keys levels))) (portal-branches branch))
         (seek-portal game)
         (or (seek game #(has-feature? % stairs))
-            (stair-action))))))
+            stair-action)))))
 
 (defn- least-explored [game branch dlvls]
   {:pre [(#{:main :mines} branch)]}
