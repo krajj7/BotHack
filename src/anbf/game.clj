@@ -38,7 +38,7 @@
               :discoveries initial-discoveries}))
 
 (defn- update-game-status [game status]
-  (->> game keys (select-keys status) (merge game)))
+  (->> (keys game) (select-keys status) (into game)))
 
 (defn- update-by-botl [game status]
   (-> game

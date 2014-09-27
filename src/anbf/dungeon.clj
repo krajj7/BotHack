@@ -47,13 +47,15 @@
      (compare (dlvl-number d1) (dlvl-number d2))
      (compare d1 d2))))
 
-; TODO if level looks visited find it by dlvl instead of adding
+(defn ensure-branch [game branch-id]
+  (log/debug "ensuring branch" branch-id)
+  (update-in game [:dungeon :levels branch-id]
+             #(or % (sorted-map-by (partial dlvl-compare branch-id)))))
+
 (defn add-level [{:keys [dungeon] :as game} {:keys [branch-id] :as level}]
-  (assoc-in
-    game [:dungeon :levels branch-id]
-    (assoc (get (:levels dungeon) branch-id
-                (sorted-map-by (partial dlvl-compare branch-id)))
-           (:dlvl level) level)))
+  (assoc-in (ensure-branch game branch-id)
+            [:dungeon :levels branch-id (:dlvl level)]
+            level))
 
 (defn new-dungeon []
   (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)))
@@ -243,8 +245,8 @@
   ;(log/debug dungeon)
   (-> game
       (assoc-in [:dungeon :id->branch branch-id] branch)
-      (update-in [:dungeon :levels branch]
-                 #(into (-> dungeon :levels branch-id) %))
+      (ensure-branch branch)
+      (update-in [:dungeon :levels branch] into (-> dungeon :levels branch-id))
       (update-in [:dungeon :levels :main (branch-entry game branch-id) :tags]
                  #(-> % (disj branch-id) (conj branch)))
       (update-in [:dungeon :levels] dissoc branch-id)))
