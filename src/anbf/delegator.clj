@@ -88,6 +88,7 @@
 (defn- respond-escapable [res-transform protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [res (apply invoke-command protocol method delegator args)]
+      (log/debug "command response:" res)
       (if-not (and (string? res) (empty? res)) ; can return "\n" to send empty response
         (write delegator (res-transform res))
         (do (log/info "Escaping prompt")
@@ -310,3 +311,6 @@
 
 (defprompthandler OfferHandler
   (offer-how-much [handler ^String prompt]))
+
+(defprompthandler LevelTeleportHandler
+  (leveltele [handler ^String prompt]))

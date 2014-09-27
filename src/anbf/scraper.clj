@@ -132,6 +132,7 @@
     #"^What do you want to name this" name-item
     #"^Call .*:" call-item
     #"^How much will you offer\?" offer-how-much
+    #"^To what level do you want to teleport\?" leveltele
     (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',

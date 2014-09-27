@@ -132,6 +132,8 @@
     (apply-what [_ _] "")
     TeleportWhereHandler
     (teleport-where [_] "")
+    LevelTeleportHandler
+    (leveltele [_ _] "")
     DieHandler
     (die [_ _] "")
     KeepSaveHandler
