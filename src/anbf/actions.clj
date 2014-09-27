@@ -655,7 +655,7 @@
                true))))))
 
 (defn- possible-autoid
-  "Check if the item at slot may have auto-identified on use"
+  "Check if the item at slot auto-identified on use"
   [{:keys [game] :as anbf} slot]
   (if-not (know-id? @game (inventory-slot @game slot))
     (update-discoveries anbf)))
@@ -786,6 +786,19 @@
   (if (:in-use item)
     (->ApplyAt slot dir)
     (->Wield slot)))
+
+(defaction Read [slot]
+  (handler [this {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (reify
+      ReadWhatHandler
+      (read-what [_ _] slot)
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          ; TODO autoid
+          nil))))
+  (trigger [_] "r"))
 
 (defn- use-action [item]
   (case (typekw item)

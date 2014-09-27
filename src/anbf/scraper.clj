@@ -163,7 +163,10 @@
     #"There is .*force its lock\?" force-lock
     #"[Uu]nlock it\? " unlock-it
     #"[Ll]ock it\? " lock-it
-    #"^Which ring-finger" which-finger
+    #"^What do you want to read\?" read-what
+    #"^What do you want to drink\?" drink-what
+    #"^What do you want to eat\?" eat-what
+    #"^What do you want to zap\?" zap-what
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

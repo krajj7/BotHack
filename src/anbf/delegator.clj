@@ -317,3 +317,15 @@
 
 (defchoicehandler WhichRingFingerHandler
   (which-finger [handler ^String prompt]))
+
+(defchoicehandler ReadWhatHandler
+  (read-what [handler ^String prompt]))
+
+(defchoicehandler DrinkWhatHandler
+  (drink-what [handler ^String prompt]))
+
+(defchoicehandler ZapWhatHandler
+  (zap-what [handler ^String prompt]))
+
+(defchoicehandler EatWhatHandler
+  (eat-what [handler ^String prompt]))
