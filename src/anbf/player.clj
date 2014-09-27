@@ -72,7 +72,9 @@
 (defn inventory [game]
   (-> game :player :inventory))
 
-(defn inventory-slot [game slot]
+(defn inventory-slot
+  "Return item for the inventory slot"
+  [game slot]
   (get-in game [:player :inventory slot]))
 
 (defn- have-selector [game name-or-set-or-fn]

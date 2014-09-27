@@ -787,6 +787,9 @@
     (->ApplyAt slot dir)
     (->Wield slot)))
 
+(defn- identify-slot [game slot id]
+  (add-discovery game (:name (inventory-slot game slot)) id))
+
 (defaction Read [slot]
   (handler [this {:keys [game] :as anbf}]
     (update-inventory anbf)
@@ -796,7 +799,12 @@
       ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
-          ; TODO autoid
+          #"Your [a-z]* (glow|begin to glow|tingle|begin to tingle)|A faint (buzz|glow) surrounds your [a-z]*\.|You feel confused\."
+          (swap! game identify-slot slot "scroll of confuse monster")
+          #"You feel like someone is helping you\.|You feel in touch with the Universal Oneness\.|You feel like you need some help\.|You feel the power of the Force against you"
+          (swap! game identify-slot slot "scroll of remove curse")
+          #"You hear maniacal laughter|You hear sad wailing"
+          (swap! game identify-slot slot "scroll of scare monster")
           nil))))
   (trigger [_] "r"))
 

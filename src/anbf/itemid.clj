@@ -97,26 +97,28 @@
   (some? (item-name game item)))
 
 (defn add-discovery [game appearance id]
-  (let [id (get jap->eng id id)]
-    (log/debug "adding discovery: >" appearance "< is >" id "<")
-    (update-in game [:discoveries]
-               (fn integrate-discovery [db]
-                 (if (exclusive-appearances appearance)
-                   (as-> db res
-                     (reduce #(db-retraction %1 itemid-appearance
-                                                  %2 appearance)
-                             res
-                             (query game
-                                    (run* [q]
-                                          (itemid-appearance q appearance))))
-                     (reduce #(db-retraction %1 itemid-appearance
-                                                  id %2)
-                             res
-                             (query game
-                                    (run* [q]
-                                          (itemid-appearance id q))))
-                     (db-fact res itemid-appearance id appearance))
-                   db))))) ; old gray stones will stay gray stones...
+  (if (blind-appearances appearance)
+    (log/debug "not adding discovery for" appearance "- is generic")
+    (let [id (get jap->eng id id)]
+      (log/debug "adding discovery: >" appearance "< is >" id "<")
+      (update-in game [:discoveries]
+                 (fn integrate-discovery [db]
+                   (if (exclusive-appearances appearance)
+                     (as-> db res
+                       (reduce #(db-retraction %1 itemid-appearance
+                                               %2 appearance)
+                               res
+                               (query game
+                                      (run* [q]
+                                            (itemid-appearance q appearance))))
+                       (reduce #(db-retraction %1 itemid-appearance
+                                               id %2)
+                               res
+                               (query game
+                                      (run* [q]
+                                            (itemid-appearance id q))))
+                       (db-fact res itemid-appearance id appearance))
+                     db)))))) ; old gray stones will stay gray stones...
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]
