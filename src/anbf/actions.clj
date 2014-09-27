@@ -107,16 +107,18 @@
                                #(if (traps %) % :trap)))
 
 (defn- move-message-handler
-  [{:keys [game] :as anbf} level portal-atom msg]
+  [{:keys [game] :as anbf} portal-atom msg]
   (condp re-seq msg
         #".*: \"Closed for inventory\"" ; TODO possible degradation
         (update-before-action
           anbf (fn mark-shop [game]
-                 (reduce #(if ((some-fn door? wall?) %2)
-                            (update-curlvl-at %1 %2 assoc :room :shop)
-                            %1)
-                         (add-curlvl-tag game :shop-closed)
-                         (neighbors level (:player game)))))
+                 (->> (:player game)
+                      (neighbors (curlvl game))
+                      (find-first door?)
+                      (straight-neighbors (curlvl game))
+                      (remove #(= (position (:player game)) (position %)))
+                      (reduce #(update-curlvl-at %1 %2 assoc :room :shop)
+                              (add-curlvl-tag game :shop-closed)))))
         #"You crawl to the edge of the pit\.|You disentangle yourself\."
         (swap! game assoc-in [:player :trapped] false)
         #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
@@ -135,11 +137,10 @@
         #"Wait!  That's a .*mimic!"
         (update-before-action
           anbf (fn [game]
-                 (reduce #(if (= \m (:glyph (at-curlvl %1 %2)))
-                            (update-curlvl-at %1 %2 assoc :feature nil)
-                            %1)
-                         game
-                         (neighbors (:player game)))))
+                 (->> (neighbors (curlvl game) (:player game))
+                      (filter #(= \m (:glyph %)))
+                      (reduce #(update-curlvl-at %1 %2 assoc :feature nil)
+                              game))))
         nil))
 
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
@@ -197,7 +198,7 @@
         ToplineMessageHandler
         (message [_ msg]
           (reset! got-message true)
-          (or (move-message-handler anbf level portal msg)
+          (or (move-message-handler anbf portal msg)
               (when-not (dizzy? old-player)
                 (condp re-seq msg
                   no-monster-re
@@ -760,7 +761,7 @@
             (swap! game assoc :autonav-stuck true)))
         ToplineMessageHandler
         (message [_ msg]
-          (move-message-handler anbf level portal msg))
+          (move-message-handler anbf portal msg))
         DlvlChangeHandler
         (dlvl-changed [_ old-dlvl new-dlvl]
           (if @portal
