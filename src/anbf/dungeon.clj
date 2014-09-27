@@ -548,3 +548,10 @@
                     (branch-key game level))
            (:undiggable-floor (:blueprint level))
            (some #{:undiggable-floor :end} (:tags level)))))
+
+(defn in-gehennom?
+  "Your god won't help you here"
+  [game]
+  (and (#{:wiztower :main} (branch-key game))
+       (some->> (get-level game :main :castle) :dlvl
+                (dlvl-compare (:dlvl game)) pos?)))

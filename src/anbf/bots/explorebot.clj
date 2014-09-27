@@ -28,7 +28,8 @@
        (into #{})))
 
 (defn- pray-for-food [game]
-  (if (weak? (:player game))
+  (if (and (weak? (:player game))
+           (not (in-gehennom? game)))
     (with-reason "praying for food" ->Pray)))
 
 (defn- enhance-handler [anbf]
