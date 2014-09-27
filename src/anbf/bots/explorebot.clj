@@ -75,6 +75,7 @@
   [(ordered-set "pick-axe" "dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
+   #{"ring of slow digestion"}
    (ordered-set "blindfold" "towel")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}

@@ -163,6 +163,7 @@
     #"There is .*force its lock\?" force-lock
     #"[Uu]nlock it\? " unlock-it
     #"[Ll]ock it\? " lock-it
+    #"^Which ring-finger" which-finger
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

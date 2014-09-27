@@ -314,3 +314,6 @@
 
 (defprompthandler LevelTeleportHandler
   (leveltele [handler ^String prompt]))
+
+(defchoicehandler WhichRingFingerHandler
+  (which-finger [handler ^String prompt]))
