@@ -93,3 +93,12 @@
      (slot-item (.charAt slot 0) label)))
   ([chr label]
    [chr (label->item label)]))
+
+(defn noncursed? [item]
+  (#{:uncursed :blessed} (:buc item)))
+
+(defn cursed? [item]
+  (= :cursed (:buc item)))
+
+(defn blessed? [item]
+  (= :blessed (:buc item)))

@@ -2,6 +2,7 @@
   "a dungeon-exploring bot"
   (:require [clojure.tools.logging :as log]
             [flatland.ordered.set :refer [ordered-set]]
+            [anbf.item :refer :all]
             [anbf.itemid :refer :all]
             [anbf.handlers :refer :all]
             [anbf.player :refer :all]
@@ -50,20 +51,18 @@
         (with-reason "waiting out impairment" ->Wait))))
 
 (defn progress [game]
-  (or ;(explore game :main "Dlvl:1")
-      ;(explore-level game :mines :minetown)
-      ;(explore game :mines :minetown)
-      ;(visit game :sokoban :end)
-      (explore game :mines)
+  (or ;(explore game :mines :minetown)
+      ;(explore game :mines)
       (explore game :quest :end)
+      ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
-      ;(explore-level game :vlad :end)
-      ;(explore-level game :main :end)
-      ;(visit game :wiztower)
+      (explore game :vlad :end)
+      (explore game :main :end)
       (explore game :wiztower :end)
       (if (and (:wiztower-top (curlvl-tags game))
                (unknown? (at-curlvl game {:x 40 :y 11})))
         (seek game {:x 40 :y 11}))
+      ;(visit game :earth)
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
 
@@ -76,6 +75,7 @@
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
    #{"ring of slow digestion"}
+   #{"Orb of Fate"}
    (ordered-set "blindfold" "towel")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
@@ -134,11 +134,19 @@
          (= :light (:subtype id))
          (= :copper (:material id)))))
 
+(defn uncurse-gear [game]
+  ; TODO passive items (luckstone / orb of fate)
+  (if-let [[_ item] (have game (every-pred cursed? :in-use))]
+    (if-let [[slot _] (have-noncursed game "scroll of remove curse")]
+      (with-reason "uncursing" (:label item)
+        (->Read slot)))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)]
-    (or (if (and (not= :wield (some-> game :last-action typekw))
+    (or (uncurse-gear game)
+        (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (not-any? (complement walkable?) tile-path))
           (with-reason "reequip - weapon"
@@ -180,6 +188,7 @@
 
 (defn- bribe-demon [prompt]
   (->> prompt
+       log/spy
        (re-first-group #"demands ([0-9][0-9]*) zorkmids for safe passage")
        parse-int))
 

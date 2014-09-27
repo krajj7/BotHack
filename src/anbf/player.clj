@@ -4,6 +4,7 @@
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.itemid :refer :all]
+            [anbf.item :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn hungry?
@@ -74,6 +75,25 @@
 (defn inventory-slot [game slot]
   (get-in game [:player :inventory slot]))
 
+(defn- have-selector [game name-or-set-or-fn]
+  (cond (fn? name-or-set-or-fn) name-or-set-or-fn
+        (set? name-or-set-or-fn) (some-fn
+                                   (comp name-or-set-or-fn
+                                         (partial item-name game))
+                                   (comp name-or-set-or-fn :name))
+        :else (some-fn
+                (comp (partial = name-or-set-or-fn) :name)
+                (comp (partial = name-or-set-or-fn)
+                      (partial item-name game)))))
+
+(defn have-all
+  "Returns a lazy seq of all matching [slot items] pairs in inventory, options same as 'have'"
+  [game name-or-set-or-fn]
+  ;(log/debug "have-all")
+  (for [[slot item :as entry] (inventory game)
+        :when ((have-selector game name-or-set-or-fn) item)]
+    entry))
+
 (defn have
   "Returns the [slot item] of matching item in player's inventory or nil.
    First arg can be:
@@ -81,28 +101,22 @@
      #{String} (set of strings - item name alternatives with no preference)
      fn - predicate function to filter items"
   [game name-or-set-or-fn]
-  ;(log/debug "have")
-  (find-first (comp
-                (cond (fn? name-or-set-or-fn) name-or-set-or-fn
-                      (set? name-or-set-or-fn) (some-fn
-                                                 (comp name-or-set-or-fn
-                                                       (partial item-name game))
-                                                 (comp name-or-set-or-fn :name))
-                      :else (some-fn
-                              (comp (partial = name-or-set-or-fn) :name)
-                              (comp (partial = name-or-set-or-fn)
-                                    (partial item-name game))))
-                val)
-              (inventory game)))
+  (first (have-all game name-or-set-or-fn)))
+
+(defn have-noncursed
+  "Like 'have' but return only known-non-cursed items"
+  [game name-or-set-or-fn]
+  (have game (every-pred noncursed?
+                         (have-selector game name-or-set-or-fn))))
 
 (defn have-unihorn [game]
   (have game #(and (= "unicorn horn" (item-name game %))
-                   (not= :cursed (:buc %)))))
+                   (not (cursed? %)))))
 
 (defn have-pick [game]
   ; TODO (can-wield? ...)
   (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
-                   (or (not= :cursed (:buc %)) (:in-use %)))))
+                   (or (not (cursed? %)) (:in-use %)))))
 
 (defn have-key [game]
   (have game #{"skeleton key" "lock pick" "credit card"}))
@@ -116,7 +130,7 @@
   (have game #(and (#{"boots of levitation" "ring of levitation"}
                              (item-name game %))
                    #_(can-use? %) ; TODO
-                   (or (#{:blessed :uncursed} (:buc %)) (:in-use %)))))
+                   (or (noncursed? %) (:in-use %)))))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)
@@ -126,10 +140,9 @@
                                  (:in-use %)))))))
 
 (defn can-remove? [game item]
-  (not= :cursed (:buc item))) ; TODO not obstructed by cursed item / weapon
+  (not (cursed? item))) ; TODO not obstructed by cursed item / weapon
 
 (defn wielding
   "Return the wielded item or nil"
   [game]
-  (find-first #(:wielded (val %))
-              (inventory game)))
+  (have game :wielded))
