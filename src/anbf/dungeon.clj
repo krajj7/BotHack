@@ -434,11 +434,11 @@
             res
             (rectangle NW-corner SE-corner))
     (if (shops kind)
-      (reduce #(if (unknown? (at-curlvl game %2))
-                 (update-curlvl-at %1 %2 assoc :feature :wall)
-                 %1)
+      (reduce #(update-curlvl-at %1 %2 assoc :feature :wall)
               res
-              (rectangle-boundary NW-corner SE-corner))
+              (for [pos (rectangle-boundary NW-corner SE-corner)
+                    :when (unknown? (at-curlvl game pos))]
+                pos))
       res)))
 
 (defn- floodfill-room [game pos kind]

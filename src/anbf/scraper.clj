@@ -198,12 +198,11 @@
               (conj (map parse-int (subvec status 1 10))
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
-    {:state (reduce #(if (.contains ^String botl2 (key %2))
-                       (conj %1 (val %2))
-                       %1)
-                    #{}
-                    {" Bl" :blind " Stun" :stun " Conf" :conf
-                     " Foo" :ill " Ill" :ill " Hal" :hallu})
+    {:state (into #{}
+                  (for [[substr state] {" Bl" :blind " Stun" :stun " Conf" :conf
+                                        " Foo" :ill " Ill" :ill " Hal" :hallu}
+                        :when (.contains ^String botl2 substr)]
+                    state))
      :burden (condp #(.contains ^String %2 %1) botl2
                " Overl" :overloaded
                " Overt" :overtaxed

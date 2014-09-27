@@ -71,11 +71,11 @@
         (update-in res [:candles] #(if (= % "no") 0 (parse-int %)))
         res)
       (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
-      (reduce (fn to-int [res kw]
-                (if (seq (kw res))
-                  (update-in res [kw] parse-int)
-                  res))
-              res [:cost :enchantment :charges :recharges])
+      (reduce #(update-in %1 [%2] parse-int)
+              res
+              (for [kw [:cost :enchantment :charges :recharges]
+                    :when (seq (kw res))]
+                kw))
       (assoc res :erosion (if-let [deg ((fnil + 0 0)
                                         (erosion (:erosion1 res))
                                         (erosion (:erosion2 res)))]
