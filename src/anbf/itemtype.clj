@@ -124,8 +124,12 @@
 (def items "all possible item identities" ; TODO custom fruits (bones)
   (apply concat (vals item-kinds)))
 
-(def name->item "{name => ItemType} for all items"
-  (into {} (for [{:keys [name] :as i} items] [name i])))
+(def name->item "{name => ItemType, fullname => ItemType} for all items"
+  (into {} (concat (for [{:keys [name] :as i} items]
+                     [name i])
+                   (for [{:keys [fullname] :as i} items
+                         :when fullname]
+                     [fullname i]))))
 
 (def plural->singular "{plural => singular} for all stackable item appearances"
   (merge generic-plurals
