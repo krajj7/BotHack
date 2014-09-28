@@ -468,7 +468,7 @@
            (with-reason "examining unknown trap")))
 
 (defn- examine-monsters [{:keys [player] :as game}]
-  (when-not (:hallu (:state player))
+  (when-not (hallu? player)
     (when-let [m (->> (curlvl-monsters game) vals
                       (remove (some-fn :remembered
                                        :fiendly

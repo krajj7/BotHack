@@ -2,6 +2,7 @@
   "a dungeon-exploring bot"
   (:require [clojure.tools.logging :as log]
             [flatland.ordered.set :refer [ordered-set]]
+            [anbf.anbf :refer :all]
             [anbf.item :refer :all]
             [anbf.itemid :refer :all]
             [anbf.handlers :refer :all]
@@ -21,12 +22,12 @@
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> game curlvl-monsters vals
        (filter #(and (hostile? %)
-                     (not= \j (:glyph %))
-                     (if (or (blind? player) (:hallu (:state player)))
-                       (adjacent? player %)
-                       (and (> 10 (- (:turn game) (:known %)))
-                            (not (digit? %)) ; warning can cause oscillations with mimics
-                            (> hostile-dist-thresh (distance player %))))))
+                     (or (adjacent? player %)
+                         (and (> 10 (- (:turn game) (:known %)))
+                              (> hostile-dist-thresh (distance player %))
+                              (not (blind? player))
+                              (not (hallu? player))
+                              (not (digit? %))))))
        set))
 
 (defn- pray-for-food [game]
@@ -38,7 +39,8 @@
   (reify ActionHandler
     (choose-action [_ game]
       (if (:can-enhance (:player game))
-        (->Enhance)))
+        (log/debug "TODO ->Enhance")
+        #_(->Enhance)))
     ; TODO EnhanceHandler
     ))
 
@@ -60,15 +62,24 @@
       ;(explore game :quest :end)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
-      (explore game :vlad :end)
-      (explore game :main :end)
-      (explore game :wiztower :end)
-      (if (and (:wiztower-top (curlvl-tags game))
+      (explore-level game :vlad :end)
+      (explore-level game :main :end)
+      (explore-level game :wiztower :end)
+      (if (and (= :wiztower (branch-key game))
+               (:end (curlvl-tags game))
                (unknown? (at-curlvl game {:x 40 :y 11})))
         (seek game {:x 40 :y 11}))
       ;(visit game :earth)
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
+
+(defn- pause-condition?
+  "For debugging - pause the game when something occurs"
+  [game]
+  (= :vlad (branch-key game))
+  #_(have game "candelabrum")
+  #_(have game "Orb of Fate")
+  #_(= "Home 5" (:dlvl game)))
 
 (def desired-weapons
   (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
@@ -196,8 +207,16 @@
        (re-first-group #"demands ([0-9][0-9]*) zorkmids for safe passage")
        parse-int))
 
+(defn- pause-handler [anbf]
+  (reify FullFrameHandler
+    (full-frame [_ _]
+      (when (pause-condition? @(:game anbf))
+        (log/debug "pause condition met")
+        (pause anbf)))))
+
 (defn init [anbf]
   (-> anbf
+      (register-handler priority-bottom (pause-handler anbf))
       (register-handler (reify ChooseCharacterHandler
                           (choose-character [this]
                             (deregister-handler anbf this)

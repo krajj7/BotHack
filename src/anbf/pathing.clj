@@ -684,7 +684,9 @@
           (let [branch (branch-key game)
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
                                   [:stairs-up (->Ascend)]
-                                  [:stairs-down (descend game)])
+                                  [(if (:castle (curlvl-tags game))
+                                     :trapdoor
+                                     :stairs-down) (descend game)])
                 step (with-reason "looking for the" stairs
                        (seek game #(and (has-feature? % stairs)
                                         (if-let [b (branch-key game %)]

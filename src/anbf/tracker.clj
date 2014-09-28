@@ -28,7 +28,7 @@
   "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
   [new-game old-game]
   (if (or (not= (:dlvl old-game) (:dlvl new-game))
-          (-> new-game :player :state :hallu))
+          (hallu? (:player new-game)))
     new-game ; TODO track stair followers?
     (loop [pairs {}
            new-monsters (curlvl-monsters new-game)

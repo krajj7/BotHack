@@ -59,6 +59,9 @@
 (defn impaired? [player]
   (some (:state player) #{:conf :stun :hallu :blind}))
 
+(defn hallu? [player]
+  (:hallu (:state player)))
+
 (defn dizzy? [player]
   (some (:state player) #{:conf :stun}))
 
