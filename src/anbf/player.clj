@@ -19,6 +19,7 @@
 
 (defrecord Player
   [nickname
+   role
    hp
    maxhp
    pw

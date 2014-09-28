@@ -1,6 +1,7 @@
 (ns anbf.game
   "representation of the game world"
   (:require [clojure.tools.logging :as log]
+            [clojure.string :refer [lower-case]]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
@@ -146,13 +147,24 @@
           #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
           nil))))
 
+(def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+)\.|.* (\w+), welcome back to NetHack!")
+
+(defn set-role-handler [anbf]
+  (reify ToplineMessageHandler
+    (message [this text]
+      (when-let [role (some->> (re-first-groups welcome-re text)
+                               (find-first some?) lower-case keyword)]
+        (log/debug "player role:" role)
+        (swap! (:game anbf) assoc-in [:player :role] role)
+        (deregister-handler anbf this)))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
     ActionChosenHandler
     (action-chosen [_ action]
-      (if ((complement #{:call :name :discoveries :inventory :look :farlook})
-           (typekw action))
+      (if-not (#{:call :name :discoveries :inventory :look :farlook}
+                       (typekw action))
         (swap! game #(assoc % :last-action action
                             :last-position (position (:player %))
                             :last-path (get action :path (:last-path %))))))

@@ -504,7 +504,7 @@
   "Returns true if the level matches the blueprint's :dlvl, :branch and :tag (if present)"
   [game level blueprint]
   (and (or (not (:role blueprint))
-           true) ; TODO check :role !
+           (= (:role (:player game)) (:role blueprint)))
        (or (not (:branch blueprint))
            (= (:branch blueprint) (branch-key game level)))
        (or (not (:dlvl blueprint))

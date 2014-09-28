@@ -28,7 +28,7 @@
 
 (defn- init-ui [anbf]
   (-> anbf
-      (register-handler
+      (register-handler (dec priority-top)
         (reify
           GameStateHandler
           (ended [_]

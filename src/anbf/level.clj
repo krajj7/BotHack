@@ -167,12 +167,12 @@
                {:x 39 :y 11} :squeaky
                {:x 40 :y 12} :squeaky
                {:x 40 :y 10} :squeaky}}
-   {:role "samurai"
+   {:role :samurai
     :dlvl "Home 3"
     :branch :quest
     :features {{:x 28 :y 15} :door-secret
                {:x 51 :y 8} :door-secret}}
-   {:role "samurai"
+   {:role :samurai
     :dlvl "Home 1"
     :undiggable true
     :branch :quest
