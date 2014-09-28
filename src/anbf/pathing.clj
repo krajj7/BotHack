@@ -253,7 +253,8 @@
                        [1 (with-reason "moving to kick blocked door at my position"
                             (->Move odir))])))
                  (if (and (edge-passable-walking? game level from-tile to-tile)
-                          (needs-levi? to-tile) (not monster))
+                          (needs-levi? to-tile)
+                          (not monster) (not (boulder? to-tile)))
                    (if-let [[slot item] (:levi opts)]
                      (if (:in-use item)
                        [1 (with-reason "assuming levitation" (->Move dir))]
@@ -280,6 +281,7 @@
                              (if (kickable-door? level to-tile opts)
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
+                          (or (boulder? to-tile) (diggable-walls? game level))
                           (or (not= (:branch-id level) :wiztower)
                               (some (some-fn water? ice?)
                                     (neighbors level to-tile)))
@@ -294,12 +296,11 @@
 
 (defn autonavigable? [game level opts [from to]]
   (and (not (shop? from))
-       (not (shop? to))
-       (not (trap? to))
-       (not (unknown? to))
+       (not ((some-fn shop? trap? unknown?) to))
        (edge-passable-walking? game level from to)
-       (or (walkable? to)
-           (and (water? to) (-> opts :levi (nth 1) :in-use)))
+       (or (safely-walkable? to)
+           (and ((some-fn water? ice?) to)
+                (-> opts :levi (nth 1) :in-use)))
        (not (monster-at level to))))
 
 (defn- autonav-target [game from level path opts]
@@ -367,7 +368,6 @@
                        (have-levi game)))
          pick (and (not walking)
                    (not no-dig)
-                   (diggable-walls? game level)
                    (have-pick game))
          opts (cond-> opts
                 levi (assoc :levi levi)
@@ -465,7 +465,7 @@
 
 (defn- unblocked-boulder? [game level tile]
   (and (boulder? tile)
-       (some #(and (walkable? (in-direction level tile (towards % tile)))
+       (some #(and (safely-walkable? (in-direction level tile (towards % tile)))
                    (pushable-through game level tile %))
              (neighbors level tile))))
 
@@ -619,7 +619,7 @@
                    (navigate game #(and (#{:pit :floor :corridor} (:feature %))
                                         (not-any? water? (neighbors level %))
                                         (->> (straight-neighbors level %)
-                                             (filter walkable?)
+                                             (filter safely-walkable?)
                                              count (<= 3)))))]
         (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (dig pick \>)))))))
@@ -878,10 +878,16 @@
 
 (defn explore
   ([game]
-   (let [level (curlvl game)]
+   (let [level (curlvl game)
+         player-tile (at-player game)]
      (or (search-dead-end game 20)
          (if-not (pos? (exploration-index game))
-           (or (when-let [path (navigate game (partial explorable-tile? level)
+           (or (if-let [[slot _] (and (:new-items player-tile)
+                                      (walkable? player-tile)
+                                      (have-levi-on game))]
+                 (with-reason "removing levitation to examine items"
+                   (remove-use game slot)))
+               (when-let [path (navigate game (partial explorable-tile? level)
                                          {:prefer-items true})]
                  (with-reason "exploring" (pr-str (at level (:target path)))
                    (:step path)))

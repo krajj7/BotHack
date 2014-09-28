@@ -86,6 +86,8 @@
     :tag :castle
     :undiggable true
     :undiggable-floor true
+    :cutoff-rows [1 2]
+    :cutoff-cols [0 78 79]
     :features {{:x 55 :y 11} :door-secret
                {:x 55 :y 13} :door-secret
                {:x 46 :y 12} :door-secret
@@ -128,11 +130,37 @@
                {:x 37 :y 12} :squeaky
                {:x 38 :y 13} :squeaky
                {:x 38 :y 11} :squeaky}}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 1"
+    :monsters {{:y 6, :x 22} (name->monster "Norn")}
+    :cutoff-rows [1 2]
+    :cutoff-cols [0 1 78 79]}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 2"
+    :cutoff-cols [79]}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 3"
+    :cutoff-cols [79]}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 4"
+    :cutoff-cols [79]}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 5"
+    :cutoff-cols [79]}
+   {:branch :quest
+    :role :valkyrie
+    :dlvl "Home 6"
+    :cutoff-cols [79]}
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
    {:branch :wiztower
-    :tag :wiztower-bottom
+    :tag :bottom
     :features {{:x 43 :y 17} :door-secret
                {:x 42 :y 11} :door-secret
                {:x 40 :y 7} :door-secret
@@ -145,7 +173,7 @@
                {:x 35 :y 12} :squeaky
                {:x 35 :y 14} :squeaky}}
    {:branch :wiztower
-    :tag :wiztower-middle
+    :tag :middle
     :features {{:x 42 :y 17} :door-secret
                {:x 43 :y 14} :door-secret
                {:x 46 :y 14} :door-secret
@@ -159,7 +187,7 @@
                {:x 31 :y 10} :door-secret
                {:x 32 :y 7} :door-secret}}
    {:branch :wiztower
-    :tag :wiztower-top
+    :tag :top
     :features {{:x 29 :y 9} :door-secret
                {:x 32 :y 8} :door-secret
                {:x 27 :y 14} :door-secret

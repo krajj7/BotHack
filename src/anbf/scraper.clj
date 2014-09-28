@@ -328,6 +328,7 @@
                                      (send delegator write)) ; rewind menu
                                 handle-menu-response-start)))
                         (do (send delegator inventory-list @items)
+                            (ref-set items nil)
                             (send delegator write " ")
                             initial))))))
             (handle-direction [frame]

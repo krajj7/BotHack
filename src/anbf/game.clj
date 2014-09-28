@@ -117,14 +117,16 @@
       (update-curlvl-at (:cursor frame) assoc :walked (:turn game))))
 
 (defn- looks-engulfed? [{:keys [cursor lines] :as frame}]
-  (let [row-before (dec (:x cursor))
-        row-after (inc (:x cursor))
-        line-above (nth lines (dec (:y cursor)))
-        line-at (nth lines (:y cursor))
-        line-below (nth lines (inc (:y cursor)))]
-    (and (= "/-\\" (subs line-above row-before (inc row-after)))
-         (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
-         (= "\\-/" (subs line-below row-before (inc row-after))))))
+  (if (and (< 0 (:x cursor) 79)
+           (< 1 (:y cursor) 21))
+    (let [row-before (dec (:x cursor))
+          row-after (inc (:x cursor))
+          line-above (nth lines (dec (:y cursor)))
+          line-at (nth lines (:y cursor))
+          line-below (nth lines (inc (:y cursor)))]
+      (and (= "/-\\" (subs line-above row-before (inc row-after)))
+           (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
+           (= "\\-/" (subs line-below row-before (inc row-after)))))))
 
 (defn- update-map [game frame]
   (if (looks-engulfed? frame)
@@ -137,15 +139,14 @@
         update-explored)))
 
 (defn- level-msg [msg]
-  (or (case msg
-        "You enter what seems to be an older, more primitive world." :rogue
-        "The odor of burnt flesh and decay pervades the air." :votd
-        "Look for a ...ic transporter." :quest
-        "So be it." :gehennom
-        (condp re-seq msg
-          ; TODO other roles (multiline)
-          #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
-          nil))))
+  (condp re-seq msg
+    #"You enter what seems to be an older, more primitive world\." :rogue
+    #"The odor of burnt flesh and decay pervades the air\." :votd
+    #"Look for a \.\.\.ic transporter\." :quest
+    #"So be it\." :gehennom
+    #"Through clouds of sulphurous gasses, you see a rock palisade|Once again, you stand in sight of Lord Surtur's lair" :end
+    #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
+    nil))
 
 (def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+)\.|.* (\w+), welcome back to NetHack!")
 
@@ -186,22 +187,23 @@
                    (= "Home" (subs old-dlvl 0 4))
                    (= "Dlvl" (subs new-dlvl 0 4)))
             (swap! game assoc :branch-id :main) ; kicked out of quest
-            (swap! game ensure-curlvl))
-          (if-let [branch (#{:wiztower :vlad} (branch-key @game))]
-            (if (= new-dlvl (dlvl-from-entrance @game branch -1))
-              (swap! game add-curlvl-tag :end))))))
+            (swap! game ensure-curlvl)))))
     KnowPositionHandler
     (know-position [_ frame]
       (swap! game update-in [:player] into (:cursor frame)))
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game update-map frame))
+    MultilineMessageHandler
+    (message-lines [_ lines]
+      (if-let [level (level-msg (first lines))]
+        (update-on-known-position anbf add-curlvl-tag level)))
     ToplineMessageHandler
     (message [_ text]
       (swap! game assoc :last-topline text)
       (or (condp re-seq text
             #"You feel you could be more dangerous|You feel more confident"
-            (partial swap! game assoc-in [:player :can-enhance])
+            (swap! game assoc-in [:player :can-enhance] true)
             #"You feel weaker"
             (swap! game assoc-in [:player :stat-drained] true)
             #"makes you feel great"

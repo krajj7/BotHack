@@ -25,6 +25,7 @@
                      (if (or (blind? player) (:hallu (:state player)))
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
+                            (not (digit? %)) ; warning can cause oscillations with mimics
                             (> hostile-dist-thresh (distance player %))))))
        set))
 
@@ -43,7 +44,8 @@
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
-        (with-reason "curing lycantrophy" ->Pray))
+        (if-not (in-gehennom? game)
+          (with-reason "curing lycantrophy" ->Pray)))
       (when-let [[slot _] (and (unihorn-recoverable? game)
                                (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
@@ -53,7 +55,9 @@
 (defn progress [game]
   (or ;(explore game :mines :minetown)
       ;(explore game :mines)
+      ;(visit game :quest)
       (explore game :quest :end)
+      ;(explore game :quest :end)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
       (explore game :vlad :end)
@@ -67,7 +71,7 @@
       (log/debug "progress end")))
 
 (def desired-weapons
-  (ordered-set "Grayswandir" "Mjollnir" "Excalibur" "Stormbringer"
+  (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
                "katana" "long sword"))
 
 (def desired-items

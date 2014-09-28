@@ -376,12 +376,12 @@
       (and (= branch :main) (<= 40 dlvl 51) (not (:fake-wiztower tags))
            (->> fake-wiztower-water (map (partial at level))
                 (some water?))) (add-curlvl-tag :fake-wiztower)
-      (and (= branch :wiztower)
-           ((complement #{:wiztower-bottom :wiztower-middle :wiztower-top})
-            tags)) (add-curlvl-tag (get {0 :wiztower-bottom
-                                         1 :wiztower-middle
-                                         2 :wiztower-top}
-                                        (- (->> (get-branch game :wiztower)
+      (and (#{:wiztower :vlad} branch)
+           ((complement #{:bottom :middle :end})
+            tags)) (add-curlvl-tag (get {0 :bottom
+                                         1 :middle
+                                         2 :end}
+                                        (- (->> (get-branch game branch)
                                                 keys first dlvl-number)
                                            dlvl)))
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
@@ -523,6 +523,18 @@
       (reduce #(update-at %1 %2 assoc :undiggable true)
               res
               (:undiggable-tiles blueprint))
+      (reduce #(update-at %1 %2
+                          assoc :feature :rock :undiggable true :seen true)
+              res
+              (for [x (:cutoff-cols blueprint)
+                    y (range 1 22)]
+                (position x y)))
+      (reduce #(update-at %1 %2
+                          assoc :feature :rock :undiggable true :seen true)
+              res
+              (for [x (range 0 80)
+                    y (:cutoff-rows blueprint)]
+                (position x y)))
       (reduce (fn mark-feature [level [pos feature]]
                 (update-at level pos assoc :feature
                            (if (= :door-secret feature)
@@ -548,7 +560,7 @@
       game)))
 
 (defn diggable-floor? [game level]
-  (not (or (#{:wiztower :vlad :astral :earth :fire :air :water :sokoban}
+  (not (or (#{:quest :wiztower :vlad :astral :earth :fire :air :water :sokoban}
                     (branch-key game level))
            (:undiggable-floor (:blueprint level))
            (some #{:undiggable-floor :end} (:tags level)))))

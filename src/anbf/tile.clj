@@ -32,6 +32,9 @@
               :items []
               :new-items false}))
 
+(defn digit? [tile]
+  (Character/isDigit ^Character (:glyph tile)))
+
 (defn monster-glyph? [glyph]
   (or (and (Character/isLetterOrDigit ^Character glyph)
            (not= \8 glyph) (not= \0 glyph))
@@ -129,13 +132,18 @@
   (= \space (:glyph tile)))
 
 (defn walkable?
-  "Considers unexplored tiles walkable"
+  "Considers unexplored tiles, traps and ice walkable"
   [tile]
   (and (not (boulder? tile))
        (or (unknown? tile)
            (trap? tile)
            (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
-              :throne :grave :stairs-up :stairs-down} (:feature tile)))))
+              :throne :grave :stairs-up :stairs-down :drawbridge-lowered}
+                   (:feature tile)))))
+
+(defn safely-walkable? [tile]
+  ((every-pred (complement (some-fn trap? ice? drawbridge-lowered?))
+               walkable?) tile))
 
 (defn likely-walkable?
   "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
@@ -208,7 +216,7 @@
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
 (defn- mark-seen-features [tile]
-  (if (#{:wall :door-closed :water} (:feature tile))
+  (if (#{:wall :door-closed :water :lava} (:feature tile))
     (assoc tile :seen true)
     tile))
 
