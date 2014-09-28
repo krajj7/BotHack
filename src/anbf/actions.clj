@@ -115,7 +115,7 @@
                  (->> (:player game)
                       (neighbors (curlvl game))
                       (find-first door?)
-                      (straight-neighbors (curlvl game))
+                      (including-origin straight-neighbors (curlvl game))
                       (remove #(= (position (:player game)) (position %)))
                       (reduce #(update-curlvl-at %1 %2 assoc :room :shop)
                               (add-curlvl-tag game :shop-closed)))))
@@ -232,7 +232,7 @@
 
 (defn- update-searched [{:keys [player] :as game}]
   (reduce #(update-curlvl-at %1 %2 update-in [:searched] inc) game
-          (conj (neighbors player) player)))
+          (including-origin neighbors player)))
 
 (defaction Search []
   (handler [_ {:keys [game] :as anbf}]
@@ -247,7 +247,7 @@
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs.  (Actually two sets of stairs may be next to each other and this breaks if that happens and the non-origin stairs are obscured)"
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
-    (->> (conj (neighbors tile) tile)
+    (->> (including-origin neighbors (curlvl game) tile)
          (remove (partial has-feature? origin-feature))
          (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch) game))))
 

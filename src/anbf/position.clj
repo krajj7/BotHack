@@ -50,6 +50,13 @@
          :when (valid-position? nbr)]
      nbr)))
 
+(defn including-origin
+  "Include origin position in given *neighbors function results"
+  ([nbr-fn pos]
+   (conj (nbr-fn pos) (position pos)))
+  ([nbr-fn level pos]
+   (conj (nbr-fn level pos) (at level pos))))
+
 (defn straight-neighbors
   ([level tile]
    (filter (partial straight? tile) (neighbors level tile))))

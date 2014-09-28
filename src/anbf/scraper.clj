@@ -80,7 +80,7 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
-    (first (first (re-seq #".*\?\"? \[[^\]]+\] (\(.\) )?$"
+    (first (first (re-seq #".*\?\"?  ?\[[^\]]+\] (\(.\) )?$"
                           (before-cursor frame))))))
 
 (defn- more-prompt? [frame]
@@ -167,6 +167,7 @@
     #"^What do you want to drink\?" drink-what
     #"^What do you want to eat\?" eat-what
     #"^What do you want to zap\?" zap-what
+    #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

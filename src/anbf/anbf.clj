@@ -122,6 +122,8 @@
     (enter-gehennom [_ _] true)
     WhichRingFingerHandler
     (which-finger [_ _] \l)
+    PayDamageHandler
+    (pay-damage [_ _] true)
     ; escape the rest by default
     OfferHandler
     (offer-how-much [_ _] "")
