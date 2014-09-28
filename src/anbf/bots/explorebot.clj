@@ -163,7 +163,7 @@
     (or (uncurse-gear game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
-                 (not-any? (complement walkable?) tile-path))
+                 (every? walkable? tile-path))
           (with-reason "reequip - weapon"
             (wield-weapon game)))
         ; TODO multidrop

@@ -260,7 +260,7 @@
         game)))) ; failed to recognize
 
 (defn in-maze-corridor? [level pos]
-  (->> (neighbors level pos) (filter wall?) count (< 5)))
+  (->> (neighbors level pos) (filter wall?) (more-than? 5)))
 
 (def soko2a-16 "                          |...|..8-.8.^^^^^^^^^^^^.|")
 (def soko2b-16 "                        |....|..8.8.^^^^^^^^^^^^^^^.|")
@@ -303,27 +303,26 @@
         branch (branch-key game)
         has-features? (has-features? level)]
     (cond-> game
-      (and (= :main branch) (<= 25 dlvl 29)
-           (not (some tags #{:medusa :votd :castle}))
-           (not-any? #(not (or (water? (at level 2 %))
-                               (monster-at level (position 2 %))))
-                     (range 8 15))) (add-curlvl-tag :castle)
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
-           (not-any? #(not (or (water? (at level 2 %))
-                               (monster-at level (position 2 %))))
-                     (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
+           (every? #(or (water? (at level 2 %))
+                        (monster-at level (position 2 %)))
+                   (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
            (unknown? (at level 5 20))
-           (not-any? #(or (not (water? (at level 7 %)))
-                          (not (floor? (at level 6 %))))
-                     [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
+           (every? #(and (water? (at level 7 %))
+                         (floor? (at level 6 %)))
+                   [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
       (and (= :main branch) (<= 25 dlvl 29)
            (not (tags :castle))
-           (= (map :feature (map (partial apply at level)
-                                 [[12 12] [13 12] [14 12]]))
-              '(:floor :water :drawbridge-raised))) (add-curlvl-tag :castle)
+           (or (drawbridge? (at level 14 12))
+               (and (every? water? (for [x (range 8 16)]
+                                     (at level x 20)))
+                    (wall? (at level 7 20)))
+               (and (every? water? (for [x (range 8 16)]
+                                     (at level x 4)))
+                    (wall? (at level 7 4))))) (add-curlvl-tag :castle)
       (and (= :sokoban branch)
            (not (some #{:soko-1a :soko-1b :soko-2a :soko-2b
                         :soko-3a :soko-3b :soko-4a :soko-4b}
@@ -339,7 +338,7 @@
                    (->> (for [x (range 3 78)] (at level x row))
                         (take-while #(not= :corridor %))
                         (filter #(or (floor? %) (monster-at level %)))
-                        count (<= 46)))
+                        (more-than? 45)))
                  [8 16])) (add-curlvl-tag :bigroom)
       (and (= :main branch) (<= 5 dlvl 9)
            (some #(= "Oracle" (:type %))
@@ -347,10 +346,12 @@
       (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
            (or (some :undiggable (map #(at level %) wiztower-inner-rect))
                (let [wiztower (map #(at level %) wiztower-rect)]
-                 (and (->> wiztower (filter (some-fn wall? :dug)) count (< 15))
+                 (and (->> wiztower
+                           (filter (some-fn wall? :dug))
+                           (more-than? 15))
                       (->> wiztower
                            (filter (every-pred floor? (complement :dug)))
-                           count (> 5)))))) (add-curlvl-tag :wiztower-level)
+                           (less-than? 5)))))) (add-curlvl-tag :wiztower-level)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
       (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
@@ -360,8 +361,9 @@
                     (stairs-down? (at level 27 13)))
                (door? (at level 66 12)))) (add-curlvl-tag :asmodeus)
       (and (<= 29 dlvl 36) (not (:juiblex (:tags level)))
-           (->> (tile-seq level) (filter water?) (take 25)
-                count (= 25))) (add-curlvl-tag :juiblex)
+           (->> (tile-seq level)
+                (filter water?)
+                (more-than? 24))) (add-curlvl-tag :juiblex)
       (and (<= 31 dlvl 38) (not (tags :baalzebub))
            (not-any? (fn [[x y]]
                        (wall? (at level x y)))

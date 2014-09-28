@@ -53,8 +53,9 @@
        (adjacent? (:player game) tile)
        (or (and (:feature tile) (not= :rock (:feature tile)))
            (:item-glyph tile)
-           (not-any? (some-fn unknown? rock? corridor?)
-                     (neighbors level tile)))))
+           (->> (neighbors level tile)
+                (filter (some-fn unknown? rock? corridor?))
+                (less-than? 2)))))
 
 (defn- update-visible-tile [game level tile]
   (assoc tile
@@ -177,13 +178,13 @@
       (let [old-dlvl (:dlvl @game)
             new-dlvl (:dlvl status)
             changed (not= old-dlvl new-dlvl)]
-        (if (and changed (some? old-dlvl))
+        (if (and old-dlvl changed)
           (swap! game #(assoc-in % [:dungeon :levels (branch-key %) (:dlvl %)
                                     :explored] (exploration-index %))))
         (swap! game update-by-botl status)
         (when changed
           (dlvl-changed @delegator old-dlvl new-dlvl)
-          (if (and (some? old-dlvl)
+          (if (and old-dlvl
                    (= "Home" (subs old-dlvl 0 4))
                    (= "Dlvl" (subs new-dlvl 0 4)))
             (swap! game assoc :branch-id :main) ; kicked out of quest

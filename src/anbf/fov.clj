@@ -12,9 +12,10 @@
            (.calculateFov (NHFov.) (:x cursor) (dec (:y cursor))
                           (reify NHFov$TransparencyInfo
                             (isTransparent [_ x y]
-                              (if (and (< 0 y 20) (< 0 x 79))
-                                (transparent? (get-in level [:tiles y x]))
-                                false)))))))
+                              (boolean
+                                (if (and (< 0 y 20) (< 0 x 79))
+                                  (transparent?
+                                    (get-in level [:tiles y x]))))))))))
 
 (defn in-fov? [game pos]
   (get-in game [:fov (dec (:y pos)) (:x pos)]))

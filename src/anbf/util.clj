@@ -50,9 +50,13 @@
   [re text]
   (some-> (re-seq re text) first (subvec 1) ((partial some identity))))
 
-(defn min-by [f coll] (if (seq coll) (apply (partial min-key f) coll)))
-(defn first-min-by [f coll] (if (seq coll)
-                              (apply (partial min-key f) (reverse coll))))
+(defn min-by [f coll]
+  (if (seq coll)
+    (apply (partial min-key f) coll)))
+
+(defn first-min-by [f coll]
+  (if (seq coll)
+    (apply (partial min-key f) (reverse coll))))
 
 (defn to-position
   "Sequence of keys to move the cursor from the corner to the given position"
@@ -62,10 +66,22 @@
 
 (defn find-first [p s] (first (filter p s)))
 
-(defn parse-int [x] (if x (Integer/parseInt x)))
+(defn parse-int [x]
+  (if x
+    (Integer/parseInt x)))
 
 (defprotocol Type (typekw [this]))
 
 (defn random-nth [coll]
   (if (seq coll)
     (rand-nth coll)))
+
+(defn more-than?
+  "Does coll have more than n elements?"
+  [n coll]
+  (->> coll (drop n) seq))
+
+(defn less-than?
+  "Does coll have less than n elements?"
+  [n coll]
+  (->> coll (take n) count (not= n)))

@@ -87,10 +87,10 @@
   ([level from to]
    (narrow? level from to false))
   ([level from to soko?]
-   (not-any? #(and ((complement #{:wall :rock}) (:feature %))
-                   (not (and soko? (boulder? %))))
-             (intersection (set (straight-neighbors level from))
-                           (set (straight-neighbors level to))))))
+   (every? #(or ((some-fn rock? wall?) %)
+                (and soko? (boulder? %)))
+           (intersection (set (straight-neighbors level from))
+                         (set (straight-neighbors level to))))))
 
 (defn- edge-passable-walking? [game level from-tile to-tile]
   (or (straight (towards from-tile to-tile))
@@ -127,7 +127,7 @@
   ([{:keys [player] :as game} level target]
    (with-handler priority-top
      (fn [anbf]
-       (if (some? target)
+       (if target
          (reify AboutToChooseActionHandler
            (about-to-choose [_ new-game]
              (if-let [m (curlvl-monster-at new-game target)]
@@ -317,7 +317,7 @@
           target (some-> (peek autonavigable) position)]
       (if (and target
                (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
-               (< 3 (count autonavigable))
+               (more-than? 3 autonavigable)
                (not-any? (partial monster-at level) (neighbors from)))
         target))))
 
@@ -389,17 +389,17 @@
                               move-fn opts max-steps)
                (if-let [path (dijkstra player goal-set move-fn max-steps)]
                  (->Path (path-step game level player move-fn path opts) path
-                         (->> (or (peek path) player) neighbors
+                         (->> (or (peek path) player)
+                              neighbors
                               (find-first goal-fn))))))
            ; not searching for adjacent
-           (if-let [goal-seq (if (set? pos-or-goal-fn)
-                               (->> pos-or-goal-fn (take 2) seq)
-                               (->> (tile-seq level) (filter goal-fn)
-                                    (take 2) seq))]
-             (if (= 2 (count goal-seq))
+           (if-let [goal-seq (seq (if (set? pos-or-goal-fn)
+                                    pos-or-goal-fn
+                                    (filter goal-fn (tile-seq level))))]
+             (if (more-than? 1 goal-seq)
                (if-let [path (dijkstra player goal-fn move-fn max-steps)]
                  (->Path (path-step game level player move-fn path opts) path
-                         (or (peek path) (at-player game))))
+                         (or (peek path) (position player))))
                (get-a*-path game level player (first goal-seq) move-fn opts
                             max-steps)))))))))
 
@@ -499,15 +499,15 @@
              (and (wall? (at level (:x tile) (dec (:y tile))))
                   (wall? (at level (:x tile) (inc (:y tile)))))))))
 
-(defn- searchable-tile? [level howmuch tile]
+(defn- searchable-wall? [level howmuch tile]
   (and (searchable-position? tile)
        (wall? tile)
        (< (:searched tile) howmuch)
        (not (wall-end? level tile))
-       (->> (neighbors level tile) (remove :seen) (take 2) count (< 1))))
+       (->> (straight-neighbors level tile) (remove :seen) seq)))
 
 (defn- search-walls [game level howmuch]
-  (let [searchable? (every-pred (partial searchable-tile? level howmuch)
+  (let [searchable? (every-pred (partial searchable-wall? level howmuch)
                                 (if (= :wiztower (branch-key game))
                                   (comp not wiztower-inner-rect position)
                                   (complement shop?)))]
@@ -573,8 +573,7 @@
   (reify AboutToChooseActionHandler
     (about-to-choose [_ game]
       (swap! (:game anbf) update-in [:explored-cache]
-             #(do (when (some? %)
-                    (future-cancel %))
+             #(do (if % (future-cancel %))
                   (future (curlvl-exploration-index game)))))))
 
 (defn exploration-index
@@ -615,12 +614,12 @@
                                               (diagonal-neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter wall?)
-                                             count (<= 2))))
+                                             (more-than? 1))))
                    (navigate game #(and (#{:pit :floor :corridor} (:feature %))
                                         (not-any? water? (neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter safely-walkable?)
-                                             count (<= 3)))))]
+                                             (more-than? 2)))))]
         (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (dig pick \>)))))))
 
@@ -731,7 +730,7 @@
     (if (not-any? #{:wiztower-level :orcus :asmodeus :juiblex :baalzebub}
                   (:tags level))
       (->> fake-wiztower-water (map (partial at level))
-           (remove (some-fn unknown? water?)) count (> 5)))
+           (remove (some-fn unknown? water?)) (less-than? 5)))
     true))
 
 (defn visited?

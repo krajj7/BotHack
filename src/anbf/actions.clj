@@ -79,10 +79,9 @@
         action (nth reason+action action-idx)
         reason (->> reason+action (take action-idx)
                     (interpose \space) (apply str))]
-    (if-let [a (and (some? action)
-                    (if (fn? action)
-                      (action)
-                      action))]
+    (if-let [a (if (fn? action)
+                 (action)
+                 action)]
       (update-in a [:reason] (fnil conj []) reason))))
 
 (def no-monster-re #"You .* (thin air|empty water)" )
@@ -628,7 +627,7 @@
                  (swap! game update-at-player assoc :feature :hole)
                  nil)))))))
 
-(defaction ->ForceLock []
+(defaction ForceLock []
   (handler [_ {:keys [game] :as anbf}]
     (reify ForceLockHandler
       (force-lock [_ _] true)))

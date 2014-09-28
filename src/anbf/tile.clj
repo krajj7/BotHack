@@ -45,7 +45,7 @@
    (monster? (:glyph tile) (:color tile)))
   ([glyph color] ; works better on rogue level and for worm tails
    (or (and (= \~ glyph) (= :brown color))
-       (and (monster-glyph? glyph) (or (some? color) (not= \: glyph))))))
+       (and (monster-glyph? glyph) (or color (not= \: glyph))))))
 
 ; bot should never get to see :trap - auto-examine
 (def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web :statuetrap})
@@ -94,6 +94,9 @@
 (defn door? [tile]
   (#{:door-open :door-closed :door-locked :door-secret} (:feature tile)))
 
+(defn drawbridge? [tile]
+  (#{:drawbridge-lowered :drawbridge-raised} (:feature tile)))
+
 (defn stairs? [tile]
   (#{:stairs-up :stairs-down} (:feature tile)))
 
@@ -141,22 +144,22 @@
               :throne :grave :stairs-up :stairs-down :drawbridge-lowered}
                    (:feature tile)))))
 
-(defn safely-walkable? [tile]
-  ((every-pred (complement (some-fn trap? ice? drawbridge-lowered?))
-               walkable?) tile))
-
 (defn likely-walkable?
   "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
   [tile]
   (and (walkable? tile)
        (or (:feature tile) (item? tile))))
 
+(defn safely-walkable? [tile]
+  (and (likely-walkable? tile)
+       (not ((some-fn trap? ice? drawbridge-lowered?) tile))))
+
 (defn transparent?
   "For unexplored tiles just a guess"
   [{:keys [feature monster items] :as tile}]
-  (boolean (and (not (boulder? tile))
-                (not (#{:rock :wall :tree :door-closed :cloud} feature))
-                (or feature monster (seq items)))))
+  (and (not (boulder? tile))
+       (not (#{:rock :wall :tree :door-closed :cloud} feature))
+       (or feature monster (seq items))))
 
 (defn diggable? [tile]
   (or (boulder? tile)
