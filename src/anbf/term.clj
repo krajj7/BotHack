@@ -2,6 +2,7 @@
   "An implementation of a Terminal plugin for JTA without a GUI.  It interprets terminal escape sequences, cursor movement etc. using the vt320 emulation in JTA, keeps a representation of the screen in memory for querying and publishes redraw events for a higher-level interpretation elsewhere.  Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff."
   (:require [anbf.delegator :refer :all]
             [anbf.frame :refer :all]
+            [clojure.string :as string]
             [clojure.tools.logging :as log])
   (:import [de.mud.jta FilterPlugin PluginBus]
            [de.mud.terminal vt320 VDUDisplay VDUBuffer]
@@ -56,7 +57,7 @@
 (defn- unpack-line
   "Turns char[] of possibly null values into a String where the nulls are replaced by spaces."
   [line]
-  (apply str (replace {(char 0) \space} line)))
+  (string/join (replace {(char 0) \space} line)))
 
 (defn- frame-from-buffer
   "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
@@ -72,8 +73,7 @@
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
   [update]
-  (if (nth update 0)
-    nil
+  (if-not (nth update 0)
     (filter #(->> % inc (nth update) true?)
             (range 24))))
 

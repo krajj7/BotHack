@@ -80,8 +80,8 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
-    (first (first (re-seq #".*\?\"?  ?\[[^\]]+\] (\(.\) )?$"
-                          (before-cursor frame))))))
+    (ffirst (re-seq #".*\?\"?  ?\[[^\]]+\] (\(.\) )?$"
+                    (before-cursor frame)))))
 
 (defn- more-prompt? [frame]
   (before-cursor? frame "--More--"))
@@ -203,11 +203,10 @@
               (conj (map parse-int (subvec status 1 10))
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
-    {:state (into #{}
-                  (for [[substr state] {" Bl" :blind " Stun" :stun " Conf" :conf
-                                        " Foo" :ill " Ill" :ill " Hal" :hallu}
-                        :when (.contains ^String botl2 substr)]
-                    state))
+    {:state (set (for [[substr state] {" Bl" :blind " Stun" :stun " Conf" :conf
+                                       " Foo" :ill " Ill" :ill " Hal" :hallu}
+                       :when (.contains ^String botl2 substr)]
+                   state))
      :burden (condp #(.contains ^String %2 %1) botl2
                " Overl" :overloaded
                " Overt" :overtaxed
@@ -341,7 +340,7 @@
             (handle-prompt [frame]
               (when-let [msg (prompt frame)]
                 (emit-botl delegator frame)
-                (send delegator write (apply str (repeat 3 backspace)))
+                (send delegator write (string/join (repeat 3 backspace)))
                 (send delegator (prompt-fn msg) msg)
                 initial))
             (handle-game-end [frame]
@@ -394,7 +393,7 @@
                   (handle-menu frame)
                   (handle-choice-prompt frame)
                   (handle-prompt frame)
-                  (when (and (= 0 (-> frame :cursor :y))
+                  (when (and (zero? (-> frame :cursor :y))
                              (before-cursor? frame "# #'"))
                     (send delegator write (str backspace \newline \newline))
                     lastmsg-clear)

@@ -223,7 +223,7 @@
 (def soko2-12 "                                |..^^^<|.....|")
 
 (defn- in-soko? [game]
-  (and (<= 5 (dlvl-number (:dlvl game)) 9)
+  (and (<= 5 (dlvl game) 9)
        (or (.startsWith (get-in game [:frame :lines 14]) soko1-14)
            (.startsWith (get-in game [:frame :lines 12]) soko2-12))))
 
@@ -445,13 +445,13 @@
 
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
-  (let [level (curlvl game)]
+  (let [level (curlvl game)
+        origin (at level pos)]
     (loop [closed #{}
-           NW-corner (at level pos)
-           SE-corner (at level pos)
-           open (into #{(at level pos)}
-                      (if (shopkeeper-look? game (at level pos))
-                        (neighbors level pos)))]
+           NW-corner origin
+           SE-corner origin
+           open (set (if (shopkeeper-look? game origin)
+                       (including-origin neighbors level origin)))]
       ;(log/debug (count open) open)
       (if-let [x (first open)]
         (recur (conj closed x)

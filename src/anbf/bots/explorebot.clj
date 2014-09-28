@@ -26,7 +26,7 @@
                        (adjacent? player %)
                        (and (> 10 (- (:turn game) (:known %)))
                             (> hostile-dist-thresh (distance player %))))))
-       (into #{})))
+       set))
 
 (defn- pray-for-food [game]
   (if (and (weak? (:player game))
@@ -36,7 +36,7 @@
 (defn- enhance-handler [anbf]
   (reify ActionHandler
     (choose-action [_ game]
-      (if (#{"long sword" "broadsword"} (:can-enhance (:player game)))
+      (if (:can-enhance (:player game))
         (->Enhance)))
     ; TODO EnhanceHandler
     ))
@@ -114,7 +114,7 @@
                                (:label item)))]
           (or (with-reason "removing levitation to pick up item"
                 (some->> (have-levi-on game) key (remove-use game)))
-              (->PickUp (->> to-get (into #{}) (into []))))
+              (->PickUp (->> to-get set vec)))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
                    (navigate game #(some to-take? (:items %)))]

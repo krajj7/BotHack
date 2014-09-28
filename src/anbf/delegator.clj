@@ -100,7 +100,7 @@
 
 (defn- respond-menu [options]
   (if (coll? options)
-    (apply str options)
+    (string/join options)
     (str options)))
 
 (defn- delegation-impl [invoke-fn protocol [method [delegator & args]]]
@@ -108,10 +108,12 @@
             (~invoke-fn ~protocol ~method ~delegator ~@args)
             ~delegator))
 
-(defn- declojurify "my-great-method => myGreatMethod" [sym]
+(defn- declojurify
+  "my-great-method => myGreatMethod"
+  [sym]
   (as-> (string/split (str sym) #"-") res
     (->> (rest res)
-         (map #(apply str (->> % first Character/toUpperCase (conj (rest %)))))
+         (map #(->> % first Character/toUpperCase (conj (rest %)) string/join))
          (apply str (first res)))
     (symbol res)
     (with-meta res (meta sym))))

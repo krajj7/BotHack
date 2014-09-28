@@ -3414,10 +3414,10 @@
 
 (def exclusive-appearances
   "appearances that are sticky to the given identity - rings or armor have exclusive appearances, gems, lamps or luck/flint/loadstones don't (gray stone)"
-  (into #{} (concat ring-appearances
-                    armor-appearances
-                    amulet-appearances
-                    scroll-appearances
-                    potion-appearances
-                    spellbook-appearances
-                    wands-appearances)))
+  (set (concat ring-appearances
+               armor-appearances
+               amulet-appearances
+               scroll-appearances
+               potion-appearances
+               spellbook-appearances
+               wands-appearances)))

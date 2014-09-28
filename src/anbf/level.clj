@@ -43,19 +43,23 @@
   [level]
   (apply concat (:tiles level)))
 
-(def wiztower-rect (into #{} (flatten (concat (for [y (range 5 20)]
-                                                [(position 23 y)
-                                                 (position 51 y)])
-                                              (for [x (range 23 52)]
-                                                [(position x 5)
-                                                 (position x 19)])))))
+(def wiztower-rect
+  (->> (concat (for [y (range 5 20)]
+                 [(position 23 y)
+                  (position 51 y)])
+               (for [x (range 23 52)]
+                 [(position x 5)
+                  (position x 19)]))
+       flatten set))
 
-(def wiztower-inner-rect (into #{} (flatten (concat (for [y (range 6 19)]
-                                                      [(position 24 y)
-                                                       (position 51 y)])
-                                                    (for [x (range 24 52)]
-                                                      [(position x 6)
-                                                       (position x 18)])))))
+(def wiztower-inner-rect
+  (->> (concat (for [y (range 6 19)]
+                 [(position 24 y)
+                  (position 51 y)])
+               (for [x (range 24 52)]
+                 [(position x 6)
+                  (position x 18)]))
+       flatten set))
 
 (def blueprints
   [{:branch :main

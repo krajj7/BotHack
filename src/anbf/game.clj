@@ -94,8 +94,8 @@
                               (new-monster (:x tile) (:y tile)
                                            (:turn game) glyph color))))
                   (tile-seq level)
-                  (->> (:lines frame) (drop 1) (apply concat))
-                  (->> (:colors frame) (drop 1) (apply concat))))))
+                  (->> (:lines frame) rest (apply concat))
+                  (->> (:colors frame) rest (apply concat))))))
 
 (defn- parse-map [game frame]
   (-> game
@@ -103,8 +103,8 @@
                  :monsters] (gather-monsters game frame))
       (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
                  (partial map-tiles parse-tile)
-                 (->> (:lines frame) (drop 1))
-                 (->> (:colors frame) (drop 1)))))
+                 (rest (:lines frame))
+                 (rest (:colors frame)))))
 
 (defn- update-dungeon [{:keys [dungeon] :as game} frame]
   (-> game
@@ -200,8 +200,8 @@
     (message [_ text]
       (swap! game assoc :last-topline text)
       (or (condp re-seq text
-            #"You feel more confident"
-            (swap! game assoc-in [:player :can-enhance] true)
+            #"You feel you could be more dangerous|You feel more confident"
+            (partial swap! game assoc-in [:player :can-enhance])
             #"You feel weaker"
             (swap! game assoc-in [:player :stat-drained] true)
             #"makes you feel great"
@@ -219,7 +219,7 @@
             #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out"
             (update-inventory anbf)
             #"shop appears to be deserted"
-            (if (< 33 (dlvl-number (:dlvl @game)))
+            (if (< 33 (dlvl @game))
               (swap! game add-curlvl-tag :orcus))
             nil)
           (if-let [level (level-msg text)]

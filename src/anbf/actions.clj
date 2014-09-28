@@ -749,7 +749,7 @@
     (let [pos (position pos)
           level (curlvl @game)
           portal (atom nil)
-          path (into #{} (rest (:path this)))]
+          path (set (rest (:path this)))]
       (swap! game assoc :last-autonav pos :autonav-stuck false)
       (reify
         KnowPositionHandler

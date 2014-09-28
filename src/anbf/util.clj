@@ -57,11 +57,15 @@
 (defn to-position
   "Sequence of keys to move the cursor from the corner to the given position"
   [pos]
-  (apply str (concat (repeat 10 \H) (repeat 4 \K) ; to corner
-                     (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))
+  (string/join (concat (repeat 10 \H) (repeat 4 \K) ; to corner
+                       (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))
 
 (defn find-first [p s] (first (filter p s)))
 
 (defn parse-int [x] (if x (Integer/parseInt x)))
 
 (defprotocol Type (typekw [this]))
+
+(defn random-nth [coll]
+  (if (seq coll)
+    (rand-nth coll)))

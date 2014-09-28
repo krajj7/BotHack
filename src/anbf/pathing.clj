@@ -89,8 +89,8 @@
   ([level from to soko?]
    (not-any? #(and ((complement #{:wall :rock}) (:feature %))
                    (not (and soko? (boulder? %))))
-             (intersection (into #{} (straight-neighbors level from))
-                           (into #{} (straight-neighbors level to))))))
+             (intersection (set (straight-neighbors level from))
+                           (set (straight-neighbors level to))))))
 
 (defn- edge-passable-walking? [game level from-tile to-tile]
   (or (straight (towards from-tile to-tile))
@@ -115,8 +115,7 @@
            (remove (partial monster-at level))
            (filterv #(or (passable-walking? game level (at level player) %)
                          (unexplored? %)))
-           (#(if (seq %) % nil))
-           rand-nth
+           random-nth
            (towards player)
            ->Move
            (with-reason "random direction")))
@@ -165,8 +164,8 @@
                (some (every-pred walkable?
                                  (complement blank?))
                      (intersection
-                       (into #{} (diagonal-neighbors level tile))
-                       (into #{} (straight-neighbors level o)))))
+                       (set (diagonal-neighbors level tile))
+                       (set (straight-neighbors level o)))))
         dir))))
 
 (defn- kickable-door? [level tile opts]
@@ -377,14 +376,13 @@
      (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
        (get-a*-path game level player pos-or-goal-fn move-fn opts max-steps)
        (let [goal-fn (if (set? pos-or-goal-fn)
-                       (comp (into #{} (map position pos-or-goal-fn))
-                             position)
+                       (comp (set (map position pos-or-goal-fn)) position)
                        #(pos-or-goal-fn (at level %)))]
          (if adjacent
            (let [goal-set (if (set? pos-or-goal-fn)
-                            (->> pos-or-goal-fn (mapcat neighbors) (into #{}))
+                            (->> pos-or-goal-fn (mapcat neighbors) set)
                             (->> (tile-seq level) (filter goal-fn)
-                                 (mapcat neighbors) (into #{})))]
+                                 (mapcat neighbors) set))]
              (case (count goal-set)
                0 nil
                1 (get-a*-path game level player (first goal-set)
@@ -634,7 +632,7 @@
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
              (if (= 1 mul) (push-boulders game level))
-             (if (< 43 (dlvl-number (:dlvl game)))
+             (if (< 43 (dlvl game))
                (with-reason "no stairs, possibly :main :end"
                  (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
                                              (not (:walked %))
@@ -652,7 +650,7 @@
 (defn seek-portal [game]
   (with-reason "seeking portal"
     (or (:step (navigate game portal?))
-        (if (> (dlvl-number (:dlvl game)) 35)
+        (if (> (dlvl game) 35)
           (if (unknown? (at-curlvl game fake-wiztower-portal))
             (with-reason "seeking fake wiztower portal"
               (:step (navigate game fake-wiztower-portal))))
@@ -711,8 +709,7 @@
 (defn- least-explored [game branch dlvls]
   {:pre [(#{:main :mines} branch)]}
   (let [curdlvl (if (= branch (branch-key game))
-                  (:dlvl (curlvl game))
-                  nil)]
+                  (:dlvl (curlvl game)))]
     (first-min-by #(let [res (exploration-index game branch %)]
                      (if (and (= % curdlvl) (pos? res))
                        (max 1 (- res 1200)) ; add threshold not to switch levels too often
