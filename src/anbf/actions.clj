@@ -150,7 +150,7 @@
       (when (= "Home" (subs new-dlvl 0 4))
         (log/debug "entering quest portal")
         (swap! game assoc :branch-id :quest))
-      (when (> (dlvl-number new-dlvl) 40)
+      (when (> (dlvl-number new-dlvl) 35)
         (log/debug "entering wiztower portal")
         (swap! game assoc :branch-id :wiztower))
       (log/error "entered unknown portal!")))
@@ -831,6 +831,10 @@
         itemtype (item-id game item)]
     (if (and itemtype (not= :cursed (:buc item)))
       ((remove-action itemtype) slot))))
+
+(defaction Sit []
+  (handler [_ _])
+  (trigger [_] "#sit\n"))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

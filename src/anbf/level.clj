@@ -43,7 +43,7 @@
   [level]
   (apply concat (:tiles level)))
 
-(def wiztower-rect
+(def wiztower-boundary
   (->> (concat (for [y (range 5 20)]
                  [(position 23 y)
                   (position 51 y)])
@@ -52,7 +52,7 @@
                   (position x 19)]))
        flatten set))
 
-(def wiztower-inner-rect
+(def wiztower-inner-boundary
   (->> (concat (for [y (range 6 19)]
                  [(position 24 y)
                   (position 51 y)])
@@ -60,6 +60,9 @@
                  [(position x 6)
                   (position x 18)]))
        flatten set))
+
+(def wiztower-rect
+  (rectangle (position 23 5) (position 52 20)))
 
 (def blueprints
   [{:branch :main
@@ -122,7 +125,7 @@
                {:x 70 :y 12} :door-secret}}
    {:branch :main
     :tag :wiztower-level
-    :undiggable-tiles wiztower-inner-rect}
+    :undiggable-tiles wiztower-inner-boundary}
    {:branch :main
     :tag :fake-wiztower
     :features {{:x 38 :y 12} :portal
@@ -159,8 +162,44 @@
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
+   {:branch :vlad
+    :tag :bottom
+    :features {{:x 20 :y 13} :door-secret
+               {:x 25 :y 14} :door-secret
+               {:x 29 :y 14} :door-secret
+               {:x 30 :y 13} :door-secret
+               {:x 30 :y 9} :door-secret
+               {:x 29 :y 8} :door-secret
+               {:x 25 :y 8} :door-secret
+               {:x 21 :y 8} :door-secret
+               {:x 20 :y 9} :door-secret
+               {:x 21 :y 14} :door-secret}}
+   {:branch :vlad
+    :tag :middle
+    :features {{:x 18 :y 9} :door-secret
+               {:x 19 :y 8} :door-secret
+               {:x 23 :y 8} :door-secret
+               {:x 27 :y 8} :door-secret
+               {:x 28 :y 9} :door-secret
+               {:x 28 :y 13} :door-secret
+               {:x 27 :y 14} :door-secret
+               {:x 23 :y 14} :door-secret
+               {:x 19 :y 14} :door-secret
+               {:x 18 :y 13} :door-secret}}
+   {:branch :vlad
+    :tag :end
+    :features {{:x 19 :y 8} :door-secret
+               {:x 23 :y 8} :door-secret
+               {:x 27 :y 8} :door-secret
+               {:x 27 :y 14} :door-secret
+               {:x 23 :y 14} :door-secret
+               {:x 19 :y 14} :door-secret}}
    {:branch :wiztower
     :tag :bottom
+    :cutoff-rows (concat (range 1 5) (range 19 22))
+    :cutoff-cols (concat (range 0 22) (range 52 80))
+    :undiggable-tiles (remove (set (rectangle (position 32 10) (position 38 16)))
+                              wiztower-rect)
     :features {{:x 43 :y 17} :door-secret
                {:x 42 :y 11} :door-secret
                {:x 40 :y 7} :door-secret
@@ -174,6 +213,9 @@
                {:x 35 :y 14} :squeaky}}
    {:branch :wiztower
     :tag :middle
+    :undiggable true
+    :cutoff-rows (concat (range 1 5) (range 19 22))
+    :cutoff-cols (concat (range 0 22) (range 52 80))
     :features {{:x 42 :y 17} :door-secret
                {:x 43 :y 14} :door-secret
                {:x 46 :y 14} :door-secret
@@ -187,7 +229,11 @@
                {:x 31 :y 10} :door-secret
                {:x 32 :y 7} :door-secret}}
    {:branch :wiztower
-    :tag :top
+    :tag :end
+    :cutoff-rows (concat (range 1 5) (range 19 22))
+    :cutoff-cols (concat (range 0 22) (range 52 80))
+    :undiggable-tiles (remove (set (rectangle (position 37 7) (position 43 13)))
+                              wiztower-rect)
     :features {{:x 29 :y 9} :door-secret
                {:x 32 :y 8} :door-secret
                {:x 27 :y 14} :door-secret

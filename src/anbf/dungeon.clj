@@ -344,8 +344,8 @@
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
-           (or (some :undiggable (map #(at level %) wiztower-inner-rect))
-               (let [wiztower (map #(at level %) wiztower-rect)]
+           (or (some :undiggable (map #(at level %) wiztower-inner-boundary))
+               (let [wiztower (map #(at level %) wiztower-boundary)]
                  (and (->> wiztower
                            (filter (some-fn wall? :dug))
                            (more-than? 15))

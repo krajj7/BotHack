@@ -282,9 +282,6 @@
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
                           (or (boulder? to-tile) (diggable-walls? game level))
-                          (or (not= (:branch-id level) :wiztower)
-                              (some (some-fn water? ice?)
-                                    (neighbors level to-tile)))
                           (dare-destroy? level to-tile))
                    [8 (dig (:pick opts) dir)]))
              (update-in [0] + (base-cost level dir to-tile opts))))))
@@ -407,6 +404,8 @@
   (and (not (and (dug? tile) (boulder? tile)))
        (or (and (unknown? tile) (not (blank? tile)))
            (:new-items tile)
+           (and (not (:walked tile))
+                ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (likely-walkable? tile) (door? tile) (needs-levi? tile))
                 (some (complement (some-fn :seen boulder? monster?))
                       (neighbors level tile))))
@@ -509,7 +508,7 @@
 (defn- search-walls [game level howmuch]
   (let [searchable? (every-pred (partial searchable-wall? level howmuch)
                                 (if (= :wiztower (branch-key game))
-                                  (comp not wiztower-inner-rect position)
+                                  (comp not wiztower-inner-boundary position)
                                   (complement shop?)))]
     (if-let [p (navigate game searchable? {:adjacent true})]
       (with-reason "searching walls"
@@ -648,7 +647,9 @@
 
 (defn seek-portal [game]
   (with-reason "seeking portal"
-    (or (:step (navigate game portal?))
+    (or (if-let [{:keys [step]} (navigate game portal?)]
+          (or step (with-reason "sitting on a portal"
+                     (without-levitation (->Sit)))))
         (if (> (dlvl game) 35)
           (if (unknown? (at-curlvl game fake-wiztower-portal))
             (with-reason "seeking fake wiztower portal"
@@ -659,13 +660,16 @@
         (search game))))
 
 (defn seek
+  "Like explore but also searches and always tries to return an action until the target is found
+   options: same as explore and the following:
+     :no-explore - directly skips to searching"
   ([game smth]
    (seek game smth {}))
   ([game smth opts]
    (if-let [{:keys [step]} (navigate game smth opts)]
      (with-reason "seek going directly" step)
      (with-reason "seeking"
-       (or (explore game)
+       (or (and (not (:no-explore opts)) (explore game))
            (and (:go-down opts) (with-reason "can't find downstairs"
                                   (go-down game (curlvl game))))
            (search game))))))
@@ -676,7 +680,7 @@
       (or (if (= "Home 1" (:dlvl game)) ; may need to chat with quest leader first
             (let [level (curlvl game)
                   leader (-> level :blueprint :leader)]
-              (when (and leader (not-any? :walked (neighbors level leader)))
+              (if (and leader (not-any? :walked (neighbors level leader)))
                 (with-reason
                   "trying to seek out quest leader at" leader "before descending"
                   (seek game leader {:adjacent true :explored true})))))
@@ -897,7 +901,11 @@
                  (with-reason "level not explored enough, searching"
                    (search game (if (= :mines (branch-key game)) 10 2))))
                (log/debug "nothing to explore"))
-           (log/debug "positive exploration index")))))
+           (log/debug "positive exploration index"))
+         (if (and (= :wiztower (branch-key game))
+                  (:end (curlvl-tags game))
+                  (unknown? (at-curlvl game {:x 40 :y 11})))
+           (seek game {:x 40 :y 11} {:no-explore true})))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]

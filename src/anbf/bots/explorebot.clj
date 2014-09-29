@@ -58,17 +58,13 @@
   (or ;(explore game :mines :minetown)
       ;(explore game :mines)
       ;(visit game :quest)
-      (explore game :quest :end)
+      ;(explore game :quest :end)
       ;(explore game :quest :end)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
-      (explore-level game :vlad :end)
-      (explore-level game :main :end)
+      ;(explore game :vlad)
+      (visit game :wiztower :end)
       (explore-level game :wiztower :end)
-      (if (and (= :wiztower (branch-key game))
-               (:end (curlvl-tags game))
-               (unknown? (at-curlvl game {:x 40 :y 11})))
-        (seek game {:x 40 :y 11}))
       ;(visit game :earth)
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
@@ -76,7 +72,8 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
-  (= :vlad (branch-key game))
+  #_(and (= :vlad (branch-key game))
+       (:end (curlvl-tags game)))
   #_(have game "candelabrum")
   #_(have game "Orb of Fate")
   #_(= "Home 5" (:dlvl game)))
@@ -86,7 +83,7 @@
                "katana" "long sword"))
 
 (def desired-items
-  [(ordered-set "pick-axe" "dwarvish mattock") ; currenty-desired presumes this is the first category
+  [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
    #{"ring of slow digestion"}
@@ -197,7 +194,8 @@
         (with-reason "targetting enemy at" target
           (or (wield-weapon game)
             step
-            (if (blind? player)
+            (if (or (blind? player)
+                    (not (monster? (at-curlvl game target))))
               (->Attack (towards player target))
               (->Move (towards player target)))))))))
 
