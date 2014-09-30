@@ -141,6 +141,7 @@
                {:x 70 :y 12} :door-secret}}
    {:branch :main
     :tag :wiztower-level
+    :features (into {} (for [pos wiztower-inner-boundary] [pos :rock]))
     :undiggable-tiles wiztower-inner-boundary}
    {:branch :main
     :tag :fake-wiztower

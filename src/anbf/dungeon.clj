@@ -359,22 +359,27 @@
       (and (<= 27 dlvl 36) (not (:asmodeus (:tags level)))
            (or (and (some :undiggable (tile-seq level))
                     (stairs-down? (at level 27 13)))
+               (every? #(= \- (:glyph %)) [(at level (position 66 10))
+                                           (at level (position 66 9))])
+               (every? #(= \- (:glyph %)) [(at level (position 66 14))
+                                           (at level (position 66 15))])
                (door? (at level 66 12)))) (add-curlvl-tag :asmodeus)
       (and (<= 29 dlvl 36) (not (:juiblex (:tags level)))
            (->> (tile-seq level)
                 (filter water?)
                 (more-than? 24))) (add-curlvl-tag :juiblex)
       (and (<= 31 dlvl 38) (not (tags :baalzebub))
-           (not-any? (fn [[x y]]
-                       (wall? (at level x y)))
-                     [[31 11] [32 11] [33 11] [34 11]
-                      [31 13] [32 13] [33 13] [34 13]])
-           (not-any? (fn [[x y]]
-                       (let [tile (at level x y)]
-                         (or (not (wall? tile)) (dug? tile))))
-                     [[30 10] [35 10] [30 11] [35 11]
-                      [30 13] [35 13] [30 14] [35 14]])) (add-curlvl-tag
-                                                           :baalzebub)
+           (or (and (not-any? (fn [[x y]]
+                                (wall? (at level x y)))
+                              [[31 11] [32 11] [33 11] [34 11]
+                               [31 13] [32 13] [33 13] [34 13]])
+                    (not-any? (fn [[x y]]
+                                (let [tile (at level x y)]
+                                  (or (not (wall? tile)) (dug? tile))))
+                              [[30 10] [35 10] [30 11] [35 11]
+                               [30 13] [35 13] [30 14] [35 14]]))
+               (and (stairs-down? (at level 72 12))
+                    (door? (at level 70 12))))) (add-curlvl-tag :baalzebub)
       (and (= branch :main) (<= 40 dlvl 51) (not (:fake-wiztower tags))
            (->> fake-wiztower-water (map (partial at level))
                 (some water?))) (add-curlvl-tag :fake-wiztower)
