@@ -456,14 +456,19 @@
                          (pushable-through game level % dest))))
                (neighbors level pos))))
 
-(defn- unblocked-boulder? [game level tile]
+(defn- blocking-boulder? [level tile]
   (and (boulder? tile)
+       (or (explorable-tile? level tile)
+           (not (every? (partial likely-walkable? level)
+                        (straight-neighbors level tile))))))
+
+(defn- unblocked-boulder? [game level tile]
+  (and (blocking-boulder? level tile)
        (some #(and (safely-walkable? level (in-direction level tile
                                                          (towards % tile)))
                    (pushable-through game level tile %))
              (neighbors level tile))))
 
-; TODO check if it makes sense, the boulder might not block
 (defn- push-boulders [{:keys [player] :as game} level]
   (if (some #(unblocked-boulder? game level %) (tile-seq level))
     (if-let [path (navigate game #(pushable-from game level %))]
