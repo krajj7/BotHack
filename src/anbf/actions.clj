@@ -246,7 +246,7 @@
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
     (->> (including-origin neighbors (curlvl game) tile)
-         (remove (partial has-feature? origin-feature))
+         (remove #(has-feature? % origin-feature))
          (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch) game))))
 
 (defn stairs-handler [anbf]
