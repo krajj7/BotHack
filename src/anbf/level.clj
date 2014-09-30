@@ -48,7 +48,8 @@
            (item? tile))))
 
 (defn safely-walkable? [level tile]
-  (and (likely-walkable? level tile)
+  (and tile
+       (likely-walkable? level tile)
        (not (monster-at level tile))
        (not ((some-fn trap? ice? drawbridge-lowered?) tile))))
 

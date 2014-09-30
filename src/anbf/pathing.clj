@@ -464,8 +464,8 @@
 
 (defn- unblocked-boulder? [game level tile]
   (and (blocking-boulder? level tile)
-       (some #(and (safely-walkable? level (in-direction level tile
-                                                         (towards % tile)))
+       (some #(and (safely-walkable? level
+                                     (in-direction level tile (towards % tile)))
                    (pushable-through game level tile %))
              (neighbors level tile))))
 
