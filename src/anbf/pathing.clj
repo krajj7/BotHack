@@ -761,6 +761,14 @@
   [game dlvls]
   (->> dlvls (remove (partial visited? game :main)) first))
 
+(defn- vlad-range [game]
+  (if-let [vlad (dlvl-from-tag game :main :votd 9)]
+    (dlvl-range :main vlad 5)
+    (dlvl-range :main "Dlvl:34" 9)))
+
+(defn- double-stairs? [game stairs? dlvl]
+  #(->> (get-level game :main %) tile-seq (filter stairs?) (more-than? 1)))
+
 (defn- dlvl-candidate
   "Return good Dlvl to search for given branch/tagged level"
   ([game branch]
@@ -785,17 +793,17 @@
                              (->> (dlvl-range :main "Dlvl:40" 12)))
                          (filter (partial possibly-wiztower? game))
                          (least-explored game :main)))
-         :vlad (least-explored game :main
-                               ; TODO check for double upstairs in vlad range
-                               (if-let [vlad (dlvl-from-tag game :main :votd 9)]
-                                 (dlvl-range :main vlad 5)
-                                 (dlvl-range :main "Dlvl:34" 9)))
-         :sokoban (or (if-let [oracle (:dlvl (get-level game :main :oracle))]
+         :vlad (or (find-first #(double-stairs? game stairs-up? %)
+                               (vlad-range game))
+                   (least-explored game :main (vlad-range game)))
+         :sokoban (or (find-first #(double-stairs? game stairs-up? %)
+                                  (dlvl-range :main "Dlvl:6" 5))
+                      (if-let [oracle (:dlvl (get-level game :main :oracle))]
                         (next-dlvl :main oracle))
-                      ; TODO check for double upstairs in soko range
                       (dlvl-candidate game :main :oracle))
          :quest (first-unvisited game (dlvl-range :main "Dlvl:11" 8))
-         :mines nil ; TODO check for double downstairs in mines range
+         :mines (find-first #(double-stairs? game stairs-down? %)
+                            (dlvl-range :main "Dlvl:2" 3))
          nil)
        (least-explored game :main
                        (case branch
