@@ -872,7 +872,9 @@
   ([game branch]
    (shallower-unexplored game :main (or (some->> (get-level game :main branch)
                                                  :dlvl (next-dlvl :main))
-                                        branch)))
+                                        (if (= :main (branch-key game branch))
+                                          :end
+                                          branch))))
   ([game branch tag-or-dlvl]
    (let [branch (branch-key game branch)
          dlvl (or (:dlvl (get-level game branch tag-or-dlvl))
