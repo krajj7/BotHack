@@ -174,13 +174,6 @@
        (dare-destroy? level tile)
        (not (item? tile)))) ; don't try to break blocked doors
 
-(defn- without-levitation [game action]
-  ; XXX doesn't work for intrinsic levitation
-  (if-let [[slot _] (have-levi-on game)]
-    (with-reason "action" (typekw action) "forbids levitation"
-      (remove-use game slot))
-    action))
-
 (defn- kick-door [{:keys [player] :as game} level tile dir]
   (if (door-open? tile)
     [8 (with-reason "closing door to kick it" (->Close dir))]
@@ -232,7 +225,7 @@
                                     (blocked-door level to-tile))))
                    (if monster
                      (if (:peaceful monster)
-                       (if ((fnil <= 0) (:blocked to-tile) 25)
+                       (if ((fnil <= 0) (:blocked to-tile) 20)
                          [50 (with-reason "peaceful blocker" monster
                                (fidget game level to-tile))]) ; hopefully will move
                        [6 (with-reason "pathing through" monster
@@ -253,8 +246,7 @@
                        [1 (with-reason "moving to kick blocked door at my position"
                             (->Move odir))])))
                  (if (and (edge-passable-walking? game level from-tile to-tile)
-                          (needs-levi? to-tile)
-                          (not monster) (not (boulder? to-tile)))
+                          (needs-levi? to-tile) (not (boulder? to-tile)))
                    (if-let [[slot item] (:levi opts)]
                      (if (:in-use item)
                        [1 (with-reason "assuming levitation" (->Move dir))]
@@ -295,7 +287,7 @@
   (and (not (shop? from))
        (not ((some-fn shop? trap? unknown?) to))
        (edge-passable-walking? game level from to)
-       (or (safely-walkable? to)
+       (or (safely-walkable? level to)
            (and ((some-fn water? ice?) to)
                 (-> opts :levi (nth 1) :in-use)))
        (not (monster-at level to))))
@@ -406,19 +398,21 @@
            (:new-items tile)
            (and (not (:walked tile))
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
-           (and (or (likely-walkable? tile) (door? tile) (needs-levi? tile))
+           (and (or (likely-walkable? level tile)
+                    (door? tile)
+                    (needs-levi? tile))
                 (some (complement (some-fn :seen boulder? monster?))
                       (neighbors level tile))))
        (some (some-fn (complement blank?) :feature) (neighbors level tile))))
 
 (defn dead-end? [level tile]
-  (and (likely-walkable? tile)
+  (and (likely-walkable? level tile)
        (not (trap? tile))
        (not (:dug tile))
        ; isolated diagonal corridors - probably dug:
        (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
                                  (corridor? %) (boulder? %))
-                             (not-any? likely-walkable?
+                             (not-any? (partial likely-walkable? level)
                                        (straight-neighbors level %)))
                        (diagonal-neighbors level tile))))
        (not (in-maze-corridor? level tile))
@@ -464,7 +458,8 @@
 
 (defn- unblocked-boulder? [game level tile]
   (and (boulder? tile)
-       (some #(and (safely-walkable? (in-direction level tile (towards % tile)))
+       (some #(and (safely-walkable? level (in-direction level tile
+                                                         (towards % tile)))
                    (pushable-through game level tile %))
              (neighbors level tile))))
 
@@ -523,7 +518,8 @@
       (or (:step p) (->Search)))))
 
 (defn- searchable-extremity [level y xs howmuch]
-  (if-let [tile (->> xs (map #(at level % y)) (find-first likely-walkable?))]
+  (if-let [tile (->> xs (map #(at level % y))
+                     (find-first (partial likely-walkable? level)))]
     (if (and (floor? tile)
              (< (:searched tile) howmuch)
              (not= \- (:glyph (at level (update-in tile [:x] dec))))
@@ -557,33 +553,47 @@
   (and (= (:dlvl game) (:dlvl level))
        (= (branch-key game) (branch-key game level))))
 
-(defn- curlvl-exploration-index
-  [game]
-  (let [level (curlvl game)]
-    (log/debug "calc exploration index")
-    (cond
-      (unexplored-column game level) 0
-      (navigate game (partial explorable-tile? level)) 0
-      :else (->> (tile-seq level) (map :searched) (reduce + 1)))))
+(declare explore explore-step)
 
-(defn reset-exploration-index
-  "Performance optimization - curlvl-exploration-index is useful but expensive so is wrapped in a future"
-  [anbf]
-  (reify AboutToChooseActionHandler
-    (about-to-choose [_ game]
-      (swap! (:game anbf) update-in [:explored-cache]
-             #(do (if % (future-cancel %))
-                  (future (curlvl-exploration-index game)))))))
+(defn- curlvl-exploration [game]
+  (or (explore-step game)
+      (->> (tile-seq (curlvl game)) (map :searched) (reduce + 1))))
 
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
-  ([game] @(:explored-cache game))
+  ([game] (if-not (number? @(:explore-cache game))
+            0
+            @(:explore-cache game)))
   ([game branch tag-or-dlvl]
    (if-let [level (get-level game branch tag-or-dlvl)]
      (if (at-level? game level)
        (exploration-index game)
        (get level :explored 0))
      0)))
+
+(defn reset-exploration
+  "Performance optimization - to know if the level is explored or not we need to run expensive navigation, might as well cache the result"
+  [anbf]
+  (let [loc (atom nil)
+        save (atom false)]
+    (reify
+      DlvlChangeHandler
+      (dlvl-changed [_ _ _]
+        (reset! save true))
+      ActionChosenHandler
+      (action-chosen [_ _]
+        (when-let [f (:explore-cache @(:game anbf))]
+          (if @save
+            (swap! (:game anbf)
+                   #(assoc-in % [:dungeon :levels (branch-key % (@loc 0))
+                                 (@loc 1) :explored] (exploration-index %))))
+          (swap! (:game anbf) assoc :explore-cache nil)
+          (future-cancel f)))
+      AboutToChooseActionHandler
+      (about-to-choose [_ game]
+        (reset! loc [(:branch-id game) (:dlvl game)])
+        (swap! (:game anbf) assoc :explore-cache
+               (future (curlvl-exploration game)))))))
 
 (defn- search-extremities
   "Search near where there are large blank spaces on the map"
@@ -642,8 +652,6 @@
              (search-walls game level (* mul 15))
              (if-not (> mul (dec max-iter))
                (recur (inc mul)))))))))
-
-(declare explore)
 
 (defn seek-portal [game]
   (with-reason "seeking portal"
@@ -717,7 +725,7 @@
                   (:dlvl (curlvl game)))]
     (first-min-by #(let [res (exploration-index game branch %)]
                      (if (and (= % curdlvl) (pos? res))
-                       (max 1 (- res 1200)) ; add threshold not to switch levels too often
+                       (max 1 (- res 1000)) ; add threshold not to switch levels too often
                        res))
                   dlvls)))
 
@@ -881,31 +889,30 @@
     (or (seek-level game branch tag-or-dlvl)
         (explore game))))
 
+(defn- explore-step [game]
+  (let [level (curlvl game)
+        player-tile (at-player game)]
+    (or (search-dead-end game 20)
+        (if-let [path (navigate game (partial explorable-tile? level)
+                                {:prefer-items true})]
+          (with-reason "exploring" (pr-str (at level (:target path)))
+            (:step path)))
+        ; TODO search for shops if heard but not found
+        (if (unexplored-column game level)
+          (with-reason "level not explored enough, searching"
+            (search game (if (= :mines (branch-key game)) 10 2))))
+        (if (and (= :wiztower (branch-key game))
+                 (:end (curlvl-tags game))
+                 (unknown? (at-curlvl game {:x 40 :y 11})))
+          (with-reason "searching wiztower top"
+            (seek game {:x 40 :y 11} {:no-explore true})))
+        (log/debug "nothing to explore"))))
+
 (defn explore
   ([game]
-   (let [level (curlvl game)
-         player-tile (at-player game)]
-     (or (search-dead-end game 20)
-         (if-not (pos? (exploration-index game))
-           (or (if-let [[slot _] (and (:new-items player-tile)
-                                      (walkable? player-tile)
-                                      (have-levi-on game))]
-                 (with-reason "removing levitation to examine items"
-                   (remove-use game slot)))
-               (when-let [path (navigate game (partial explorable-tile? level)
-                                         {:prefer-items true})]
-                 (with-reason "exploring" (pr-str (at level (:target path)))
-                   (:step path)))
-               ; TODO search for shops if heard but not found
-               (when (unexplored-column game level)
-                 (with-reason "level not explored enough, searching"
-                   (search game (if (= :mines (branch-key game)) 10 2))))
-               (log/debug "nothing to explore"))
-           (log/debug "positive exploration index"))
-         (if (and (= :wiztower (branch-key game))
-                  (:end (curlvl-tags game))
-                  (unknown? (at-curlvl game {:x 40 :y 11})))
-           (seek game {:x 40 :y 11} {:no-explore true})))))
+   (if-not (pos? (exploration-index game))
+     (with-reason "using cached exploration step"
+       @(:explore-cache game))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]

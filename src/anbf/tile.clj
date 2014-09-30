@@ -13,6 +13,7 @@
    item-color
    feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
    seen
+   first-walked
    walked
    dug
    searched ; no. of times searched
@@ -143,16 +144,6 @@
            (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
               :throne :grave :stairs-up :stairs-down :drawbridge-lowered}
                    (:feature tile)))))
-
-(defn likely-walkable?
-  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
-  [tile]
-  (and (walkable? tile)
-       (or (:feature tile) (item? tile))))
-
-(defn safely-walkable? [tile]
-  (and (likely-walkable? tile)
-       (not ((some-fn trap? ice? drawbridge-lowered?) tile))))
 
 (defn transparent?
   "For unexplored tiles just a guess"

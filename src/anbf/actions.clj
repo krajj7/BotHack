@@ -836,6 +836,13 @@
   (handler [_ _])
   (trigger [_] "#sit\n"))
 
+(defn without-levitation [game action]
+  ; XXX doesn't work for intrinsic levitation
+  (if-let [[slot _] (have-levi-on game)]
+    (with-reason "action" (typekw action) "forbids levitation"
+      (remove-use game slot))
+    action))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

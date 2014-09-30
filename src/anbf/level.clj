@@ -38,6 +38,20 @@
 (defn reset-monster [level monster]
   (assoc-in level [:monsters (position monster)] monster))
 
+(defn likely-walkable?
+  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
+  [level tile]
+  (and (walkable? tile)
+       (or (if-let [m (monster-at level tile)]
+             (not= \; (:glyph m)))
+           (:feature tile)
+           (item? tile))))
+
+(defn safely-walkable? [level tile]
+  (and (likely-walkable? level tile)
+       (not (monster-at level tile))
+       (not ((some-fn trap? ice? drawbridge-lowered?) tile))))
+
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"
   [level]
@@ -68,6 +82,8 @@
   [{:branch :main
     :tag :medusa-1
     :undiggable true
+    :cutoff-rows [1]
+    :cutoff-cols [0 1 77 78 79]
     :monsters {{:x 38 :y 12} (name->monster "Medusa")}
     :features {{:x 38 :y 12} :stairs-down
                {:x 32 :y 14} :door-secret
@@ -231,8 +247,8 @@
    {:branch :wiztower
     :tag :end
     :cutoff-rows (concat (range 1 5) (range 19 22))
-    :cutoff-cols (concat (range 0 22) (range 52 80))
-    :undiggable-tiles (remove (set (rectangle (position 37 7) (position 43 13)))
+    :cutoff-cols (concat (range 0 23) (range 52 80))
+    :undiggable-tiles (remove (set (rectangle (position 37 8) (position 43 14)))
                               wiztower-rect)
     :features {{:x 29 :y 9} :door-secret
                {:x 32 :y 8} :door-secret

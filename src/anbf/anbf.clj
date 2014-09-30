@@ -173,7 +173,7 @@
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-bottom prompt-escape)
-         (register-handler priority-top (reset-exploration-index anbf))
+         (register-handler priority-top (reset-exploration anbf))
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [this _]

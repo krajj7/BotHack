@@ -56,15 +56,16 @@
 
 (defn progress [game]
   (or ;(explore game :mines :minetown)
-      ;(explore game :mines)
+      (explore game :mines)
       ;(visit game :quest)
-      ;(explore game :quest :end)
+      (explore game :quest :end)
       ;(explore game :quest :end)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
-      ;(explore game :vlad)
-      (visit game :wiztower :end)
-      (explore-level game :wiztower :end)
+      (explore game :vlad)
+      (explore game :wiztower :end)
+      ;(explore-level game :wiztower :end)
+      (explore game :main :end)
       ;(visit game :earth)
       ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
@@ -76,7 +77,7 @@
        (:end (curlvl-tags game)))
   #_(have game "candelabrum")
   #_(have game "Orb of Fate")
-  #_(= "Home 5" (:dlvl game)))
+  #_(= "Dlvl:39" (:dlvl game)))
 
 (def desired-weapons
   (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
@@ -124,9 +125,7 @@
                                    :let [i (item-name game item)]
                                    :when (to-take? item)]
                                (:label item)))]
-          (or (with-reason "removing levitation to pick up item"
-                (some->> (have-levi-on game) key (remove-use game)))
-              (->PickUp (->> to-get set vec)))
+          (without-levitation game (->PickUp (->> to-get set vec)))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
                    (navigate game #(some to-take? (:items %)))]
@@ -225,6 +224,7 @@
                             (bribe-demon (:last-topline @(:game anbf))))
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
+      ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
       (register-handler -15 (enhance-handler anbf))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
