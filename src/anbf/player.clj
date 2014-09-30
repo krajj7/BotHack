@@ -152,3 +152,13 @@
   "Return the wielded item or nil"
   [game]
   (have game :wielded))
+
+(defn count-candles [game]
+  (reduce +
+          (if-let [[_ candelabrum] (have game "Candelabrum of Invocation")]
+            (:candles candelabrum))
+          (for [[_ candles] (have-all game #(.contains (:name %) "candle"))]
+            (:qty candles))))
+
+(defn have-candles? [game]
+  (= 7 (count-candles game)))

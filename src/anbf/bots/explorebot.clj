@@ -15,6 +15,7 @@
             [anbf.tile :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]
+            [anbf.behaviors :refer :all]
             [anbf.actions :refer :all]))
 
 (def hostile-dist-thresh 10)

@@ -12,6 +12,7 @@
             [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.util :refer :all]
+            [anbf.behaviors :refer :all]
             [anbf.tile :refer :all]))
 
 (defn base-cost [level dir tile opts]
