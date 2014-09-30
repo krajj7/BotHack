@@ -59,19 +59,19 @@
                :name "potion of water"
                :buc (if (= buc "holy") "blessed" "cursed"))
         res)
-      (update-in res [:name] #(get jap->eng % %))
-      (update-in res [:name] #(get plural->singular % %))
+      (update res :name #(get jap->eng % %))
+      (update res :name #(get plural->singular % %))
       (assoc res :lit (some? ((some-fn :lit :lit-candelabrum) res)))
       (assoc res :in-use (find-first some? (map res [:wielded :worn])))
       (assoc res :cost (find-first some? (map res [:cost1 :cost2 :cost3])))
-      (update-in res [:qty] #(if (and % (re-seq #"[0-9]+" %))
-                               (parse-int %)
-                               1))
+      (update res :qty #(if (and % (re-seq #"[0-9]+" %))
+                          (parse-int %)
+                          1))
       (if (:candles raw)
-        (update-in res [:candles] #(if (= % "no") 0 (parse-int %)))
+        (update res :candles #(if (= % "no") 0 (parse-int %)))
         res)
-      (reduce #(update-in %1 [%2] keyword) res [:buc :proof])
-      (reduce #(update-in %1 [%2] parse-int)
+      (reduce #(update %1 %2 keyword) res [:buc :proof])
+      (reduce #(update %1 %2 parse-int)
               res
               (for [kw [:cost :enchantment :charges :recharges]
                     :when (seq (kw res))]

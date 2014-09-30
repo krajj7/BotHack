@@ -85,3 +85,6 @@
   "Does coll have less than n elements?"
   [n coll]
   (->> coll (take n) count (not= n)))
+
+(defn update [m k f & args]
+  (apply update-in m [k] f args))

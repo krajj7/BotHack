@@ -250,8 +250,7 @@
 (defn- update-feature [tile new-glyph new-color]
   (cond (monster? new-glyph new-color) (walkable-by tile new-glyph)
         (item? new-glyph new-color) tile
-        :else (update-in tile [:feature]
-                         infer-feature new-glyph new-color)))
+        :else (update tile :feature infer-feature new-glyph new-color)))
 
 (defn- mark-dug-tile [new-tile old-tile]
   (if (and (zero? (:searched new-tile))

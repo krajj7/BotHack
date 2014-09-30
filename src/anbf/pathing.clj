@@ -136,7 +136,7 @@
                  (if-not (and (shopkeeper? m) ; shks may need more patience
                               (shop? (at-player new-game)))
                    (swap! (:game anbf) update-curlvl-at target
-                          update-in [:blocked] (fnil inc 0)))))))))
+                          update :blocked (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
        (or (random-move game level)
            (->Search))))))
@@ -259,8 +259,7 @@
                             (blocked-door level to-tile)
                             (->> (partial with-reason
                                           "the door is blocked from one side")
-                                 (update-in (kick-door game level to-tile dir)
-                                            [1])))
+                                 (update (kick-door game level to-tile dir) 1)))
                        (if (diagonal dir)
                          (if (kickable-door? level to-tile opts)
                            (kick-door game level to-tile dir))
@@ -276,7 +275,7 @@
                           (or (boulder? to-tile) (diggable-walls? game level))
                           (dare-destroy? level to-tile))
                    [8 (dig (:pick opts) dir)]))
-             (update-in [0] + (base-cost level dir to-tile opts))))))
+             (update 0 + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
   [step ; next Action to perform to move along path
@@ -522,8 +521,8 @@
                      (find-first (partial likely-walkable? level)))]
     (if (and (floor? tile)
              (< (:searched tile) howmuch)
-             (not= \- (:glyph (at level (update-in tile [:x] dec))))
-             (not= \- (:glyph (at level (update-in tile [:x] inc))))
+             (not= \- (:glyph (at level (update tile :x dec))))
+             (not= \- (:glyph (at level (update tile :x inc))))
              (not (shop? tile)))
       tile)))
 

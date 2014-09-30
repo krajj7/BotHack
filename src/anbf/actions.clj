@@ -82,7 +82,7 @@
     (if-let [a (if (fn? action)
                  (action)
                  action)]
-      (update-in a [:reason] (fnil conj []) reason))))
+      (update a :reason (fnil conj []) reason))))
 
 (def no-monster-re #"You .* (thin air|empty water)" )
 
@@ -102,8 +102,7 @@
                          (str "Invalid direction: " dir)))))))
 
 (defn mark-trap-here [anbf]
-  (update-at-player-when-known anbf update-in [:feature]
-                               #(if (traps %) % :trap)))
+  (update-at-player-when-known anbf update :feature #(if (traps %) % :trap)))
 
 (defn- move-message-handler
   [{:keys [game] :as anbf} portal-atom msg]
@@ -230,7 +229,7 @@
   (trigger [_] "#pray\n"))
 
 (defn- update-searched [{:keys [player] :as game}]
-  (reduce #(update-curlvl-at %1 %2 update-in [:searched] inc) game
+  (reduce #(update-curlvl-at %1 %2 update :searched inc) game
           (including-origin neighbors player)))
 
 (defaction Search []
@@ -450,12 +449,10 @@
   (if-let [tile (and (not (blind? player))
                      (at-player game))]
     (if (or ((some-fn unknown? unknown-trap?) tile)
-            (and (not (have-levi-on game))
-                 (or (:new-items tile)
-                     (and (seq (:items tile))
-                          (not= (:last-position game) (position player))
-                          (not= :search (some-> game :last-action typekw))
-                          (not= (:turn game) (:examined tile))))))
+            (or (:new-items tile)
+                (and (seq (:items tile))
+                     (not= (:last-position game) (position player))
+                     (> ((fnil - 0 0) (:turn game) (:examined tile)) 5))))
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
 (defn- examine-traps [game]
@@ -590,7 +587,7 @@
   ([handler action]
    (with-handler action priority-default handler))
   ([priority handler action]
-   (update-in action [:handlers] conj [priority handler])))
+   (update action :handlers conj [priority handler])))
 
 (defn ->ApplyAt
   "Apply something in the given direction (eg. pickaxe, key...).
@@ -701,7 +698,7 @@
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
-    (swap! (:game anbf) update-in [:player] dissoc :thick)
+    (swap! (:game anbf) update :player dissoc :thick)
     (reify DropSingleHandler
       (drop-single [_ _] (str (if (> qty 1) qty) slot))))
   (trigger [_] "d"))

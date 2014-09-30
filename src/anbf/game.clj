@@ -44,7 +44,7 @@
 (defn- update-by-botl [game status]
   (-> game
       (assoc :dlvl (:dlvl status))
-      (update-in [:player] update-player status)
+      (update :player update-player status)
       (update-game-status status)))
 
 (defn- rogue-ghost? [game level tile]
@@ -107,15 +107,16 @@
                  (rest (:lines frame))
                  (rest (:colors frame)))))
 
-(defn- update-dungeon [{:keys [dungeon] :as game} frame]
+(defn- update-dungeon [{:keys [turn] :as game} {:keys [cursor] :as frame}]
   (-> game
       (parse-map frame)
       infer-branch
       infer-tags
       level-blueprint
-      (reflood-room (:cursor frame))
-      (update-curlvl-at (:cursor frame) dissoc :blocked)
-      (update-curlvl-at (:cursor frame) assoc :walked (:turn game))))
+      (reflood-room cursor)
+      (update-curlvl-at cursor dissoc :blocked)
+      (update-curlvl-at cursor update :first-walked #(or % turn))
+      (update-curlvl-at cursor assoc :walked turn)))
 
 (defn- looks-engulfed? [{:keys [cursor lines] :as frame}]
   (if (and (< 0 (:x cursor) 79)
@@ -172,7 +173,7 @@
                             :last-path (get action :path (:last-path %))))))
     RedrawHandler
     (redraw [_ frame]
-      (swap! game assoc-in [:frame] frame))
+      (swap! game assoc :frame frame))
     BOTLHandler
     (botl [_ status]
       (let [old-dlvl (:dlvl @game)
@@ -187,7 +188,7 @@
             (swap! game ensure-curlvl)))))
     KnowPositionHandler
     (know-position [_ frame]
-      (swap! game update-in [:player] into (:cursor frame)))
+      (swap! game update :player into (:cursor frame)))
     FullFrameHandler
     (full-frame [_ frame]
       (swap! game update-map frame))

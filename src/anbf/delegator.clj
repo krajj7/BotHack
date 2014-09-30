@@ -24,18 +24,18 @@
 (defn set-inhibition
   "When inhibited the delegator keeps delegating events but doesn't delegate any commands or writes."
   [delegator state]
-  (assoc-in delegator [:inhibited] state))
+  (assoc delegator :inhibited state))
 
 (defn register
   "Register an event/command handler."
   ([delegator handler]
    (register delegator priority-default handler))
   ([delegator priority handler]
-   (update-in delegator [:handlers] assoc handler priority)))
+   (update delegator :handlers assoc handler priority)))
 
 (defn deregister [delegator handler]
   "Deregister a handler from the delegator."
-  (update-in delegator [:handlers] dissoc handler))
+  (update delegator :handlers dissoc handler))
 
 (defn switch [delegator handler-old handler-new]
   "Replace a command handler with another, keep the priority."
@@ -46,7 +46,7 @@
     (throw (IllegalArgumentException. "Handler to switch not present"))))
 
 (defn set-writer [delegator writer]
-  (assoc-in delegator [:writer] writer))
+  (assoc delegator :writer writer))
 
 (defn- invoke-handler [protocol method handler & args]
   ;(log/debug "testing handler" handler " for " protocol)

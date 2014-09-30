@@ -1,5 +1,6 @@
 (ns anbf.monster
   (:require [clojure.tools.logging :as log]
+            [anbf.util :refer :all]
             [anbf.frame :refer :all]
             [anbf.montype :refer :all]))
 
@@ -16,8 +17,7 @@
 
 (defmethod print-method Monster [m w]
   (.write w (str "#anbf.monster.Monster"
-                 (into {} (update-in m [:type]
-                                     #(if % (str "<" (:name %) ">")))))))
+                 (into {} (update m :type #(if % (str "<" (:name %) ">")))))))
 
 (defn hostile? [monster]
   (and (not (:peaceful monster))
