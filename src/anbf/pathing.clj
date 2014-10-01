@@ -266,10 +266,12 @@
                            (kick-door game level to-tile dir))
                          (if (door-closed? to-tile)
                            [3 (->Open dir)]
-                           (if-let [[slot _] (and (door-locked? to-tile)
+                           (if-let [[slot i] (and (door-locked? to-tile)
                                                   (can-unlock? game)
                                                   (have-key game))]
-                             [4 (->Unlock slot dir)]
+                             (if (or (dare-destroy? level to-tile)
+                                     (= "skeleton key" (item-name game i)))
+                               [4 (->Unlock slot dir)])
                              (if (kickable-door? level to-tile opts)
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
