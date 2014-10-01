@@ -48,10 +48,11 @@
            (item? tile))))
 
 (defn safely-walkable? [level tile]
-  (and tile
-       (likely-walkable? level tile)
-       (not (monster-at level tile))
-       (not ((some-fn trap? ice? drawbridge-lowered?) tile))))
+  (let [monster (monster-at level tile)]
+    (and tile
+         (likely-walkable? level tile)
+         (or (not monster) (:peaceful monster) (:friendly monster))
+         (not ((some-fn trap? ice? drawbridge-lowered?) tile)))))
 
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"
