@@ -237,197 +237,201 @@
         len (min (count topline) (count what))]
     (= (subs topline 0 len) (subs what 0 len))))
 
-(defn new-scraper [delegator & [mark-kw]]
-  (let [player (ref nil)
-        head (ref nil)
-        items (ref nil)
-        menu-nextpage (ref nil)]
-    (letfn [(handle-game-start [frame]
-              (when (game-beginning? frame)
-                (log/debug "Handling game start")
-                (condp #(.startsWith ^String %2 %1) (cursor-line frame)
-                  "There is already a game in progress under your name."
-                  (send delegator write "y\n") ; destroy old game
-                  "Shall I pick a character"
-                  (send delegator choose-character)
-                  true)))
-            (handle-choice-prompt [frame]
-              (when-let [text (choice-prompt frame)]
-                (log/debug "Handling choice prompt")
-                (ref-set menu-nextpage nil)
-                (emit-botl delegator frame)
-                ; TODO prompt may re-appear in lastmsg+action as topline msg
-                (send delegator (choice-fn text) text)
-                initial))
-            (handle-more [frame]
-              (or (when-let [item-list (more-list frame)]
-                    (log/debug "Handling --More-- list")
-                    (ref-set menu-nextpage nil)
-                    (if (nil? @items)
-                      (ref-set items []))
-                    (alter items into item-list)
-                    ; message about a feature that would normally appear as topline message may become part of a list when there are items on the tile
-                    (when (and (empty? (nth @items 1))
-                               (not (.endsWith ^String (nth @items 0) ":")))
-                      (send delegator message (nth @items 0))
-                      (alter items subvec 2))
-                    (send delegator write " ")
-                    initial)
-                  (when-let [text (more-prompt frame)]
-                    (log/debug "Handling --More-- prompt")
-                    (let [res (condp re-seq text
-                                #"^You don't have that object."
-                                handle-choice-prompt
-                                #"^To what position do you want to be teleported\?"
-                                handle-location
-                                #"^You wrest one last "
-                                (do (send delegator message text) no-mark)
-                                (do (send delegator message text) initial))]
-                      (send delegator write " ")
-                      res))))
-            (handle-menu-response-start [frame]
-              (or (when (and (menu? frame)
-                             (= 1 (menu-curpage frame)))
-                    (log/debug "first page menu response")
-                    (ref-set menu-nextpage 1)
-                    (handle-menu-response frame))
-                  (log/debug "menu response start - not yet rewound")))
-            (handle-menu-response [frame]
-              (or (when (and (menu? frame)
-                             (= @menu-nextpage (menu-curpage frame)))
-                    (log/debug "responding to menu page" @menu-nextpage)
-                    (send delegator (menu-fn @head) (menu-options frame))
-                    (when-not (multi-menu? @head)
-                      (send delegator write \space))
-                    (alter menu-nextpage inc)
-                    (when (menu-end? frame)
-                      (log/debug "last menu page response done")
-                      (ref-set items nil)
-                      initial))
-                  (log/debug "menu reponse - continuing")
-                  handle-menu-response))
-            (handle-menu [frame]
-              (when (and (menu? frame)
-                         (nil? @menu-nextpage))
-                (log/debug "Handling menu")
-                (when (nil? @items)
-                  (ref-set head (menu-head frame))
-                  (log/debug "Menu start")
-                  (ref-set items {}))
-                (alter items merge (menu-options frame))
-                ;(log/debug "items so far:" @items)
-                (if-not (menu-end? frame)
-                  (send delegator write " ")
-                  (do (log/debug "Menu end")
-                      (if @head
-                        (let [[cur end] (menu-page frame)]
-                          (if (= 1 end)
-                            (handle-menu-response-start frame)
-                            (do (->> (repeat (dec end) \<)
-                                     (apply str)
-                                     (send delegator write)) ; rewind menu
-                                handle-menu-response-start)))
-                        (do (send delegator inventory-list @items)
-                            (ref-set items nil)
-                            (send delegator write " ")
-                            initial))))))
-            (handle-direction [frame]
-              (when (and (zero? (-> frame :cursor :y))
-                         (re-seq #"^In what direction.*\?" (topline frame)))
-                (log/debug "Handling direction")
-                (emit-botl delegator frame)
-                (send delegator what-direction (topline frame))
-                initial))
-            (handle-prompt [frame]
-              (when-let [msg (prompt frame)]
-                (emit-botl delegator frame)
-                (send delegator write (string/join (repeat 3 backspace)))
-                (send delegator (prompt-fn msg) msg)
-                initial))
-            (handle-game-end [frame]
-              (cond (game-over? frame) (send delegator write \y)
-                    (goodbye? frame) (-> delegator
-                                         (send write \space)
-                                         (send ended))))
-            (handle-location [frame]
-              (or (when-let [ev (location-prompt frame)]
-                    (log/debug "Handling location")
-                    (emit-botl delegator frame)
-                    (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
-                      (send delegator know-position frame))
-                    (flush-more-list delegator items)
-                    (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands
-                    (send delegator ev)
-                    initial)))
-            (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
-              (log/debug "sink discarding redraw"))
-            (initial [frame]
-              (or (handle-game-start frame)
-                  (handle-game-end frame)
-                  (handle-more frame)
-                  (handle-menu frame)
-                  (handle-choice-prompt frame)
-                  ;(handle-direction frame)
-                  ;(handle-location frame)
-                  ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
-                  (when (status-drawn? frame)
-                    ;(log/debug "writing ##' mark")
-                    (send delegator write "##'")
-                    marked)
-                  (log/debug "expecting further redraw")))
-            ; v kontextech akci kde ##' muze byt destruktivni (direction prompt - kick,wand,loot,talk...) cekam dokud se neobjevi neco co prokazatelne neni zacatek direction promptu, pak poslu znacku.
-            ; dany kontext musi eventualne neco napsat na topline
-            (no-mark [frame]
-              (log/debug "no-mark maybe direction/location prompt")
-              (or (handle-direction frame)
-                  (undrawn? frame "In what direction")
-                  (handle-location frame)
-                  (undrawn? frame "Where do you want")
-                  (log/debug "no-mark - not direction/location prompt")
-                  (initial frame)))
-            ; odeslal jsem marker, cekam jak se vykresli
-            (marked [frame]
-              ; veci co se daji bezpecne potvrdit pomoci ## muzou byt jen tady, ve druhem to muze byt zkratka, kdyz se vykresleni stihne - pak se ale hur odladi spolehlivost tady
-              ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
-              (or (handle-game-end frame)
-                  (handle-more frame)
-                  (handle-menu frame)
-                  (handle-choice-prompt frame)
-                  (handle-prompt frame)
-                  (when (and (zero? (-> frame :cursor :y))
-                             (before-cursor? frame "# #'"))
-                    (send delegator write (str backspace \newline \newline))
-                    lastmsg-clear)
-                  (log/debug "marked expecting further redraw")))
-            (lastmsg-clear [frame]
-              (when (empty? (topline frame))
-                (send delegator write (str (ctrl \p) (ctrl \p)))
-                lastmsg-get))
-            (lastmsg-get [frame]
-              (when (and (= "# #" (topline frame))
-                         (< (-> frame :cursor :y) 22))
-                (ref-set player (:cursor frame))
-                (send delegator write (str (ctrl \p)))
-                lastmsg+action))
-            (lastmsg+action [frame]
-              (or (when (and (more-prompt? frame) (= 1 (-> frame :cursor :y)))
-                    (send delegator write "\n##\n\n")
-                    lastmsg-clear)
-                  (if (= "# #" (topline frame))
-                    (ref-set player (:cursor frame)))
-                  (when (= (:cursor frame) @player)
-                    (if-not (.startsWith ^String (topline frame) "#")
-                      (send delegator message (topline frame))
-                      #_ (log/debug "no last message"))
-                    (emit-botl delegator frame)
-                    (send delegator know-position frame)
-                    (flush-more-list delegator items)
-                    (send delegator full-frame frame)
-                    sink)
-                  (log/debug "lastmsg expecting further redraw")))]
-      (if (= mark-kw :no-mark)
-        no-mark
-        initial))))
+(defn new-scraper
+  ([delegator] (new-scraper delegator nil))
+  ([delegator no-mark-prompt]
+   (let [player (ref nil)
+         head (ref nil)
+         items (ref nil)
+         menu-nextpage (ref nil)
+         prev (ref no-mark-prompt)]
+     (letfn [(handle-game-start [frame]
+               (when (game-beginning? frame)
+                 (log/debug "Handling game start")
+                 (condp #(.startsWith ^String %2 %1) (cursor-line frame)
+                   "There is already a game in progress under your name."
+                   (send delegator write "y\n") ; destroy old game
+                   "Shall I pick a character"
+                   (send delegator choose-character)
+                   true)))
+             (handle-choice-prompt [frame]
+               (when-let [text (choice-prompt frame)]
+                 (log/debug "Handling choice prompt")
+                 (ref-set menu-nextpage nil)
+                 (emit-botl delegator frame)
+                 ; TODO prompt may re-appear in lastmsg+action as topline msg
+                 (send delegator (choice-fn text) text)
+                 initial))
+             (handle-more [frame]
+               (or (when-let [item-list (more-list frame)]
+                     (log/debug "Handling --More-- list")
+                     (ref-set menu-nextpage nil)
+                     (if (nil? @items)
+                       (ref-set items []))
+                     (alter items into item-list)
+                     ; message about a feature that would normally appear as topline message may become part of a list when there are items on the tile
+                     (when (and (empty? (nth @items 1))
+                                (not (.endsWith ^String (nth @items 0) ":")))
+                       (send delegator message (nth @items 0))
+                       (alter items subvec 2))
+                     (send delegator write " ")
+                     initial)
+                   (when-let [text (more-prompt frame)]
+                     (log/debug "Handling --More-- prompt")
+                     (let [res (condp re-seq text
+                                 #"^You don't have that object."
+                                 handle-choice-prompt
+                                 #"^To what position do you want to be teleported\?"
+                                 handle-location
+                                 #"^You wrest one last "
+                                 (do (send delegator message text) no-mark)
+                                 (do (send delegator message text) initial))]
+                       (send delegator write " ")
+                       res))))
+             (handle-menu-response-start [frame]
+               (or (when (and (menu? frame)
+                              (= 1 (menu-curpage frame)))
+                     (log/debug "first page menu response")
+                     (ref-set menu-nextpage 1)
+                     (handle-menu-response frame))
+                   (log/debug "menu response start - not yet rewound")))
+             (handle-menu-response [frame]
+               (or (when (and (menu? frame)
+                              (= @menu-nextpage (menu-curpage frame)))
+                     (log/debug "responding to menu page" @menu-nextpage)
+                     (send delegator (menu-fn @head) (menu-options frame))
+                     (when-not (multi-menu? @head)
+                       (send delegator write \space))
+                     (alter menu-nextpage inc)
+                     (when (menu-end? frame)
+                       (log/debug "last menu page response done")
+                       (ref-set items nil)
+                       initial))
+                   (log/debug "menu reponse - continuing")
+                   handle-menu-response))
+             (handle-menu [frame]
+               (when (and (menu? frame)
+                          (nil? @menu-nextpage))
+                 (log/debug "Handling menu")
+                 (when (nil? @items)
+                   (ref-set head (menu-head frame))
+                   (log/debug "Menu start")
+                   (ref-set items {}))
+                 (alter items merge (menu-options frame))
+                 ;(log/debug "items so far:" @items)
+                 (if-not (menu-end? frame)
+                   (send delegator write " ")
+                   (do (log/debug "Menu end")
+                       (if @head
+                         (let [[cur end] (menu-page frame)]
+                           (if (= 1 end)
+                             (handle-menu-response-start frame)
+                             (do (->> (repeat (dec end) \<)
+                                      (apply str)
+                                      (send delegator write)) ; rewind menu
+                                 handle-menu-response-start)))
+                         (do (send delegator inventory-list @items)
+                             (ref-set items nil)
+                             (send delegator write " ")
+                             initial))))))
+             (handle-direction [frame]
+               (when (and (zero? (-> frame :cursor :y))
+                          (re-seq #"^In what direction.*\?" (topline frame)))
+                 (log/debug "Handling direction")
+                 (emit-botl delegator frame)
+                 (send delegator what-direction (topline frame))
+                 initial))
+             (handle-prompt [frame]
+               (when-let [msg (prompt frame)]
+                 (emit-botl delegator frame)
+                 (send delegator write (string/join (repeat 3 backspace)))
+                 (send delegator (prompt-fn msg) msg)
+                 initial))
+             (handle-game-end [frame]
+               (cond (game-over? frame) (send delegator write \y)
+                     (goodbye? frame) (-> delegator
+                                          (send write \space)
+                                          (send ended))))
+             (handle-location [frame]
+               (or (when-let [ev (location-prompt frame)]
+                     (log/debug "Handling location")
+                     (emit-botl delegator frame)
+                     (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
+                       (send delegator know-position frame))
+                     (flush-more-list delegator items)
+                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands
+                     (send delegator ev)
+                     initial)))
+             (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
+               (log/debug "sink discarding redraw"))
+             (initial [frame]
+               (or (handle-game-start frame)
+                   (handle-game-end frame)
+                   (handle-more frame)
+                   (handle-menu frame)
+                   (handle-choice-prompt frame)
+                   ;(handle-direction frame)
+                   ;(handle-location frame)
+                   ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
+                   (when (status-drawn? frame)
+                     ;(log/debug "writing ##' mark")
+                     (send delegator write "##'")
+                     marked)
+                   (log/debug "expecting further redraw")))
+             ; v kontextech akci kde ##' muze byt destruktivni (direction prompt - kick,wand,loot,talk...) cekam dokud se neobjevi neco co prokazatelne neni zacatek direction promptu, pak poslu znacku.
+             ; dany kontext musi eventualne neco napsat na topline
+             (no-mark [frame]
+               (log/debug "no-mark maybe direction/location prompt")
+               (or (= @prev (topline frame)) (ref-set prev nil)
+                   (handle-direction frame)
+                   (undrawn? frame "In what direction")
+                   (handle-location frame)
+                   (undrawn? frame "Where do you want")
+                   (log/debug "no-mark - not direction/location prompt")
+                   (initial frame)))
+             ; odeslal jsem marker, cekam jak se vykresli
+             (marked [frame]
+               ; veci co se daji bezpecne potvrdit pomoci ## muzou byt jen tady, ve druhem to muze byt zkratka, kdyz se vykresleni stihne - pak se ale hur odladi spolehlivost tady
+               ; tady (v obou scraperech) musi byt veci, ktere se nijak nezmeni pri ##'
+               (or (handle-game-end frame)
+                   (handle-more frame)
+                   (handle-menu frame)
+                   (handle-choice-prompt frame)
+                   (handle-prompt frame)
+                   (when (and (zero? (-> frame :cursor :y))
+                              (before-cursor? frame "# #'"))
+                     (send delegator write (str backspace \newline \newline))
+                     lastmsg-clear)
+                   (log/debug "marked expecting further redraw")))
+             (lastmsg-clear [frame]
+               (when (empty? (topline frame))
+                 (send delegator write (str (ctrl \p) (ctrl \p)))
+                 lastmsg-get))
+             (lastmsg-get [frame]
+               (when (and (= "# #" (topline frame))
+                          (< (-> frame :cursor :y) 22))
+                 (ref-set player (:cursor frame))
+                 (send delegator write (str (ctrl \p)))
+                 lastmsg+action))
+             (lastmsg+action [frame]
+               (or (when (and (more-prompt? frame) (= 1 (-> frame :cursor :y)))
+                     (send delegator write "\n##\n\n")
+                     lastmsg-clear)
+                   (if (= "# #" (topline frame))
+                     (ref-set player (:cursor frame)))
+                   (when (= (:cursor frame) @player)
+                     (if-not (.startsWith ^String (topline frame) "#")
+                       (send delegator message (topline frame))
+                       #_ (log/debug "no last message"))
+                     (emit-botl delegator frame)
+                     (send delegator know-position frame)
+                     (flush-more-list delegator items)
+                     (send delegator full-frame frame)
+                     sink)
+                   (log/debug "lastmsg expecting further redraw")))]
+       (if no-mark-prompt
+         no-mark
+         initial)))))
 
 (defn- apply-scraper
   "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
@@ -441,15 +445,15 @@
 (defn scraper-handler [scraper delegator]
   (reify
     ApplyItemHandler
-    (apply-what [_ action]
+    (apply-what [_ prompt]
       (dosync
-        (ref-set scraper (new-scraper delegator :no-mark))
+        (ref-set scraper (new-scraper delegator prompt))
         (log/debug "no-mark scraper")))
     ActionChosenHandler
     (action-chosen [_ action]
       (dosync
         (if (= :autotravel (typekw action))
-          (ref-set scraper (new-scraper delegator :no-mark))
+          (ref-set scraper (new-scraper delegator ""))
           (ref-set scraper nil)) ; escape sink
         (log/debug "reset scraper for" (type action))))
     RedrawHandler
