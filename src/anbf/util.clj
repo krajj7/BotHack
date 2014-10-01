@@ -88,3 +88,6 @@
 
 (defn update [m k f & args]
   (apply update-in m [k] f args))
+
+(defn not-any-fn? [& fns]
+  (complement (apply some-fn fns)))

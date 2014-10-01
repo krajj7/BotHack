@@ -139,7 +139,7 @@
     LevelTeleportHandler
     (leveltele [_ _] "")
     DieHandler
-    (die [_ _] "")
+    (die [_ _] (log/warn "died") "")
     KeepSaveHandler
     (keep-save [_ _] "")
     ForceGodHandler

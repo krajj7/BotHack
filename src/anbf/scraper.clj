@@ -167,6 +167,7 @@
     #"^What do you want to drink\?" drink-what
     #"^What do you want to eat\?" eat-what
     #"^What do you want to zap\?" zap-what
+    #"^Which ring-finger," which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))

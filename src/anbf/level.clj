@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [anbf.montype :refer :all]
             [anbf.position :refer :all]
+            [anbf.util :refer :all]
             [anbf.tile :refer :all]))
 
 (defrecord Level
@@ -52,7 +53,7 @@
     (and tile
          (likely-walkable? level tile)
          (or (not monster) (:peaceful monster) (:friendly monster))
-         (not ((some-fn trap? ice? drawbridge-lowered?) tile)))))
+         ((not-any-fn? trap? ice? drawbridge-lowered?) tile))))
 
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"

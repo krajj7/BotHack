@@ -287,7 +287,7 @@
 
 (defn autonavigable? [game level opts [from to]]
   (and (not (shop? from))
-       (not ((some-fn shop? trap? unknown?) to))
+       ((not-any-fn? shop? trap? unknown?) to)
        (edge-passable-walking? game level from to)
        (or (safely-walkable? level to)
            (and ((some-fn water? ice?) to)
@@ -402,9 +402,9 @@
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
                 (some (partial safely-walkable? level) (neighbors level tile))
-                (some (complement (some-fn :seen boulder? monster?))
+                (some (not-any-fn? :seen boulder? monster?)
                       (neighbors level tile))))
-       (some (some-fn (complement blank?) :feature) (neighbors level tile))))
+       (not (isolated? level tile))))
 
 (defn dead-end? [level tile]
   (and (likely-walkable? level tile)
