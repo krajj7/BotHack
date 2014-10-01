@@ -23,7 +23,7 @@
          (:new-items tile)) (- 5) ; partially negate digging penalization
     (trap? tile) (+ 15) ; TODO trap types
     (diagonal dir) (+ 0.1)
-    (and (unknown? tile) (not (:seen tile))) (+ 6)
+    (and (unknown? tile) (not (:seen tile))) (+ 3)
     (not (stairs? tile)) (+ 0.1)
     (not (or (:dug tile) (:walked tile))) (+ 0.2)
     (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
@@ -394,6 +394,9 @@
                (get-a*-path game level player (first goal-seq) move-fn opts
                             max-steps)))))))))
 
+(defn- isolated? [level tile]
+  (every? (every-pred blank? unknown?) (neighbors level tile)))
+
 (defn- explorable-tile? [level tile]
   (and (not (and (dug? tile) (boulder? tile)))
        (or (and (unknown? tile) (not (blank? tile)))
@@ -660,18 +663,22 @@
                (recur (inc mul)))))))))
 
 (defn seek-portal [game]
-  (with-reason "seeking portal"
-    (or (if-let [{:keys [step]} (navigate game portal?)]
-          (or step (with-reason "sitting on a portal"
-                     (without-levitation (->Sit)))))
-        (if (> (dlvl game) 35)
-          (if (unknown? (at-curlvl game fake-wiztower-portal))
-            (with-reason "seeking fake wiztower portal"
-              (:step (navigate game fake-wiztower-portal))))
-          (with-reason "stepping everywhere to find portal"
-            (:step (navigate game (complement (some-fn :walked door?))))))
-        (explore game)
-        (search game))))
+  (let [level (curlvl game)]
+    (with-reason "seeking portal"
+      (or (if-let [{:keys [step]} (navigate game portal?)]
+            (or step (with-reason "sitting on a portal"
+                       (without-levitation (->Sit)))))
+          (if (> (dlvl game) 35)
+            (if (unknown? (at level game fake-wiztower-portal))
+              (with-reason "seeking fake wiztower portal"
+                (:step (navigate game fake-wiztower-portal))))
+            (with-reason "stepping everywhere to find portal"
+              (:step (navigate game #(and (likely-walkable? level %)
+                                          (not (isolated? level %))
+                                          (not (:walked %))
+                                          (not (door? %)))))))
+          (explore game)
+          (search game)))))
 
 (defn seek
   "Like explore but also searches and always tries to return an action until the target is found
