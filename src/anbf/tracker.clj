@@ -2,8 +2,13 @@
   "Tracking and pairing monsters frame-to-frame"
   (:require [anbf.position :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.delegator :refer :all]
             [anbf.fov :refer :all]
+            [anbf.tile :refer :all]
+            [anbf.monster :refer :all]
+            [anbf.level :refer :all]
             [anbf.player :refer :all]
+            [anbf.util :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
@@ -69,3 +74,33 @@
         (as-> new-game res
           (reduce transfer-unpaired res (vals old-monsters))
           (reduce transfer-pair res (vals pairs)))))))
+
+(defn- mark-kill [game old-game]
+  (if-let [dir (and (not (impaired? (:player old-game)))
+                    (#{:move :attack} (typekw (:last-action old-game)))
+                    (:dir (:last-action old-game)))]
+    (let [pos (in-direction (:player old-game) dir)
+          tile (at-curlvl game pos)
+          old-monster (or (monster-at (curlvl old-game) pos)
+                          (unknown-monster (:x pos) (:y pos) (:turn game)))]
+      (if (or (item? tile) (monster? tile) (water? tile) ; don't mark deaths that clearly didn't leave a corpse
+              (blind? (:player game)))
+        (update-curlvl-at game old-monster
+                          mark-death old-monster (:turn game))
+        game))
+    game))
+
+(defn death-tracker [anbf]
+  (let [old-game (atom nil)]
+    (reify
+      ActionChosenHandler
+      (action-chosen [_ _]
+        (reset! old-game @(:game anbf)))
+      ToplineMessageHandler
+      (message [_ msg]
+        (if (and @old-game (not (hallu? (:player @old-game))))
+          (condp re-first-group msg
+            #"You (kill|destroy) ([^.!]*)[.!]"
+            (swap! (:game anbf) mark-kill @old-game)
+            ;#" is (killed|destroyed)"
+            nil))))))

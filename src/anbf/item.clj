@@ -1,6 +1,7 @@
 (ns anbf.item
   (:require [clojure.tools.logging :as log]
             [anbf.itemtype :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.util :refer :all]))
 
 (defrecord Key [])
@@ -25,21 +26,6 @@
    :diluted :enchantment :name :generic :specific :recharges :charges :candles
    :lit-candelabrum :lit :laid :chained :quivered :offhand :offhand-wielded
    :wielded :worn :cost1 :cost2 :cost3])
-
-(def jap->eng
-  {"wakizashi" "short sword"
-   "ninja-to" "broadsword"
-   "nunchaku" "flail"
-   "naginata" "glaive"
-   "osaku" "lock pick"
-   "koto" "wooden harp"
-   "shito" "knife"
-   "tanko" "plate mail"
-   "kabuto" "helmet"
-   "yugake" "leather gloves"
-   "gunyoki" "food ration"
-   "potion of sake" "potion of booze"
-   "potions of sake" "potions of booze"})
 
 (defn- erosion [s]
   (if (and s (some #(.contains s %) ["burnt" "rusty" "rotted" "corroded"]))
@@ -102,3 +88,24 @@
 
 (defn blessed? [item]
   (= :blessed (:buc item)))
+
+(defn- only-fresh-deaths? [tile corpse-type turn]
+  (let [relevant-deaths (remove (fn [[death-turn monster]]
+                                  (and (< 500 (- turn death-turn))
+                                       (:type monster)
+                                       (not= corpse-type (:type monster))))
+                                (:deaths tile))
+        unsafe-deaths (filter (fn [[death-turn _]] (<= 30 (- turn death-turn)))
+                              relevant-deaths)
+        safe-deaths (filter (fn [[death-turn _]] (> 30 (- turn death-turn)))
+                            relevant-deaths)]
+    (and (empty? unsafe-deaths)
+         (seq safe-deaths))))
+
+(defn fresh-corpse?
+  "Works only for corpses on the ground that haven't been moved"
+  [game tile item]
+  (if-let [corpse-type (:monster (item-id game item))]
+    (or (:norot (:tags corpse-type))
+        (and (not (:undead (:tags corpse-type)))
+             (only-fresh-deaths? tile corpse-type (:turn game))))))

@@ -3,7 +3,6 @@
   (:require [clojure.tools.logging :as log]
             [clojure.core.logic :refer :all]
             [clojure.core.logic.pldb :refer :all]
-            [anbf.item :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.itemdata :refer :all]
             [anbf.util :refer :all]))

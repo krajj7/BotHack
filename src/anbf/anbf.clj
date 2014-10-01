@@ -10,7 +10,8 @@
             [anbf.game :refer :all]
             [anbf.handlers :refer :all]
             [anbf.pathing :refer :all]
-            [anbf.scraper :refer :all]))
+            [anbf.scraper :refer :all]
+            [anbf.tracker :refer :all]))
 
 (defrecord ANBF [config delegator jta scraper game]
   anbf.bot.IANBF
@@ -174,6 +175,7 @@
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-bottom prompt-escape)
          (register-handler priority-top (reset-exploration anbf))
+         (register-handler priority-top (death-tracker anbf))
          (register-handler priority-bottom
                            (reify FullFrameHandler
                              (full-frame [this _]

@@ -137,3 +137,18 @@
                (for [{:keys [name plural] :as id} items
                      :when plural]
                  [plural name]))))
+
+(def jap->eng
+  {"wakizashi" "short sword"
+   "ninja-to" "broadsword"
+   "nunchaku" "flail"
+   "naginata" "glaive"
+   "osaku" "lock pick"
+   "koto" "wooden harp"
+   "shito" "knife"
+   "tanko" "plate mail"
+   "kabuto" "helmet"
+   "yugake" "leather gloves"
+   "gunyoki" "food ration"
+   "potion of sake" "potion of booze"
+   "potions of sake" "potions of booze"})

@@ -20,6 +20,7 @@
    items ; [Item]
    new-items ; flag if some items changed
    engraving
+   deaths ; [ turn Monster ], deaths that left no corpse are ignored
    room]
   anbf.bot.ITile)
 
@@ -31,6 +32,7 @@
               :dug false
               :searched 0
               :items []
+              :deaths []
               :new-items false}))
 
 (defn digit? [tile]
@@ -286,3 +288,6 @@
 
 (defn shop? [tile]
   (shops (:room tile)))
+
+(defn mark-death [tile monster turn]
+  (update tile :deaths conj [turn monster]))

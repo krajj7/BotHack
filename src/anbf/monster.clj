@@ -56,4 +56,7 @@
                    :peaceful (default-peaceful? type)
                    :remembered false})))
 
+(defn unknown-monster [x y turn]
+  (new-monster x y turn \I nil))
+
 (defn shopkeeper? [m] (= "shopkeeper" (get-in m [:type :name])))
