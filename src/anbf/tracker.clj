@@ -17,6 +17,19 @@
         (not= (position old-monster)
               (position monster)) (assoc :awake true)))))
 
+(defn filter-visible-uniques
+  "If a unique monster was remembered and now is visible, remove all remembered instances"
+  [game]
+  (let [monsters (vals (curlvl-monsters game))
+        id (comp :name :type)]
+    (reduce remove-curlvl-monster game
+            (for [m monsters
+                  :when ((every-pred (complement :remembered)
+                                     (comp :unique :gen-flags :type)) m)
+                  n (filter #(and (= (id m) (id %)) (:remembered %))
+                            monsters)]
+              (position n)))))
+
 (defn- transfer-unpaired [game unpaired]
   ; TODO don't transfer if we would know monsters position with ESP
   ;(log/debug "unpaired" unpaired)

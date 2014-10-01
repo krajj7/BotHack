@@ -171,6 +171,9 @@
         (swap! game #(assoc % :last-action action
                             :last-position (position (:player %))
                             :last-path (get action :path (:last-path %))))))
+    AboutToChooseActionHandler
+    (about-to-choose [_ game]
+      (swap! (:game anbf) filter-visible-uniques))
     RedrawHandler
     (redraw [_ frame]
       (swap! game assoc :frame frame))
