@@ -16,6 +16,7 @@
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]
             [anbf.behaviors :refer :all]
+            [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
 (def hostile-dist-thresh 10)
@@ -32,7 +33,7 @@
        set))
 
 (defn- pray-for-food [game]
-  (if (and (weak? (:player game))
+  #_(if (and (weak? (:player game))
            (not (in-gehennom? game)))
     (with-reason "praying for food" ->Pray)))
 
@@ -59,16 +60,15 @@
   (or ;(explore game :mines :minetown)
       (explore game :mines)
       ;(visit game :quest)
-      (explore game :quest :end)
-      ;(explore game :quest :end)
+      (explore game :quest)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
+      ;(seek-level game :vlad :bottom)
       (explore game :vlad)
       (explore game :wiztower :end)
       ;(explore-level game :wiztower :end)
       (explore game :main :end)
       ;(visit game :earth)
-      ;(seek-level game :main "Dlvl:1")
       (log/debug "progress end")))
 
 (defn- pause-condition?
@@ -96,6 +96,12 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"Amulet of Yendor"}
+   #{"lizard corpse"}
+   (ordered-set "speed boots" "iron shoes")
+   (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail")
+   (ordered-set "shield of reflection" "small shield")
+   #{"amulet of reflection"}
+   #{"amulet of unchanging"}
    desired-weapons])
 
 (defn entering-shop? [game]
@@ -212,6 +218,32 @@
         (log/debug "pause condition met")
         (pause anbf)))))
 
+(defn- feed [{:keys [player] :as game}]
+  (if-not (satiated? player)
+    (let [beneficial? #(every-pred
+                         (partial fresh-corpse? game %)
+                         (partial want-to-eat? player))
+          edible? #(every-pred
+                     (partial fresh-corpse? game %)
+                     (partial can-eat? player))]
+      (or (if (weak? player)
+            (if-let [[slot food] (have game (partial can-eat? player))]
+              (with-reason "weak or worse, eating" (pr-str food)
+                (->Eat slot))))
+          (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
+            (with-reason "want to eat corpse at" (pr-str (:target p))
+              (or (:step p)
+                  (->> (at-player game) :items
+                       (find-first (beneficial? player)) :label
+                       ->Eat))))
+          (if (hungry? player)
+            (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
+              (with-reason "going to eat corpse at" (pr-str (:target p))
+                (or (:step p)
+                    (->> (at-player game) :items
+                         (find-first (edible? player)) :label
+                         ->Eat)))))))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -240,6 +272,9 @@
                              (choose-action [_ game]
                                (reequip game))))
       (register-handler 2 (reify ActionHandler
+                             (choose-action [_ game]
+                               (feed game))))
+      (register-handler 3 (reify ActionHandler
                              (choose-action [_ game]
                                (consider-items game))))
       (register-handler 5 (reify ActionHandler

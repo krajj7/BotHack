@@ -4,6 +4,7 @@
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.itemid :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.item :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -180,27 +181,32 @@
 
 (def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant"})
 
-(defn safe-corpse-type? [player {:keys [monster] :as corpse}]
+(defn- safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
   (and (or (tin? corpse)
            (have-resistance? player :poison)
-           (not :poisonous (:tags monster)))
-       (not taboo-corpses (:name monster))
-       (not :were (:tags monster))
-       (not (re-seq #" bat$" (:name monster)))
-       (not (:teleport (:tags monster)))))
-
-(defn want-to-eat? [player {:keys [monster] :as corpse}]
-  (and (safe-corpse-type? player corpse)
-       (or (= "wraith" (:name monster))
-           (some (complement (partial have-resistance? player))
-                 (:resistances-conferred monster)))))
+           (not (:poisonous corpse-type)))
+       (not (or (taboo-corpses (:name monster))
+                (:were (:tags monster))
+                (:teleport (:tags monster))
+                (re-seq #" bat$" (:name monster))))))
 
 (defn can-eat?
-  "Only true for safe food"
-  [player food]
-  (and (= :food (typekw food))
-       (or (= :orc (:race player))
-           (not= "tripe ration" (:name food)))
-       (not (cursed? food))
-       (or (not (corpse? food))
-           (safe-corpse-type? player food))))
+  "Only true for safe food or unknown tins"
+  [player {:keys [name] :as food}]
+  (and (not (cursed? food))
+       (or (tin? food)
+           (if-let [itemtype (name->item name)]
+             (and (= :food (typekw itemtype))
+                  (or (= :orc (:race player))
+                      (not= "tripe ration" name))
+                  (or (not (:monster itemtype))
+                      (safe-corpse-type? player food itemtype)))))))
+
+(defn want-to-eat? [player corpse]
+  (and (can-eat? player corpse)
+       (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))]
+         (or (= "wraith" (:name monster))
+             (= "newt" (:name monster))
+             ; TODO increases str
+             (some (complement (partial have-resistance? player))
+                   (:resistances-conferred monster))))))

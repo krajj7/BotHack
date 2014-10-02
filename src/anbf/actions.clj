@@ -803,6 +803,13 @@
   (handler [_ _])
   (trigger [_] "#sit\n"))
 
+(defaction Eat [slot-or-label]
+  (handler [_ _]
+    (log/error "eat")
+    ; TODO
+    )
+  (trigger [_] "e"))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

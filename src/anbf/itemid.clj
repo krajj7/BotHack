@@ -96,8 +96,8 @@
   (some? (item-name game item)))
 
 (defn add-discovery [game appearance id]
-  (if (blind-appearances appearance)
-    (log/debug "not adding discovery for" appearance "- is generic")
+  (if (or (blind-appearances appearance) (= appearance id))
+    game
     (let [id (get jap->eng id id)]
       (log/debug "adding discovery: >" appearance "< is >" id "<")
       (update game :discoveries
