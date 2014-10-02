@@ -166,3 +166,30 @@
 
 (defn have-candles? [game]
   (= 7 (count-candles game)))
+
+(def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant"})
+
+(defn safe-corpse-type? [player {:keys [monster] :as corpse}]
+  (and (or (tin? corpse)
+           (have-resistance? player :poison)
+           (not :poisonous (:tags monster)))
+       (not taboo-corpses (:name monster))
+       (not :were (:tags monster))
+       (not (re-seq #" bat$" (:name monster)))
+       (not (:teleport (:tags monster)))))
+
+(defn want-to-eat? [player {:keys [monster] :as corpse}]
+  (and (safe-corpse-type? player corpse)
+       (or (= "wraith" (:name monster))
+           (some (complement (partial have-resistance? player))
+                 (:resistances-conferred monster)))))
+
+(defn can-eat?
+  "Only true for safe food"
+  [player food]
+  (and (= :food (typekw food))
+       (or (= :orc (:race player))
+           (not= "tripe ration" (:name food)))
+       (not (cursed? food))
+       (or (not (corpse? food))
+           (safe-corpse-type? player food))))

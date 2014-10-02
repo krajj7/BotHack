@@ -1,10 +1,12 @@
 (ns anbf.tracker
-  "Tracking and pairing monsters frame-to-frame"
+  "Tracking and pairing monsters frame-to-frame and their deaths and corpses turn-by-turn"
   (:require [anbf.position :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.fov :refer :all]
             [anbf.tile :refer :all]
+            [anbf.item :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.monster :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
@@ -104,3 +106,29 @@
             (swap! (:game anbf) mark-kill @old-game)
             ;#" is (killed|destroyed)"
             nil))))))
+
+(defn- only-fresh-deaths? [tile corpse-type turn]
+  (let [relevant-deaths (remove (fn [[death-turn monster]]
+                                  (and (< 500 (- turn death-turn))
+                                       (:type monster)
+                                       (or (not (.contains (:name monster)
+                                                           (:name corpse-type)))
+                                           (not (.contains (:name monster)
+                                                           " zombie")))
+                                       (not= corpse-type (:type monster))))
+                                (:deaths tile))
+        unsafe-deaths (filter (fn [[death-turn _]] (<= 30 (- turn death-turn)))
+                              relevant-deaths)
+        safe-deaths (filter (fn [[death-turn _]] (> 30 (- turn death-turn)))
+                            relevant-deaths)]
+    (and (empty? unsafe-deaths)
+         (seq safe-deaths))))
+
+(defn fresh-corpse?
+  "Works only for corpses on the ground that haven't been moved"
+  [game pos item]
+  (if-let [corpse-type (and (corpse? item) (single? item)
+                            (:monster (name->item (:name item))))]
+    (or (:permanent corpse-type)
+        (and (only-fresh-deaths?
+               (at-curlvl game pos) corpse-type (:turn game))))))

@@ -89,23 +89,14 @@
 (defn blessed? [item]
   (= :blessed (:buc item)))
 
-(defn- only-fresh-deaths? [tile corpse-type turn]
-  (let [relevant-deaths (remove (fn [[death-turn monster]]
-                                  (and (< 500 (- turn death-turn))
-                                       (:type monster)
-                                       (not= corpse-type (:type monster))))
-                                (:deaths tile))
-        unsafe-deaths (filter (fn [[death-turn _]] (<= 30 (- turn death-turn)))
-                              relevant-deaths)
-        safe-deaths (filter (fn [[death-turn _]] (> 30 (- turn death-turn)))
-                            relevant-deaths)]
-    (and (empty? unsafe-deaths)
-         (seq safe-deaths))))
+(defn single? [item]
+  (= 1 (:qty item)))
 
-(defn fresh-corpse?
-  "Works only for corpses on the ground that haven't been moved"
-  [game tile item]
-  (if-let [corpse-type (:monster (item-id game item))]
-    (or (:norot (:tags corpse-type))
-        (and (not (:undead (:tags corpse-type)))
-             (only-fresh-deaths? tile corpse-type (:turn game))))))
+(defn corpse? [item]
+  (re-seq #" corpses?\b" (:name item)))
+
+(defn corpse->monster [item]
+  (:monster (name->item (:name item))))
+
+(defn tin? [item]
+  (re-seq #" tins?\b" (:name item)))
