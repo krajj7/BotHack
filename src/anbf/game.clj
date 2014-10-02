@@ -1,7 +1,7 @@
 (ns anbf.game
   "representation of the game world"
   (:require [clojure.tools.logging :as log]
-            [clojure.string :refer [lower-case]]
+            [clojure.string :as string]
             [anbf.player :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
@@ -150,15 +150,27 @@
     #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
     nil))
 
-(def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+)\.|.* (\w+), welcome back to NetHack!")
+(def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+ \w+)\.|.* (\w+ \w+), welcome back to NetHack!")
 
-(defn set-role-handler [anbf]
+(def races {"dwarven" :dwarf
+            "elven" :elf
+            "gnomish" :gnome})
+
+(defn set-race-role-handler [anbf]
   (reify ToplineMessageHandler
     (message [this text]
-      (when-let [role (some->> (re-first-groups welcome-re text)
-                               (find-first some?) lower-case keyword)]
-        (log/debug "player role:" role)
-        (swap! (:game anbf) assoc-in [:player :role] role)
+      (when-let [[race role] (some->> (re-first-groups welcome-re text)
+                                      (find-first some?)
+                                      (#(string/split % #" "))
+                                      (map (comp keyword
+                                                 #(get races % %)
+                                                 string/lower-case)))]
+        (log/debug "player role:" role "- race:" race)
+        (swap! (:game anbf) update :player assoc
+               :role role
+               :race race
+               :intrinsics (into (initial-intrinsics role)
+                                 (initial-intrinsics race)))
         (deregister-handler anbf this)))))
 
 (defn game-handler

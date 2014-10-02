@@ -170,7 +170,7 @@
                              (full-frame [_ _]
                                (send delegator #(about-to-choose % @game))
                                (send delegator #(choose-action % @game)))))
-         (register-handler priority-top (set-role-handler anbf))
+         (register-handler priority-top (set-race-role-handler anbf))
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-bottom prompt-escape)

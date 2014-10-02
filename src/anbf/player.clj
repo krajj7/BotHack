@@ -17,9 +17,13 @@
   [player]
   (#{:weak :fainting} (:hunger player)))
 
+(defn satiated? [player]
+  (= :satiated (:hunger player)))
+
 (defrecord Player
   [nickname
    role
+   race
    hp
    maxhp
    pw
