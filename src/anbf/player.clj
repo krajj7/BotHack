@@ -35,6 +35,7 @@
    inventory ; {char => Item}
    hunger ; :fainting :weak :hungry :satiated
    burden ; :overloaded :overtaxed :strained :stressed :burdened
+   intrinsics ; set
    engulfed
    trapped
    leg-hurt
@@ -156,6 +157,16 @@
   "Return the wielded item or nil"
   [game]
   (have game :wielded))
+
+(defn initial-intrinsics [race-or-role]
+  (case race-or-role
+    :valkyrie #{:cold :stealth}
+    :orc #{:poison}
+    ; TODO rest
+    #{}))
+
+(defn have-resistance? [player resist]
+  (resist (:intrinsics player)))
 
 (defn count-candles [game]
   (reduce +
