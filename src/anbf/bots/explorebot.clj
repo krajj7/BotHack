@@ -32,28 +32,38 @@
                               (not (digit? %))))))
        set))
 
+(defn enhance [game]
+  (if (:can-enhance (:player game))
+    (log/debug "TODO ->Enhance")
+    ; TODO EnhanceHandler
+    #_(->Enhance)))
+
 (defn- pray-for-food [game]
   (if (and (fainting? (:player game))
            (not (in-gehennom? game)))
     (with-reason "praying for food" ->Pray)))
 
-(defn- enhance-handler [anbf]
-  (reify ActionHandler
-    (choose-action [_ game]
-      (if (:can-enhance (:player game))
-        (log/debug "TODO ->Enhance")
-        #_(->Enhance)))
-    ; TODO EnhanceHandler
-    ))
+(defn- handle-illness [{:keys [player] :as game}]
+  (if (:ill (:state player))
+    (with-reason "fixing illness"
+      (or (if-let [[slot _] (have-unihorn game)]
+            (->Apply slot))
+          (if-let [[slot _] (have-noncursed game "eucalyptus leaf")]
+            (->Eat slot))
+          (if-let [[slot _] (or (have-blessed game "potion of healing")
+                                (have-noncursed game
+                                                #{"potion of extra healing"
+                                                  "potion of full healing"}))]
+            (->Quaff slot))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
         (if-not (in-gehennom? game)
           (with-reason "curing lycantrophy" ->Pray)))
-      (when-let [[slot _] (and (unihorn-recoverable? game)
-                               (have-unihorn game))]
+      (if-let [[slot _] (and (unihorn-recoverable? game)
+                             (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
-      (when (or (impaired? player) (:leg-hurt player))
+      (if (impaired? player)
         (with-reason "waiting out impairment" ->Wait))))
 
 (defn progress [game]
@@ -74,6 +84,7 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
+  (= :wiztower (branch-key game))
   #_(and (= :vlad (branch-key game))
        (:end (curlvl-tags game)))
   #_(have game "candelabrum")
@@ -255,10 +266,15 @@
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
-      (register-handler -15 (enhance-handler anbf))
+      (register-handler -15 (reify ActionHandler
+                              (choose-action [_ game]
+                                (enhance game))))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (pray-for-food game))))
+      (register-handler -7 (reify ActionHandler
+                             (choose-action [_ game]
+                               (handle-illness game))))
       (register-handler -5 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))

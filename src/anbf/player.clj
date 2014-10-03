@@ -124,6 +124,12 @@
   (have game (every-pred noncursed?
                          (have-selector game name-or-set-or-fn))))
 
+(defn have-blessed
+  "Like 'have' but return only blessed items"
+  [game name-or-set-or-fn]
+  (have game (every-pred blessed?
+                         (have-selector game name-or-set-or-fn))))
+
 (defn have-unihorn [game]
   (have game #(and (= "unicorn horn" (item-name game %))
                    (not (cursed? %)))))

@@ -156,9 +156,7 @@
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (if (:feature target)
-               (do (log/warn "seemingly non diagonally walkable feature at"
-                             target)
-                   %)
+               % ; NH actually seems to ignore a move in some cases when stepping on newly-discovered trap
                (do (log/debug "stuck on diagonal movement => possibly door at"
                               target)
                    (update-curlvl-at % (in-direction old-pos dir)
@@ -789,6 +787,13 @@
           (update-inventory anbf)
           slot-or-label))))
   (trigger [_] "e"))
+
+(defaction Quaff [slot]
+  (handler [_ {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (reify DrinkWhatHandler
+      (drink-what [_ _] slot)))
+  (trigger [_] "q"))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class
