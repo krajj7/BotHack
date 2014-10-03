@@ -185,7 +185,7 @@
 
 (defn- infer-feature [current new-glyph new-color]
   (case new-glyph
-    \space current ; TODO :air
+    \space current
     \. (if (traps current)
          current
          (if (= new-color :cyan) :ice :floor))
@@ -200,9 +200,10 @@
          :brown :drawbridge-raised
          (or (log/warn "unknown } feature color (" new-color
                        "), possibly underwater") current))
-    \# (if (traps current)
-         current
-         :corridor) ; TODO :cloud, :drawbridge-lowered
+    \# (cond (traps current) current
+             (= :cloud current) :cloud
+             (= :brown new-color) :drawbridge-lowered
+             :else :corridor)
     \_ (if (nil? new-color) :altar current)
     \~ :water
     \^ (if (traps current) current :trap)
@@ -232,14 +233,16 @@
          :new-items false))
 
 (defn- mark-item [tile new-glyph new-color]
-  (if (and (= new-glyph (:item-glyph tile))
-           (or (not (:item-color tile)) ; don't have data to infer color from item appearance
-               (= new-color (:item-color tile))))
-    (assoc tile :item-color new-color) ; unchanged
-    (assoc tile
-           :new-items true
-           :item-glyph new-glyph
-           :item-color new-color)))
+  (if (= \8 new-glyph)
+    tile
+    (if (and (= new-glyph (:item-glyph tile))
+             (or (not (:item-color tile)) ; don't have data to infer color from item appearance
+                 (= new-color (:item-color tile))))
+      (assoc tile :item-color new-color) ; unchanged
+      (assoc tile
+             :new-items true
+             :item-glyph new-glyph
+             :item-color new-color))))
 
 (defn- update-items [tile new-glyph new-color]
   (cond

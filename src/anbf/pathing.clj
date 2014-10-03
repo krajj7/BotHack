@@ -464,7 +464,7 @@
   (and (boulder? tile)
        (or (explorable-tile? level tile)
            (not (every? (partial likely-walkable? level)
-                        (straight-neighbors level tile))))))
+                        (neighbors level tile))))))
 
 (defn- unblocked-boulder? [game level tile]
   (and (blocking-boulder? level tile)
