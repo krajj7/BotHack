@@ -205,6 +205,7 @@
   (and (or (tin? corpse)
            (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
+       (not ((:race player) (:tags monster)))
        (not (or (taboo-corpses (:name monster))
                 ((some-fn :were :teleport :domestic) (:tags monster))
                 (re-seq #" bat$" (:name monster))))))
@@ -224,9 +225,12 @@
 
 (defn want-to-eat? [player corpse]
   (and (can-eat? player corpse)
-       (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))]
+       (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
+             strength (get-in player [:stats :str])]
          (or (= "wraith" (:name monster))
              (= "newt" (:name monster))
-             ; TODO increases str
+             (and (or (not= "18/**" strength)
+                      (some-> (parse-int strength) (< 18)))
+                  (:str (:tags monster)))
              (some (complement (partial have-intrinsic? player))
                    (:resistances-conferred monster))))))
