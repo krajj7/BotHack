@@ -230,7 +230,7 @@
             (-> anbf update-inventory update-items)
             #"You are almost hit"
             (update-items anbf)
-            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out"
+            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out|Your.* has gone out"
             (update-inventory anbf)
             #"shop appears to be deserted"
             (if (< 33 (dlvl @game))

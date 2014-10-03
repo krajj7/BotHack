@@ -169,6 +169,24 @@
       (with-reason "uncursing" (:label item)
         (->Read slot)))))
 
+(defn lit-mines? [game level]
+  (and (= :mines (branch-key game))
+       (->> (tile-seq level)
+            (filter #(= \. (:glyph %)))
+            (more-than? 50))))
+
+(defn use-light [game level]
+  (if-let [[slot item] (have game (every-pred (partial light? game)
+                                              :lit))]
+    (if (and (not= "magic lamp" (item-name game item))
+             (or (explored? game) (lit-mines? game level)))
+      (with-reason "saving energy" (->Apply slot)))
+    (if-not (or (explored? game) (lit-mines? game level))
+      (or (if-let [[slot lamp] (have game "magic lamp")]
+            (with-reason "using magic lamp" (->Apply slot)))
+          (if-let [[slot lamp] (have game (partial light? game))]
+            (with-reason "using any light source" (->Apply slot)))))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
@@ -182,16 +200,7 @@
         ; TODO multidrop
         (if-let [[slot _] (have game #(= "empty" (:specific %)))]
           (with-reason "dropping junk" (->Drop slot)))
-        (if-let [[slot item] (have game (every-pred (partial light? game)
-                                                    :lit))]
-          (if (and (not= "magic lamp" (item-name game item))
-                   (explored? game))
-            (with-reason "saving energy" (->Apply slot)))
-          (if-not (explored? game)
-            (or (if-let [[slot lamp] (have game "magic lamp")]
-                  (with-reason "using magic lamp" (->Apply slot)))
-                (if-let [[slot lamp] (have game (partial light? game))]
-                  (with-reason "using any light source" (->Apply slot))))))
+        (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
@@ -227,7 +236,6 @@
 
 (defn- bribe-demon [prompt]
   (->> prompt
-       log/spy
        (re-first-group #"demands ([0-9][0-9]*) zorkmids for safe passage")
        parse-int))
 
