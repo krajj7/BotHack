@@ -211,13 +211,18 @@
   (handler [_ _])
   (trigger [_] "."))
 
-(defn- mark-branch-entrance [game tile branch origin-feature]
-  "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so just mark the surroundings too, it only matters for the stairs.  (Actually two sets of stairs may be next to each other and this breaks if that happens and the non-origin stairs are obscured)"
+(defn- mark-branch-entrance [game tile old-game origin-feature]
+  "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so mark the surroundings too to be sure (but two sets of stairs may be next to each other and this breaks if that happens and there are some followers... too bad)"
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
-    (->> (including-origin neighbors (curlvl game) tile)
-         (remove #(has-feature? % origin-feature))
-         (reduce #(update-curlvl-at %1 %2 assoc :branch-id branch) game))))
+    (if (some (some-fn :friendly (comp :follows :type))
+              (mapcat (partial monster-at (curlvl old-game))
+                      (neighbors (:player old-game))))
+      (->> (including-origin neighbors (curlvl game) tile)
+           (remove #(has-feature? % origin-feature))
+           (reduce #(update-curlvl-at %1 %2 assoc
+                                      :branch-id (branch-key old-game)) game))
+      (update-curlvl-at game tile assoc :branch-id (branch-key old-game)))))
 
 (defn stairs-handler [anbf]
   (let [old-game (-> anbf :game deref)
@@ -236,7 +241,7 @@
               (assoc-in [:dungeon :levels old-branch old-dlvl :tiles
                          (dec (:y old-stairs)) (:x old-stairs) :branch-id]
                         new-branch)
-              (mark-branch-entrance new-stairs old-branch
+              (mark-branch-entrance new-stairs old-game
                                     (:feature old-stairs)))
           new-game)))
     (reify
