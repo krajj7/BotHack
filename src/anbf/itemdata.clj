@@ -2405,20 +2405,20 @@
      :monster m}))
 
 (def monster-foods "corpse, tin and egg items for monster types"
-  (apply concat
-         (for [{:keys [tags gen-flags name] :as m} monster-types
-               :when (not (:no-corpse gen-flags))
-               :let [base (if (:unique gen-flags)
-                            (str (if-not (:proper-name tags) "the ")
-                                 name
-                                 (if (re-seq #"s$" name) \' "'s"))
-                            name)]]
-           (as-> [] res
-             (conj res (corpse m base))
-             (conj res (tin m base))
-             (if (:oviparous tags)
-               (conj res (egg m base))
-               res)))))
+  (for [{:keys [tags gen-flags name] :as m} monster-types
+        :when (not (:no-corpse gen-flags))
+        :let [base (if (:unique gen-flags)
+                     (str (if-not (:proper-name tags) "the ")
+                          name
+                          (if (re-seq #"s$" name) \' "'s"))
+                     name)]
+        food (as-> [] res
+               (conj res (corpse m base))
+               (conj res (tin m base))
+               (if (:oviparous tags)
+                 (conj res (egg m base))
+                 res))]
+    food))
 
 (def figurines
   (for [{:keys [tags gen-flags name] :as m} monster-types

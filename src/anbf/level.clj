@@ -61,22 +61,24 @@
   (apply concat (:tiles level)))
 
 (def wiztower-boundary
-  (->> (concat (for [y (range 5 20)]
-                 [(position 23 y)
-                  (position 51 y)])
-               (for [x (range 23 52)]
-                 [(position x 5)
-                  (position x 19)]))
-       flatten set))
+  (set (concat (for [y (range 5 20)
+                     pos [(position 23 y)
+                          (position 51 y)]]
+                 pos)
+               (for [x (range 23 52)
+                     pos [(position x 5)
+                          (position x 19)]]
+                 pos))))
 
 (def wiztower-inner-boundary
-  (->> (concat (for [y (range 6 19)]
-                 [(position 24 y)
-                  (position 51 y)])
-               (for [x (range 24 52)]
-                 [(position x 6)
-                  (position x 18)]))
-       flatten set))
+  (set (concat (for [y (range 6 19)
+                     pos [(position 24 y)
+                          (position 51 y)]]
+                 pos)
+               (for [x (range 24 52)
+                     pos [(position x 6)
+                          (position x 18)]]
+                 pos))))
 
 (def wiztower-rect
   (rectangle (position 23 5) (position 52 20)))
