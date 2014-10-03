@@ -8,6 +8,7 @@
             [anbf.item :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.monster :refer :all]
+            [anbf.handlers :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.util :refer :all]
@@ -102,8 +103,8 @@
       (message [_ msg]
         (if (and @old-game (not (hallu? (:player @old-game))))
           (condp re-first-group msg
-            #"You (kill|destroy) ([^.!]*)[.!]"
-            (swap! (:game anbf) mark-kill @old-game)
+            #"You (kill|destroy) [^.!]*[.!]"
+            (update-before-action anbf mark-kill @old-game)
             ;#" is (killed|destroyed)"
             nil))))))
 
