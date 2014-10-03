@@ -776,10 +776,18 @@
   (trigger [_] "#sit\n"))
 
 (defaction Eat [slot-or-label]
-  (handler [_ _]
-    (log/error "eat")
-    ; TODO
-    )
+  (handler [_ anbf]
+    (reify
+      EatItHandler
+      (eat-it [_ what]
+        (if (string? slot-or-label)
+          (and (= what slot-or-label)
+               (update-items anbf))))
+      EatWhatHandler
+      (eat-what [_ _]
+        (when (char? slot-or-label)
+          (update-inventory anbf)
+          slot-or-label))))
   (trigger [_] "e"))
 
 ; factory functions for Java bots ; TODO the rest

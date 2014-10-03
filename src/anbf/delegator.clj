@@ -226,7 +226,7 @@
   (what-direction [handler prompt]))
 
 (defyesnohandler ReallyAttackHandler
-  (really-attack [handler ^String text]))
+  (really-attack [handler ^String what]))
 
 (defyesnohandler SeducedEquipRemoveHandler
   (seduced-remove [handler ^String text]))
@@ -331,6 +331,9 @@
 
 (defchoicehandler ZapWhatHandler
   (zap-what [handler ^String prompt]))
+
+(defyesnohandler EatItHandler
+  (eat-it [handler ^String what]))
 
 (defchoicehandler EatWhatHandler
   (eat-what [handler ^String prompt]))

@@ -136,7 +136,7 @@
     (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
-;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:     in|on|melted into) the (.*?) here\?/ => 'write_what',
+;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:in|on|melted into) the (.*?) here\?/ => 'write_what',
 ;    qr/^"Hello stranger, who are you\?"/ => 'vault_guard',
 ;    qr/^How much will you offer\?/      => 'donate',
 ;    qr/^What monster do you want to genocide\?/ => 'genocide_species',
@@ -145,9 +145,9 @@
 
 (defn- choice-fn [msg]
   (condp re-first-group msg
-    #"^Shall I remove your|^Take off your |let me run my fingers" seduced-remove
+    #"^\"Shall I remove|^\"Take off your |let me run my fingers" seduced-remove
     #"^Force the gods to be pleased\?" force-god
-    #"^Really attack .*\?" really-attack
+    #"^Really attack (.*)\?" :>> (partial list really-attack)
     #"^Are you sure you want to enter\?" enter-gehennom
     #"^What do you want to wield" wield-what
     #"^What do you want to wear" wear-what
@@ -165,12 +165,20 @@
     #"[Ll]ock it\? " lock-it
     #"^What do you want to read\?" read-what
     #"^What do you want to drink\?" drink-what
-    #"^What do you want to eat\?" eat-what
     #"^What do you want to zap\?" zap-what
     #"^Which ring-finger," which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
+    #"^There (?:is|are) ([^;]+) here; eat (it|one)\?" :>> (partial list eat-it)
+    #"^What do you want to eat\?" eat-what
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
+
+(defn- choice-call [msg]
+  (log/debug "choice:" msg)
+  (let [res (choice-fn msg)]
+    (if (list? res)
+      res
+      (list res msg))))
 
 (defn- game-over? [frame]
   (re-seq #"^Do you want your possessions identified\?|^Really quit\?|^Do you want to see what you had when you died\?"
@@ -261,7 +269,7 @@
                  (ref-set menu-nextpage nil)
                  (emit-botl delegator frame)
                  ; TODO prompt may re-appear in lastmsg+action as topline msg
-                 (send delegator (choice-fn text) text)
+                 (apply send delegator (choice-call text))
                  initial))
              (handle-more [frame]
                (or (when-let [item-list (more-list frame)]
@@ -344,6 +352,7 @@
                  initial))
              (handle-prompt [frame]
                (when-let [msg (prompt frame)]
+                 (log/debug "prompt:" msg)
                  (emit-botl delegator frame)
                  (send delegator write (string/join (repeat 3 backspace)))
                  (send delegator (prompt-fn msg) msg)

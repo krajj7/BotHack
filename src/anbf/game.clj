@@ -162,8 +162,7 @@
       (when-let [[race role] (some->> (re-first-groups welcome-re text)
                                       (find-first some?)
                                       (#(string/split % #" "))
-                                      (map (comp keyword
-                                                 #(get races % %)
+                                      (map (comp #(get races % (keyword %))
                                                  string/lower-case)))]
         (log/debug "player role:" role "- race:" race)
         (swap! (:game anbf) update :player assoc

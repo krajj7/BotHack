@@ -18,6 +18,9 @@
   [player]
   (#{:weak :fainting} (:hunger player)))
 
+(defn fainting?  [player]
+  (= :fainting (:hunger player)))
+
 (defn satiated? [player]
   (= :satiated (:hunger player)))
 

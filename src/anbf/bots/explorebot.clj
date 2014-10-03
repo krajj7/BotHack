@@ -33,7 +33,7 @@
        set))
 
 (defn- pray-for-food [game]
-  #_(if (and (weak? (:player game))
+  (if (and (fainting? (:player game))
            (not (in-gehennom? game)))
     (with-reason "praying for food" ->Pray)))
 
