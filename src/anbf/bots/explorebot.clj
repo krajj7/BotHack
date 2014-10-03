@@ -12,6 +12,7 @@
             [anbf.position :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.level :refer :all]
             [anbf.tile :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]
@@ -76,20 +77,21 @@
       ;(seek-level game :vlad :bottom)
       (explore game :vlad)
       (explore game :wiztower :end)
-      ;(explore-level game :wiztower :end)
       (explore game :main :end)
+      ;(explore-level game :wiztower :end)
       ;(visit game :earth)
       (log/debug "progress end")))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
-  (= :wiztower (branch-key game))
+  #_(and (= :wiztower (branch-key game))
+       (:end (curlvl-tags game))
   #_(and (= :vlad (branch-key game))
        (:end (curlvl-tags game)))
   #_(have game "candelabrum")
   #_(have game "Orb of Fate")
-  #_(= "Dlvl:39" (:dlvl game)))
+  #_(= "Dlvl:39" (:dlvl game))))
 
 (def desired-weapons
   (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
@@ -206,12 +208,22 @@
                                            :no-traps true :no-autonav true
                                            :max-steps hostile-dist-thresh})]
         (with-reason "targetting enemy at" target
-          (or (wield-weapon game)
-            step
-            (if (or (blind? player)
-                    (not (monster? (at-curlvl game target))))
-              (->Attack (towards player target))
-              (->Move (towards player target)))))))))
+          (let [level (curlvl game)
+                monster (monster-at level target)]
+            (or (wield-weapon game)
+                (if (and (:end (:tags level)) (= :wiztower (branch-key game))
+                         (= :magenta (:color monster)) (= \@ (:glyph monster))
+                         (water? (at level target)))
+                  (with-reason "baiting possible wizard away from water"
+                    ; don't let the book fall into water
+                    (or (:step (navigate game #(not-any? water?
+                                                         (neighbors level %))))
+                        (->Wait))))
+                step
+                (if (or (blind? player)
+                        (not (monster? (at level target))))
+                  (->Attack (towards player target))
+                  (->Move (towards player target))))))))))
 
 (defn- bribe-demon [prompt]
   (->> prompt
