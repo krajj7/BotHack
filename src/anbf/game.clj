@@ -235,6 +235,60 @@
             #"shop appears to be deserted"
             (if (< 33 (dlvl @game))
               (swap! game add-curlvl-tag :orcus))
+            #"You feel a strange mental acuity|You feel in touch with the cosmos"
+            (swap! game add-intrinsic :telepathy)
+            #"Your senses fail"
+            (swap! game remove-intrinsic :telepathy)
+            #"You feel in control of yourself|You feel centered in your personal space"
+            (swap! game add-intrinsic :telecontrol)
+            #"You feel a momentary chill|You be chillin|You feel cool|You are uninjured|You don't feel hot|The fire doesn't feel hot|You feel rather warm|You feel mildly (?:warm|hot)|enveloped in flames\. But you resist the effects|It seems quite tasty"
+            (swap! game add-intrinsic :fire)
+            #"You feel warmer"
+            (swap! game remove-intrinsic :fire)
+            #"You feel full of hot air|You feel warm|duck some of the blast|You don't feel cold|The frost doesn't seem cold|You feel a (?:little|mild) chill|You're covered in frost. But you resist the effects|You feel mildly chilly"
+            (swap! game add-intrinsic :cold)
+            #"You feel cooler"
+            (swap! game remove-intrinsic :cold)
+            #"You feel wide awake|You feel awake!"
+            (swap! game add-intrinsic :sleep)
+            #"You feel tired!"
+            (swap! game remove-intrinsic :sleep)
+            #"You feel grounded|Your health currently feels amplified|You feel insulated|You feel a mild tingle"
+            (swap! game add-intrinsic :shock)
+            #"You feel conductive"
+            (swap! game remove-intrinsic :shock)
+            #"You feel(?: especially)? healthy|You feel hardy"
+            (swap! game add-intrinsic :poison)
+            #"You feel a little sick"
+            (swap! game remove-intrinsic :poison)
+            #"You feel very jumpy|You feel diffuse"
+            (swap! game add-intrinsic :teleport)
+            #"You feel very firm|You feel totally together"
+            (swap! game add-intrinsic :disintegration)
+            #"You feel sensitive"
+            (swap! game add-intrinsic :warning)
+            #"You feel less sensitive"
+            (swap! game remove-intrinsic :warning)
+            #"You feel clumsy"
+            (swap! game remove-intrinsic :stealth)
+            #"You feel less attractive"
+            (swap! game remove-intrinsic :aggravate)
+            #"You feel less jumpy"
+            (swap! game remove-intrinsic :teleport)
+            #"You feel hidden"
+            (swap! game add-intrinsic :invisibility)
+            #"You feel paranoid"
+            (swap! game remove-intrinsic :invisibility)
+            #"You see an image of someone stalking you|You feel transparent|You feel very self-conscious|Your vision becomes clear"
+            (swap! game add-intrinsic :see-invis)
+            #"You feel perceptive!"
+            (swap! game add-intrinsic :search)
+            #"You thought you saw something|You tawt you taw a puttie tat"
+            (swap! game remove-intrinsic :see-invis)
+            #"You feel quick!"
+            (swap! game add-intrinsic :speed)
+            #"You feel slower|You feel slow!"
+            (swap! game remove-intrinsic :speed)
             nil)
           (if-let [level (level-msg text)]
             (update-on-known-position anbf add-curlvl-tag level))

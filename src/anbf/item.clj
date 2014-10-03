@@ -100,3 +100,6 @@
 
 (defn tin? [item]
   (re-seq #" tins?\b" (:name item)))
+
+(defn can-take? [item]
+  (not (:cost item)))

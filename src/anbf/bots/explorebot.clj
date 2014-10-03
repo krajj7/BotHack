@@ -122,9 +122,6 @@
         (recur (rest cs) (into res c)))
       res)))
 
-(defn can-take? [item]
-  (not (:cost item)))
-
 (defn consider-items [game]
   (let [desired (currently-desired game)
         to-take? #(and (desired (item-name game %)) (can-take? %))]

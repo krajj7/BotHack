@@ -39,7 +39,7 @@
    inventory ; {char => Item}
    hunger ; :fainting :weak :hungry :satiated
    burden ; :overloaded :overtaxed :strained :stressed :burdened
-   intrinsics ; set
+   intrinsics ; set of resistances, telepathy etc.
    engulfed
    trapped
    leg-hurt
@@ -169,8 +169,19 @@
     ; TODO rest
     #{}))
 
-(defn have-resistance? [player resist]
+(defn add-intrinsic [game intrinsic]
+  (log/debug "adding intrinsic:" intrinsic)
+  (update-in game [:player :intrinsics] conj intrinsic))
+
+(defn remove-intrinsic [game intrinsic]
+  (log/debug "removing intrinsic:" intrinsic)
+  (update-in game [:player :intrinsics] disj intrinsic))
+
+(defn have-intrinsic? [player resist]
   (resist (:intrinsics player)))
+
+(defn fast? [player]
+  (have-intrinsic? player :speed))
 
 (defn count-candles [game]
   (reduce +
@@ -186,17 +197,17 @@
 
 (defn- safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
   (and (or (tin? corpse)
-           (have-resistance? player :poison)
+           (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
        (not (or (taboo-corpses (:name monster))
-                (:were (:tags monster))
-                (:teleport (:tags monster))
+                ((some-fn :were :teleport :domestic) (:tags monster))
                 (re-seq #" bat$" (:name monster))))))
 
 (defn can-eat?
   "Only true for safe food or unknown tins"
   [player {:keys [name] :as food}]
   (and (not (cursed? food))
+       (can-take? food)
        (or (tin? food)
            (if-let [itemtype (name->item name)]
              (and (= :food (typekw itemtype))
@@ -211,5 +222,5 @@
          (or (= "wraith" (:name monster))
              (= "newt" (:name monster))
              ; TODO increases str
-             (some (complement (partial have-resistance? player))
+             (some (complement (partial have-intrinsic? player))
                    (:resistances-conferred monster))))))
