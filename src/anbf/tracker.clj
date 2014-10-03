@@ -109,14 +109,15 @@
             nil))))))
 
 (defn- only-fresh-deaths? [tile corpse-type turn]
-  (let [relevant-deaths (remove (fn [[death-turn monster]]
+  (let [relevant-deaths (remove (fn [[death-turn
+                                      {monster-type :type :as monster}]]
                                   (and (< 500 (- turn death-turn))
-                                       (:type monster)
-                                       (or (not (.contains (:name monster)
+                                       monster-type
+                                       (or (not (.contains (:name monster-type)
                                                            (:name corpse-type)))
-                                           (not (.contains (:name monster)
+                                           (not (.contains (:name monster-type)
                                                            " zombie")))
-                                       (not= corpse-type (:type monster))))
+                                       (not= corpse-type monster-type)))
                                 (:deaths tile))
         unsafe-deaths (filter (fn [[death-turn _]] (<= 30 (- turn death-turn)))
                               relevant-deaths)
