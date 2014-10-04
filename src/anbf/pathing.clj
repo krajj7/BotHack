@@ -667,7 +667,7 @@
     (with-reason "seeking portal"
       (or (if-let [{:keys [step]} (navigate game portal?)]
             (or step (with-reason "sitting on a portal"
-                       (without-levitation (->Sit)))))
+                       (without-levitation game (->Sit)))))
           (if (> (dlvl game) 35)
             (if (unknown? (at level game fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
@@ -701,7 +701,8 @@
       (or (if (= "Home 1" (:dlvl game)) ; may need to chat with quest leader first
             (let [level (curlvl game)
                   leader (-> level :blueprint :leader)]
-              (if (and leader (not-any? :walked (neighbors level leader)))
+              (if (and leader (not-any? :walked
+                                        (straight-neighbors level leader)))
                 (with-reason
                   "trying to seek out quest leader at" leader "before descending"
                   (seek game leader {:adjacent true :explored true})))))

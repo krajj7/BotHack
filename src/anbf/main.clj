@@ -15,6 +15,8 @@
             [anbf.player :refer :all]
             [anbf.tile :refer :all]
             [anbf.handlers :refer :all]
+            [anbf.monster :refer :all]
+            [anbf.montype :refer :all]
             [anbf.frame :refer :all]
             [anbf.fov :refer :all]
             [anbf.position :refer :all]

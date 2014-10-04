@@ -149,12 +149,20 @@
           (with-reason "want item at" target step))
         (log/debug "no desirable items anywhere"))))
 
+(defn uncurse-weapon [game]
+  (if-let [[_ weapon] (wielding game)]
+    (if-let [[slot _] (and (cursed? weapon)
+                           (have-noncursed game "scroll of remove curse"))]
+      (with-reason "uncursing weapon" (:label weapon)
+        (->Read slot)))))
+
 (defn- wield-weapon [{:keys [player] :as game}]
   (if-let [[slot weapon] (some (partial have game) desired-weapons)]
-    ; TODO can-wield?
-    (when-not (:wielded weapon)
-      (with-reason "wielding better weapon -" (:label weapon)
-        (->Wield slot)))))
+    (if-not (:wielded weapon)
+      (or (uncurse-weapon game)
+          ; TODO can-wield?
+          (with-reason "wielding better weapon -" (:label weapon)
+            (->Wield slot))))))
 
 (defn light? [game item]
   (let [id (item-id game item)]
@@ -263,14 +271,16 @@
               (or (:step p)
                   (->> (at-player game) :items
                        (find-first (beneficial? player)) :label
-                       ->Eat))))
+                       ->Eat
+                       (without-levitation game)))))
           (if (hungry? player)
             (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
               (with-reason "going to eat corpse at" (pr-str (:target p))
                 (or (:step p)
                     (->> (at-player game) :items
                          (find-first (edible? player)) :label
-                         ->Eat)))))))))
+                         ->Eat
+                         (without-levitation game))))))))))
 
 (defn init [anbf]
   (-> anbf

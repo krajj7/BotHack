@@ -113,6 +113,9 @@
                                       {monster-type :type :as monster}]]
                                   (and (< 500 (- turn death-turn))
                                        monster-type
+                                       (or (:name monster-type)
+                                           (log/warn "unknown monster :type"
+                                                     (pr-str monster)))
                                        (or (not (.contains (:name monster-type)
                                                            (:name corpse-type)))
                                            (not (.contains (:name monster-type)

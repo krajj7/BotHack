@@ -158,7 +158,8 @@
    {:branch :quest
     :role :valkyrie
     :dlvl "Home 1"
-    :monsters {{:y 6, :x 22} (name->monster "Norn")}
+    :leader {:x 37 :y 12}
+    :monsters {{:x 37 :y 12} (name->monster "Norn")}
     :cutoff-rows [1 2]
     :cutoff-cols [0 1 78 79]}
    {:branch :quest

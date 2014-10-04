@@ -91,7 +91,7 @@
   (get-in game [:player :inventory slot]))
 
 (defn- have-selector [game name-or-set-or-fn]
-  (cond (fn? name-or-set-or-fn) name-or-set-or-fn
+  (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
         (set? name-or-set-or-fn) (some-fn
                                    (comp name-or-set-or-fn
                                          (partial item-name game))
@@ -118,8 +118,14 @@
   [game name-or-set-or-fn]
   (first (have-all game name-or-set-or-fn)))
 
-(defn have-noncursed
+(defn have-safe
   "Like 'have' but return only known-non-cursed items"
+  [game name-or-set-or-fn]
+  (have game (every-pred safe?
+                         (have-selector game name-or-set-or-fn))))
+
+(defn have-noncursed
+  "Like 'have' but return only items not known to be cursed"
   [game name-or-set-or-fn]
   (have game (every-pred noncursed?
                          (have-selector game name-or-set-or-fn))))
@@ -151,7 +157,7 @@
   (have game #(and (#{"boots of levitation" "ring of levitation"}
                              (item-name game %))
                    #_(can-use? %) ; TODO
-                   (or (noncursed? %) (:in-use %)))))
+                   (or (safe? %) (:in-use %)))))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)
@@ -164,7 +170,7 @@
   (not (cursed? item))) ; TODO not obstructed by cursed item / weapon
 
 (defn wielding
-  "Return the wielded item or nil"
+  "Return the wielded [slot item] or nil"
   [game]
   (have game :wielded))
 

@@ -80,11 +80,16 @@
   ([chr label]
    [chr (label->item label)]))
 
-(defn noncursed? [item]
+(defn safe?
+  "Known not to be cursed?"
+  [item]
   (#{:uncursed :blessed} (:buc item)))
 
 (defn cursed? [item]
   (= :cursed (:buc item)))
+
+(defn noncursed? [item]
+  (not= :cursed (:buc item)))
 
 (defn blessed? [item]
   (= :blessed (:buc item)))

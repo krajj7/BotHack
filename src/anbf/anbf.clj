@@ -126,6 +126,8 @@
     PayDamageHandler
     (pay-damage [_ _] true)
     ; escape the rest by default
+    EatWhatHandler
+    (eat-what [_ _] "")
     OfferHandler
     (offer-how-much [_ _] "")
     LockHandler

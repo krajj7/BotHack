@@ -384,13 +384,13 @@
            (->> fake-wiztower-water (map (partial at level))
                 (some water?))) (add-curlvl-tag :fake-wiztower)
       (and (#{:wiztower :vlad} branch)
-           ((complement #{:bottom :middle :end})
-            tags)) (add-curlvl-tag (get {0 :bottom
-                                         1 :middle
-                                         2 :end}
-                                        (- (->> (get-branch game branch)
-                                                keys first dlvl-number)
-                                           dlvl)))
+           (not-any? #{:bottom :middle :end}
+                     tags)) (add-curlvl-tag (get {0 :bottom
+                                                  1 :middle
+                                                  2 :end}
+                                                 (-> (get-branch game branch)
+                                                     keys first dlvl-number
+                                                     (- dlvl))))
       (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 

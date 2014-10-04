@@ -380,11 +380,11 @@
             (when-let [desc (and (monster-glyph? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
               (let [peaceful? (.startsWith ^String desc "peaceful")
-                    type (by-description desc)]
-                (log/debug "monster description" text "=>" type)
+                    typename (by-description desc)]
+                (log/debug "monster description" text "=>" typename)
                 (swap! game update-curlvl-monster pos assoc
                        :peaceful peaceful?
-                       :type type)))
+                       :type (name->monster typename))))
             (log/debug "non-monster farlook result:" text)))))
   (trigger [this]
     (str \; (to-position pos) \.)))
@@ -775,17 +775,35 @@
   (trigger [_] "r"))
 
 (defaction Sit []
-  (handler [_ _])
+  (handler [_ {:keys [game] :as anbf}]
+    (let [portal (atom nil)
+          level (curlvl @game)]
+      (reify
+        ToplineMessageHandler
+        (message [_ msg]
+          (if (= msg "Having fun sitting on the floor?")
+            (swap! game update-at-player assoc :feature :floor)
+            (move-message-handler anbf portal msg)))
+        DlvlChangeHandler
+        (dlvl-changed [_ old-dlvl new-dlvl]
+          (if @portal
+            (portal-handler anbf level new-dlvl))))))
   (trigger [_] "#sit\n"))
 
 (defaction Eat [slot-or-label]
   (handler [_ anbf]
     (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (when (= msg "You don't have anything to eat.")
+          (update-inventory anbf)
+          (update-items anbf)))
       EatItHandler
       (eat-it [_ what]
-        (if (string? slot-or-label)
-          (and (= what slot-or-label)
-               (update-items anbf))))
+        (if (and (string? slot-or-label)
+                 (= what slot-or-label))
+          (update-items anbf)
+          false))
       EatWhatHandler
       (eat-what [_ _]
         (when (char? slot-or-label)
