@@ -194,8 +194,8 @@
   (trigger [_] (direction-trigger dir)))
 
 (defaction Pray []
-  ; TODO mark for timeout est.
-  (handler [_ _])
+  (handler [_ anbf]
+    (swap! (:game anbf) #(assoc % :last-prayer (:turn %))))
   (trigger [_] "#pray\n"))
 
 (defn- update-searched [{:keys [player] :as game}]

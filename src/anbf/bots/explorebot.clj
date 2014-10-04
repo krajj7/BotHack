@@ -41,7 +41,7 @@
 
 (defn- pray-for-food [game]
   (if (and (fainting? (:player game))
-           (not (in-gehennom? game)))
+           (can-pray? game))
     (with-reason "praying for food" ->Pray)))
 
 (defn- handle-illness [{:keys [player] :as game}]

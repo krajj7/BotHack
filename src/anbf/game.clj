@@ -150,6 +150,22 @@
     #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
     nil))
 
+(defn prayer-timeout
+  ">95% confidence"
+  [game]
+  ; TODO wishes
+  ; TODO crowning
+  (if (or (#{:earth :fire :air :water :astral} (branch-key game))
+          (:sanctum (curlvl-tags game))
+          (have game #{"Amulet of Yendor" "Book of the Dead"}))
+    4000
+    1300))
+
+(defn can-pray? [game]
+  (and (not (in-gehennom? game))
+       (< (prayer-timeout game)
+          ((fnil - nil -1000) (:turn game) (:last-prayer game)))))
+
 (def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+ \w+)\.|.* (\w+ \w+), welcome back to NetHack!")
 
 (def races {"dwarven" :dwarf
@@ -235,6 +251,9 @@
             #"shop appears to be deserted"
             (if (< 33 (dlvl @game))
               (swap! game add-curlvl-tag :orcus))
+            #"You hear the rumble of distant thunder|You hear the studio audience applaud!|You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
+            (do (log/warn "god angered:" text)
+                (swap! game assoc :god-angry true)) ; might as well #quit
             #"You feel a strange mental acuity|You feel in touch with the cosmos"
             (swap! game add-intrinsic :telepathy)
             #"Your senses fail"
