@@ -6,6 +6,7 @@
             [clojure.core.logic.pldb :as pldb]
             [anbf.anbf :refer :all]
             [anbf.actions :refer :all]
+            [anbf.behaviors :refer :all]
             [anbf.game :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.item :refer :all]

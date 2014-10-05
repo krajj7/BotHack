@@ -199,7 +199,7 @@
   (reduce +
           (if-let [[_ candelabrum] (have game "Candelabrum of Invocation")]
             (:candles candelabrum))
-          (for [[_ candles] (have-all game #(.contains (:name %) "candle"))]
+          (for [[_ candles] (have-all game candle?)]
             (:qty candles))))
 
 (defn have-candles? [game]

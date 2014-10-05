@@ -546,6 +546,9 @@
 (defaction Apply [slot]
   (handler [_ {:keys [game] :as anbf}]
     (reify
+      AttachCandlesHandler
+      (attach-candelabrum-candles [_ _]
+        (update-inventory anbf))
       ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
@@ -817,6 +820,43 @@
     (reify DrinkWhatHandler
       (drink-what [_ _] slot)))
   (trigger [_] "q"))
+
+(defn use-action [item]
+  (case (typekw item)
+    :ring ->PutOn
+    :amulet ->PutOn
+    :tool ->PutOn
+    :armor ->Wear))
+
+(defn make-use [game slot]
+  (if-let [itemtype (some->> slot (inventory-slot game) (item-id game))]
+    ; TODO if already occupied
+    ((use-action itemtype) slot)))
+
+(defn remove-action [item]
+  (case (typekw item)
+    :ring ->Remove
+    :amulet ->Remove
+    :tool ->Remove
+    :armor ->TakeOff))
+
+(defn remove-use [game slot]
+  (let [item (inventory-slot game slot)
+        itemtype (item-id game item)]
+    (if (and itemtype (not= :cursed (:buc item)))
+      ((remove-action itemtype) slot))))
+
+(defn without-levitation [game action]
+  ; XXX doesn't work for intrinsic levitation
+  (if-let [[slot _] (have-levi-on game)]
+    (with-reason "action" (typekw action) "forbids levitation"
+      (remove-use game slot))
+    action))
+
+(defn dig [[slot item] dir]
+  (if (:in-use item)
+    (->ApplyAt slot dir)
+    (->Wield slot)))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

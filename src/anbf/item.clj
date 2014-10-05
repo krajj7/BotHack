@@ -47,7 +47,9 @@
         res)
       (update res :name #(get jap->eng % %))
       (update res :name #(get plural->singular % %))
-      (assoc res :lit (some? ((some-fn :lit :lit-candelabrum) res)))
+      (assoc res :lit (or (:lit res)
+                          (and (:lit-candelabrum res)
+                               (.contains (:lit-candelabrum res) "lit"))))
       (assoc res :in-use (find-first some? (map res [:wielded :worn])))
       (assoc res :cost (find-first some? (map res [:cost1 :cost2 :cost3])))
       (update res :qty #(if (and % (re-seq #"[0-9]+" %))
@@ -108,3 +110,6 @@
 
 (defn can-take? [item]
   (not (:cost item)))
+
+(defn candle? [item]
+  (.contains (:name item) "candle"))

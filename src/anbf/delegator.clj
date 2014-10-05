@@ -335,5 +335,8 @@
 (defyesnohandler EatItHandler
   (eat-it [handler ^String what]))
 
+(defyesnohandler AttachCandlesHandler
+  (attach-candelabrum-candles [handler ^String prompt]))
+
 (defchoicehandler EatWhatHandler
   (eat-what [handler ^String prompt]))

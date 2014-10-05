@@ -67,17 +67,26 @@
       (if (impaired? player)
         (with-reason "waiting out impairment" ->Wait))))
 
-(defn progress [game]
-  (or ;(explore game :mines :minetown)
-      (explore game :mines)
-      ;(visit game :quest)
+(defn full-explore [game]
+  (or (explore game :mines)
+      ;(explore game :sokoban
       (explore game :quest)
+      (explore game :vlad)
+      (explore game :wiztower)
+      (explore game :main)
+      (invocation game)
+      ;(visit game :earth)
+      (log/debug "progress end")))
+
+(defn progress [game]
+  (or (explore-level game :vlad :end)
+      (explore-level game :quest :end)
+      (explore-level game :main :end)
+      (explore-level game :wiztower :end)
+      (invocation game)
       ;(explore game :sokoban :end)
       ;(visit game :main :medusa)
       ;(seek-level game :vlad :bottom)
-      (explore game :vlad)
-      (explore game :wiztower :end)
-      (explore game :main :end)
       ;(explore-level game :wiztower :end)
       ;(visit game :earth)
       (log/debug "progress end")))
@@ -85,7 +94,7 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
-  #_(and (= :wiztower (branch-key game))
+  (and (= :wiztower (branch-key game))
        (:end (curlvl-tags game))
   #_(and (= :vlad (branch-key game))
        (:end (curlvl-tags game)))

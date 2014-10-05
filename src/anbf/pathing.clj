@@ -12,7 +12,6 @@
             [anbf.level :refer :all]
             [anbf.player :refer :all]
             [anbf.util :refer :all]
-            [anbf.behaviors :refer :all]
             [anbf.tile :refer :all]))
 
 (defn base-cost [level dir tile opts]
@@ -348,7 +347,8 @@
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
     {:keys [max-steps walking adjacent no-dig no-levitation] :as opts}]
-   [{:pre [(or (fn? pos-or-goal-fn)
+   [{:pre [(or (keyword? pos-or-goal-fn)
+               (fn? pos-or-goal-fn)
                (set? pos-or-goal-fn)
                (position pos-or-goal-fn))]}]
    (log/debug "navigating" pos-or-goal-fn opts)
@@ -364,7 +364,7 @@
                 levi (assoc :levi levi)
                 pick (assoc :pick pick))
          move-fn #(move game level %1 %2 opts)]
-     (if-not (or (set? pos-or-goal-fn) (fn? pos-or-goal-fn))
+     (if-not ((some-fn set? fn? keyword?) pos-or-goal-fn)
        (get-a*-path game level player pos-or-goal-fn move-fn opts max-steps)
        (let [goal-fn (if (set? pos-or-goal-fn)
                        (comp (set (map position pos-or-goal-fn)) position)
@@ -545,7 +545,6 @@
                      (some :feature (for [y (range 2 19)]
                                       (at level x y))))
                    [17 40 63]))))
-
 
 (defn- unsearched-extremities
   "Returns a set of tiles that are facing a large blank vertical space on the map – good candidates for searching."

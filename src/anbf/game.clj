@@ -246,6 +246,8 @@
             (-> anbf update-inventory update-items)
             #"You are almost hit"
             (update-items anbf)
+            #"The walls around you begin to bend and crumble!"
+            (swap! game update-at-player assoc :feature :stairs-down)
             #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out|Your.* has gone out"
             (update-inventory anbf)
             #"shop appears to be deserted"
