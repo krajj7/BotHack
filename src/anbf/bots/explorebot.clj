@@ -69,7 +69,7 @@
 
 (defn full-explore [game]
   (or (explore game :mines)
-      ;(explore game :sokoban
+      ;(explore game :sokoban)
       (explore game :quest)
       (explore game :vlad)
       (explore game :wiztower)
@@ -79,22 +79,20 @@
       (log/debug "progress end")))
 
 (defn progress [game]
-  (or (explore-level game :vlad :end)
+  (or ;(explore-level game :sokoban :end)
+      (explore-level game :vlad :end)
       (explore-level game :quest :end)
       (explore-level game :main :end)
       (explore-level game :wiztower :end)
       (invocation game)
-      ;(explore game :sokoban :end)
-      ;(visit game :main :medusa)
-      ;(seek-level game :vlad :bottom)
-      ;(explore-level game :wiztower :end)
-      ;(visit game :earth)
+      (explore-level game :main :sanctum)
+      (visit game :earth)
       (log/debug "progress end")))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
-  (and (= :wiztower (branch-key game))
+  #_(and (= :wiztower (branch-key game))
        (:end (curlvl-tags game))
   #_(and (= :vlad (branch-key game))
        (:end (curlvl-tags game)))

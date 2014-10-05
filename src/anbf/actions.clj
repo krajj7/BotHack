@@ -555,7 +555,7 @@
         (condp re-seq msg
           #"has no oil|has run out of power"
           (update-name anbf slot "empty")
-          #" lamp is now (on|off)"
+          #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)
           nil))
       ApplyItemHandler
@@ -584,8 +584,10 @@
                  #"you can't dig while entangled"
                  (swap! game assoc-in [:player :trapped] true)
                  #"This wall (seems|is) too hard to dig into\."
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                               assoc :undiggable true))
+                 (if-not (:orcus (:tags (curlvl @game)))
+                   (swap! game #(update-curlvl-at %
+                                                  (in-direction (:player %) dir)
+                                                  assoc :undiggable true)))
                  #"You make an opening"
                  (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
                                                assoc :dug true :feature :floor))
@@ -858,6 +860,9 @@
   (if (:in-use item)
     (->ApplyAt slot dir)
     (->Wield slot)))
+
+(defn descend [game]
+  (without-levitation game (->Descend)))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

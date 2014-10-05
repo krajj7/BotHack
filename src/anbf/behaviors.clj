@@ -46,10 +46,10 @@
   "prerequisites: have non-cursed book, non-cursed candelabrum, non-cursed bell, 7 candles in main inventory"
   [game]
   (if-not (get-level game :main :sanctum)
-    (or (log/spy (seek-level game :main :end))
-        (log/spy (seek game :vibrating))
-        (log/spy (attach-candles game))
-        (log/spy (handle-candelabrum game))
-        (log/spy (ring-bell game))
-        (log/spy (read-book game))
-        (log/spy (->Descend)))))
+    (or (seek-level game :main :end)
+        (seek game :vibrating)
+        (attach-candles game)
+        (handle-candelabrum game)
+        (ring-bell game)
+        (read-book game)
+        (descend game))))

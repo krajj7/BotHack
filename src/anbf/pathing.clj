@@ -184,14 +184,6 @@
 (defn can-unlock? [game]
   true) ; not poly'd...
 
-(defn diggable-walls?
-  "Are the walls diggable on this level?"
-  [game level]
-  (and ;(not= "Home 1" (:dlvl game))
-       (not ((:tags level) :rogue))
-       (not (:undiggable (:blueprint level)))
-       (not (#{:vlad :astral :sokoban :quest} (branch-key game)))))
-
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
   (or (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
@@ -274,7 +266,7 @@
                              (if (kickable-door? level to-tile opts)
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
-                          (or (boulder? to-tile) (diggable-walls? game level))
+                          (or (boulder? to-tile) (diggable-walls? level))
                           (dare-destroy? level to-tile))
                    [8 (dig (:pick opts) dir)]))
              (update 0 + (base-cost level dir to-tile opts))))))
@@ -509,14 +501,16 @@
   (and (searchable-position? tile)
        (wall? tile)
        (< (:searched tile) howmuch)
+       (cond (= :wiztower (branch-key level)) (not (wiztower-inner-boundary
+                                                     (position tile)))
+             (:sanctum (:tags level)) (->> (straight-neighbors level tile)
+                                           (filter firetrap?) count (= 1))
+             :else (not (shop? tile)))
        (not (wall-end? level tile))
        (->> (straight-neighbors level tile) (remove :seen) seq)))
 
 (defn- search-walls [game level howmuch]
-  (let [searchable? (every-pred (partial searchable-wall? level howmuch)
-                                (if (= :wiztower (branch-key game))
-                                  (comp not wiztower-inner-boundary position)
-                                  (complement shop?)))]
+  (let [searchable? (partial searchable-wall? level howmuch)]
     (if-let [p (navigate game searchable? {:adjacent true})]
       (with-reason "searching walls"
         (or (:step p) (->Search))))))
@@ -628,16 +622,13 @@
           (or (:step p)
               (->Search)))))))
 
-(defn- descend [game]
-  (without-levitation game (->Descend)))
-
 (defn go-down
   "Go through a hole or trapdoor or dig down if possible"
   [game level]
   (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
     (with-reason "going to a trapdoor/hole"
       (or step (descend game)))
-    (if-let [pick (and (diggable-floor? game level)
+    (if-let [pick (and (diggable-floor? level)
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
@@ -663,7 +654,7 @@
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
              (if (= 1 mul) (push-boulders game level))
-             (if (< 43 (dlvl game))
+             (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))
                (with-reason "no stairs, possibly :main :end"
                  (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
                                              (not (:walked %))
@@ -939,9 +930,13 @@
         (if (unexplored-column game level)
           (with-reason "level not explored enough, searching"
             (search game (if (= :mines (branch-key game)) 10 2))))
+        (if (and (:sanctum (:tags level))
+                 (not (:walked (at-curlvl game 20 10))))
+          (with-reason "searching sanctum"
+            (seek game {:x 20 :y 10} {:no-explore true})))
         (if (and (= :wiztower (branch-key game))
                  (:end (curlvl-tags game))
-                 (unknown? (at-curlvl game {:x 40 :y 11})))
+                 (unknown? (at-curlvl game 40 11)))
           (with-reason "searching wiztower top"
             (seek game {:x 40 :y 11} {:no-explore true})))
         (log/debug "nothing to explore"))))

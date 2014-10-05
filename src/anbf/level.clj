@@ -90,7 +90,6 @@
 (def blueprints
   [{:branch :main
     :tag :medusa-1
-    :undiggable true
     :cutoff-rows [1]
     :cutoff-cols [0 1 77 78 79]
     :monsters {{:x 38 :y 12} (name->monster "Medusa")}
@@ -101,7 +100,6 @@
                {:x 40 :y 9} :squeaky}}
    {:branch :main
     :tag :medusa-2
-    :undiggable true
     :monsters {{:x 70 :y 12} (name->monster "Medusa")}
     :features {{:x 70 :y 12} :stairs-down
                {:x 3 :y 7} :door-secret
@@ -152,6 +150,22 @@
     :tag :wiztower-level
     :features (into {} (for [pos wiztower-inner-boundary] [pos :rock]))
     :undiggable-tiles wiztower-inner-boundary}
+   {:branch :main
+    :tag :sanctum
+    :cutoff-rows [1 2 21]
+    :cutoff-cols [0 1 2 3 4 73 74 75 76 77 78 79]
+    :features (into {{:x 20 :y 10} :altar
+                     {:x 56 :y 14} :door-secret
+                     {:x 59 :y 12} :door-secret
+                     {:x 63 :y 12} :door-secret
+                     {:x 66 :y 14} :door-secret
+                     {:x 37 :y 9} :door-secret}
+                    (concat (for [pos (rectangle-boundary {:x 16 :y 8}
+                                                          {:x 24 :y 13})]
+                              [pos :wall])
+                            (for [pos (rectangle-boundary {:x 15 :y 7}
+                                                          {:x 25 :y 14})]
+                              [pos :firetrap])))}
    {:branch :main
     :tag :fake-wiztower
     :features {{:x 38 :y 12} :portal

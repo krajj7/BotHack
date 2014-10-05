@@ -123,7 +123,7 @@
                         :altar :water :door-open :door-closed :door-locked
                         :door-secret :sink :fountain :grave :throne :bars :tree
                         :drawbridge-raised :drawbridge-lowered :lava :ice
-                        :portal :trapdoor :hole]]
+                        :portal :trapdoor :hole :firetrap]]
            `(def-feature-pred ~feature))))
 
 (def-feature-preds)

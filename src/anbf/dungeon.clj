@@ -23,7 +23,7 @@
 
 (def subbranches #{:mines :sokoban :ludios :vlad :quest :earth :wiztower})
 
-(def upwards-branches #{:sokoban :vlad :wiztower})
+(def upwards-branches #{:sokoban :vlad :wiztower :earth})
 
 (def portal-branches #{:quest :wiztower :ludios :air :fire :water :astral})
 
@@ -156,9 +156,10 @@
 
 (defn at-curlvl
   "Returns the Tile at the given position on the current level"
-  [game pos]
-  {:pre [(:dungeon game)]}
-  (at (curlvl game) pos))
+  ([game x y] (at-curlvl game {:x x :y y}))
+  ([game pos]
+   {:pre [(:dungeon game)]}
+   (at (curlvl game) pos)))
 
 (defn at-player
   "Returns the Tile at the player's position"
@@ -233,10 +234,12 @@
         (same-glyph-diag-walls level) :mines))
 
 (defn branch-entry
-  "Return Dlvl of :main containing entrance to branch, if already visited"
+  "Return Dlvl of :main containing entrance to branch, if static or already visited"
   [game branch]
-  (if-let [l (get-level game :main (branch-key game branch))]
-    (:dlvl l)))
+  (case branch
+    :earth "Dlvl:1"
+    (if-let [l (get-level game :main (branch-key game branch))]
+      (:dlvl l))))
 
 (defn merge-branch-id
   "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
@@ -298,24 +301,24 @@
 
 (defn infer-tags [game]
   (let [level (curlvl game)
-        dlvl (dlvl level)
+        curdlvl (dlvl level)
         tags (:tags level)
         branch (branch-key game)
         has-features? (has-features? level)
         at-level (partial at level)]
     (cond-> game
-      (and (= :main branch) (<= 21 dlvl 28)
+      (and (= :main branch) (<= 21 curdlvl 28)
            (not (tags :medusa))
            (every? #(or (water? (at level 2 %))
                         (monster-at level (position 2 %)))
                    (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
-      (and (= :main branch) (<= 21 dlvl 28)
+      (and (= :main branch) (<= 21 curdlvl 28)
            (not (tags :medusa))
            (unknown? (at level 5 20))
            (every? #(and (water? (at level 7 %))
                          (floor? (at level 6 %)))
                    [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
-      (and (= :main branch) (<= 25 dlvl 29)
+      (and (= :main branch) (<= 25 curdlvl 29)
            (not (tags :castle))
            (or (drawbridge? (at level 14 12))
                (and (every? water? (for [x (range 8 16)]
@@ -333,7 +336,7 @@
                                             (if (#{:soko-4a :soko-4b} tag)
                                               (add-curlvl-tag res :end)
                                               res))))
-      (and (= :main branch) (<= 10 dlvl 12)
+      (and (= :main branch) (<= 10 curdlvl 12)
            (not (tags :bigroom))
            (some (fn lots-floors? [row]
                    (->> (for [x (range 3 78)] (at level x row))
@@ -341,10 +344,10 @@
                         (filter #(or (floor? %) (monster-at level %)))
                         (more-than? 45)))
                  [8 16])) (add-curlvl-tag :bigroom)
-      (and (= :main branch) (<= 5 dlvl 9)
+      (and (= :main branch) (<= 5 curdlvl 9)
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
-      (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
+      (and (= :main branch) (<= 36 curdlvl 47) (not (tags :wiztower-level))
            (or (some :undiggable (map at-level wiztower-inner-boundary))
                (and (not-any? floor? (map at-level wiztower-inner-boundary))
                     (->> (map at-level wiztower-boundary)
@@ -353,11 +356,11 @@
                     (->> (map at-level wiztower-boundary)
                          (filter (every-pred floor? (complement :dug)))
                          (less-than? 5))))) (add-curlvl-tag :wiztower-level)
-      (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
+      (and (<= 5 curdlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
+      (and (<= 5 curdlvl 9) (stairs-up? (at level 3 2))
            (tags :minetown)) (add-curlvl-tag :minetown-grotto)
-      (and (<= 27 dlvl 36) (not (:asmodeus (:tags level)))
+      (and (<= 27 curdlvl 36) (not (:asmodeus (:tags level)))
            (or (and (some :undiggable (tile-seq level))
                     (stairs-down? (at level 27 13)))
                (every? #(= \- (:glyph %)) [(at level (position 66 10))
@@ -365,11 +368,11 @@
                (every? #(= \- (:glyph %)) [(at level (position 66 14))
                                            (at level (position 66 15))])
                (door? (at level 66 12)))) (add-curlvl-tag :asmodeus)
-      (and (<= 29 dlvl 36) (not (:juiblex (:tags level)))
+      (and (<= 29 curdlvl 36) (not (:juiblex (:tags level)))
            (->> (tile-seq level)
                 (filter water?)
                 (more-than? 24))) (add-curlvl-tag :juiblex)
-      (and (<= 31 dlvl 38) (not (tags :baalzebub))
+      (and (<= 31 curdlvl 38) (not (tags :baalzebub))
            (or (and (not-any? (fn [[x y]]
                                 (wall? (at level x y)))
                               [[31 11] [32 11] [33 11] [34 11]
@@ -381,9 +384,12 @@
                                [30 13] [35 13] [30 14] [35 14]]))
                (and (stairs-down? (at level 72 12))
                     (door? (at level 70 12))))) (add-curlvl-tag :baalzebub)
-      (and (= branch :main) (<= 40 dlvl 51) (not (:fake-wiztower tags))
+      (and (= branch :main) (<= 40 curdlvl 51) (not (:fake-wiztower tags))
            (->> fake-wiztower-water (map at-level)
                 (some water?))) (add-curlvl-tag :fake-wiztower)
+      (and (= branch :main) (<= 40 curdlvl) (not (:sanctum tags))
+           (= (some-> game (get-level :main :end) dlvl inc)
+              curdlvl)) (add-curlvl-tag :sanctum)
       (and (#{:wiztower :vlad} branch)
            (not-any? #{:bottom :middle :end}
                      tags)) (add-curlvl-tag (get {0 :bottom
@@ -391,8 +397,8 @@
                                                   2 :end}
                                                  (-> (get-branch game branch)
                                                      keys first dlvl-number
-                                                     (- dlvl))))
-      (and (<= 10 dlvl 13) (= :mines branch) (not (tags :end))
+                                                     (- curdlvl))))
+      (and (<= 10 curdlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
 (defn initial-branch-id
@@ -567,11 +573,19 @@
                       (:dlvl new-level)] new-level)
       game)))
 
-(defn diggable-floor? [game level]
+(defn diggable-walls?
+  "Are the walls diggable on this level?"
+  [level]
+  (and ;(not= "Home 1" (:dlvl game))
+       (not-any? #{:rogue :sanctum :medusa} (:tags level))
+       (or (:orcus (:tags level)) (not (:undiggable (:blueprint level))))
+       (not (#{:vlad :astral :sokoban :quest} (branch-key level)))))
+
+(defn diggable-floor? [level]
   (not (or (#{:quest :wiztower :vlad :astral :earth :fire :air :water :sokoban}
-                    (branch-key game level))
+                    (branch-key level))
            (:undiggable-floor (:blueprint level))
-           (some #{:undiggable-floor :end} (:tags level)))))
+           (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 
 (defn in-gehennom?
   "Your god won't help you here"
