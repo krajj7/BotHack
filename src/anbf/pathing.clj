@@ -314,6 +314,7 @@
 (defn- path-step [game level from move-fn path opts]
   (if-let [start (first path)]
     (some-> (or (if-let [target (and (not (:no-autonav opts))
+                                     (not (weak? (:player game)))
                                      (autonav-target game from level path opts))]
                   (->Autotravel target))
                 (if (:trapped (:player game))
