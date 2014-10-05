@@ -582,7 +582,8 @@
 
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
-  ([game] (if-not (number? @(:explore-cache game))
+  ([game] (if (or (nil? (:explore-cache game))
+                  (not (number? @(:explore-cache game))))
             0
             @(:explore-cache game)))
   ([game branch tag-or-dlvl]
@@ -746,7 +747,7 @@
             stair-action)))))
 
 (defn- least-explored [game branch dlvls]
-  {:pre [(#{:main :mines} branch)]}
+  {:pre [(seq dlvls) (#{:main :mines} branch)]}
   (let [curdlvl (if (= branch (branch-key game))
                   (:dlvl (curlvl game)))]
     (first-min-by #(let [res (exploration-index game branch %)]

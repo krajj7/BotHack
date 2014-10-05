@@ -301,7 +301,8 @@
         dlvl (dlvl level)
         tags (:tags level)
         branch (branch-key game)
-        has-features? (has-features? level)]
+        has-features? (has-features? level)
+        at-level (partial at level)]
     (cond-> game
       (and (= :main branch) (<= 21 dlvl 28)
            (not (tags :medusa))
@@ -344,14 +345,14 @@
            (some #(= "Oracle" (:type %))
                  (:monsters level))) (add-curlvl-tag :oracle)
       (and (= :main branch) (<= 36 dlvl 47) (not (tags :wiztower-level))
-           (or (some :undiggable (map #(at level %) wiztower-inner-boundary))
-               (let [wiztower (map #(at level %) wiztower-boundary)]
-                 (and (->> wiztower
-                           (filter (some-fn wall? :dug))
-                           (more-than? 15))
-                      (->> wiztower
-                           (filter (every-pred floor? (complement :dug)))
-                           (less-than? 5)))))) (add-curlvl-tag :wiztower-level)
+           (or (some :undiggable (map at-level wiztower-inner-boundary))
+               (and (not-any? floor? (map at-level wiztower-inner-boundary))
+                    (->> (map at-level wiztower-boundary)
+                         (filter (some-fn wall? :dug))
+                         (more-than? 20))
+                    (->> (map at-level wiztower-boundary)
+                         (filter (every-pred floor? (complement :dug)))
+                         (less-than? 5))))) (add-curlvl-tag :wiztower-level)
       (and (<= 5 dlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
       (and (<= 5 dlvl 9) (stairs-up? (at level 3 2))
@@ -381,7 +382,7 @@
                (and (stairs-down? (at level 72 12))
                     (door? (at level 70 12))))) (add-curlvl-tag :baalzebub)
       (and (= branch :main) (<= 40 dlvl 51) (not (:fake-wiztower tags))
-           (->> fake-wiztower-water (map (partial at level))
+           (->> fake-wiztower-water (map at-level)
                 (some water?))) (add-curlvl-tag :fake-wiztower)
       (and (#{:wiztower :vlad} branch)
            (not-any? #{:bottom :middle :end}
