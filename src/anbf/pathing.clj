@@ -427,6 +427,7 @@
 
 (defn- has-dead-ends? [game level]
   (and (not-any? #{:bigroom :juiblex} (:tags level))
+       (not (in-gehennom? game))
        (or (not (subbranches (branch-key game level)))
            (:minetown (:tags level)))))
 
@@ -463,6 +464,7 @@
 (defn- blocking-boulder? [level tile]
   (and (boulder? tile)
        (or (explorable-tile? level tile)
+           ((not-any-fn? corridor? floor? ice?) tile)
            (not (every? (partial likely-walkable? level)
                         (neighbors level tile))))))
 
@@ -540,11 +542,20 @@
   "Look for a column of unexplored tiles on segments of the screen."
   [game level]
   (if (and (#{:mines :main} (branch-key game level))
+           (not (in-gehennom? game))
            (not (:castle (:tags level))))
     (first (remove (fn column-explored? [x]
                      (some :feature (for [y (range 2 19)]
                                       (at level x y))))
                    [17 40 63]))))
+
+(defn- corridor-extremities [level init-cols howmuch]
+  (loop [cols init-cols]
+    (if-let [x (first cols)]
+      (if (not-any? (not-any-fn? unknown? corridor? rock?) (column level x))
+        (if-let [corridors (seq (filter corridor? (column level x)))]
+          (filter #(< (:searched %) howmuch) corridors)
+          (recur (rest cols)))))))
 
 (defn- unsearched-extremities
   "Returns a set of tiles that are facing a large blank vertical space on the map – good candidates for searching."
@@ -555,6 +566,8 @@
                   (searchable-extremity level y (range col 80) howmuch)))
       (into res (for [y (range 1 21)]
                   (searchable-extremity level y (range col -1 -1) howmuch)))
+      (into res (corridor-extremities level (range col -1 -1) howmuch))
+      (into res (corridor-extremities level (range col 80) howmuch))
       (disj res nil))))
 
 (defn at-level? [game level]
@@ -668,7 +681,7 @@
             (or step (with-reason "sitting on a portal"
                        (without-levitation game (->Sit)))))
           (if (> (dlvl game) 35)
-            (if (unknown? (at level game fake-wiztower-portal))
+            (if (unknown? (at level fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
                 (:step (navigate game fake-wiztower-portal))))
             (with-reason "stepping everywhere to find portal"

@@ -63,11 +63,12 @@
     (let [old-player (:player @game)]
       (reify ToplineMessageHandler
         (message [_ msg]
-          (when-not (dizzy? old-player)
-            (condp re-seq msg
-              no-monster-re
-              (swap! game remove-curlvl-monster (in-direction old-player dir))
-              nil))))))
+          (when-let [target (and (re-seq no-monster-re msg)
+                                 (not (dizzy? old-player))
+                                 (in-direction old-player dir))]
+            (swap! game update-curlvl-at target
+                   #(if (blank? %) (assoc % :feature :rock) %))
+            (swap! game remove-curlvl-monster target))))))
   (trigger [_]
     (str \F (or (vi-directions (enum->kw dir))
                 (throw (IllegalArgumentException.

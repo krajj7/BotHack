@@ -60,6 +60,10 @@
   [level]
   (apply concat (:tiles level)))
 
+(defn column [level x]
+  (for [y (range 1 22)]
+    (at level x y)))
+
 (def wiztower-boundary
   (set (concat (for [y (range 5 20)
                      pos [(position 23 y)
