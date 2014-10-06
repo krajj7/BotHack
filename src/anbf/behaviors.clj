@@ -30,8 +30,8 @@
 
 (defn- ring-bell [game]
   (if-not (or (invocation-complete? game)
-              (= (:last-topline game)
-                 "The Bell of Opening issues an unsettling shrill sound..."))
+              (.endsWith (:last-topline game)
+                         " issues an unsettling shrill sound..."))
     (if-let [[slot _] (have game "silver bell")]
       (with-reason "ringing the bell"
         (->Apply slot)))))
