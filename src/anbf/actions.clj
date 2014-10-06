@@ -846,7 +846,7 @@
 (defn remove-use [game slot]
   (let [item (inventory-slot game slot)
         itemtype (item-id game item)]
-    (if (and itemtype (not= :cursed (:buc item)))
+    (if (and itemtype (not (cursed? item)))
       ((remove-action itemtype) slot))))
 
 (defn without-levitation [game action]

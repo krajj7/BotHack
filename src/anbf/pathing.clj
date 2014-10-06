@@ -8,6 +8,7 @@
             [anbf.monster :refer :all]
             [anbf.delegator :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.item :refer :all]
             [anbf.itemid :refer :all]
             [anbf.level :refer :all]
             [anbf.player :refer :all]
@@ -188,7 +189,7 @@
   ; TODO stash rather than drop pick if we have a bag
   (or (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
                                                        (item-name game %))
-                                         (or (not= :cursed (:buc %))
+                                         (or (not (cursed? %))
                                              (not (:in-use %)))))]
         [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
       (if-let [[slot _] (have game #(and (= "ring of invisibility"

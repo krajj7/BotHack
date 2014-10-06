@@ -51,7 +51,7 @@
   (and ;(blank? tile) - not yet updated
        (= \space (get-in game [:frame :lines (:y tile) (:x tile)]))
        (adjacent? (:player game) tile)
-       (or (and (:feature tile) (not= :rock (:feature tile)))
+       (or (and (:feature tile) (not (rock? tile)))
            (:item-glyph tile)
            (->> (neighbors level tile)
                 (filter (some-fn unknown? rock? corridor?))

@@ -113,3 +113,17 @@
 
 (defn candle? [item]
   (.contains (:name item) "candle"))
+
+(defmacro ^:private def-itemtype-pred [kw]
+  `(defn ~(symbol (str (subs (str kw) 1) \?)) [~'item]
+     (= ~kw (item-type ~'item))))
+
+#_(pprint (macroexpand-1 '(def-itemtype-pred :food)))
+
+(defmacro ^:private def-itemtype-preds
+  "defines item type predicates: food? armor? tool? etc."
+  []
+  `(do ~@(for [kw (keys item-kinds)]
+           `(def-itemtype-pred ~kw))))
+
+(def-itemtype-preds)

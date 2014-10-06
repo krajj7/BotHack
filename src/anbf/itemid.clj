@@ -41,30 +41,27 @@
                                               ["scroll" :scroll \?]]]
              [generic-name ((kw->itemtype typekw) {:glyph glyph})])))
 
-(defmacro query [game qr]
-  `(with-db (:discoveries ~game) ~qr))
+(defmacro query [discoveries qr]
+  `(with-db ~discoveries ~qr))
 
 (defn- possibilities ; TODO consider price/cost, zaptype, etc.
-  "Only for actual appearances, not identified names"
-  ([game appearance]
-   (possibilities game appearance nil))
-  ([game appearance cost]
-   (->> (run* [q] (itemid-appearance q appearance))
-        (query game)
-        (map name->item)
-        seq)))
-
-(defn possible-ids
-  "Return all possible ItemTypes for the given item"
-  [game {:keys [name specific cost] :as item}]
-  (or (if-let [unseen-item (blind-appearances name)]
-        [unseen-item])
-      (if-let [named-arti (name->item specific)]
-        [named-arti])
-      (if-let [known-item (name->item name)] ; identified in-game
-        [known-item])
-      (possibilities game name cost)
-      (log/error "unknown itemtype for item:" item)))
+  "Return all (or n if specified) possible ItemTypes for the given item"
+  ([discoveries item]
+   (possibilities discoveries item nil))
+  ([discoveries item n]
+   (or (if-let [unseen-item (blind-appearances (:name item))]
+         [unseen-item])
+       (if-let [named-arti (name->item (:specific item))]
+         [named-arti])
+       (if-let [known-item (name->item (:name item))] ; identified in-game
+         [known-item])
+       (->> (if n
+              (run n [q] (itemid-appearance q (:name item)))
+              (run* [q] (itemid-appearance q (:name item))))
+            (query discoveries)
+            (map name->item)
+            seq)
+       (log/error "unknown itemtype for item:" item)) ))
 
 (defn- merge-records
   "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"
@@ -85,7 +82,11 @@
 (defn item-id
   "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous)"
   [game item]
-  (merge-records (possible-ids game item)))
+  {:pre [(:discoveries game)]}
+  (merge-records (possibilities (:discoveries game) item)))
+
+(defn item-type [item]
+  (typekw (first (possibilities initial-discoveries item 1))))
 
 (defn item-name [game item]
   (:name (item-id game item)))
@@ -107,13 +108,13 @@
                     (reduce #(db-retraction %1 itemid-appearance
                                             %2 appearance)
                             res
-                            (query game
+                            (query res
                                    (run* [q]
                                          (itemid-appearance q appearance))))
                     (reduce #(db-retraction %1 itemid-appearance
                                             id %2)
                             res
-                            (query game
+                            (query res
                                    (run* [q]
                                          (itemid-appearance id q))))
                     (db-fact res itemid-appearance id appearance))

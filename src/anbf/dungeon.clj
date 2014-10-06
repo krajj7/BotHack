@@ -216,7 +216,7 @@
   (some (fn has-same-glyph-diag-neighbor? [tile]
           (->> (neighbors level tile)
                (remove #(straight (towards tile %)))
-               (some #(and (= :wall (:feature tile) (:feature %))
+               (some #(and (every? wall? [tile %])
                            (= (:glyph tile) (:glyph %))))))
         (apply concat (take-nth 2 (:tiles level)))))
 
@@ -340,7 +340,7 @@
            (not (tags :bigroom))
            (some (fn lots-floors? [row]
                    (->> (for [x (range 3 78)] (at level x row))
-                        (take-while #(not= :corridor %))
+                        (take-while (complement corridor?))
                         (filter #(or (floor? %) (monster-at level %)))
                         (more-than? 45)))
                  [8 16])) (add-curlvl-tag :bigroom)

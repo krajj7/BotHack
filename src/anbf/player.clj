@@ -223,7 +223,7 @@
        (can-take? food)
        (or (tin? food)
            (if-let [itemtype (name->item name)]
-             (and (= :food (typekw itemtype))
+             (and (food? itemtype)
                   (or (= :orc (:race player))
                       (not= "tripe ration" name))
                   (or (not (:monster itemtype))

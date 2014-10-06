@@ -16,7 +16,7 @@
 (defn- pray-for-food []
   (reify ActionHandler
     (choose-action [_ game]
-      (if (= :fainting (-> game :player :hunger))
+      (if (fainting? (:player game))
         (->Pray)))))
 
 (defn init [anbf]
