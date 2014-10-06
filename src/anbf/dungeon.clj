@@ -401,11 +401,22 @@
       (and (<= 10 curdlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
+(defn- next-plane
+  "Next unvisited elemental plane"
+  [game]
+  (condp (partial get-branch game)
+    :fire :water
+    :air :fire
+    :earth :air
+    :earth))
+
 (defn initial-branch-id
   "Choose branch-id for a new dlvl reached by stairs."
   [game dlvl]
   ; TODO could check for already found parallel branches and disambiguate, also check if going up or down and disambiguate soko/mines
-  (or (subbranches (branch-key game))
+  (or (if (= "Astral Plane" dlvl) :astral)
+      (if (= "End Game" dlvl) (next-plane game))
+      (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (gen-branch-id)))
 

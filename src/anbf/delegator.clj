@@ -338,5 +338,8 @@
 (defyesnohandler AttachCandlesHandler
   (attach-candelabrum-candles [handler ^String prompt]))
 
+(defyesnohandler StillClimbHandler
+  (still-climb [handler ^String prompt]))
+
 (defchoicehandler EatWhatHandler
   (eat-what [handler ^String prompt]))

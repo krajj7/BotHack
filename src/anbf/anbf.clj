@@ -121,6 +121,8 @@
   (reify
     EnterGehennomHandler
     (enter-gehennom [_ _] true)
+    StillClimbHandler
+    (still-climb [_ _] true)
     WhichRingFingerHandler
     (which-finger [_ _] \l)
     PayDamageHandler

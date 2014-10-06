@@ -75,7 +75,7 @@
       (explore game :wiztower)
       (explore game :main)
       (invocation game)
-      ;(visit game :earth)
+      (explore game :earth)
       (log/debug "progress end")))
 
 (defn progress [game]
