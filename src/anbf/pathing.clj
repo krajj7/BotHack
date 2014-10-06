@@ -398,7 +398,8 @@
            (and (not (:walked tile))
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
-                (some (partial safely-walkable? level) (neighbors level tile))
+                (some (some-fn lava? water? (partial safely-walkable? level))
+                      (neighbors level tile))
                 (some (not-any-fn? :seen boulder? monster?)
                       (neighbors level tile))))
        (not (isolated? level tile))))
@@ -642,7 +643,8 @@
                    (navigate game #(and (#{:pit :floor :corridor} (:feature %))
                                         (not-any? water? (neighbors level %))
                                         (->> (straight-neighbors level %)
-                                             (filter safely-walkable?)
+                                             (filter
+                                               (partial safely-walkable? level))
                                              (more-than? 2)))))]
         (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (dig pick \>)))))))
