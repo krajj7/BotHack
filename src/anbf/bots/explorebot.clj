@@ -78,6 +78,23 @@
       (explore game :earth)
       (log/debug "progress end")))
 
+(defn name-first-amulet [anbf]
+  (reify ActionHandler
+    (choose-action [this game]
+      (when-let [[slot _] (have game "Amulet of Yendor")]
+        (deregister-handler anbf this)
+        (with-reason "naming the real amulet"
+          (->Name slot "REAL"))))))
+
+(defn real-amulet? [item]
+  (and (= "Amulet of Yendor" (:name item))
+       (= "REAL" (:specific item))))
+
+(defn get-amulet [game]
+  (if-not (have game real-amulet?)
+    (with-reason "searching for the amulet"
+      (search-level game)))) ; if Rodney leaves the level with it we're screwed
+
 (defn progress [game]
   (or ;(explore-level game :sokoban :end)
       ;(explore-level game :vlad :end)
@@ -86,6 +103,7 @@
       ;(explore-level game :wiztower :end)
       (invocation game)
       (explore-level game :main :sanctum)
+      (get-amulet game)
       (visit game :earth)
       (log/debug "progress end")))
 
@@ -114,9 +132,9 @@
    (ordered-set "blindfold" "towel")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
+   #{"Amulet of Yendor"}
    #{"Bell of Opening"}
    #{"Book of the Dead"}
-   #{"Amulet of Yendor"}
    #{"lizard corpse"}
    (ordered-set "speed boots" "iron shoes")
    (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail")
@@ -145,12 +163,15 @@
 
 (defn consider-items [game]
   (let [desired (currently-desired game)
-        to-take? #(and (desired (item-name game %)) (can-take? %))]
+        to-take? #(or (real-amulet? %)
+                      (and (desired (item-name game %)) (can-take? %)))]
     (or (if-let [to-get (seq (for [item (:items (at-player game))
                                    :let [i (item-name game item)]
                                    :when (to-take? item)]
                                (:label item)))]
-          (without-levitation game (->PickUp (->> to-get set vec)))
+          (with-reason "getting desirable items"
+            (without-levitation game
+              (->PickUp (->> to-get set vec))))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
                    (navigate game #(some to-take? (:items %)))]
@@ -307,6 +328,7 @@
       (register-handler -15 (reify ActionHandler
                               (choose-action [_ game]
                                 (enhance game))))
+      (register-handler -12 (name-first-amulet anbf))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (pray-for-food game))))
