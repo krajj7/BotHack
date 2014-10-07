@@ -298,7 +298,7 @@
   (MonsterType. "prisoner", \@, :white, 12, 12, 10, 0, 0, #{:not-generated}, [(MonsterAttack. :weapon :physical 1 6)], 1450, 400, :djinni, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :peaceful :strong :collect :infravisible :approach})
   (MonsterType. "Oracle", \@, :bright-blue, 12, 0, 0, 50, 0, #{:not-generated :unique}, [(MonsterAttack. :passive :magic-missile 0 4)], 1450, 400, :oracle, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :peaceful :female :infravisible})
   (MonsterType. "aligned priest", \@, :white, 12, 12, 10, 50, 0, #{:not-generated}, [(MonsterAttack. :weapon :physical 4 10) (MonsterAttack. :kick :physical 1 4) (MonsterAttack. :magic :clerical 0 0)], 1450, 400, :priest, :human, #{:no-elbereth :shock}, #{}, #{:humanoid :omnivore :nopoly :human :lord :peaceful :collect :infravisible})
-  (MonsterType. "high priest", \@, :white, 25, 15, 7, 70, 0, #{:not-generated :unique}, [(MonsterAttack. :weapon :physical 4 10) (MonsterAttack. :kick :physical 2 8) (MonsterAttack. :magic :clerical 2 8) (MonsterAttack. :magic :clerical 2 8)], 1450, 400, :priest, :human, #{:no-elbereth :fire :shock :sleep :poison}, #{}, #{:humanoid :see-invis :omnivore :nopoly :human :minion :prince :nasty :collect :picks-magic-items :infravisible})
+  (MonsterType. "high priest", \@, :white, 25, 15, 7, 70, 0, #{:not-generated :unique}, [(MonsterAttack. :weapon :physical 4 10) (MonsterAttack. :kick :physical 2 8) (MonsterAttack. :magic :clerical 2 8) (MonsterAttack. :magic :clerical 2 8)], 1450, 400, :priest, :human, #{:no-elbereth :fire :shock :sleep :poison}, #{}, #{:humanoid :see-invis :omnivore :proper-name :nopoly :human :minion :prince :nasty :collect :picks-magic-items :infravisible})
   (MonsterType. "soldier", \@, nil, 6, 10, 10, 0, -2, #{:sgroup :genocidable}, [(MonsterAttack. :weapon :physical 1 8)], 1450, 400, :soldier, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :mercenary :follows :hostile :strong :collect :infravisible})
   (MonsterType. "sergeant", \@, :red, 8, 10, 10, 5, -3, #{:sgroup :genocidable}, [(MonsterAttack. :weapon :physical 2 6)], 1450, 400, :soldier, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :mercenary :follows :hostile :strong :collect :infravisible})
   (MonsterType. "lieutenant", \@, :green, 10, 10, 10, 15, -4, #{:genocidable}, [(MonsterAttack. :weapon :physical 3 4) (MonsterAttack. :weapon :physical 3 4)], 1450, 400, :soldier, :human, #{:no-elbereth}, #{}, #{:humanoid :omnivore :nopoly :human :mercenary :follows :hostile :strong :collect :infravisible})
@@ -534,7 +534,7 @@
                                  ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]
           (if (re-seq #"poohbah|priest|priestess" desc)
-            (if (.contains "high " desc)
+            (if (.contains desc "high ")
               (name->monster "high priest")
               (name->monster "aligned priest"))
             (or (name->monster desc)
