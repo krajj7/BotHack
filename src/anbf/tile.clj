@@ -123,13 +123,15 @@
                         :altar :water :door-open :door-closed :door-locked
                         :door-secret :sink :fountain :grave :throne :bars :tree
                         :drawbridge-raised :drawbridge-lowered :lava :ice
-                        :portal :trapdoor :hole :firetrap]]
+                        :portal :trapdoor :hole :firetrap :cloud]]
            `(def-feature-pred ~feature))))
 
 (def-feature-preds)
 
-(defn trap? [tile]
-  (traps (:feature tile)))
+(defn trap?
+  "Clouds on the plane of air are considered a trap (unavoidable lightning)"
+  [tile]
+  (or (traps (:feature tile)) (cloud? tile)))
 
 (defn unknown-trap? [tile]
   (= :trap (:feature tile)))
@@ -143,8 +145,8 @@
   (and (not (boulder? tile))
        (or (unknown? tile)
            (trap? tile)
-           (#{:ice :floor :air :altar :door-open :sink :fountain :corridor
-              :throne :grave :stairs-up :stairs-down :drawbridge-lowered}
+           (#{:ice :floor :altar :door-open :sink :fountain :corridor :throne
+              :grave :stairs-up :stairs-down :drawbridge-lowered :cloud}
                    (:feature tile)))))
 
 (defn transparent?

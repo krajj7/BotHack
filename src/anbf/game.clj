@@ -70,7 +70,9 @@
                                          (nil? (:color tile)))))))
                 true
                 (:dug tile))
-         :feature (cond (and (blank? tile) (unknown? tile)
+         :feature (cond (and (#{:water :air} (branch-key game))
+                             (not (rock? tile)) (blank? tile)) :floor
+                        (and (blank? tile) (unknown? tile)
                              (or (not (:rogue (:tags level)))
                                  (not (rogue-ghost? game level tile)))) :rock
                         :else (:feature tile))))
@@ -155,7 +157,7 @@
   [game]
   ; TODO wishes
   ; TODO crowning
-  (if (or (#{:earth :fire :air :water :astral} (branch-key game))
+  (if (or (planes (branch-key game))
           (:sanctum (curlvl-tags game))
           (have game #{"Amulet of Yendor" "Book of the Dead"}))
     4000
@@ -224,8 +226,10 @@
       (swap! game update-map frame))
     MultilineMessageHandler
     (message-lines [_ lines]
-      (if-let [level (level-msg (first lines))]
-        (update-on-known-position anbf add-curlvl-tag level)))
+      (or (if (re-seq things-re (first lines))
+            (update-items anbf))
+          (if-let [level (level-msg (first lines))]
+            (update-on-known-position anbf add-curlvl-tag level))))
     ToplineMessageHandler
     (message [_ text]
       (swap! game assoc :last-topline text)
@@ -246,6 +250,11 @@
             (-> anbf update-inventory update-items)
             #"You are almost hit"
             (update-items anbf)
+            #" activated a magic portal!"
+            (if (planes (branch-key @game))
+              (swap! game (comp ensure-curlvl
+                                #(assoc % :branch-id (next-plane %))))
+              (update-at-player-when-known anbf assoc :feature :portal))
             #"The walls around you begin to bend and crumble!"
             (swap! game update-at-player assoc :feature :stairs-down)
             #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you"

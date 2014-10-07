@@ -80,43 +80,41 @@
 (defn- move-message-handler
   [{:keys [game] :as anbf} portal-atom msg]
   (condp re-seq msg
-        #".*: \"Closed for inventory\"" ; TODO possible degradation
-        (update-before-action
-          anbf (fn mark-shop [game]
-                 (->> (:player game)
-                      (neighbors (curlvl game))
-                      (find-first door?)
-                      (including-origin straight-neighbors (curlvl game))
-                      (remove #(= (position (:player game)) (position %)))
-                      (reduce #(update-curlvl-at %1 %2 assoc :room :shop)
-                              (add-curlvl-tag game :shop-closed)))))
-        #"You crawl to the edge of the pit\.|You disentangle yourself\."
-        (swap! game assoc-in [:player :trapped] false)
-        #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
-        (do (swap! game assoc-in [:player :trapped] true)
-            (mark-trap-here anbf))
-        #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
-        (mark-trap-here anbf)
-        #"You are carrying too much to get through"
-        (swap! game assoc-in [:player :thick] true)
-        #"activated a magic portal!"
-        (do (reset! portal-atom true)
-            (update-at-player-when-known anbf assoc :feature :portal))
-        #"You feel a strange vibration"
-        (do (swap! game add-curlvl-tag :end)
-            (update-at-player-when-known anbf assoc :vibrating true))
-        #"Wait!  That's a .*mimic!"
-        (update-before-action
-          anbf (fn [game]
-                 (->> (neighbors (curlvl game) (:player game))
-                      (filter #(= \m (:glyph %)))
-                      (reduce #(update-curlvl-at %1 %2 assoc :feature nil)
-                              game))))
-        nil))
+    #".*: \"Closed for inventory\"" ; TODO possible degradation
+    (update-before-action
+      anbf (fn mark-shop [game]
+             (->> (:player game)
+                  (neighbors (curlvl game))
+                  (find-first door?)
+                  (including-origin straight-neighbors (curlvl game))
+                  (remove #(= (position (:player game)) (position %)))
+                  (reduce #(update-curlvl-at %1 %2 assoc :room :shop)
+                          (add-curlvl-tag game :shop-closed)))))
+    #"You crawl to the edge of the pit\.|You disentangle yourself\."
+    (swap! game assoc-in [:player :trapped] false)
+    #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
+    (do (swap! game assoc-in [:player :trapped] true)
+        (mark-trap-here anbf))
+    #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
+    (mark-trap-here anbf)
+    #"You are carrying too much to get through"
+    (swap! game assoc-in [:player :thick] true)
+    #"activated a magic portal!"
+    (reset! portal-atom true)
+    #"You feel a strange vibration"
+    (do (swap! game add-curlvl-tag :end)
+        (update-at-player-when-known anbf assoc :vibrating true))
+    #"Wait!  That's a .*mimic!"
+    (update-before-action
+      anbf (fn [game]
+             (->> (neighbors (curlvl game) (:player game))
+                  (filter #(= \m (:glyph %)))
+                  (reduce #(update-curlvl-at %1 %2 assoc :feature nil)
+                          game))))
+    nil))
 
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
-  (or ; TODO planes
-      (when (subbranches (branch-key @game level))
+  (or (when (subbranches (branch-key @game level))
         (log/debug "leaving subbranch via portal")
         (swap! game assoc :branch-id :main))
       (when (= "Home" (subs new-dlvl 0 4))
@@ -317,6 +315,8 @@
     (rogue-item-glyph game (:glyph (item-id game item)))
     (:glyph (item-id game item))))
 
+(def things-re #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))")
+
 (defaction Look []
   (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)]
@@ -339,8 +339,7 @@
       (reify
         MultilineMessageHandler
         (message-lines [_ lines]
-          (condp re-seq (nth lines 0)
-            #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))"
+          (if (re-seq things-re (first lines))
             (let [items (mapv label->item (subvec lines 1))
                   top-item (nth items 0)]
               (log/debug "Items here:" (log/spy items))
@@ -790,7 +789,8 @@
       (reify
         ToplineMessageHandler
         (message [_ msg]
-          (if (= msg "Having fun sitting on the floor?")
+          (condp re-seq
+            #"Having fun sitting on the (floor|air)\?"
             (swap! game update-at-player assoc :feature :floor)
             (move-message-handler anbf portal msg)))
         DlvlChangeHandler
@@ -835,9 +835,8 @@
     :armor ->Wear))
 
 (defn make-use [game slot]
-  (if-let [itemtype (some->> slot (inventory-slot game) (item-id game))]
-    ; TODO if already occupied
-    ((use-action itemtype) slot)))
+  ; TODO if already occupied
+  ((use-action (item-type (inventory-slot game slot))) slot))
 
 (defn remove-action [item]
   (case (typekw item)

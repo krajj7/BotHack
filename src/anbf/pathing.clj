@@ -25,6 +25,7 @@
     (diagonal dir) (+ 0.1)
     (and (unknown? tile) (not (:seen tile))) (+ 3)
     (not (stairs? tile)) (+ 0.1)
+    (cloud? tile) (+ 10)
     (not (or (:dug tile) (:walked tile))) (+ 0.2)
     (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
 
@@ -109,7 +110,7 @@
        (edge-passable-walking? game level from-tile to-tile)))
 
 (defn needs-levi? [tile]
-  (#{:water :lava :ice :hole :trapdoor} (:feature tile)))
+  (#{:water :lava :ice :hole :trapdoor :cloud} (:feature tile)))
 
 (defn- random-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
@@ -677,6 +678,10 @@
       (or (if-let [{:keys [step]} (navigate game portal?)]
             (or step (with-reason "sitting on a portal"
                        (without-levitation game (->Sit)))))
+          (if (= :air (branch-key game))
+            (with-reason "seeking :air portal"
+              (:step (navigate game #(and ((not-any-fn? :walked cloud?) %)
+                                          (< 44 (:x %)))))))
           (if (> (dlvl game) 35)
             (if (unknown? (at level fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
@@ -684,6 +689,8 @@
             (with-reason "stepping everywhere to find portal"
               (:step (navigate game #(and (likely-walkable? level %)
                                           (not (isolated? level %))
+                                          (not (cloud? %))
+                                          (not (corridor? %))
                                           (not (:walked %))
                                           (not (door? %)))))))
           (explore game)
@@ -737,9 +744,13 @@
                                 [:stairs-down (descend game)]
                                 [:stairs-up (->Ascend)])]
     (with-reason "escaping subbranch" branch
-      (if (and (= dlvl (first (keys levels))) (portal-branches branch))
-        (seek-portal game)
-        (or (seek game #(has-feature? % stairs))
+      (or (if (or (and (= dlvl (first (keys levels)))
+                       (portal-branches branch))
+                  (planes branch))
+            (seek-portal game))
+          (with-reason "seeking stairs"
+            (seek game #(has-feature? % stairs)))
+          (with-reason "using stairs"
             stair-action)))))
 
 (defn- least-explored [game branch dlvls]
@@ -851,14 +862,12 @@
   (if (not= :main (branch-key game))
     (or (explore game) (search-level game)) ; unknown subbranch
     (let [branch (branch-key game branch)
-          [stairs stair-action] (if (upwards? branch)
+          [stairs stair-action] (if (or (upwards? branch) (planes branch))
                                   [:stairs-up (->Ascend)]
                                   [:stairs-down (descend game)])
           new-dlvl (dlvl-candidate game branch)]
       (with-reason "trying to enter" branch "from" new-dlvl
         (or (switch-dlvl game new-dlvl)
-            (if (portal-branches branch)
-              (seek-portal game))
             (seek game #(and (has-feature? % stairs)
                              (not= :main (branch-key game %))))
             stair-action)))))

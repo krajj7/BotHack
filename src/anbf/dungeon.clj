@@ -18,23 +18,28 @@
 (defn- gen-branch-id []
   (-> "branch#" gensym keyword))
 
-(def branches #{:main :mines :sokoban :quest :ludios :vlad
-                :wiztower :earth :fire :air :water :astral})
+(def branches
+  #{:main :mines :sokoban :quest :ludios :vlad :wiztower :earth :fire :air
+    :water :astral})
 
-(def subbranches #{:mines :sokoban :ludios :vlad :quest :earth :wiztower})
+(def subbranches
+  #{:mines :sokoban :ludios :vlad :quest :wiztower :earth :air :fire :water
+    :astral})
 
-(def upwards-branches #{:sokoban :vlad :wiztower :earth})
+(def upwards-branches #{:sokoban :vlad :wiztower})
 
 (def portal-branches #{:quest :wiztower :ludios :air :fire :water :astral})
 
+(def planes #{:earth :air :fire :water :astral})
+
 (defn upwards? [branch] (upwards-branches branch))
 
-(defn dlvl-number [dlvl]
-  (if-let [n (first (re-seq #"\d+" dlvl))]
-    (Integer/parseInt n)))
+(defn dlvl-number [dlvl] (parse-int (first (re-seq #"\d+" dlvl))))
 
-(defn dlvl [game-or-level]
-  (dlvl-number (:dlvl game-or-level)))
+(defn dlvl
+  "Dlvl number or -1 for non-numbered branches"
+  [game-or-level]
+  (or (dlvl-number (:dlvl game-or-level)) -1))
 
 (defn dlvl-compare
   "Only makes sense for dlvls within one branch."
@@ -236,8 +241,8 @@
 (defn branch-entry
   "Return Dlvl of :main containing entrance to branch, if static or already visited"
   [game branch]
-  (case branch
-    :earth "Dlvl:1"
+  (if (planes branch)
+    "Dlvl:1"
     (if-let [l (get-level game :main (branch-key game branch))]
       (:dlvl l))))
 
@@ -401,21 +406,20 @@
       (and (<= 10 curdlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
-(defn- next-plane
+(defn next-plane
   "Next unvisited elemental plane"
   [game]
-  (condp (partial get-branch game)
+  (condp #(get-branch %2 %1) game
     :fire :water
     :air :fire
-    :earth :air
-    :earth))
+    :earth :air))
 
 (defn initial-branch-id
   "Choose branch-id for a new dlvl reached by stairs."
   [game dlvl]
   ; TODO could check for already found parallel branches and disambiguate, also check if going up or down and disambiguate soko/mines
   (or (if (= "Astral Plane" dlvl) :astral)
-      (if (= "End Game" dlvl) (next-plane game))
+      (if (= "End Game" dlvl) :earth)
       (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (gen-branch-id)))
@@ -441,7 +445,7 @@
 (defn ensure-curlvl
   "If current branch-id + dlvl has no level associated, create a new empty level"
   [{:keys [dlvl] :as game}]
-  (log/debug "ensuring curlvl:" dlvl "- branch:" (branch-key game))
+  ;(log/debug "ensuring curlvl:" dlvl "- branch:" (branch-key game))
   (if-not (get-in game [:dungeon :levels (branch-key game) dlvl])
     (add-level game (new-level dlvl (branch-key game)))
     game))
@@ -562,11 +566,12 @@
                 (position x y)))
       (reduce (fn mark-feature [level [pos feature]]
                 (update-at level pos assoc :seen true :feature
-                           (if (= :door-secret feature)
-                             (if ((some-fn unknown? wall?) (at level pos))
-                               :door-secret
-                               (:feature (at level pos)))
-                             (or (:feature (at level pos)) feature))))
+                           (cond (= :door-secret feature)
+                                 (if ((some-fn unknown? wall?) (at level pos))
+                                   :door-secret
+                                   (:feature (at level pos)))
+                                 (= :cloud feature) feature
+                                 :else (or (:feature (at level pos)) feature))))
               res
               (:features blueprint))
       (reduce (fn add-monster [level [pos monster]]

@@ -67,17 +67,6 @@
       (if (impaired? player)
         (with-reason "waiting out impairment" ->Wait))))
 
-(defn full-explore [game]
-  (or (explore game :mines)
-      ;(explore game :sokoban)
-      (explore game :quest)
-      (explore game :vlad)
-      (explore game :wiztower)
-      (explore game :main)
-      (invocation game)
-      (explore game :earth)
-      (log/debug "progress end")))
-
 (defn name-first-amulet [anbf]
   (reify ActionHandler
     (choose-action [this game]
@@ -93,19 +82,32 @@
 (defn get-amulet [game]
   (if-not (have game real-amulet?)
     (with-reason "searching for the amulet"
-      (search-level game)))) ; if Rodney leaves the level with it we're screwed
+      (or (explore game)
+          (search-level game))))) ; if Rodney leaves the level with it we're screwed
+
+(defn full-explore [game]
+  (if-not (get-level game :main :sanctum)
+    (or (explore game :mines)
+        ;(explore game :sokoban)
+        (explore game :quest)
+        (explore game :vlad)
+        (explore game :wiztower)
+        (explore game :main)
+        (invocation game))))
 
 (defn progress [game]
   (or ;(explore-level game :sokoban :end)
       ;(explore-level game :vlad :end)
       ;(explore-level game :quest :end)
-      (explore-level game :main :end)
+      ;(explore-level game :main :end)
       ;(explore-level game :wiztower :end)
-      (invocation game)
-      (explore-level game :main :sanctum)
+      ;(invocation game)
+      ;(explore-level game :main :sanctum)
       (get-amulet game)
-      (visit game :earth)
-      (log/debug "progress end")))
+      (visit game :astral)
+      ; TODO check for altar, ->Offer
+      (with-reason "seeking unknown altar"
+        (seek game (every-pred altar? (complement :walked))))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
@@ -239,37 +241,43 @@
           (with-reason "dropping junk" (->Drop slot)))
         (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
+                               (not= :air (branch-key game))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
           (with-reason "reequip - don't need levi"
             (remove-use game slot))))))
 
 (defn fight [{:keys [player] :as game}]
-  (if (:engulfed player)
-    (with-reason "killing engulfer" (or (wield-weapon game)
-                                        (->Move :E)))
-    (let [tgts (hostile-threats game)]
-      (when-let [{:keys [step target]} (navigate game tgts
-                                          {:adjacent true :walking true
-                                           :no-traps true :no-autonav true
-                                           :max-steps hostile-dist-thresh})]
-        (with-reason "targetting enemy at" target
-          (let [level (curlvl game)
-                monster (monster-at level target)]
-            (or (wield-weapon game)
-                (if (and (:end (:tags level)) (= :wiztower (branch-key game))
-                         (= :magenta (:color monster)) (= \@ (:glyph monster))
-                         (water? (at level target)))
-                  (with-reason "baiting possible wizard away from water"
-                    ; don't let the book fall into water
-                    (or (:step (navigate game #(not-any? water?
-                                                         (neighbors level %))))
-                        (->Wait))))
-                step
-                (if (or (blind? player)
-                        (not (monster? (at level target))))
-                  (->Attack (towards player target))
-                  (->Move (towards player target))))))))))
+  (or (if (:engulfed player)
+        (with-reason "killing engulfer" (or (wield-weapon game)
+                                            (->Move :E))))
+      (if-let [[slot _] (and (#{:water :air} (branch-key game))
+                             (not (have-levi-on game))
+                             (have-levi game))]
+        (with-reason "levitation for :air/:water"
+          (make-use game slot)))
+      (let [tgts (hostile-threats game)]
+        (when-let [{:keys [step target]} (navigate game tgts
+                                            {:adjacent true :walking true
+                                             :no-traps true :no-autonav true
+                                             :max-steps hostile-dist-thresh})]
+          (with-reason "targetting enemy at" target
+            (let [level (curlvl game)
+                  monster (monster-at level target)]
+              (or (wield-weapon game)
+                  (if (and (:end (:tags level)) (= :wiztower (branch-key game))
+                           (= :magenta (:color monster)) (= \@ (:glyph monster))
+                           (water? (at level target)))
+                    (with-reason "baiting possible wizard away from water"
+                      ; don't let the book fall into water
+                      (or (:step (navigate game #(not-any? water? (neighbors
+                                                                    level %))))
+                          (->Wait))))
+                  step
+                  (if (or (blind? player)
+                          (not (monster? (at level target))))
+                    (->Attack (towards player target))
+                    (->Move (towards player target))))))))))
 
 (defn- bribe-demon [prompt]
   (->> prompt
@@ -328,7 +336,7 @@
       (register-handler -15 (reify ActionHandler
                               (choose-action [_ game]
                                 (enhance game))))
-      (register-handler -12 (name-first-amulet anbf))
+      (register-handler -14 (name-first-amulet anbf))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (pray-for-food game))))
