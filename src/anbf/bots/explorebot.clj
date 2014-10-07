@@ -80,10 +80,10 @@
 
 (defn progress [game]
   (or ;(explore-level game :sokoban :end)
-      (explore-level game :vlad :end)
-      (explore-level game :quest :end)
+      ;(explore-level game :vlad :end)
+      ;(explore-level game :quest :end)
       (explore-level game :main :end)
-      (explore-level game :wiztower :end)
+      ;(explore-level game :wiztower :end)
       (invocation game)
       (explore-level game :main :sanctum)
       (visit game :earth)
@@ -92,6 +92,7 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
+  #_(explored? game :main :end)
   #_(and (= :wiztower (branch-key game))
        (:end (curlvl-tags game))
   #_(and (= :vlad (branch-key game))

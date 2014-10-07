@@ -199,13 +199,16 @@
     (swap! (:game anbf) #(assoc % :last-prayer (:turn %))))
   (trigger [_] "#pray\n"))
 
-(defn- update-searched [{:keys [player] :as game}]
-  (reduce #(update-curlvl-at %1 %2 update :searched inc) game
-          (including-origin neighbors player)))
+(defn- update-searched [{:keys [player turn] :as game} start]
+  ; TODO maybe take speed into consideration
+  (let [turns (inc (- turn start))]
+    (reduce #(update-curlvl-at %1 %2 update :searched (partial + turns)) game
+            (including-origin neighbors player))))
 
 (defaction Search []
   (handler [_ {:keys [game] :as anbf}]
-    (swap! game update-searched) nil)
+    (update-on-known-position anbf update-searched (:turn @game))
+    nil)
   (trigger [_] "s"))
 
 (defaction Wait []
@@ -863,6 +866,15 @@
 
 (defn descend [game]
   (without-levitation game (->Descend)))
+
+(defaction Repeated [action n]
+  (handler [_ anbf] (handler action anbf))
+  (trigger [_] (str n (trigger action))))
+
+(defn search
+  "Search once or n times"
+  ([] (search 1))
+  ([n] (->Repeated (->Search) n)))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

@@ -561,7 +561,7 @@
                     y (:cutoff-rows blueprint)]
                 (position x y)))
       (reduce (fn mark-feature [level [pos feature]]
-                (update-at level pos assoc :feature
+                (update-at level pos assoc :seen true :feature
                            (if (= :door-secret feature)
                              (if ((some-fn unknown? wall?) (at level pos))
                                :door-secret

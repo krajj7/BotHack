@@ -179,7 +179,7 @@
   (if (door-open? tile)
     [8 (with-reason "closing door to kick it" (->Close dir))]
     (if (:leg-hurt player)
-      [30 (with-reason "waiting out :leg-hurt" ->Search)]
+      [30 (with-reason "waiting out :leg-hurt" (search 10))]
       [6 (without-levitation game (->Kick dir))])))
 
 (defn can-unlock? [game]
@@ -247,7 +247,7 @@
                             (make-use game slot))])))
                  (if (and (door? to-tile) (not monster) (not (:walking opts)))
                    (or (if (door-secret? to-tile)
-                         [10 (->Search)]) ; TODO stethoscope
+                         [10 (search 10)]) ; TODO stethoscope
                        (and (kickable-door? level to-tile opts)
                             (blocked-door level to-tile)
                             (->> (partial with-reason
@@ -296,7 +296,7 @@
                      (partition 2))
           autonavigable (->> steps (take-while
                                      (partial autonavigable? game level opts))
-                             (map second) (into []))
+                             (mapv second))
           target (some-> (peek autonavigable) position)]
       (if (and target
                (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
@@ -433,7 +433,7 @@
     (when (and (has-dead-ends? game level)
                (< (:searched tile) num-search)
                (dead-end? level tile))
-      (with-reason "searching dead end" ->Search))))
+      (with-reason "searching dead end" (search 10)))))
 
 (defn- pushable-through [game level from to]
   (and (or ((some-fn walkable? water? lava?) to)
@@ -483,7 +483,7 @@
   (if (has-dead-ends? game level)
     (if-let [p (navigate game #(and (< (searched level %) howmuch)
                                     (dead-end? level %)))]
-      (with-reason "re-checking dead ends" (or (:step p) (->Search))))))
+      (with-reason "re-checking dead ends" (or (:step p) (search 10))))))
 
 (defn- searchable-position? [pos]
   (and (< 2 (:y pos) 20)
@@ -515,7 +515,7 @@
   (let [searchable? (partial searchable-wall? level howmuch)]
     (if-let [p (navigate game searchable? {:adjacent true})]
       (with-reason "searching walls"
-        (or (:step p) (->Search))))))
+        (or (:step p) (search 10))))))
 
 (defn- search-corridors [game level howmuch]
   (if-let [p (navigate game (fn searchable? [tile]
@@ -523,7 +523,7 @@
                                    (searchable-position? tile)
                                    (< (searched level tile) howmuch))))]
     (with-reason "searching corridors"
-      (or (:step p) (->Search)))))
+      (or (:step p) (search 10)))))
 
 (defn- searchable-extremity [level y xs howmuch]
   (if-let [tile (->> xs (map #(at level % y))
@@ -622,7 +622,7 @@
       (if-let [p (navigate game goals)]
         (with-reason "searching extremity" (or (pr-str (:target p)) "here")
           (or (:step p)
-              (->Search)))))))
+              (search 10)))))))
 
 (defn go-down
   "Go through a hole or trapdoor or dig down if possible"
@@ -649,8 +649,9 @@
         (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (dig pick \>)))))))
 
-(defn search
-  ([game] (or (search game 10) (throw (IllegalStateException. "stuck :-("))))
+(defn search-level
+  ([game] (or (search-level game 10)
+              (throw (IllegalStateException. "stuck :-("))))
   ([game max-iter]
    (with-reason "searching - max-iter =" max-iter
      (let [level (curlvl game)]
@@ -686,7 +687,7 @@
                                           (not (:walked %))
                                           (not (door? %)))))))
           (explore game)
-          (search game)))))
+          (search-level game)))))
 
 (defn seek
   "Like explore but also searches and always tries to return an action until the target is found
@@ -701,7 +702,7 @@
        (or (and (not (:no-explore opts)) (explore game))
            (and (:go-down opts) (with-reason "can't find downstairs"
                                   (go-down game (curlvl game))))
-           (search game))))))
+           (search-level game))))))
 
 (defn- switch-dlvl [game new-dlvl]
   (with-reason "switching within branch to" new-dlvl
@@ -848,7 +849,7 @@
 (defn- enter-branch [game branch]
   ;(log/debug "entering branch" branch)
   (if (not= :main (branch-key game))
-    (or (explore game) (search game)) ; unknown subbranch
+    (or (explore game) (search-level game)) ; unknown subbranch
     (let [branch (branch-key game branch)
           [stairs stair-action] (if (upwards? branch)
                                   [:stairs-up (->Ascend)]
@@ -932,7 +933,7 @@
         ; TODO search for shops if heard but not found
         (if (unexplored-column game level)
           (with-reason "level not explored enough, searching"
-            (search game (if (= :mines (branch-key game)) 10 2))))
+            (search-level game (if (= :mines (branch-key game)) 10 2))))
         (if (and (:sanctum (:tags level))
                  (not (:walked (at-curlvl game 20 10))))
           (with-reason "searching sanctum"
