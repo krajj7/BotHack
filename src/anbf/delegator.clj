@@ -343,3 +343,6 @@
 
 (defchoicehandler EatWhatHandler
   (eat-what [handler ^String prompt]))
+
+(defyesnohandler LiftBurdenHandler
+  (lift-burden [handler ^clojure.lang.Keyword burden ^String item-label]))

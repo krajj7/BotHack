@@ -172,6 +172,12 @@
     #"^What do you want to eat\?" eat-what
     #"^Attach the candles to the candelabrum\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb
+    #"^You have a little trouble lifting ([^.]+)\. Continue\?"
+    :>> (partial list lift-burden :light)
+    #"^You have much trouble lifting ([^.]+)\. Continue\?"
+    :>> (partial list lift-burden :heavy)
+    #"^You have extreme difficulty lifting ([^.]+)\. Continue\?"
+    :>> (partial list lift-burden :extreme)
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

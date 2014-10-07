@@ -127,6 +127,8 @@
     (which-finger [_ _] \l)
     PayDamageHandler
     (pay-damage [_ _] true)
+    LiftBurdenHandler
+    (lift-burden [_ _ _] true)
     ; escape the rest by default
     EatWhatHandler
     (eat-what [_ _] "")
