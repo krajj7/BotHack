@@ -34,7 +34,10 @@
     (reify
       GameStateHandler
       (ended [_]
-        (log/info "Game ended"))
+        (log/info "Game ended")
+        (when-not (config-get (:config anbf) :no-exit false)
+          (log/info "Exiting")
+          (System/exit 0)))
       (started [_]
         (log/info "Game started"))
       ToplineMessageHandler

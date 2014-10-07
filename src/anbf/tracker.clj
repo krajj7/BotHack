@@ -40,7 +40,7 @@
 
 (defn- transfer-unpaired [game unpaired]
   ; TODO don't transfer if we would know monsters position with ESP
-  ;(log/debug "unpaired" unpaired)
+  (log/debug "unpaired" unpaired)
   (if-not (or (visible? game unpaired) (= (:glyph unpaired) \I))
     (reset-curlvl-monster game (assoc unpaired :remembered true))
     game))

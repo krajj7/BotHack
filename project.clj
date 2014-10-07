@@ -1,4 +1,4 @@
-(defproject anbf "0.1.0-SNAPSHOT"
+(defproject anbf "0.5.0-SNAPSHOT"
   :description "A Nethack Bot Framework"
   :url "https://github.com/krajj7/ANBF"
   :license {:name "GPLv2"}
@@ -17,6 +17,6 @@
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
-  :global-vars {*warn-on-reflection* true}
+  ;:global-vars {*warn-on-reflection* true}
   :aot [anbf.bot anbf.delegator anbf.actions anbf.term anbf.ttyrec anbf.main]
   :main anbf.main)

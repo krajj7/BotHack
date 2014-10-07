@@ -315,7 +315,8 @@
     (rogue-item-glyph game (:glyph (item-id game item)))
     (:glyph (item-id game item))))
 
-(def things-re #"^(?:Things that (?:are|you feel) here:|You (?:see|feel))")
+(def things-re #"^Things that (?:are|you feel) here:|You (?:see|feel)")
+(def thing-re #"You (?:see|feel) here ([^.]+).")
 
 (defaction Look []
   (handler [_ {:keys [game delegator] :as anbf}]
@@ -347,15 +348,13 @@
               (swap! game #(update-at-player %
                              assoc :items items
                                    :item-glyph (item-glyph % top-item)
-                                   :item-color nil)))
-            (log/error "Unrecognized message list " (str lines))))
+                                   :item-color nil)))))
         ToplineMessageHandler
         (message [_ text]
           (when-not (and (= text "But you can't reach it!")
                          (reset! has-item true))
             (when-let [item (some->> text
-                                     (re-first-group
-                                       #"You (?:see|feel) here ([^.]+).")
+                                     (re-first-group thing-re)
                                      label->item)]
               (log/debug "Single item here:" item)
               (reset! has-item true)
@@ -426,11 +425,7 @@
 (defn- examine-tile [{:keys [player] :as game}]
   (if-let [tile (and (not (blind? player))
                      (at-player game))]
-    (if (or ((some-fn unknown? unknown-trap?) tile)
-            (or (:new-items tile)
-                (and (seq (:items tile))
-                     (not= (:last-position game) (position player))
-                     (> ((fnil - 0 0) (:turn game) (:examined tile)) 5))))
+    (if ((some-fn :new-items unknown? unknown-trap?) tile)
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
 (defn- examine-traps [game]
@@ -828,28 +823,28 @@
   (trigger [_] "q"))
 
 (defn use-action [item]
-  (case (typekw item)
+  (case (item-type item)
     :ring ->PutOn
     :amulet ->PutOn
     :tool ->PutOn
     :armor ->Wear))
 
 (defn make-use [game slot]
-  ; TODO if already occupied
-  ((use-action (item-type (inventory-slot game slot))) slot))
+  ; TODO if slot already occupied
+  ((use-action (inventory-slot game slot)) slot))
 
 (defn remove-action [item]
-  (case (typekw item)
+  (case (item-type item)
     :ring ->Remove
     :amulet ->Remove
     :tool ->Remove
     :armor ->TakeOff))
 
 (defn remove-use [game slot]
-  (let [item (inventory-slot game slot)
-        itemtype (item-id game item)]
-    (if (and itemtype (not (cursed? item)))
-      ((remove-action itemtype) slot))))
+  (let [item (inventory-slot game slot)]
+    (if (noncursed? item)
+      ((remove-action item) slot)
+      (log/warn "tried to remove cursed item"))))
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation

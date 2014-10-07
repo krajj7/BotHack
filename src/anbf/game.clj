@@ -166,7 +166,7 @@
 (defn can-pray? [game]
   (and (not (in-gehennom? game))
        (< (prayer-timeout game)
-          ((fnil - nil -1000) (:turn game) (:last-prayer game)))))
+          (- (:turn game) (or (:last-prayer game) -1000)))))
 
 (def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+ \w+)\.|.* (\w+ \w+), welcome back to NetHack!")
 
@@ -190,15 +190,20 @@
                                  (initial-intrinsics race)))
         (deregister-handler anbf this)))))
 
+(defn moved?
+  "Returns true if the player moved during the last action turn"
+  [game]
+  (not= (:last-position game) (position (:player game))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
     ActionChosenHandler
     (action-chosen [_ action]
+      (swap! game #(assoc % :last-position (position (:player %))))
       (if-not (#{:call :name :discoveries :inventory :look :farlook}
                        (typekw action))
         (swap! game #(assoc % :last-action action
-                            :last-position (position (:player %))
                             :last-path (get action :path (:last-path %))))))
     AboutToChooseActionHandler
     (about-to-choose [_ game]
@@ -226,14 +231,16 @@
       (swap! game update-map frame))
     MultilineMessageHandler
     (message-lines [_ lines]
-      (or (if (re-seq things-re (first lines))
+      (or (if (and (re-seq things-re (first lines)) (moved? @game))
             (update-items anbf))
           (if-let [level (level-msg (first lines))]
             (update-on-known-position anbf add-curlvl-tag level))))
     ToplineMessageHandler
     (message [_ text]
       (swap! game assoc :last-topline text)
-      (or (condp re-seq text
+      (or (if (and (re-seq thing-re text) (moved? @game))
+            (update-items anbf))
+          (condp re-seq text
             #"You feel you could be more dangerous|You feel more confident"
             (swap! game assoc-in [:player :can-enhance] true)
             #"You feel weaker"

@@ -143,15 +143,15 @@
        (or (random-move game level)
            (->Search))))))
 
-(defn- safe-from-guards
-  "Much more pessimistic than this could be, but just enough to handle the most usual corner-case where the only door in the first room is locked."
+(defn- safe-from-guards?
+  "Only just enough to handle the most usual corner-case where the only door in the stair-room of minetown is locked.  Potentially dangerous without infravision."
   [level]
   (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
   (or (boulder? tile)
       (and (or (not ((:tags level) :minetown))
-               (safe-from-guards level))
+               (safe-from-guards? level))
            (not (shop? tile)))))
 
 (defn- blocked-door
@@ -219,7 +219,7 @@
                                     (blocked-door level to-tile))))
                    (if monster
                      (if (:peaceful monster)
-                       (if ((fnil <= 0) (:blocked to-tile) 20)
+                       (if (<= (or (:blocked to-tile) 0) 20)
                          [50 (with-reason "peaceful blocker" monster
                                (fidget game level to-tile))]) ; hopefully will move
                        [6 (with-reason "pathing through" monster
@@ -399,7 +399,8 @@
            (and (not (:walked tile))
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
-                (some (some-fn lava? water? (partial safely-walkable? level))
+                (some (some-fn lava? water? boulder?
+                               (partial safely-walkable? level))
                       (neighbors level tile))
                 (some (not-any-fn? :seen boulder? monster?)
                       (neighbors level tile))))

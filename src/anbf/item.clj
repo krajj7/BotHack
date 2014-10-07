@@ -64,9 +64,8 @@
               (for [kw [:cost :enchantment :charges :recharges]
                     :when (seq (kw res))]
                 kw))
-      (assoc res :erosion (if-let [deg ((fnil + 0 0)
-                                        (erosion (:erosion1 res))
-                                        (erosion (:erosion2 res)))]
+      (assoc res :erosion (if-let [deg (+ (or (erosion (:erosion1 res)) 0)
+                                          (or (erosion (:erosion2 res)) 0))]
                             (if (pos? deg) deg)))
       (dissoc res :cost1 :cost2 :cost3 :lit-candelabrum :erosion1 :erosion2 :slot)
       (into {:label label} (filter (comp some? val) res)))))

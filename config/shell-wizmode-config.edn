@@ -4,4 +4,5 @@
  :interface :shell
  :start-paused true
  :nh-command "/nh343/wizmode" ; runs NH with -D
+ :no-exit true
 }

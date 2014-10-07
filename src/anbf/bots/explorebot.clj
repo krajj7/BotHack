@@ -112,6 +112,7 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
+  #_(= "Dlvl:46" (:dlvl game))
   #_(explored? game :main :end)
   #_(and (= :wiztower (branch-key game))
        (:end (curlvl-tags game))
@@ -119,7 +120,7 @@
        (:end (curlvl-tags game)))
   #_(have game "candelabrum")
   #_(have game "Orb of Fate")
-  #_(= "Dlvl:39" (:dlvl game))))
+  ))
 
 (def desired-weapons
   (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
