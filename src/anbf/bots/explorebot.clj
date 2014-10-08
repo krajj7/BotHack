@@ -276,11 +276,11 @@
               (or (wield-weapon game)
                   (if (and (:end (:tags level)) (= :wiztower (branch-key game))
                            (= :magenta (:color monster)) (= \@ (:glyph monster))
-                           (water? (at level target)))
-                    (with-reason "baiting possible wizard away from water"
-                      ; don't let the book fall into water
-                      (or (:step (navigate game #(not-any? water? (neighbors
-                                                                    level %))))
+                           ((some-fn water? lava?) (at level target)))
+                    (with-reason "baiting possible wizard away from water/lava"
+                      ; don't let the book fall into water/lava
+                      (or (:step (navigate game #((not-any-fn? lava? water?)
+                                                  (neighbors level %))))
                           (->Wait))))
                   step
                   (if (or (blind? player)
