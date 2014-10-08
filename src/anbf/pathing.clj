@@ -573,7 +573,7 @@
   (and (= (:dlvl game) (:dlvl level))
        (= (branch-key game) (branch-key game level))))
 
-(declare explore explore-step)
+(declare explore explore-step search-level)
 
 (defn- curlvl-exploration [game]
   (or (explore-step game)
@@ -651,28 +651,6 @@
         (or (with-reason "finding somewhere to dig down" step)
             (with-reason "digging down" (dig pick \>)))))))
 
-(defn search-level
-  ([game] (or (search-level game 10)
-              (throw (IllegalStateException. "stuck :-("))))
-  ([game max-iter]
-   (with-reason "searching - max-iter =" max-iter
-     (let [level (curlvl game)]
-       (loop [mul 1]
-         (or (log/debug "search iteration" mul)
-             (if (= 1 mul) (push-boulders game level))
-             (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))
-               (with-reason "no stairs, possibly :main :end"
-                 (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
-                                             (not (:walked %))
-                                             (not (wall? %)))))))
-             (recheck-dead-ends game level (* mul 30))
-             (search-extremities game level (* mul 20))
-             ; TODO dig towards unexplored-column
-             (if (> mul 1) (search-corridors game level (* mul 5)))
-             (search-walls game level (* mul 15))
-             (if-not (> mul (dec max-iter))
-               (recur (inc mul)))))))))
-
 (defn seek-portal [game]
   (let [level (curlvl game)]
     (with-reason "seeking portal"
@@ -683,6 +661,14 @@
             (with-reason "seeking :air portal"
               (:step (navigate game #(and ((not-any-fn? :walked cloud?) %)
                                           (< 44 (:x %)))))))
+          (if (= :water (branch-key game))
+            (with-reason "seeking :water portal"
+              (:step (navigate game #(and (< 250 (- (:turn game)
+                                                    (or (:walked %) 0)))
+                                          (< 3 (:y %) 17)
+                                          (if (< 49 (mod (:turn game) 100))
+                                            (< 40 (:x %) 74)
+                                            (< 5 (:x %) 40)))))))
           (if (> (dlvl game) 35)
             (if (unknown? (at level fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
@@ -696,6 +682,29 @@
                                           (not (door? %)))))))
           (explore game)
           (search-level game)))))
+
+(defn search-level
+  ([game] (or (search-level game 10)
+              (throw (IllegalStateException. "stuck :-("))))
+  ([game max-iter]
+   (with-reason "searching - max-iter =" max-iter
+     (let [level (curlvl game)]
+       (loop [mul 1]
+         (or (log/debug "search iteration" mul)
+             (if (= 1 mul) (push-boulders game level))
+             (if (= :water (branch-key game)) (seek-portal game))
+             (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))
+               (with-reason "no stairs, possibly :main :end"
+                 (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
+                                             (not (:walked %))
+                                             (not (wall? %)))))))
+             (recheck-dead-ends game level (* mul 30))
+             (search-extremities game level (* mul 20))
+             ; TODO dig towards unexplored-column
+             (if (> mul 1) (search-corridors game level (* mul 5)))
+             (search-walls game level (* mul 15))
+             (if-not (> mul (dec max-iter))
+               (recur (inc mul)))))))))
 
 (defn seek
   "Like explore but also searches and always tries to return an action until the target is found

@@ -114,7 +114,10 @@
     nil))
 
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
-  (or (when (subbranches (branch-key @game level))
+  (or (when (= "Astral Plane" new-dlvl)
+        (log/debug "entering astral")
+        (swap! game assoc :branch-id :astral))
+      (when (subbranches (branch-key @game level))
         (log/debug "leaving subbranch via portal")
         (swap! game assoc :branch-id :main))
       (when (= "Home" (subs new-dlvl 0 4))

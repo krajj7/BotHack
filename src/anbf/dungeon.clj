@@ -418,8 +418,7 @@
   "Choose branch-id for a new dlvl reached by stairs."
   [game dlvl]
   ; TODO could check for already found parallel branches and disambiguate, also check if going up or down and disambiguate soko/mines
-  (or (if (= "Astral Plane" dlvl) :astral)
-      (if (= "End Game" dlvl) :earth)
+  (or (if (= "End Game" dlvl) :earth)
       (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
       (gen-branch-id)))

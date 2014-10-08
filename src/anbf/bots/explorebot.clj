@@ -112,6 +112,7 @@
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
+  #_(= :astral (branch-key game))
   #_(= "Dlvl:46" (:dlvl game))
   #_(explored? game :main :end)
   #_(and (= :wiztower (branch-key game))
@@ -215,13 +216,17 @@
             (filter #(= \. (:glyph %)))
             (more-than? 50))))
 
+(defn- want-light? [game level]
+  (not (or (explored? game)
+           (#{:air :water} (branch-key game))
+           (lit-mines? game level))))
+
 (defn use-light [game level]
-  (if-let [[slot item] (have game (every-pred (partial light? game)
-                                              :lit))]
+  (if-let [[slot item] (have game (every-pred :lit (partial light? game)))]
     (if (and (not= "magic lamp" (item-name game item))
-             (or (explored? game) (lit-mines? game level)))
+             (not (want-light? game level)))
       (with-reason "saving energy" (->Apply slot)))
-    (if-not (or (explored? game) (lit-mines? game level))
+    (if (want-light? game level)
       (or (if-let [[slot lamp] (have game "magic lamp")]
             (with-reason "using magic lamp" (->Apply slot)))
           (if-let [[slot lamp] (have game (partial light? game))]
@@ -242,7 +247,7 @@
           (with-reason "dropping junk" (->Drop slot)))
         (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
-                               (not= :air (branch-key game))
+                               (not (#{:water :air} (branch-key game)))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
           (with-reason "reequip - don't need levi"
@@ -261,7 +266,10 @@
         (when-let [{:keys [step target]} (navigate game tgts
                                             {:adjacent true :walking true
                                              :no-traps true :no-autonav true
-                                             :max-steps hostile-dist-thresh})]
+                                             :max-steps
+                                             (if (planes (branch-key game))
+                                               hostile-dist-thresh
+                                               1)})]
           (with-reason "targetting enemy at" target
             (let [level (curlvl game)
                   monster (monster-at level target)]

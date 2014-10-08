@@ -199,9 +199,9 @@
          :green :tree
          :red :lava
          :cyan :bars
+         :blue :water
          :brown :drawbridge-raised
-         (or (log/warn "unknown } feature color (" new-color
-                       "), possibly underwater") current))
+         (or (log/warn "unknown } feature color:" new-color) current))
     \# (cond (traps current) current
              (= :cloud current) :cloud
              (= :brown new-color) :drawbridge-lowered

@@ -524,7 +524,7 @@
 (defn by-description [text]
   (let [^String desc (-> text strip-article strip-disposition strip-modifier)
         ghost-or-called (re-first-group #"ghost|called" desc)]
-    (or (if (re-seq #"^(?:the )?high priest (?:ess)?$" desc)
+    (or (if (re-seq #"^(?:the )?high priest(?:ess)?$" desc)
           (name->monster "high priest"))
         (if (= desc "mimic")
           (name->monster "large mimic")) ; could be any mimic really
@@ -533,12 +533,15 @@
                                  (not ghost-or-called)
                                  ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]
-          (if (re-seq #"poohbah|priest|priestess" desc)
-            (if (.contains desc "high ")
-              (name->monster "high priest")
-              (name->monster "aligned priest"))
-            (or (name->monster desc)
-                (throw (IllegalArgumentException. (str "Failed to parse monster-of description: " text))))))
+          (or (if (re-seq #"poohbah|priest|priestess" desc)
+                (if (.contains desc "high ")
+                  (name->monster "high priest")
+                  (name->monster "aligned priest"))
+                (if (.startsWith desc "guardian ")
+                  (name->monster (subs desc 9))
+                  (name->monster desc)))
+              (throw (IllegalArgumentException.
+                       (str "Failed to parse monster-of description: " text)))))
         (if-let [[nick desc] (and (not ghost-or-called)
                                   (not (.contains desc "Neferet the Green"))
                                   (not (.contains desc "Vlad the Impaler"))
@@ -548,7 +551,6 @@
           (name->monster desc))
         (if (re-seq #"'?s? ghost" desc)
           (name->monster "ghost"))
-        ; TODO player-monsters on astral as TAEB
         (if (.contains desc "coyote - ")
           (name->monster "coyote"))
         (if (shopkeepers desc)
