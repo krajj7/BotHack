@@ -96,7 +96,8 @@
         (invocation game))))
 
 (defn progress [game]
-  (or ;(explore-level game :sokoban :end)
+  (or (full-explore game)
+      ;(explore-level game :sokoban :end)
       ;(explore-level game :vlad :end)
       ;(explore-level game :quest :end)
       ;(explore-level game :main :end)
@@ -235,19 +236,26 @@
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
-        step (first tile-path)]
+        step (first tile-path)
+        branch (branch-key game)]
     (or (uncurse-gear game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (every? walkable? tile-path))
-          (with-reason "reequip - weapon"
-            (wield-weapon game)))
+          (if-let [[slot item] (and (#{:air :fire :earth} branch)
+                                    (not-any? portal? (tile-seq level))
+                                    (have game real-amulet?))]
+            (if-not (:in-use item)
+              (with-reason "using amulet to search for portal"
+                (->Wield slot)))
+            (with-reason "reequip - weapon"
+              (wield-weapon game))))
         ; TODO multidrop
         (if-let [[slot _] (have game #(= "empty" (:specific %)))]
           (with-reason "dropping junk" (->Drop slot)))
         (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
-                               (not (#{:water :air} (branch-key game)))
+                               (not (#{:water :air} branch))
                                (not-any? needs-levi? tile-path)
                                (have-levi-on game))]
           (with-reason "reequip - don't need levi"

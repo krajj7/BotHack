@@ -79,11 +79,11 @@
 
 (defn- update-explored [game]
   (let [level (curlvl game)]
-    (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
-               (partial map-tiles (fn [tile]
-                                    (if (visible? game level tile)
-                                      (update-visible-tile game level tile)
-                                      tile))))))
+    (update-curlvl game update :tiles
+                   (partial map-tiles (fn [tile]
+                                        (if (visible? game level tile)
+                                          (update-visible-tile game level tile)
+                                          tile))))))
 
 (defn- gather-monsters [game frame]
   (let [level (curlvl game)
@@ -102,12 +102,10 @@
 
 (defn- parse-map [game frame]
   (-> game
-      (assoc-in [:dungeon :levels (branch-key game) (:dlvl game)
-                 :monsters] (gather-monsters game frame))
-      (update-in [:dungeon :levels (branch-key game) (:dlvl game) :tiles]
-                 (partial map-tiles parse-tile)
-                 (rest (:lines frame))
-                 (rest (:colors frame)))))
+      (update-curlvl assoc :monsters (gather-monsters game frame))
+      (update-curlvl update :tiles (partial map-tiles parse-tile)
+                     (rest (:lines frame))
+                     (rest (:colors frame)))))
 
 (defn- update-dungeon [{:keys [turn] :as game} {:keys [cursor] :as frame}]
   (-> game
@@ -195,6 +193,20 @@
   [game]
   (not= (:last-position game) (position (:player game))))
 
+(defn- update-portal-range [{:keys [player] :as game} temp]
+  (let [dist (case temp
+               "hot" 2
+               "very warm" 7
+               "warm" 11)
+        in-range (set (rectangle (position (- (:x player) dist)
+                                           (- (:y player) dist))
+                                 (position (+ (:x player) dist)
+                                           (+ (:y player) dist))))]
+    (update-curlvl game update :tiles
+                   (partial map-tiles #(if-not (in-range (position %))
+                                         (assoc % :walked 1)
+                                         %)))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
@@ -240,7 +252,9 @@
       (swap! game assoc :last-topline text)
       (or (if (and (re-seq thing-re text) (moved? @game))
             (update-items anbf))
-          (condp re-seq text
+          (condp re-first-group text
+            #"The Amulet of Yendor.* feels (hot|very warm|warm)"
+            :>> #(update-on-known-position anbf update-portal-range %)
             #"You feel you could be more dangerous|You feel more confident"
             (swap! game assoc-in [:player :can-enhance] true)
             #"You feel weaker"

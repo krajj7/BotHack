@@ -851,7 +851,8 @@
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation
-  (if-let [[slot _] (have-levi-on game)]
+  (if-let [[slot _] (and (not= :air (branch-key game))
+                         (have-levi-on game))]
     (with-reason "action" (typekw action) "forbids levitation"
       (remove-use game slot))
     action))
