@@ -3,11 +3,13 @@ ANBF
 
 A Nethack Bot Framework
 
-An attempt at an implementation of a NetHack bot framework as a base for my master's thesis.
+An attempt at an implementation of a NetHack bot framework as a base for my master's thesis (at http://www.mff.cuni.cz/to.en).
 
-Written in Clojure but will provide an API for bots in Java.  No game modifications are used to make the game more accessible for a bot, so bots can also play on public servers (http://alt.org/nethack/).
+Written in Clojure but will provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can also play on public servers (http://alt.org/nethack/).
 
-Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.github.io/) and Pogamut (http://pogamut.cuni.cz/).
+Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.github.io), Saiph (https://github.com/canidae/saiph) and Pogamut (http://pogamut.cuni.cz).
+
+**PLEASE NOTE**:  The project is in pre-alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
 ## Milestones reached
 
@@ -43,7 +45,7 @@ Item handling is still missing so bots can't cross Medusa's yet, but in wizmode 
 
 **22.9.2014**: Many actions for interacting with items in the dungeon are now implemented and the pathing subsystem optionally makes use of pick-axes and levitation items to navigate more effectively.  When pre-equipped in wizard mode, the bot can now pass through Medusa's island, the Castle and all the way down through Gehennom.  Important features of all Gehennom demon lairs (static traps and secret doors) are mapped automatically.
 
-**4.10.2014**: Eat action is implemented, allowing both eating from the ground or inventory, and the framework now tracks monster deaths, corpse freshness/safety and player intrinsics, so the bot can feed itself on corpses for nutrition and useful resistances.
+**4.10.2014**: Eat action is implemented, allowing both eating from the ground or inventory, and the framework tracks monster deaths, corpse freshness/safety and player intrinsics, so the bot can feed itself on corpses for nutrition and useful resistances.
 
 ## Roadmap
 
