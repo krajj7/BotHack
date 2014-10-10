@@ -25,23 +25,30 @@
 
 (def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|hole|trap door|fountain|sink|grave|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
-(defn- feature-here [msg rogue?]
-  (condp re-seq msg
-    #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)" :floor
-    #"There is an altar" :altar
-    (if-let [feature (re-first-group feature-re msg)]
-      (case feature
-        "opulent throne" :throne
-        "ice" :ice
-        "doorway" (if rogue? :door-open :floor)
-        "open door" :door-open
-        "broken door" :floor
-        "staircase up" :stairs-up
-        "staircase down" :stairs-down
-        "fountain" :fountain
-        "sink" :sink
-        "grave" :grave
-        (trap-names feature)))))
+(def ^:private trap-disarm-re #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)")
+
+(defn- feature-msg-update [tile msg rogue?]
+  (or (if-let [align (re-first-group
+                       #"There is an altar to [^(]* \(([^)]*)\) here." msg)]
+        (assoc tile :feature :altar :alignment (str->kw align)))
+      (if (re-seq trap-disarm-re msg)
+        (assoc tile :feature :floor))
+      (if-let [feature-txt (re-first-group feature-re msg)]
+        (assoc tile :feature (case feature-txt
+                               "opulent throne" :throne
+                               "ice" :ice
+                               "doorway" (if rogue? :door-open :floor)
+                               "open door" :door-open
+                               "broken door" :floor
+                               "staircase up" :stairs-up
+                               "staircase down" :stairs-down
+                               "fountain" :fountain
+                               "sink" :sink
+                               "grave" :grave
+                               (trap-names feature-txt))))
+      (if (trap? tile) ; no feature msg => no trap
+        (assoc tile :feature :floor))
+      tile))
 
 (defn with-reason
   "Updates an action to attach reasoning (purely for debugging purposes)"
@@ -364,10 +371,8 @@
                              assoc :items [item]
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
-            (if-let [feature (feature-here text (:rogue (curlvl-tags @game)))]
-              (swap! game update-at-player assoc :feature feature)
-              (if (trap? (at-player @game))
-                (swap! game update-at-player assoc :feature :floor))))))))
+            (swap! game update-at-player feature-msg-update
+                   text (:rogue (curlvl-tags game))))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
@@ -377,7 +382,10 @@
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
-        (or (when-let [trap (re-first-group farlook-trap-re text)]
+        (or (when-let [align (re-first-group #"\(([^ ]*) altar\)$" text)]
+              (swap! game update-curlvl-at pos assoc
+                     :alignment (str->kw align)))
+            (when-let [trap (re-first-group farlook-trap-re text)]
               (swap! game update-curlvl-at pos assoc :feature
                      (or (trap-names trap)
                          (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
@@ -427,16 +435,19 @@
 (defn- examine-tile [{:keys [player] :as game}]
   (if-let [tile (and (not (blind? player))
                      (at-player game))]
-    (if ((some-fn :new-items unknown? unknown-trap?) tile)
+    (if ((some-fn :new-items unknown? unknown-trap?
+                  (every-pred altar? (complement :alignment))) tile)
       (with-reason "examining tile" (pr-str tile) ->Look))))
 
-(defn- examine-traps [game]
+(defn- examine-features [game]
   (some->> (curlvl game) tile-seq
-           (find-first (every-pred unknown-trap?
+           (find-first (every-pred #(or (unknown-trap? %)
+                                        (and (altar? %) (not (:alignment %))
+                                             (not= :astral (branch-key game))))
                                    (complement item?)
                                    (complement monster?)))
            ->FarLook
-           (with-reason "examining unknown trap")))
+           (with-reason "examining ambiguous feature")))
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (hallu? player)
@@ -453,7 +464,7 @@
     (choose-action [_ game]
       (or (examine-tile game)
           (examine-monsters game)
-          (examine-traps game)))))
+          (examine-features game)))))
 
 (defn- inventory-handler [anbf]
   (reify ActionHandler

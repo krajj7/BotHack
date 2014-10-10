@@ -95,6 +95,13 @@
         (explore game :wiztower)
         (invocation game))))
 
+(defn offer-amulet [game]
+  (let [tile (at-player game)]
+    (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
+      (->Offer (key (have game real-amulet?)))
+      (with-reason "seeking unknown altar"
+        (seek game (every-pred altar? (complement :walked)))))))
+
 (defn progress [game]
   (or #_(if-not (have game real-amulet?)
         (full-explore game))
@@ -108,9 +115,7 @@
       (explore-level game :main :sanctum)
       (get-amulet game)
       (visit game :astral)
-      ; TODO check for altar, ->Offer
-      (with-reason "seeking unknown altar"
-        (seek game (every-pred altar? (complement :walked))))))
+      (offer-amulet game)))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
