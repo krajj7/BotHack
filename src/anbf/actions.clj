@@ -372,7 +372,7 @@
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (swap! game update-at-player feature-msg-update
-                   text (:rogue (curlvl-tags game))))))))
+                   text (:rogue (curlvl-tags @game))))))))
   (trigger [this] ":"))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
@@ -874,6 +874,30 @@
 
 (defn descend [game]
   (without-levitation game (->Descend)))
+
+(defaction Offer [slot-or-label]
+  (handler [_ {:keys [game] :as anbf}]
+    (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"You are not standing on an altar"
+          (log/warn "#offer on non-altar")
+          #"You have a feeling of reconciliation\.|You glimpse a four-leaf clover at your feet|You think something brushed your foot|You see crabgrass at your feet"
+          (swap! game assoc-in [:player :last-prayer] -1000)
+          nil))
+      SacrificeItHandler
+      (sacrifice-it [_ what]
+        (if (and (string? slot-or-label)
+                 (= what slot-or-label))
+          (update-items anbf)
+          false))
+      SacrificeWhatHandler
+      (sacrifice-what [_ _]
+        (when (char? slot-or-label)
+          (update-inventory anbf)
+          slot-or-label))))
+  (trigger [_] "#offer\n"))
 
 (defaction Repeated [action n]
   (handler [_ anbf] (handler action anbf))

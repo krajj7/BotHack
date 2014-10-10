@@ -335,6 +335,9 @@
 (defyesnohandler EatItHandler
   (eat-it [handler ^String what]))
 
+(defyesnohandler SacrificeItHandler
+  (sacrifice-it [handler ^String what]))
+
 (defyesnohandler AttachCandlesHandler
   (attach-candelabrum-candles [handler ^String prompt]))
 
@@ -343,6 +346,9 @@
 
 (defchoicehandler EatWhatHandler
   (eat-what [handler ^String prompt]))
+
+(defchoicehandler SacrificeWhatHandler
+  (sacrifice-what [handler ^String prompt]))
 
 (defyesnohandler LiftBurdenHandler
   (lift-burden [handler ^clojure.lang.Keyword burden ^String item-label]))

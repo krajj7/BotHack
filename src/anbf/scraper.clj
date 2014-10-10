@@ -169,7 +169,10 @@
     #"^Which ring-finger," which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
     #"^There (?:is|are) ([^;]+) here; eat (it|one)\?" :>> (partial list eat-it)
+    #"^There (?:is|are) ([^;]+) here; sacrifice (it|one)\?"
+    :>> (partial list sacrifice-it)
     #"^What do you want to eat\?" eat-what
+    #"^What do you want to sacrifice\?" sacrifice-what
     #"^Attach the candles to the candelabrum\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb
     #"^You have a little trouble lifting ([^.]+)\. Continue\?"
