@@ -4,8 +4,6 @@
             [anbf.itemid :refer :all]
             [anbf.util :refer :all]))
 
-(defrecord Key [])
-
 (defrecord Item
   [label
    name
@@ -58,7 +56,7 @@
       (if (:candles raw)
         (update res :candles #(if (= % "no") 0 (parse-int %)))
         res)
-      (reduce #(update %1 %2 keyword) res [:buc :proof])
+      (reduce #(update %1 %2 str->kw) res [:buc :proof])
       (reduce #(update %1 %2 parse-int)
               res
               (for [kw [:cost :enchantment :charges :recharges]

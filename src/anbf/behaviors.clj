@@ -1,6 +1,5 @@
 (ns anbf.behaviors
   (:require [clojure.tools.logging :as log]
-            [clojure.string :as string]
             [anbf.handlers :refer :all]
             [anbf.actions :refer :all]
             [anbf.dungeon :refer :all]

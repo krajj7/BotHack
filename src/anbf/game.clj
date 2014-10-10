@@ -178,8 +178,7 @@
       (when-let [[race role] (some->> (re-first-groups welcome-re text)
                                       (find-first some?)
                                       (#(string/split % #" "))
-                                      (map (comp #(get races % (keyword %))
-                                                 string/lower-case)))]
+                                      (map #(get races % (str->kw %))))]
         (log/debug "player role:" role "- race:" race)
         (swap! (:game anbf) update :player assoc
                :role role
@@ -338,7 +337,7 @@
             (swap! game remove-intrinsic :see-invis)
             #"You feel quick!"
             (swap! game add-intrinsic :speed)
-            #"You feel slower|You feel slow!"
+            #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
             (swap! game remove-intrinsic :speed)
             nil)
           (if-let [level (level-msg text)]

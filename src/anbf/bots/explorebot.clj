@@ -91,19 +91,21 @@
         ;(explore game :sokoban)
         (explore game :quest)
         (explore game :vlad)
-        (explore game :wiztower)
         (explore game :main)
+        (explore game :wiztower)
         (invocation game))))
 
 (defn progress [game]
-  (or (full-explore game)
+  (or #_(if-not (have game real-amulet?)
+        (full-explore game))
+      (explore-level game :mines :minetown)
       ;(explore-level game :sokoban :end)
-      ;(explore-level game :vlad :end)
-      ;(explore-level game :quest :end)
-      ;(explore-level game :main :end)
-      ;(explore-level game :wiztower :end)
-      ;(invocation game)
-      ;(explore-level game :main :sanctum)
+      (explore-level game :quest :end)
+      (explore-level game :vlad :end)
+      (explore-level game :main :end)
+      (explore-level game :wiztower :end)
+      (invocation game)
+      (explore-level game :main :sanctum)
       (get-amulet game)
       (visit game :astral)
       ; TODO check for altar, ->Offer
@@ -219,6 +221,7 @@
 
 (defn- want-light? [game level]
   (not (or (explored? game)
+           (:minetown (:tags level))
            (#{:air :water} (branch-key game))
            (lit-mines? game level))))
 
@@ -289,6 +292,14 @@
                       ; don't let the book fall into water/lava
                       (or (:step (navigate game #((not-any-fn? lava? water?)
                                                   (neighbors level %))))
+                          (->Wait))))
+                  (if (and (= \H (:glyph monster)) (= "Home 3" (:dlvl level))
+                           (not (have-pick game)) (= 12 (:y monster))
+                           (< 18 (:x monster) 25))
+                    ; only needed until the bot can use wand of striking to break blocking boulders
+                    (with-reason "baiting giant away from corridor"
+                      (or (:step (navigate game #{(position 26 12)
+                                                  (position 16 12)}))
                           (->Wait))))
                   step
                   (if (or (blind? player)

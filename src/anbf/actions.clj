@@ -1,6 +1,5 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
-            [clojure.string :as string]
             [multiset.core :refer [multiset]]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
@@ -18,7 +17,7 @@
 (defmacro ^:private defaction [action args & impl]
   `(do (defrecord ~action ~args
          anbf.util.Type
-         (~'typekw [~'_] ~(keyword (string/lower-case action)))
+         (~'typekw [~'_] ~(str->kw action))
          anbf.bot.IAction
          ~@impl)
        (defn ~(symbol (str \- action)) ~args

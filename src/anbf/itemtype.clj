@@ -15,7 +15,7 @@
    `(defitemtype ~recname ~varname ~recfields ~datamap {}))
   ([recname varname recfields datamap defaults]
    `(do (defrecord ~recname ~recfields
-          anbf.util.Type (typekw [~'_] ~(keyword (string/lower-case recname))))
+          anbf.util.Type (typekw [~'_] ~(str->kw recname)))
         (defmethod kw->itemtype
           ~(keyword (string/replace varname #"s$" "")) [~'_]
           ~(symbol (str "map->" recname)))

@@ -28,7 +28,7 @@
 
 (def upwards-branches #{:sokoban :vlad :wiztower})
 
-(def portal-branches #{:quest :wiztower :ludios :air :fire :water :astral})
+(def portal-branches #{:quest :wiztower :ludios})
 
 (def planes #{:earth :air :fire :water :astral})
 

@@ -212,7 +212,7 @@
     (if-let [status (re-first-groups botl1-re botl1)]
       {:nickname (status 0)
        :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
-       :alignment (-> (status 7) string/lower-case keyword)
+       :alignment (str->kw (status 7))
        :score (-> (status 8) parse-int)}
       (log/error "failed to parse botl1 " botl1))
     (if-let [status (re-first-groups botl2-re botl2)]

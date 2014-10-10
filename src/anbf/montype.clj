@@ -531,7 +531,6 @@
         (if-let [[desc god] (and (not (re-seq #"Minion of Huhetotl| Yendor"
                                               desc))
                                  (not ghost-or-called)
-                                 ; TODO check valid god?
                                  (re-first-groups #"(.*) of (.*)" desc))]
           (or (if (re-seq #"poohbah|priest|priestess" desc)
                 (if (.contains desc "high ")

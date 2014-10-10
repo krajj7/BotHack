@@ -91,3 +91,6 @@
 
 (defn not-any-fn? [& fns]
   (complement (apply some-fn fns)))
+
+(defn str->kw [s]
+  (if s (keyword (string/lower-case s))))

@@ -112,15 +112,16 @@
 (defn needs-levi? [tile]
   (#{:water :lava :ice :hole :trapdoor :cloud} (:feature tile)))
 
-(defn- random-move [{:keys [player] :as game} level]
+(defn- arbitrary-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
            (remove (partial monster-at level))
+           ; FIXME this should use :last-path
            (filterv #(or (passable-walking? game level (at level player) %)
                          (unexplored? %)))
            random-nth
            (towards player)
            ->Move
-           (with-reason "random direction")))
+           (with-reason "arbitrary direction")))
 
 (defn fidget
   "Move around randomly or wait to make a peaceful move out of the way"
@@ -140,13 +141,13 @@
                    (swap! (:game anbf) update-curlvl-at target
                           update :blocked (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
-       (or (random-move game level)
+       (or (arbitrary-move game level)
            (->Search))))))
 
 (defn- safe-from-guards?
   "Only just enough to handle the most usual corner-case where the only door in the stair-room of minetown is locked.  Potentially dangerous without infravision."
   [level]
-  (not-any? #(-> % :type :tags :guard) (vals (:monsters level))))
+  (not-any? (comp :guard :tags :type) (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
   (or (boulder? tile)
@@ -220,9 +221,9 @@
                    (if monster
                      (if (:peaceful monster)
                        (if (<= (or (:blocked to-tile) 0) 20)
-                         [50 (with-reason "peaceful blocker" monster
+                         [50 (with-reason "peaceful blocker" (pr-str monster)
                                (fidget game level to-tile))]) ; hopefully will move
-                       [6 (with-reason "pathing through" monster
+                       [6 (with-reason "pathing through" (pr-str monster)
                             (->Move dir))])
                      (or (and (shop? to-tile)
                               (not (shop? from-tile))
@@ -313,7 +314,7 @@
                   (->Autotravel target))
                 (if (:trapped (:player game))
                   (with-reason "untrapping self"
-                    (random-move game level)))
+                    (arbitrary-move game level)))
                 (nth (move-fn from start) 1))
             (assoc :path path))))
 
@@ -731,7 +732,8 @@
                                         (straight-neighbors level leader)))
                 (with-reason
                   "trying to seek out quest leader at" leader "before descending"
-                  (seek game leader {:adjacent true :explored true})))))
+                  (seek game (set (straight-neighbors leader))
+                        {:explored true})))))
           (let [branch (branch-key game)
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
                                   [:stairs-up (->Ascend)]
@@ -878,6 +880,8 @@
           new-dlvl (dlvl-candidate game branch)]
       (with-reason "trying to enter" branch "from" new-dlvl
         (or (switch-dlvl game new-dlvl)
+            (if (portal-branches branch)
+              (seek-portal game))
             (seek game #(and (has-feature? % stairs)
                              (not= :main (branch-key game %))))
             stair-action)))))
