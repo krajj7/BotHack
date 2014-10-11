@@ -197,7 +197,7 @@
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
-                 assoc :peaceful true)
+                 assoc :peaceful nil)
           nil))))
   (trigger [_] (direction-trigger dir)))
 
@@ -391,12 +391,11 @@
                          (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
             (when-let [desc (and (monster-glyph? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
-              (let [peaceful? (.startsWith ^String desc "peaceful")
-                    typename (by-description desc)]
-                (log/debug "monster description" text "=>" typename)
+              (let [peaceful? (.startsWith ^String desc "peaceful ")
+                    montype (by-description desc)]
+                (log/debug "monster description" text "=>" montype)
                 (swap! game update-curlvl-monster pos assoc
-                       :peaceful peaceful?
-                       :type (name->monster typename))))
+                       :peaceful peaceful? :type montype)))
             (log/debug "non-monster farlook result:" text)))))
   (trigger [this]
     (str \; (to-position pos) \.)))
@@ -453,8 +452,9 @@
   (when-not (hallu? player)
     (when-let [m (->> (curlvl-monsters game) vals
                       (remove (some-fn :remembered
-                                       :fiendly
-                                       (comp some? :peaceful)
+                                       :friendly
+                                       (every-pred :type
+                                                   (comp some? :peaceful))
                                        (comp #{\I \1 \2 \3 \4 \5} :glyph)))
                       first)]
       (with-reason "examining monster" (->FarLook m)))))

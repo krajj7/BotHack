@@ -16,14 +16,13 @@
 
 (defn- transfer-pair [game [old-monster monster]]
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
-  (update-curlvl-monster
-    game monster
-    (fn [monster]
-      (cond-> monster
-        :always (into (select-keys old-monster
-                                   [:type :peaceful :cancelled :awake]))
-        (not= (position old-monster)
-              (position monster)) (assoc :awake true)))))
+  (update-curlvl-monster game monster
+    #(as-> % monster
+       (into monster (select-some old-monster [:type :cancelled :awake]))
+       (assoc monster :peaceful (:peaceful old-monster))
+       (if (not= (position old-monster) (position monster))
+         (assoc monster :awake true)
+         monster))))
 
 (defn filter-visible-uniques
   "If a unique monster was remembered and now is visible, remove all remembered instances"
