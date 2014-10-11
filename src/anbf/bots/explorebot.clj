@@ -39,10 +39,15 @@
     ; TODO EnhanceHandler
     #_(->Enhance)))
 
-(defn- pray-for-food [game]
-  (if (and (fainting? (:player game))
-           (can-pray? game))
-    (with-reason "praying for food" ->Pray)))
+(defn- handle-starvation [{:keys [player] :as game}]
+  (or (if (weak? player)
+        (if-let [[slot food] (have game (every-pred (partial can-eat? player)
+                                                    (complement tin?)))]
+          (with-reason "weak or worse, eating" food
+            (->Eat slot))))
+      (if (and (fainting? (:player game))
+               (can-pray? game))
+        (with-reason "praying for food" ->Pray))))
 
 (defn- handle-illness [{:keys [player] :as game}]
   (if (:ill (:state player))
@@ -334,18 +339,14 @@
           edible? #(every-pred
                      (partial fresh-corpse? game %)
                      (partial can-eat? player))]
-      (or (if (weak? player)
-            (if-let [[slot food] (have game (partial can-eat? player))]
-              (with-reason "weak or worse, eating" food
-                (->Eat slot))))
-          (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
+      (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
             (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
                   (->> (at-player game) :items
                        (find-first (beneficial? player)) :label
                        ->Eat
                        (without-levitation game)))))
-          (if (hungry? player)
+          (if (hungry? player) ; TODO eat tins
             (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
               (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
@@ -374,7 +375,7 @@
       (register-handler -14 (name-first-amulet anbf))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
-                                (pray-for-food game))))
+                                (handle-starvation game))))
       (register-handler -7 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-illness game))))
