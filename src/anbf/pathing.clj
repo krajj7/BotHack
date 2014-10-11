@@ -221,9 +221,9 @@
                    (if monster
                      (if (:peaceful monster)
                        (if (<= (or (:blocked to-tile) 0) 20)
-                         [50 (with-reason "peaceful blocker" (pr-str monster)
+                         [50 (with-reason "peaceful blocker" monster
                                (fidget game level to-tile))]) ; hopefully will move
-                       [6 (with-reason "pathing through" (pr-str monster)
+                       [6 (with-reason "pathing through" monster
                             (->Move dir))])
                      (or (and (shop? to-tile)
                               (not (shop? from-tile))
@@ -623,7 +623,7 @@
   (if (has-dead-ends? game level)
     (if-let [goals (unsearched-extremities game level howmuch)]
       (if-let [p (navigate game goals)]
-        (with-reason "searching extremity" (or (pr-str (:target p)) "here")
+        (with-reason "searching extremity" (or (:target p) "here")
           (or (:step p)
               (search 10)))))))
 
@@ -951,7 +951,7 @@
     (or (search-dead-end game 20)
         (if-let [path (navigate game (partial explorable-tile? level)
                                 {:prefer-items true})]
-          (with-reason "exploring" (pr-str (at level (:target path)))
+          (with-reason "exploring" (at level (:target path))
             (:step path)))
         ; TODO search for shops if heard but not found
         (if (unexplored-column game level)

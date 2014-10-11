@@ -56,6 +56,7 @@
   (let [action-idx (dec (count reason+action))
         action (nth reason+action action-idx)
         reason (->> reason+action (take action-idx)
+                    (map #(if (string? %) % (pr-str %)))
                     (interpose \space) (apply str))]
     (if-let [a (if (fn? action)
                  (action)
@@ -436,7 +437,7 @@
                      (at-player game))]
     (if ((some-fn :new-items unknown? unknown-trap?
                   (every-pred altar? (complement :alignment))) tile)
-      (with-reason "examining tile" (pr-str tile) ->Look))))
+      (with-reason "examining tile" tile ->Look))))
 
 (defn- examine-features [game]
   (some->> (curlvl game) tile-seq

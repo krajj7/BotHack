@@ -106,6 +106,8 @@
   (or #_(if-not (have game real-amulet?)
         (full-explore game))
       (explore-level game :mines :minetown)
+      (visit game :mines :end)
+      (visit game :main :medusa)
       ;(explore-level game :sokoban :end)
       (explore-level game :quest :end)
       (explore-level game :vlad :end)
@@ -334,10 +336,10 @@
                      (partial can-eat? player))]
       (or (if (weak? player)
             (if-let [[slot food] (have game (partial can-eat? player))]
-              (with-reason "weak or worse, eating" (pr-str food)
+              (with-reason "weak or worse, eating" food
                 (->Eat slot))))
           (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
-            (with-reason "want to eat corpse at" (pr-str (:target p))
+            (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
                   (->> (at-player game) :items
                        (find-first (beneficial? player)) :label
@@ -345,7 +347,7 @@
                        (without-levitation game)))))
           (if (hungry? player)
             (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
-              (with-reason "going to eat corpse at" (pr-str (:target p))
+              (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
                     (->> (at-player game) :items
                          (find-first (edible? player)) :label
@@ -383,14 +385,14 @@
                              (choose-action [_ game]
                                (handle-impairment game))))
       (register-handler 1 (reify ActionHandler
-                             (choose-action [_ game]
-                               (reequip game))))
+                            (choose-action [_ game]
+                              (reequip game))))
       (register-handler 2 (reify ActionHandler
-                             (choose-action [_ game]
-                               (feed game))))
+                            (choose-action [_ game]
+                              (feed game))))
       (register-handler 3 (reify ActionHandler
-                             (choose-action [_ game]
-                               (consider-items game))))
+                            (choose-action [_ game]
+                              (consider-items game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

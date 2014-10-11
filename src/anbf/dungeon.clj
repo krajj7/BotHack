@@ -103,11 +103,16 @@
   {:pre [(:dungeon game)]}
   (-> game curlvl :monsters))
 
+(defn update-curlvl
+  "Update the current Level by applying update-fn to its current value and args"
+  [game update-fn & args]
+  (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
+         update-fn args))
+
 (defn add-curlvl-tag [game & tags]
   {:pre [(:dungeon game)]}
   (log/debug "tagging curlvl with" tags)
-  (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game) :tags]
-         conj tags))
+  (apply update-curlvl game update :tags conj tags))
 
 (defn curlvl-tags [game]
   {:pre [(:dungeon game)]}
@@ -117,35 +122,25 @@
   "Removes a monster from the given position"
   [game pos]
   {:pre [(:dungeon game)]}
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game) :monsters]
-             dissoc (position pos)))
+  (update-curlvl game update :monsters dissoc (position pos)))
 
 (defn reset-curlvl-monster
   "Sets the monster at the given position to the new value"
   [game monster]
   {:pre [(:dungeon game)]}
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
-             reset-monster monster))
+  (update-curlvl game reset-monster monster))
 
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
   [game pos update-fn & args]
-  {:pre [(get-in game [:dungeon :levels (branch-key game)
-                       (:dlvl game) :monsters (position pos)])]}
-  (apply update-in game [:dungeon :levels (branch-key game)
-                         (:dlvl game) :monsters (position pos)]
+  {:pre [((curlvl-monsters game) (position pos))]}
+  (apply update-curlvl game update-in [:monsters (position pos)]
          update-fn args))
 
 (defn curlvl-monster-at
   "Returns the monster at the position on the current level"
   [game pos]
   (-> game curlvl (monster-at pos)))
-
-(defn update-curlvl
-  "Update the current Level by applying update-fn to its current value and args"
-  [game update-fn & args]
-  (update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
-             #(apply update-fn % args)))
 
 (defn update-curlvl-at
   "Update the Tile on current level at given position by applying update-fn to its current value and args"
@@ -363,8 +358,8 @@
                          (less-than? 5))))) (add-curlvl-tag :wiztower-level)
       (and (<= 5 curdlvl 9) (= :mines branch) (not (tags :minetown))
            has-features?) (add-curlvl-tag :minetown)
-      (and (<= 5 curdlvl 9) (stairs-up? (at level 3 2))
-           (tags :minetown)) (add-curlvl-tag :minetown-grotto)
+      (and (<= 5 curdlvl 9) (stairs-up? (at level 3 2)) (tags :minetown)
+           (not (tags :minetown-grotto))) (add-curlvl-tag :minetown-grotto)
       (and (<= 27 curdlvl 36) (not (:asmodeus (:tags level)))
            (or (and (some :undiggable (tile-seq level))
                     (stairs-down? (at level 27 13)))
@@ -466,9 +461,8 @@
     (if (shops kind)
       (reduce #(update-curlvl-at %1 %2 assoc :feature :wall)
               res
-              (for [pos (rectangle-boundary NW-corner SE-corner)
-                    :when (unknown? (at-curlvl game pos))]
-                pos))
+              (filter (comp unknown? (partial at-curlvl game))
+                      (rectangle-boundary NW-corner SE-corner)))
       res)))
 
 (defn- floodfill-room [game pos kind]
@@ -507,8 +501,8 @@
   "Presumes having just entered a room"
   [game]
   (min-by #(distance (:player game) %)
-          (for [m (vals (curlvl-monsters game))
-                :when (shopkeeper-look? game m)] m)))
+          (filter (partial shopkeeper-look? game)
+                  (vals (curlvl-monsters game)))))
 
 (def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
 
