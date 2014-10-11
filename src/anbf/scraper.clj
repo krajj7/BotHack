@@ -80,8 +80,10 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
-    (ffirst (re-seq #".*\?\"?  ?\[[^\]]+\] (\(.\) )?$"
-                    (before-cursor frame)))))
+    (some->> (before-cursor frame)
+             (re-seq #".*\?\"?  ?\[[^\]]+\] (\(.\) )?$")
+             ffirst
+             string/trim)))
 
 (defn- more-prompt? [frame]
   (before-cursor? frame "--More--"))
@@ -125,7 +127,9 @@
   [frame]
   (when (and (<= (-> frame :cursor :y) 1)
              (before-cursor? frame "##'"))
-    (subs (topline+ frame) 0 (- (-> frame :cursor :x) 4))))
+    (-> (topline+ frame)
+        (subs 0 (- (-> frame :cursor :x) 4))
+        string/trim)))
 
 (defn- prompt-fn [msg]
   (condp re-seq msg
@@ -402,8 +406,10 @@
              ; v kontextech akci kde ##' muze byt destruktivni (direction prompt - kick,wand,loot,talk...) cekam dokud se neobjevi neco co prokazatelne neni zacatek direction promptu, pak poslu znacku.
              ; dany kontext musi eventualne neco napsat na topline
              (no-mark [frame]
-               (log/debug "no-mark maybe direction/location prompt")
+               (log/debug "no-mark maybe direction/location prompt, prev ="
+                          @prev)
                (or (= @prev (topline frame)) (ref-set prev nil)
+                   (log/debug "no-mark - new topline:" (topline frame))
                    (handle-direction frame)
                    (undrawn? frame "In what direction")
                    (handle-location frame)
@@ -469,7 +475,7 @@
     (apply-what [_ prompt]
       (dosync
         (ref-set scraper (new-scraper delegator prompt))
-        (log/debug "no-mark scraper")))
+        (log/debug "no-mark scraper, prev =" prompt)))
     ActionChosenHandler
     (action-chosen [_ action]
       (dosync
