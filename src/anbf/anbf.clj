@@ -10,6 +10,7 @@
             [anbf.game :refer :all]
             [anbf.handlers :refer :all]
             [anbf.pathing :refer :all]
+            [anbf.position :refer :all]
             [anbf.scraper :refer :all]
             [anbf.tracker :refer :all]))
 
@@ -70,7 +71,7 @@
     (start-clj-bot anbf (symbol menubot-ns))
     true))
 
-(defn- actions-handler [anbf]
+(defn- actions-handler [{:keys [game] :as anbf}]
   (let [action-handlers (atom #{})]
     (reify ActionChosenHandler
       (action-chosen [_ action]
@@ -85,7 +86,12 @@
                          (handler anbf)
                          handler)]
             (register-handler anbf p h)
-            (swap! action-handlers conj h)))))))
+            (swap! action-handlers conj h)))
+        (swap! game #(assoc % :last-position (position (:player %))))
+        (if-not (#{:call :name :discoveries :inventory :look :farlook}
+                         (typekw action))
+          (swap! game #(assoc % :last-path (get action :path (:last-path %))
+                              :last-action action)))))))
 
 (defn pause [anbf]
   (send (:delegator anbf) set-inhibition true)

@@ -209,13 +209,6 @@
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
-    ActionChosenHandler
-    (action-chosen [_ action]
-      (swap! game #(assoc % :last-position (position (:player %))))
-      (if-not (#{:call :name :discoveries :inventory :look :farlook}
-                       (typekw action))
-        (swap! game #(assoc % :last-action action
-                            :last-path (get action :path (:last-path %))))))
     AboutToChooseActionHandler
     (about-to-choose [_ game]
       (swap! (:game anbf) filter-visible-uniques))

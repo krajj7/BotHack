@@ -236,7 +236,9 @@
 
 (defn- mark-item [tile new-glyph new-color]
   (if (= \8 new-glyph)
-    tile
+    (if (monster? tile)
+      (assoc tile :new-items true)
+      tile)
     (if (and (= new-glyph (:item-glyph tile))
              (or (not (:item-color tile)) ; don't have data to infer color from item appearance
                  (= new-color (:item-color tile))))

@@ -467,14 +467,14 @@
                         (neighbors level tile))))))
 
 (defn- unblocked-boulder? [game level tile]
-  (and (blocking-boulder? level tile)
-       (some #(and (safely-walkable? level
-                                     (in-direction level tile (towards % tile)))
-                   (pushable-through game level tile %))
-             (neighbors level tile))))
+  (some #(and (safely-walkable? level (in-direction level tile
+                                                    (towards % tile)))
+              (pushable-through game level tile %))
+        (neighbors level tile)))
 
 (defn- push-boulders [{:keys [player] :as game} level]
-  (if (some #(unblocked-boulder? game level %) (tile-seq level))
+  (if (some #(and (blocking-boulder? level %)
+                  (unblocked-boulder? game level %)) (tile-seq level))
     (if-let [path (navigate game #(pushable-from game level %))]
       (with-reason "going to push a boulder"
         (or (:step path)
@@ -945,7 +945,7 @@
     (or (seek-level game branch tag-or-dlvl)
         (explore game))))
 
-(defn- explore-step [game]
+(defn- explore-step [{:keys [player] :as game}]
   (let [level (curlvl game)
         player-tile (at-player game)]
     (or (search-dead-end game 20)
@@ -957,6 +957,14 @@
         (if (unexplored-column game level)
           (with-reason "level not explored enough, searching"
             (search-level game (if (= :mines (branch-key game)) 10 2))))
+        (if-let [bldrs (filter #(and (boulder? %) (explorable-tile? level %))
+                               (tile-seq level))]
+          (if-let [path (navigate game #(and (some (partial adjacent? %) bldrs)
+                                             (pushable-from game level %)))]
+            (with-reason "going to push an explorable boulder"
+              (or (:step path)
+                  (->> (pushable-from game level player) first
+                       (towards player) ->Move (without-levitation game))))))
         (if (and (:sanctum (:tags level))
                  (not (:walked (at-curlvl game 20 10))))
           (with-reason "searching sanctum"

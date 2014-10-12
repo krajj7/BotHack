@@ -153,9 +153,10 @@
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
           portal (atom false)
-          old-player (:player @game)
+          old-game @game
+          old-player (:player old-game)
           old-pos (position old-player)
-          level (curlvl @game)
+          level (curlvl old-game)
           target (in-direction level old-pos dir)]
       (update-trapped-status anbf old-pos)
       (if (and (not (:trapped old-player)) (diagonal dir) (item? target))
@@ -164,12 +165,13 @@
                     (not (curlvl-monster-at % target))
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
-             (if (:feature target)
-               % ; NH actually seems to ignore a move in some cases when stepping on newly-discovered trap
-               (do (log/debug "stuck on diagonal movement => possibly door at"
-                              target)
+             (if (and (= :move (typekw (:last-action old-game)))
+                      (= dir (:dir (:last-action old-game))))
+               (do (log/warn "stuck twice on diagonal movement => possibly door at" target)
                    (update-curlvl-at % (in-direction old-pos dir)
-                                     assoc :feature :door-open)))
+                                     assoc :feature :door-open))
+               (do (log/warn "retry diagonal move towards" target)
+                   %)) ; NH actually seems to ignore a move in some cases
              %)))
       (reify
         ToplineMessageHandler
