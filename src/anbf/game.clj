@@ -48,7 +48,8 @@
       (update-game-status status)))
 
 (defn- rogue-ghost? [game level tile]
-  (and ;(blank? tile) - not yet updated
+  (and (not (blind? (:player game)))
+       ;(blank? tile) - not yet updated
        (= \space (get-in game [:frame :lines (:y tile) (:x tile)]))
        (adjacent? (:player game) tile)
        (or (and (:feature tile) (not (rock? tile)))
@@ -259,6 +260,8 @@
             (swap! game assoc-in [:player :lycantrophy] false)
             #"Your .* feels? somewhat better"
             (swap! game assoc-in [:player :leg-hurt] false)
+            #"You sink into the lava"
+            (update-at-player-when-known anbf assoc :feature :lava)
             #"You turn into a"
             (-> anbf update-inventory update-items)
             #"You are almost hit"
@@ -270,7 +273,7 @@
               (update-at-player-when-known anbf assoc :feature :portal))
             #"The walls around you begin to bend and crumble!"
             (swap! game update-at-player assoc :feature :stairs-down)
-            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you"
+            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you"
             (update-inventory anbf)
             #"shop appears to be deserted"
             (if (< 33 (dlvl @game))

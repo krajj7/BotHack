@@ -732,7 +732,7 @@
                                         (straight-neighbors level leader)))
                 (with-reason
                   "trying to seek out quest leader at" leader "before descending"
-                  (seek game (set (straight-neighbors leader))
+                  (seek game (set (straight-neighbors level leader))
                         {:explored true})))))
           (let [branch (branch-key game)
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))

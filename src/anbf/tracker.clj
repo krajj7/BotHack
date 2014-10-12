@@ -15,7 +15,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
-  (log/debug "transfer:" \newline old-monster "to" \newline monster)
+  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))

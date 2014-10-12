@@ -227,9 +227,7 @@
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
-       (->> (tile-seq level)
-            (filter #(= \. (:glyph %)))
-            (more-than? 50))))
+       (not-any? (every-pred blank? floor?) (tile-seq level))))
 
 (defn- want-light? [game level]
   (not (or (explored? game)
