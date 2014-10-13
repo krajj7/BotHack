@@ -82,8 +82,8 @@
   ([tile] (item? (:glyph tile) (:color tile)))
   ([glyph color]
    (or (#{\" \) \[ \! \? \/ \= \+ \* \( \` \8 \0 \$ \% \,} glyph)
-       (and (= \_ glyph) (some? color))
-       (and (= \: glyph) (nil? color)))))
+       (and (some? color) (= \_ glyph))
+       (and (nil? color) (or (= \: glyph) (= \] glyph))))))
 
 (defn dug? [tile]
   (:dug tile))
