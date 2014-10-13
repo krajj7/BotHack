@@ -213,7 +213,10 @@
    (let [to-tile (at level to)
          from-tile (at level from)
          dir (towards from to-tile)
-         monster (monster-at level to)]
+         monster (monster-at level to)
+         need-levi? (or (and (:levi opts) (#{:air :water} (:branch-id game))
+                             (walkable? to-tile))
+                        (needs-levi? to-tile))]
      (some-> (or (if (and (passable-walking? game level from-tile to-tile)
                           (or (:feature to-tile) (not (:explored opts)))
                           (not (and (kickable-door? level to-tile opts)
@@ -225,10 +228,9 @@
                                (fidget game level to-tile))]) ; hopefully will move
                        [6 (with-reason "pathing through" monster
                             (->Move dir))])
-                     (or (and (shop? to-tile)
-                              (not (shop? from-tile))
+                     (or (and (shop? to-tile) (not (shop? from-tile))
                               (enter-shop game))
-                         (if-not (or (and (:levi opts) (needs-levi? to-tile))
+                         (if-not (or (and (:levi opts) need-levi?)
                                      (and (:no-traps opts) (trap? to-tile)))
                            [0 (->Move dir)])))) ; trapdoors/holes are escapable
                  (if (kickable-door? level from-tile opts)
@@ -237,11 +239,10 @@
                        [3 (with-reason
                             "waiting for monster to move to kick door at my position"
                             (->Search))]
-
                        [1 (with-reason "moving to kick blocked door at my position"
                             (->Move odir))])))
                  (if (and (edge-passable-walking? game level from-tile to-tile)
-                          (needs-levi? to-tile) (not (boulder? to-tile)))
+                          need-levi? (not (boulder? to-tile)))
                    (if-let [[slot item] (:levi opts)]
                      (if (:in-use item)
                        [1 (with-reason "assuming levitation" (->Move dir))]

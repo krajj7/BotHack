@@ -88,7 +88,8 @@
   (if-not (have game real-amulet?)
     (with-reason "searching for the amulet"
       (or (explore game)
-          (search-level game))))) ; if Rodney leaves the level with it we're screwed
+          (search-level game 5) ; if Rodney leaves the level with it we're screwed
+          (seek game stairs-up?)))))
 
 (defn full-explore [game]
   (if-not (get-level game :main :sanctum)
@@ -110,16 +111,16 @@
 (defn progress [game]
   (or #_(if-not (have game real-amulet?)
         (full-explore game))
-      (explore-level game :mines :minetown)
-      (visit game :mines :end)
-      (visit game :main :medusa)
+      ;(explore-level game :mines :minetown)
+      ;(visit game :mines :end)
+      ;(visit game :main :medusa)
       ;(explore-level game :sokoban :end)
-      (explore-level game :quest :end)
-      (explore-level game :vlad :end)
-      (explore-level game :main :end)
-      (explore-level game :wiztower :end)
-      (invocation game)
-      (explore-level game :main :sanctum)
+      ;(explore-level game :quest :end)
+      ;(explore-level game :vlad :end)
+      ;(explore-level game :main :end)
+      ;(explore-level game :wiztower :end)
+      ;(invocation game)
+      ;(explore-level game :main :sanctum)
       (get-amulet game)
       (visit game :astral)
       (offer-amulet game)))
@@ -281,11 +282,6 @@
   (or (if (:engulfed player)
         (with-reason "killing engulfer" (or (wield-weapon game)
                                             (->Move :E))))
-      (if-let [[slot _] (and (#{:water :air} (branch-key game))
-                             (not (have-levi-on game))
-                             (have-levi game))]
-        (with-reason "levitation for :air/:water"
-          (make-use game slot)))
       (let [tgts (hostile-threats game)]
         (when-let [{:keys [step target]} (navigate game tgts
                                             {:adjacent true :walking true
@@ -314,6 +310,11 @@
                       (or (:step (navigate game #{(position 26 12)
                                                   (position 16 12)}))
                           (->Wait))))
+                  (if-let [[slot _] (and (= :air (branch-key game))
+                                         (not (have-levi-on game))
+                                         (have-levi game))]
+                    (with-reason "levitation for :air"
+                      (make-use game slot)))
                   step
                   (if (or (blind? player)
                           (not (monster? (at level target))))
