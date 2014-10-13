@@ -101,29 +101,26 @@
         (explore game :wiztower)
         (invocation game))))
 
-(defn offer-amulet [game]
-  (let [tile (at-player game)]
-    (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (key (have game real-amulet?)))
-      (with-reason "seeking unknown altar"
-        (seek game (every-pred altar? (complement :walked)))))))
+(defn seek-altar [game]
+  (with-reason "seeking unknown altar"
+    (seek game (every-pred altar? (complement :walked)))))
 
 (defn progress [game]
   (or #_(if-not (have game real-amulet?)
         (full-explore game))
-      ;(explore-level game :mines :minetown)
-      ;(visit game :mines :end)
-      ;(visit game :main :medusa)
+      (explore-level game :mines :minetown)
+      (visit game :mines :end)
+      (visit game :main :medusa)
       ;(explore-level game :sokoban :end)
-      ;(explore-level game :quest :end)
-      ;(explore-level game :vlad :end)
-      ;(explore-level game :main :end)
-      ;(explore-level game :wiztower :end)
-      ;(invocation game)
-      ;(explore-level game :main :sanctum)
+      (explore-level game :quest :end)
+      (explore-level game :vlad :end)
+      (explore-level game :main :end)
+      (explore-level game :wiztower :end)
+      (invocation game)
+      (explore-level game :main :sanctum)
       (get-amulet game)
       (visit game :astral)
-      (offer-amulet game)))
+      (seek-altar game)))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
@@ -231,7 +228,10 @@
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
-       (not-any? (every-pred blank? floor?) (tile-seq level))))
+       (if-let [floors (seq (filter #(and (floor? %)
+                                          (< 5 (distance % (:player game))))
+                                    (tile-seq level)))]
+         (not-any? blank? floors))))
 
 (defn- want-light? [game level]
   (not (or (explored? game)
@@ -357,6 +357,12 @@
                          ->Eat
                          (without-levitation game))))))))))
 
+(defn offer-amulet [game]
+  (let [tile (and (= :astral (:branch-id game))
+                  (at-player game))]
+    (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
+      (->Offer (key (have game real-amulet?))))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -371,6 +377,9 @@
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
+      (register-handler -99 (reify ActionHandler
+                              (choose-action [_ game]
+                                (offer-amulet game))))
       (register-handler -15 (reify ActionHandler
                               (choose-action [_ game]
                                 (enhance game))))
