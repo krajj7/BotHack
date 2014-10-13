@@ -154,6 +154,14 @@
   {:pre [(:dungeon game)]}
   (apply update-curlvl-at game (:player game) update-fn args))
 
+(defn update-around-player
+  "Update the Tiles around player's position by applying update-fn to their current value and args"
+  [game update-fn & args]
+  {:pre [(:dungeon game)]}
+  (reduce #(apply update-curlvl-at game % update-fn args)
+          game
+          (neighbors (:player game))))
+
 (defn at-curlvl
   "Returns the Tile at the given position on the current level"
   ([game x y] (at-curlvl game {:x x :y y}))

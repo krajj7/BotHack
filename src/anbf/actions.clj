@@ -596,6 +596,8 @@
              ToplineMessageHandler
              (message [_ msg]
                (condp re-seq msg
+                 #"The ceiling collapses around you!"
+                 (swap! game update-around-player assoc :feature :rock)
                  #"you can't dig while entangled"
                  (swap! game assoc-in [:player :trapped] true)
                  #"This wall (seems|is) too hard to dig into\."
