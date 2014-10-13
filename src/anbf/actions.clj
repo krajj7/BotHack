@@ -447,6 +447,7 @@
            (find-first (every-pred #(or (unknown-trap? %)
                                         (and (altar? %) (not (:alignment %))
                                              (not= :astral (branch-key game))))
+                                   (complement blank?)
                                    (complement item?)
                                    (complement monster?)))
            ->FarLook
