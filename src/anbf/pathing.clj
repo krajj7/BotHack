@@ -448,16 +448,18 @@
                 (not (door-open? to))))))
 
 (defn- pushable-from [game level pos]
-  (seq (filter #(if (boulder? %)
-                  (let [dir (towards pos %)
-                        dest (in-direction level % dir)]
-                    (and dest
-                         (or (straight dir)
-                             (not= :sokoban (branch-key game level)))
-                         (not (monster-at level dest))
-                         (edge-passable-walking? game level pos %)
-                         (pushable-through game level % dest))))
-               (neighbors level pos))))
+  (let [tile (at level pos)]
+    (if (or (not (needs-levi? tile)) (ice? tile))
+      (seq (filter #(if (boulder? %)
+                      (let [dir (towards pos %)
+                            dest (in-direction level % dir)]
+                        (and dest
+                             (or (straight dir)
+                                 (not= :sokoban (branch-key game level)))
+                             (not (monster-at level dest))
+                             (edge-passable-walking? game level tile %)
+                             (pushable-through game level % dest))))
+                   (neighbors level pos))))))
 
 (defn- blocking-boulder? [level tile]
   (and (boulder? tile)

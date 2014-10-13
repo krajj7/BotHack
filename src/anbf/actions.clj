@@ -185,7 +185,7 @@
                   (swap! game remove-curlvl-monster target)
                   #"You try to move the boulder, but in vain\."
                   (let [boulder-target (in-direction level target dir)]
-                    (if (item? boulder-target)
+                    (if (and (diagonal dir) (item? boulder-target))
                       (swap! game update-curlvl-at boulder-target
                              assoc :feature :door-open)
                       (swap! game update-curlvl-at boulder-target
