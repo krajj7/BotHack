@@ -151,7 +151,6 @@
    (ordered-set "blindfold" "towel")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
-   #{"Amulet of Yendor"}
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
@@ -178,7 +177,11 @@
         (recur (rest cs)
                (into res (take-while (partial not= (item-name game i)) c)))
         (recur (rest cs) (into res c)))
-      res)))
+      (or (if-let [sanctum (get-level game :main :sanctum)]
+            (if (and (not (have game real-amulet?))
+                     (:seen (at sanctum 20 11)))
+              (conj res "Amulet of Yendor")))
+          res))))
 
 (defn consider-items [game]
   (let [desired (currently-desired game)
