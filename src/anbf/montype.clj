@@ -523,7 +523,7 @@
 
 (defn by-description [text]
   (let [^String desc (-> text strip-article strip-disposition strip-modifier)
-        ghost-or-called (re-first-group #"ghost|called" desc)]
+        ghost-or-called (re-seq #"ghost|called" desc)]
     (or (if (re-seq #"^(?:the )?high priest(?:ess)?$" desc)
           (name->monster "high priest"))
         (if (= desc "mimic")
@@ -545,7 +545,7 @@
                                   (not (.contains desc "Neferet the Green"))
                                   (not (.contains desc "Vlad the Impaler"))
                                   (re-first-groups #"(.*) the (.*)" desc))]
-          (name->monster desc))
+          (name->monster (strip-modifier desc)))
         (if-let [[desc nick] (re-first-groups #"(.*) called (.*)" desc)]
           (name->monster desc))
         (if (re-seq #"'?s? ghost" desc)
