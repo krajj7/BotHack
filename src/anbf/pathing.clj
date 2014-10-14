@@ -324,8 +324,10 @@
     (if (seq path)
       (if (:adjacent opts)
         (->Path (path-step game level from move-fn path opts) (pop path) to)
-        (and (or (= 1 (count path)) (move-fn (-> path pop peek) to))
-             (->Path (path-step game level from move-fn path opts) path to)))
+        (if-let [step (and (or (= 1 (count path))
+                               (move-fn (-> path pop peek) to)) 
+                           (path-step game level from move-fn path opts))]
+          (->Path step path to)))
       (->Path nil [] to))))
 
 (defn navigate
