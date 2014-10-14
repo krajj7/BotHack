@@ -90,45 +90,48 @@
   [game slot]
   (get-in game [:player :inventory slot]))
 
-(defn- have-selector [game name-or-set-or-fn]
+(defn- base-selector [game name-or-set-or-fn]
   (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
-        (set? name-or-set-or-fn) (some-fn
-                                   (comp name-or-set-or-fn
-                                         (partial item-name game))
-                                   (comp name-or-set-or-fn :name))
-        :else (some-fn
-                (comp (partial = name-or-set-or-fn) :name)
-                (comp (partial = name-or-set-or-fn)
-                      (partial item-name game)))))
+        (set? name-or-set-or-fn) (some-fn (comp name-or-set-or-fn
+                                                (partial item-name game))
+                                          (comp name-or-set-or-fn :name))
+        :else (some-fn (comp (partial = name-or-set-or-fn) :name)
+                       (comp (partial = name-or-set-or-fn)
+                             (partial item-name game)))))
+
+(defn- have-selector [game name-or-set-or-fn opts]
+  (apply every-pred (base-selector name-or-set-or-fn)
+         (remove nil? [(if (:safe opts) safe?)
+                       (if (:noncursed opts) noncursed?)
+                       (if (:blessed opts) blessed?)
+                       (if (false? (:in-use opts)) (complement :in-use))
+                       (if (:in-use opts) :in-use)])))
 
 (defn have-all
   "Returns a lazy seq of all matching [slot items] pairs in inventory, options same as 'have'"
-  [game name-or-set-or-fn]
-  ;(log/debug "have-all")
-  (for [[slot item :as entry] (inventory game)
-        :when ((have-selector game name-or-set-or-fn) item)]
-    entry))
+  ([game name-or-set-or-fn]
+   (have-all game name-or-set-or-fn {}))
+  ([game name-or-set-or-fn opts]
+   ; TODO :bagged
+   (filter (inventory game) (comp (have-selector game name-or-set-or-fn opts)
+                                  val))))
 
 (defn have
   "Returns the [slot item] of matching item in player's inventory or nil.
    First arg can be:
      String (name of item)
      #{String} (set of strings - item name alternatives with no preference)
-     fn - predicate function to filter items"
-  [game name-or-set-or-fn]
-  (first (have-all game name-or-set-or-fn)))
-
-(defn have-safe
-  "Like 'have' but return only known-non-cursed items"
-  [game name-or-set-or-fn]
-  (have game (every-pred safe?
-                         (have-selector game name-or-set-or-fn))))
-
-(defn have-noncursed
-  "Like 'have' but return only items not known to be cursed"
-  [game name-or-set-or-fn]
-  (have game (every-pred noncursed?
-                         (have-selector game name-or-set-or-fn))))
+     fn - predicate function to filter items (gets the Item as arg, not the name)
+   Options map can contain:
+     :safe - return only known-non-cursed items
+     :noncursed - return only items not known to be cursed
+     :blessed - return only blessed items
+     :in-use - if false only non-used items, if true only used (worn/wielded)
+     :bagged - return bag containing the item if not present in main inventory"
+  ([game name-or-set-or-fn]
+   (have game name-or-set-or-fn {}))
+  ([game name-or-set-or-fn opts]
+   (first (have-all game name-or-set-or-fn opts))))
 
 (defn have-blessed
   "Like 'have' but return only blessed items"
@@ -137,8 +140,7 @@
                          (have-selector game name-or-set-or-fn))))
 
 (defn have-unihorn [game]
-  (have game #(and (= "unicorn horn" (item-name game %))
-                   (not (cursed? %)))))
+  (have game "unicorn horn" {:noncursed true}))
 
 (defn have-pick [game]
   ; TODO (can-wield? ...)
@@ -149,9 +151,7 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn have-levi-on [game]
-  (have game #(and (#{"boots of levitation" "ring of levitation"}
-                             (item-name game %))
-                   (:in-use %))))
+  (have game #{"boots of levitation" "ring of levitation"} {:in-use true}))
 
 (defn have-levi [game]
   (have game #(and (#{"boots of levitation" "ring of levitation"}

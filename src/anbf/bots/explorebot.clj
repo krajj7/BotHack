@@ -54,12 +54,12 @@
     (with-reason "fixing illness"
       (or (if-let [[slot _] (have-unihorn game)]
             (->Apply slot))
-          (if-let [[slot _] (have-noncursed game "eucalyptus leaf")]
+          (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
             (->Eat slot))
-          (if-let [[slot _] (or (have-blessed game "potion of healing")
-                                (have-noncursed game
-                                                #{"potion of extra healing"
-                                                  "potion of full healing"}))]
+          (if-let [[slot _] (or (have game "potion of healing" {:blessed true})
+                                (have game #{"potion of extra healing"
+                                             "potion of full healing"}
+                                      {:noncursed true}))]
             (->Quaff slot))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -201,7 +201,8 @@
 (defn uncurse-weapon [game]
   (if-let [[_ weapon] (wielding game)]
     (if-let [[slot _] (and (cursed? weapon)
-                           (have-noncursed game "scroll of remove curse"))]
+                           (have game "scroll of remove curse"
+                                 {:noncursed true}))]
       (with-reason "uncursing weapon" (:label weapon)
         (->Read slot)))))
 
@@ -222,7 +223,7 @@
 (defn uncurse-gear [game]
   ; TODO passive items (luckstone / orb of fate)
   (if-let [[_ item] (have game (every-pred cursed? :in-use))]
-    (if-let [[slot _] (have-noncursed game "scroll of remove curse")]
+    (if-let [[slot _] (have game "scroll of remove curse" {:noncursed true})]
       (with-reason "uncursing" (:label item)
         (->Read slot)))))
 
