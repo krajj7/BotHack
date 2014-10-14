@@ -67,6 +67,10 @@
 (def no-monster-re #"You .* (thin air|empty water)" )
 
 (defaction Attack [dir]
+  (trigger [_]
+    (str \F (or (vi-directions (enum->kw dir))
+                (throw (IllegalArgumentException.
+                         (str "Invalid direction: " dir))))))
   (handler [_ {:keys [game] :as anbf}]
     (let [old-player (:player @game)]
       (reify ToplineMessageHandler
@@ -76,11 +80,7 @@
                                  (in-direction old-player dir))]
             (swap! game update-curlvl-at target
                    #(if (blank? %) (assoc % :feature :rock) %))
-            (swap! game remove-curlvl-monster target))))))
-  (trigger [_]
-    (str \F (or (vi-directions (enum->kw dir))
-                (throw (IllegalArgumentException.
-                         (str "Invalid direction: " dir)))))))
+            (swap! game remove-curlvl-monster target)))))))
 
 (defn mark-trap-here [anbf]
   (update-at-player-when-known anbf update :feature #(if (traps %) % :trap)))
@@ -151,6 +151,7 @@
                     (str "Invalid direction: " dir))))))
 
 (defaction Move [dir]
+  (trigger [_] (direction-trigger dir))
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
           portal (atom false)
@@ -202,13 +203,12 @@
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
                  assoc :peaceful nil)
-          nil))))
-  (trigger [_] (direction-trigger dir)))
+          nil)))))
 
 (defaction Pray []
+  (trigger [_] "#pray\n")
   (handler [_ anbf]
-    (swap! (:game anbf) #(assoc % :last-prayer (:turn %))))
-  (trigger [_] "#pray\n"))
+    (swap! (:game anbf) #(assoc % :last-prayer (:turn %)))))
 
 (defn- update-searched [{:keys [player turn] :as game} start]
   ; TODO maybe take speed into consideration
@@ -217,14 +217,14 @@
             (including-origin neighbors player))))
 
 (defaction Search []
+  (trigger [_] "s")
   (handler [_ {:keys [game] :as anbf}]
     (update-on-known-position anbf update-searched (:turn @game))
-    nil)
-  (trigger [_] "s"))
+    nil))
 
 (defaction Wait []
-  (handler [_ _])
-  (trigger [_] "."))
+  (trigger [_] ".")
+  (handler [_ _]))
 
 (defn- mark-branch-entrance [game tile old-game origin-feature]
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so mark the surroundings too to be sure (but two sets of stairs may be next to each other and this breaks if that happens and there are some followers... too bad)"
@@ -279,16 +279,17 @@
                    "for dlvl" new-dlvl)))))
 
 (defaction Ascend []
+  (trigger [_] "<")
   (handler [_ anbf]
-    (stairs-handler anbf))
-  (trigger [_] "<"))
+    (stairs-handler anbf)))
 
 (defaction Descend []
+  (trigger [_] ">")
   (handler [_ anbf]
-    (stairs-handler anbf))
-  (trigger [_] ">"))
+    (stairs-handler anbf)))
 
 (defaction Kick [dir]
+  (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir))))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ msg]
@@ -297,10 +298,10 @@
           (swap! game assoc-in [:player :leg-hurt] true)
           #"You can't move your leg!|There's not enough room to kick down here."
           (swap! game assoc-in [:player :trapped] true)
-          nil))))
-  (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir)))))
+          nil)))))
 
 (defaction Close [dir]
+  (trigger [this] (str \c (vi-directions (enum->kw dir))))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
@@ -312,8 +313,7 @@
                                                assoc :feature nil)
             "You see no door there." (swap! game update-curlvl-at door
                                             assoc :feature nil)
-            nil)))))
-  (trigger [this] (str \c (vi-directions (enum->kw dir)))))
+            nil))))))
 
 (defn- rogue-item-glyph [game glyph]
   (case glyph
@@ -332,6 +332,7 @@
 (def thing-re #"You (?:see|feel) here ([^.]+).")
 
 (defaction Look []
+  (trigger [this] ":")
   (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)]
       (swap! game #(if-not (blind? (:player %))
@@ -376,13 +377,14 @@
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (swap! game update-at-player feature-msg-update
-                   text (:rogue (curlvl-tags @game))))))))
-  (trigger [this] ":"))
+                   text (:rogue (curlvl-tags @game)))))))))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
 (def farlook-trap-re #"^\^ * a trap \(([^)]*)\)")
 
 (defaction FarLook [pos]
+  (trigger [this]
+    (str \; (to-position pos) \.))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
@@ -400,9 +402,7 @@
                 (log/debug "monster description" text "=>" montype)
                 (swap! game update-curlvl-monster pos assoc
                        :peaceful peaceful? :type montype)))
-            (log/debug "non-monster farlook result:" text)))))
-  (trigger [this]
-    (str \; (to-position pos) \.)))
+            (log/debug "non-monster farlook result:" text))))))
 
 (defn- handle-door-message [game dir text]
   (let [door (in-direction (:player @game) dir)
@@ -421,19 +421,19 @@
       (swap! game update-curlvl-at door assoc :feature new-feature))))
 
 (defaction Open [dir]
+  (trigger [_] (str \o (vi-directions (enum->kw dir))))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
-        (handle-door-message game dir text))))
-  (trigger [_] (str \o (vi-directions (enum->kw dir)))))
+        (handle-door-message game dir text)))))
 
 (defaction Inventory []
+  (trigger [_] "i")
   (handler [_ {:keys [game] :as anbf}]
     (reify InventoryHandler
       (inventory-list [_ inventory]
         (swap! game assoc-in [:player :inventory]
-               (into {} (for [[c i] inventory] (slot-item c i)))))))
-  (trigger [_] "i"))
+               (into {} (for [[c i] inventory] (slot-item c i))))))))
 
 (defn- examine-tile [{:keys [player] :as game}]
   (if-let [tile (and (not (blind? player))
@@ -505,6 +505,7 @@
     appearance))
 
 (defaction Discoveries []
+  (trigger [_] "\\")
   (handler [_ {:keys [game] :as anbf}]
     (reify MultilineMessageHandler
       (message-lines [this lines-all]
@@ -523,8 +524,7 @@
                                 (conj discoveries
                                       [(discovery-demangle
                                          section appearance) id])))))
-                   discoveries))))))
-  (trigger [_] "\\"))
+                   discoveries)))))))
 
 (defn- discoveries-handler [anbf]
   (reify ActionHandler
@@ -540,6 +540,7 @@
   (register-handler anbf (dec priority-top) (discoveries-handler anbf)))
 
 (defaction Name [slot name]
+  (trigger [_] "#name\n")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (reify
@@ -548,8 +549,7 @@
       NameWhatHandler
       (name-what [_ _] slot)
       NameItemHandler
-      (name-item [_ _] name)))
-  (trigger [_] "#name\n"))
+      (name-item [_ _] name))))
 
 (defn update-name [anbf slot name]
   "Name an item on the next action"
@@ -560,6 +560,7 @@
                         (->Name slot name)))))
 
 (defaction Apply [slot]
+  (trigger [_] "a")
   (handler [_ {:keys [game] :as anbf}]
     (reify
       AttachCandlesHandler
@@ -574,8 +575,7 @@
           (update-inventory anbf)
           nil))
       ApplyItemHandler
-      (apply-what [_ _] slot)))
-  (trigger [_] "a"))
+      (apply-what [_ _] slot))))
 
 (defn with-handler
   ([handler action]
@@ -623,10 +623,10 @@
                  nil)))))))
 
 (defaction ForceLock []
+  (trigger [_] "#force\n")
   (handler [_ {:keys [game] :as anbf}]
     (reify ForceLockHandler
-      (force-lock [_ _] true)))
-  (trigger [_] "#force\n"))
+      (force-lock [_ _] true))))
 
 (defn ->Unlock [slot dir]
   (->> (->ApplyAt slot dir)
@@ -655,58 +655,58 @@
     (update-discoveries anbf)))
 
 (defaction Wield [slot]
+  (trigger [_] "w")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (possible-autoid anbf slot)
     (reify WieldItemHandler
-      (wield-what [_ _] slot)))
-  (trigger [_] "w"))
+      (wield-what [_ _] slot))))
 
 (defaction Wear [slot]
+  (trigger [_] "W")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (possible-autoid anbf slot)
     (reify WearItemHandler
-      (wear-what [_ _] slot)))
-  (trigger [_] "W"))
+      (wear-what [_ _] slot))))
 
 (defaction PutOn [slot]
+  (trigger [_] "P")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (possible-autoid anbf slot)
     (reify PutOnItemHandler
-      (put-on-what [_ _] slot)))
-  (trigger [_] "P"))
+      (put-on-what [_ _] slot))))
 
 (defaction Remove [slot]
+  (trigger [_] "R")
   (handler [_ anbf]
     (update-inventory anbf)
     (reify RemoveItemHandler
-      (remove-what [_ _] slot)))
-  (trigger [_] "R"))
+      (remove-what [_ _] slot))))
 
 (defaction TakeOff [slot]
+  (trigger [_] "T")
   (handler [_ anbf]
     (update-inventory anbf)
     (reify TakeOffItemHandler
-      (take-off-what [_ _] slot)))
-  (trigger [_] "T"))
+      (take-off-what [_ _] slot))))
 
 (defaction DropSingle [slot qty]
+  (trigger [_] "d")
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
     (swap! (:game anbf) update :player dissoc :thick)
     (reify DropSingleHandler
-      (drop-single [_ _] (str (if (> qty 1) qty) slot))))
-  (trigger [_] "d"))
+      (drop-single [_ _] (str (if (> qty 1) qty) slot)))))
 
 (defaction Quiver [slot]
+  (trigger [_] "Q")
   (handler [_ anbf]
     (update-inventory anbf)
     (reify QuiverHandler
-      (ready-what [_ _] slot)))
-  (trigger [_] "Q"))
+      (ready-what [_ _] slot))))
 
 (defn ->Drop
   ([slot-or-list qty]
@@ -717,6 +717,7 @@
    (->DropSingle slot-or-list 1)))
 
 (defaction PickUp [label-or-list]
+  (trigger [_] ",")
   (handler [_ anbf]
     (update-inventory anbf)
     (update-items anbf)
@@ -735,10 +736,10 @@
                 (do (swap! remaining disj lbl)
                     (recur (rest opts) (conj res slot)))
                 (recur (rest opts) res))
-              res))))))
-  (trigger [_] ","))
+              res)))))))
 
 (defaction Autotravel [pos]
+  (trigger [_] "_")
   (handler [this {:keys [game] :as anbf}]
     (let [pos (position pos)
           level (curlvl @game)
@@ -761,14 +762,13 @@
           (if @portal
             (portal-handler anbf level new-dlvl)))
         AutotravelHandler
-        (travel-where [_] pos))))
-  (trigger [_] "_"))
+        (travel-where [_] pos)))))
 
 (defaction Enhance []
+  (trigger [_] "#enhance\n")
   (handler [_ {:keys [game] :as anbf}]
     (log/error "TODO")
-    #_(swap! game (assoc-in [:player :can-enhance] nil)))
-  (trigger [_] "#enhance\n"))
+    #_(swap! game (assoc-in [:player :can-enhance] nil))))
 
 (defn- -withHandler
   ([action handler]
@@ -780,6 +780,7 @@
   (add-discovery game (:name (inventory-slot game slot)) id))
 
 (defaction Read [slot]
+  (trigger [_] "r")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (reify
@@ -794,10 +795,10 @@
           (swap! game identify-slot slot "scroll of remove curse")
           #"You hear maniacal laughter|You hear sad wailing"
           (swap! game identify-slot slot "scroll of scare monster")
-          nil))))
-  (trigger [_] "r"))
+          nil)))))
 
 (defaction Sit []
+  (trigger [_] "#sit\n")
   (handler [_ {:keys [game] :as anbf}]
     (let [portal (atom nil)
           level (curlvl @game)]
@@ -811,10 +812,10 @@
         DlvlChangeHandler
         (dlvl-changed [_ old-dlvl new-dlvl]
           (if @portal
-            (portal-handler anbf level new-dlvl))))))
-  (trigger [_] "#sit\n"))
+            (portal-handler anbf level new-dlvl)))))))
 
 (defaction Eat [slot-or-label]
+  (trigger [_] "e")
   (handler [_ anbf]
     (reify
       ToplineMessageHandler
@@ -832,15 +833,14 @@
       (eat-what [_ _]
         (when (char? slot-or-label)
           (update-inventory anbf)
-          slot-or-label))))
-  (trigger [_] "e"))
+          slot-or-label)))))
 
 (defaction Quaff [slot]
+  (trigger [_] "q")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (reify DrinkWhatHandler
-      (drink-what [_ _] slot)))
-  (trigger [_] "q"))
+      (drink-what [_ _] slot))))
 
 (defn use-action [item]
   (case (item-type item)
@@ -883,6 +883,7 @@
   (without-levitation game (->Descend)))
 
 (defaction Offer [slot-or-label]
+  (trigger [_] "#offer\n")
   (handler [_ {:keys [game] :as anbf}]
     (reify
       ToplineMessageHandler
@@ -903,12 +904,11 @@
       (sacrifice-what [_ _]
         (when (char? slot-or-label)
           (update-inventory anbf)
-          slot-or-label))))
-  (trigger [_] "#offer\n"))
+          slot-or-label)))))
 
 (defaction Repeated [action n]
-  (handler [_ anbf] (handler action anbf))
-  (trigger [_] (str n (trigger action))))
+  (trigger [_] (str n (trigger action)))
+  (handler [_ anbf] (handler action anbf)))
 
 (defn search
   "Search once or n times"
