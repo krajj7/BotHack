@@ -201,11 +201,12 @@
 
 (defn uncurse-weapon [game]
   (if-let [[_ weapon] (wielding game)]
-    (if-let [[slot _] (and (cursed? weapon)
-                           (have game "scroll of remove curse"
-                                 {:noncursed true}))]
+    (if-let [[slot scroll] (and (cursed? weapon)
+                                (have game "scroll of remove curse"
+                                      {:noncursed true :bagged true}))]
       (with-reason "uncursing weapon" (:label weapon)
-        (->Read slot)))))
+        (or (prepare game slot scroll)
+            (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
   (if-let [[slot weapon] (some (partial have game) desired-weapons)]
@@ -224,9 +225,11 @@
 (defn uncurse-gear [game]
   ; TODO passive items (luckstone / orb of fate)
   (if-let [[_ item] (have game (every-pred cursed? :in-use))]
-    (if-let [[slot _] (have game "scroll of remove curse" {:noncursed true})]
+    (if-let [[slot scroll] (have game "scroll of remove curse"
+                                 {:noncursed true :bagged true})]
       (with-reason "uncursing" (:label item)
-        (->Read slot)))))
+        (or (prepare game slot scroll)
+            (->Read slot))))))
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
@@ -409,10 +412,10 @@
                               (consider-items game))))
       (register-handler 3 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers-here game))))
+                              (examine-containers game))))
       (register-handler 4 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers game))))
+                              (examine-containers-here game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))
