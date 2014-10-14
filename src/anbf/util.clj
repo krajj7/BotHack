@@ -99,3 +99,6 @@
   "Like select-keys but only selects keys with non-nil values"
   [m ks]
   (select-keys m (filter #(some? (% m)) ks)))
+
+(defn indexed [coll]
+  (map vector (range) coll))

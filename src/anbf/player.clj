@@ -100,7 +100,7 @@
                              (partial item-name game)))))
 
 (defn- have-selector [game name-or-set-or-fn opts]
-  (apply every-pred (base-selector name-or-set-or-fn)
+  (apply every-pred (base-selector game name-or-set-or-fn)
          (remove nil? [(if (:safe opts) safe?)
                        (if (:noncursed opts) noncursed?)
                        (if (:blessed opts) blessed?)
@@ -108,13 +108,19 @@
                        (if (:in-use opts) :in-use)])))
 
 (defn have-all
-  "Returns a lazy seq of all matching [slot items] pairs in inventory, options same as 'have'"
+  "Returns a lazy seq of all matching [slot item] pairs in inventory, options same as 'have'"
   ([game name-or-set-or-fn]
    (have-all game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]
-   ; TODO :bagged
-   (filter (inventory game) (comp (have-selector game name-or-set-or-fn opts)
-                                  val))))
+   (let [selector (have-selector game name-or-set-or-fn opts)]
+     (concat (filter (comp selector val)
+                     (inventory game))
+             (if (:bagged opts)
+               (for [[slot bag :as entry] (inventory game)
+                     :when (container? bag)
+                     :let [matches (filter selector (:items bag))]
+                     match matches]
+                 [slot match]))))))
 
 (defn have
   "Returns the [slot item] of matching item in player's inventory or nil.
@@ -127,7 +133,7 @@
      :noncursed - return only items not known to be cursed
      :blessed - return only blessed items
      :in-use - if false only non-used items, if true only used (worn/wielded)
-     :bagged - return bag containing the item if not present in main inventory"
+     :bagged - return slot of bag containing the item if it is not present in main inventory"
   ([game name-or-set-or-fn]
    (have game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]
@@ -240,3 +246,8 @@
                   (:str (:tags monster)))
              (some (complement (partial have-intrinsic? player))
                    (:resistances-conferred monster))))))
+
+(defn update-slot
+  "Apply update-fn to item at the inventory slot"
+  [game slot update-fn & args]
+  (apply update-in game [:player :inventory slot] update-fn args))

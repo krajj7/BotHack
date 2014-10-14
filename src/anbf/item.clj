@@ -121,3 +121,19 @@
            `(def-itemtype-pred ~kw))))
 
 (def-itemtype-preds)
+
+(defn container? [item]
+  (some? (re-seq #"^bag\b|sack$|chest$|box$" (:name item))))
+
+(defn know-contents? [item]
+  (or (not (container? item))
+      (= "bag of tricks" (:name item))
+      (some? (:items item))))
+
+(defn boh? [game item]
+  (= "bag of holding" (:name (item-id game item))))
+
+(def explorable-container? (every-pred (complement know-contents?)
+                                       (complement :locked)
+                                       (some-fn noncursed?
+                                                (complement boh?))))

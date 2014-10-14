@@ -69,6 +69,9 @@
   (condp re-seq head
     #"What do you wish to do\?" name-menu
     #"Pick up what\?" pick-up-what
+    #"Put in what\?" put-in-what
+    #"Take out what\?" take-out-what
+    #"Loot which containers\?" loot-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
@@ -184,6 +187,10 @@
     :>> (partial list lift-burden :heavy)
     #"^You have extreme difficulty lifting ([^.]+)\. Continue\?"
     :>> (partial list lift-burden :extreme)
+    #"There is ([^,]+) here, loot it\?"
+    :>> (partial list loot-it)
+    #"Do you want to take something out.*" take-something-out
+    #"Do you wish to put something in\?" put-something-in
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -321,7 +328,8 @@
              (handle-menu-response [frame]
                (or (when (and (menu? frame)
                               (= @menu-nextpage (menu-curpage frame)))
-                     (log/debug "responding to menu page" @menu-nextpage)
+                     (log/debug "responding to menu page" @menu-nextpage
+                                "options" (menu-options frame))
                      (send delegator (menu-fn @head) (menu-options frame))
                      (when-not (multi-menu? @head)
                        (send delegator write \space))

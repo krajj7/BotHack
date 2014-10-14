@@ -32,6 +32,11 @@
   (frame [this] (:frame this))
   (player [this] (:player this)))
 
+(defmethod print-method Game [game w]
+  (.write w (str "#anbf.game.Game"
+                 (assoc (.without game :discoveries)
+                        :discoveries "<trimmed>"))))
+
 (defn new-game []
   (map->Game {:player (new-player)
               :dungeon (new-dungeon)

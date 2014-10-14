@@ -185,6 +185,7 @@
   (let [desired (currently-desired game)
         to-take? #(or (real-amulet? %)
                       (and (desired (item-name game %)) (can-take? %)))]
+    ; TODO include items in containers (item-seq tile)
     (or (if-let [to-get (seq (for [item (:items (at-player game))
                                    :let [i (item-name game item)]
                                    :when (to-take? item)]
@@ -397,15 +398,21 @@
       (register-handler -3 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
-      (register-handler 1 (reify ActionHandler
+      (register-handler 0 (reify ActionHandler
                             (choose-action [_ game]
                               (reequip game))))
-      (register-handler 2 (reify ActionHandler
+      (register-handler 1 (reify ActionHandler
                             (choose-action [_ game]
                               (feed game))))
-      (register-handler 3 (reify ActionHandler
+      (register-handler 2 (reify ActionHandler
                             (choose-action [_ game]
                               (consider-items game))))
+      (register-handler 3 (reify ActionHandler
+                            (choose-action [_ game]
+                              (examine-containers-here game))))
+      (register-handler 4 (reify ActionHandler
+                            (choose-action [_ game]
+                              (examine-containers game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

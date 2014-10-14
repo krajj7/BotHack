@@ -352,3 +352,21 @@
 
 (defyesnohandler LiftBurdenHandler
   (lift-burden [handler ^clojure.lang.Keyword burden ^String item-label]))
+
+(defyesnohandler LootItHandler
+  (loot-it [handler ^String what]))
+
+(defyesnohandler PutSomethingInHandler
+  (put-something-in [handler ^String prompt]))
+
+(defyesnohandler TakeSomethingOutHandler
+  (take-something-out [handler ^String prompt]))
+
+(defmenuhandler TakeOutWhatHandler
+  (take-out-what [handler ^clojure.lang.IPersistentMap options]))
+
+(defmenuhandler PutInWhatHandler
+  (put-in-what [handler ^clojure.lang.IPersistentMap options]))
+
+(defmenuhandler LootWhatHandler
+  (loot-what [handler ^clojure.lang.IPersistentMap options]))

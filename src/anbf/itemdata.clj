@@ -2539,10 +2539,10 @@
       :subtype :container
       :material :cloth}
      {:name "bag of tricks"
-      ; not a container
       :price 100
       :weight 15
       :charge 20
+      :subtype :container
       :appearances ["bag"]
       :material :cloth}
      {:name "oilskin sack"

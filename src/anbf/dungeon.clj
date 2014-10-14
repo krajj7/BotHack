@@ -154,6 +154,9 @@
   {:pre [(:dungeon game)]}
   (apply update-curlvl-at game (:player game) update-fn args))
 
+(defn update-item-at-player [game idx update-fn & args]
+  (apply update-at-player game update-in [:items idx] update-fn args))
+
 (defn update-around-player
   "Update the Tiles around player's position by applying update-fn to their current value and args"
   [game update-fn & args]

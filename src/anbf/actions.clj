@@ -1,6 +1,7 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
             [multiset.core :refer [multiset]]
+            [clojure.string :as string]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]
@@ -427,13 +428,21 @@
       (message [_ text]
         (handle-door-message game dir text)))))
 
+(defn- transfer-item
+  "Keep some info about items on inventory update"
+  [inventory [old-slot old-item]]
+  (if (inventory old-slot)
+    (update inventory old-slot into (select-keys old-item [:items :locked]))
+    inventory)) ; item gone
+
 (defaction Inventory []
   (trigger [_] "i")
   (handler [_ {:keys [game] :as anbf}]
     (reify InventoryHandler
       (inventory-list [_ inventory]
-        (swap! game assoc-in [:player :inventory]
-               (into {} (for [[c i] inventory] (slot-item c i))))))))
+        (swap! game update-in [:player :inventory]
+               (partial reduce transfer-item
+                        (into {} (for [[c i] inventory] (slot-item c i)))))))))
 
 (defn- examine-tile [{:keys [player] :as game}]
   (if-let [tile (and (not (blind? player))
@@ -464,13 +473,6 @@
                       first)]
       (with-reason "examining monster" (->FarLook m)))))
 
-(defn examine-handler [anbf]
-  (reify ActionHandler
-    (choose-action [_ game]
-      (or (examine-tile game)
-          (examine-monsters game)
-          (examine-features game)))))
-
 (defn- inventory-handler [anbf]
   (reify ActionHandler
     (choose-action [this game]
@@ -482,7 +484,7 @@
 (defn update-inventory
   "Re-check inventory on the next action"
   [anbf]
-  (register-handler anbf priority-top (inventory-handler anbf)))
+  (register-handler anbf (dec priority-top) (inventory-handler anbf)))
 
 (defn update-items
   "Re-check current tile for items on the next action"
@@ -573,9 +575,24 @@
           (update-name anbf slot "empty")
           #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)
+          #" seems to be locked"
+          (swap! game update-slot slot assoc :locked true)
+          #" is empty\."
+          (swap! game update-slot slot assoc :items [])
           nil))
       ApplyItemHandler
-      (apply-what [_ _] slot))))
+      (apply-what [_ _] slot)
+      TakeSomethingOutHandler
+      (take-something-out [_ _]
+        (swap! game update-slot slot assoc :items [])
+        true)
+      TakeOutWhatHandler
+      (take-out-what [_ options]
+        (swap! game update-slot slot update :items into (map label->item
+                                                             (vals options)))
+        #{}) ; update items but don't take anything out
+      PutSomethingInHandler
+      (put-something-in [_ _] false))))
 
 (defn with-handler
   ([handler action]
@@ -625,6 +642,9 @@
 (defaction ForceLock []
   (trigger [_] "#force\n")
   (handler [_ {:keys [game] :as anbf}]
+    (doseq [[idx item] (indexed (:items (at-player @game)))
+            :when (:locked item)]
+      (swap! game update-item-at-player idx assoc :locked false))
     (reify ForceLockHandler
       (force-lock [_ _] true))))
 
@@ -632,6 +652,10 @@
   (->> (->ApplyAt slot dir)
        (with-handler priority-top
          (fn [{:keys [game] :as anbf}]
+           (if (= \. slot)
+             (doseq [[idx item] (indexed (:items (at-player @game)))
+                     :when (:locked item)]
+               (swap! game update-item-at-player idx assoc :locked false)))
            (reify
              ToplineMessageHandler
              (message [_ msg]
@@ -914,6 +938,126 @@
   "Search once or n times"
   ([] (search 1))
   ([n] (->Repeated (->Search) n)))
+
+(defn- nth-container-index [game n]
+  (loop [items (:items (at-player game))
+         containers 0
+         idx 0]
+    (if-let [item (first items)]
+      (if (container? item)
+        (if (= containers n)
+          idx
+          (recur (rest items)
+                 (inc containers)
+                 (inc idx)))
+        (recur (rest items)
+               containers
+               (inc idx))))))
+
+(defaction Loot []
+  (trigger [_] "#loot\n")
+  (handler [_ {:keys [game] :as anbf}]
+    (let [n (atom -1)]
+      (reify
+        LootWhatHandler
+        (loot-what [_ _] #{\,})
+        LootItHandler
+        (loot-it [_ _] true)
+        TakeSomethingOutHandler
+        (take-something-out [_ _]
+          (swap! game #(update-item-at-player % (nth-container-index % @n)
+                                              assoc :items []))
+          true)
+        TakeOutWhatHandler
+        (take-out-what [_ options]
+          (swap! game #(update-item-at-player % (nth-container-index % @n)
+                                              update :items into
+                                              (map label->item (vals options))))
+          #{}) ; update items but don't take anything out
+        ToplineMessageHandler
+        (message [_ msg]
+          (if (.startsWith msg "You carefully open")
+            (swap! n inc)) ; may occur on same line with "... is empty"
+          (condp re-seq msg
+            #" seems to be locked\."
+            (let [idx (swap! n inc)]
+              (swap! game #(update-item-at-player % (nth-container-index % idx)
+                                                  assoc :locked true)))
+            #" is empty\."
+            (swap! game #(update-item-at-player % (nth-container-index % @n)
+                                                assoc :items []))
+            nil))
+        PutSomethingInHandler
+        (put-something-in [_ _] false)))))
+
+(defn- update-container [anbf slot]
+  (register-handler anbf priority-top
+                    (reify ActionHandler
+                      (choose-action [this game]
+                        (deregister-handler anbf this)
+                        (with-reason "updating content of container at" slot
+                          (if (= \. slot)
+                            (->Loot)
+                            (if (inventory-slot game slot)
+                              (->Apply slot)
+                              (log/warn "container at" slot
+                                        "disappeared - exploded BoH?"))))))))
+
+(defn put-in
+  ([bag-slot slot amt] (put-in bag-slot {slot amt}))
+  ([bag-slot slot-or-amt-map]
+   (let [amt-map (if (map? slot-or-amt-map)
+                   slot-or-amt-map
+                   {slot-or-amt-map nil})
+         handler (fn [anbf]
+                   (update-inventory anbf)
+                   (update-container anbf bag-slot)
+                   (reify
+                     TakeSomethingOutHandler
+                     (take-something-out [_ _] false)
+                     PutSomethingInHandler
+                     (put-something-in [_ _] true)
+                     PutInWhatHandler
+                     (put-in-what [_ _]
+                       (set (map #(str %2 %1) amt-map)))))]
+     (with-reason "putting" slot-or-amt-map "into bag at" bag-slot
+       (with-handler (dec priority-top) handler
+         (if (= \. bag-slot)
+           (->Loot)
+           (->Apply bag-slot)))))))
+
+(defn take-out
+  ([bag-slot label amt] (take-out bag-slot {label amt}))
+  ([bag-slot label-or-amt-map]
+   (let [amt-map (if (map? label-or-amt-map)
+                   label-or-amt-map
+                   {label-or-amt-map nil})
+         handler (fn [anbf]
+                   (update-inventory anbf)
+                   (update-container anbf bag-slot)
+                   (reify ; FIXME may select same item on multiple pages or containers, should be handled like PickUp
+                     TakeSomethingOutHandler
+                     (take-something-out [_ _] true)
+                     TakeOutWhatHandler
+                     (take-out-what [_ options]
+                       (set (map (fn select-item [[slot label]]
+                                   (if-let [[_ amt] (find amt-map label)]
+                                     (str amt slot)))
+                                 options)))
+                     PutSomethingInHandler
+                     (put-something-in [_ _] false)))]
+     (with-reason "taking" label-or-amt-map "out of container at" bag-slot
+       (with-handler (dec priority-top) handler
+         (if (= \, bag-slot)
+           (->Loot)
+           (->Apply bag-slot)))))))
+
+(defn examine-handler [anbf]
+  (reify ActionHandler
+    (choose-action [_ game]
+      (or (examine-tile game)
+          (examine-monsters game)
+          (examine-features game)))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class
