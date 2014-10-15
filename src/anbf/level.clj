@@ -376,6 +376,15 @@
    {:branch :mines
     :tag :minetown-grotto
     :features {{:x 48 :y 4} :stairs-down}}
+   {:branch :mines
+    :tag :minesend-1
+    :undiggable true
+    :features {{:x 52 :y 7} :door-secret
+               {:x 68 :y 6} :door-secret
+               {:x 28 :y 12} :door-secret
+               {:x 23 :y 12} :door-secret
+               {:x 42 :y 18} :door-secret
+               {:x 53 :y 20} :door-secret}}
    {:branch :vlad
     :tag :bottom
     :features {{:x 20 :y 13} :door-secret

@@ -208,8 +208,8 @@
                          (apply (partial mapv #(apply f %&)) rows)))
          tile-colls))
 
-(def ^:private main-features ; these don't appear in the mines
-  #{:door-closed :door-open :door-locked :altar :sink :fountain :throne})
+(def ^:private main-features ; these don't appear in the mines (except for end and minetown)
+  #{:door-closed :door-open :door-locked :door-secret :altar :sink :fountain :throne})
 
 (defn- has-features? [level]
   "checks for features not occuring in the mines (except town/end)"
@@ -408,6 +408,14 @@
                                                  (-> (get-branch game branch)
                                                      keys first dlvl-number
                                                      (- curdlvl))))
+      (and (<= 10 curdlvl 13) (= :mines branch)
+           (not-any? tags #{:minesend-1 :minesend-2 :minesend-3})
+           (and (stairs-up? (at level 38 8))
+                (every? floor? (for [x (range 35 42)]
+                                 (at level (position x 7))))
+                (every? wall? (for [x (range 35 42)]
+                                (at level (position x 6)))))) (add-curlvl-tag
+                                                                :minesend-1)
       (and (<= 10 curdlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
