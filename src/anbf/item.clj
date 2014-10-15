@@ -1,5 +1,6 @@
 (ns anbf.item
   (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
             [anbf.itemtype :refer :all]
             [anbf.itemid :refer :all]
             [anbf.util :refer :all]))
@@ -35,7 +36,10 @@
 (def ^:private item-re #"^(?:([\w\#\$])\s[+-]\s)?\s*([Aa]n?|[Tt]he|\d+)?\s*(blessed|(?:un)?cursed|(?:un)?holy)?\s*(greased)?\s*(poisoned)?\s*((?:(?:very|thoroughly) )?(?:burnt|rusty))?\s*((?:(?:very|thoroughly) )?(?:rotted|corroded))?\s*(fixed|(?:fire|rust|corrode)proof)?\s*(partly used)?\s*(partly eaten)?\s*(diluted)?\s*([+-]\d+)?\s*(?:(?:pair|set) of)?\s*\b(.*?)\s*(?:called (.*?))?\s*(?:named (.*?))?\s*(?:\((\d+):(-?\d+)\))?\s*(?:\((no|[1-7]) candles?(, lit| attached)\))?\s*(\(lit\))?\s*(\(laid by you\))?\s*(\(chained to you\))?\s*(\(in quiver\))?\s*(\(alternate weapon; not wielded\))?\s*(\(wielded in other.*?\))?\s*(\((?:weapon|wielded).*?\))?\s*(\((?:being|embedded|on).*?\))?\s*(?:\(unpaid, (\d+) zorkmids?\)|\((\d+) zorkmids?\)|, no charge(?:, .*)?|, (?:price )?(\d+) zorkmids( each)?(?:, .*)?)?\.?\s*$")
 
 (defn parse-label [label]
-  (let [raw (zipmap item-fields (re-first-groups item-re label))]
+  (let [norm-label (string/replace label ; for uniques ("Lord Surtur's partly eaten corpse" => "partly eaten Lord Surtur's corpse"
+                                   #"(.*) partly eaten corpse$"
+                                   "partly eaten $1 corpse")
+        raw (zipmap item-fields (re-first-groups item-re norm-label))]
     ;(log/debug raw)
     (as-> raw res
       (if-let [buc (re-seq #"^potions? of ((?:un)?holy) water$" (:name res))]
