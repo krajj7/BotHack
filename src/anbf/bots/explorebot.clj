@@ -140,6 +140,12 @@
   (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
                "katana" "long sword"))
 
+(def desired-suit
+  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail"))
+
+(def desired-shield
+  (ordered-set "shield of reflection" "small shield"))
+
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
@@ -153,8 +159,8 @@
    #{"Book of the Dead"}
    #{"lizard corpse"}
    (ordered-set "speed boots" "iron shoes")
-   (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail")
-   (ordered-set "shield of reflection" "small shield")
+   desired-suit
+   desired-shield
    #{"amulet of reflection"}
    #{"amulet of unchanging"}
    desired-weapons])
@@ -205,7 +211,7 @@
                                 (have game "scroll of remove curse"
                                       {:noncursed true :bagged true}))]
       (with-reason "uncursing weapon" (:label weapon)
-        (or (prepare game slot scroll)
+        (or (unbag game slot scroll)
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
@@ -215,6 +221,13 @@
           ; TODO can-wield?
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
+
+(defn- wear-armor [{:keys [player] :as game}]
+  ; TODO boots, helmet etc.
+  (if-let [[slot armor] (some (partial have game) desired-suit)]
+    (if-not (:in-use armor)
+      (with-reason "wearing better armor"
+        (make-use game slot)))))
 
 (defn light? [game item]
   (let [id (item-id game item)]
@@ -228,7 +241,7 @@
     (if-let [[slot scroll] (have game "scroll of remove curse"
                                  {:noncursed true :bagged true})]
       (with-reason "uncursing" (:label item)
-        (or (prepare game slot scroll)
+        (or (unbag game slot scroll)
             (->Read slot))))))
 
 (defn lit-mines? [game level]
@@ -261,6 +274,7 @@
         step (first tile-path)
         branch (branch-key game)]
     (or (uncurse-gear game)
+        (wear-armor game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (every? walkable? tile-path))

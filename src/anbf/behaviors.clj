@@ -66,9 +66,9 @@
     (with-reason "learning contents of containers on ground"
       (->Loot))))
 
-(defn prepare
+(defn unbag
   "Return action to take qty of the item out of a bag, nil if item is already present in main inventory or not found in any bags"
-  ([game maybe-bag-slot item] (prepare game maybe-bag-slot item 1))
+  ([game maybe-bag-slot item] (unbag game maybe-bag-slot item 1))
   ([game maybe-bag-slot item qty]
    (if (container? (inventory-slot game maybe-bag-slot))
      (with-reason "preparing item -" (:name item)
