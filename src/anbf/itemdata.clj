@@ -1,7 +1,6 @@
 (ns anbf.itemdata
   (:require [clojure.string :as string]
-            [anbf.itemdata :refer :all]
-            [anbf.montype :only [] :refer [monster-types]]))
+            [anbf.montype :refer [monster-types]]))
 
 (def scroll-appearances
   (map (partial str "scroll labeled ")

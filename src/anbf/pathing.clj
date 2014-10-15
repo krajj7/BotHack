@@ -205,6 +205,14 @@
                                          (can-remove? game %)))]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
+(defn pass-monster [game level to-tile dir monster]
+  (if (:peaceful monster)
+    (if (<= (or (:blocked to-tile) 0) 20)
+      [50 (with-reason "peaceful blocker" monster
+            (fidget game level to-tile))]) ; hopefully will move
+    [6 (with-reason "pathing through" monster
+         (->Move dir))]))
+
 (defn move
   "Returns [cost Action] for a move, if it is possible"
   ([game level from to]
@@ -222,12 +230,7 @@
                           (not (and (kickable-door? level to-tile opts)
                                     (blocked-door level to-tile))))
                    (if monster
-                     (if (:peaceful monster)
-                       (if (<= (or (:blocked to-tile) 0) 20)
-                         [50 (with-reason "peaceful blocker" monster
-                               (fidget game level to-tile))]) ; hopefully will move
-                       [6 (with-reason "pathing through" monster
-                            (->Move dir))])
+                     (pass-monster game level to-tile dir monster)
                      (or (and (shop? to-tile) (not (shop? from-tile))
                               (enter-shop game))
                          (if-not (or (and (:levi opts) need-levi?)
@@ -237,17 +240,21 @@
                    (if-let [odir (blocked-door level from-tile)]
                      (if (monster-at level (in-direction from-tile odir))
                        [3 (with-reason
-                            "waiting for monster to move to kick door at my position"
+                            "waiting for monster to move to kick door at my pos"
                             (->Search))]
-                       [1 (with-reason "moving to kick blocked door at my position"
+                       [1 (with-reason "moving to kick blocked door at my pos"
                             (->Move odir))])))
                  (if (and (edge-passable-walking? game level from-tile to-tile)
                           need-levi? (not (boulder? to-tile)))
                    (if-let [[slot item] (:levi opts)]
-                     (if (:in-use item)
-                       [1 (with-reason "assuming levitation" (->Move dir))]
-                       [4 (with-reason "need levitation for next move"
-                            (make-use game slot))])))
+                     (if-let [[cost move] (if monster
+                                            (pass-monster game level to-tile
+                                                          dir monster)
+                                            [1 (->Move dir)])]
+                       (if (:in-use item)
+                         [cost (with-reason "assuming levitation" move)]
+                         [(+ 2 cost) (with-reason "need levi for next move"
+                                       (make-use game slot))]))))
                  (if (and (door? to-tile) (not monster) (not (:walking opts)))
                    (or (if (door-secret? to-tile)
                          [10 (search 10)]) ; TODO stethoscope
@@ -403,10 +410,10 @@
            (and (not (:walked tile))
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
-                (some (some-fn lava? water? boulder?
+                (some (some-fn lava? water? boulder? trap?
                                (partial safely-walkable? level))
                       (neighbors level tile))
-                (some (not-any-fn? :seen boulder? monster?)
+                (some (not-any-fn? :seen boulder? (partial monster-at level))
                       (neighbors level tile))))
        (not (isolated? level tile))))
 
@@ -864,8 +871,12 @@
        (if (#{:end :votd :gehennom :castle} tag)
          (->> (get-branch game branch) keys last (next-dlvl branch)))
        (case tag
-         :rogue (->> (first-unvisited game (dlvl-range :main "Dlvl:15" 4)))
-         :medusa (->> (first-unvisited game (dlvl-range :main "Dlvl:21" 8)))
+         :rogue (->> (dlvl-range :main "Dlvl:15" 4) (first-unvisited game))
+         :medusa (->> (dlvl-range :main "Dlvl:21" 8)
+                      (take-while
+                        (partial not= (:dlvl (get-level game :main :castle))))
+                      (#(or (first-unvisited game %)
+                            (least-explored game :main %))))
          (least-explored game branch
                          (case tag
                            :oracle (filter #(possibly-oracle? game %)
@@ -916,7 +927,11 @@
         (if new-level
           (switch-dlvl game (:dlvl new-level))
           (if (keyword? tag-or-dlvl)
-            (switch-dlvl game (dlvl-candidate game new-branch tag-or-dlvl))
+            (or (switch-dlvl game (dlvl-candidate game new-branch tag-or-dlvl))
+                (with-reason "exploring dlvl candidate"
+                  (explore game))
+                (with-reason "searching dlvl candidate"
+                  (search-level game)))
             (switch-dlvl game tag-or-dlvl)))
         (seek-branch game new-branch)))))
 

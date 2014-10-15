@@ -170,10 +170,10 @@
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (if (and (= :move (typekw (:last-action old-game)))
                       (= dir (:dir (:last-action old-game))))
-               (do (log/warn "stuck twice on diagonal movement => possibly door at" target)
+               (do ;(log/warn "stuck twice on diagonal movement => possibly door at" target)
                    (update-curlvl-at % (in-direction old-pos dir)
                                      assoc :feature :door-open))
-               (do (log/warn "retry diagonal move towards" target)
+               (do ;(log/warn "retry diagonal move towards" target)
                    %)) ; NH actually seems to ignore a move in some cases
              %)))
       (reify
@@ -408,10 +408,10 @@
 (defn- handle-door-message [game dir text]
   (let [door (in-direction (:player @game) dir)
         new-feature (condp #(.contains %2 %1) text
+                      "The door opens." :door-open
                       "You cannot lock an open door." :door-open
                       "This door is locked." :door-locked
                       "This door is already open." :door-open
-                      "The door opens." :door-open
                       "This doorway has no door." nil
                       "You see no door there." nil
                       "You succeed in picking the lock." :door-closed
@@ -464,7 +464,7 @@
 
 (defn- examine-monsters [{:keys [player] :as game}]
   (when-not (hallu? player)
-    (when-let [m (->> (curlvl-monsters game) vals
+    (when-let [m (->> (curlvl-monsters game)
                       (remove (some-fn :remembered
                                        :friendly
                                        (every-pred :type
@@ -477,9 +477,8 @@
   (reify ActionHandler
     (choose-action [this game]
       (deregister-handler anbf this)
-      (with-reason "requested inventory update" (->Inventory)))))
-
-(def ^:private inventory-handler (memoize inventory-handler))
+      (if (not= :inventory (typekw (:last-action* game)))
+        (with-reason "requested inventory update" (->Inventory))))))
 
 (defn update-inventory
   "Re-check inventory on the next action"
@@ -532,9 +531,9 @@
   (reify ActionHandler
     (choose-action [this game]
       (deregister-handler anbf this)
-      (->Discoveries))))
-
-(def ^:private discoveries-handler (memoize discoveries-handler))
+      (if (not= :discoveries (:typekw (:last-action* game)))
+        (with-reason "discoveries update"
+          (->Discoveries))))))
 
 (defn update-discoveries
   "Re-check discoveries on the next action"
@@ -829,7 +828,7 @@
       (reify
         ToplineMessageHandler
         (message [_ msg]
-          (condp re-seq
+          (condp re-seq msg
             #"Having fun sitting on the (floor|air)\?"
             (swap! game update-at-player assoc :feature :floor)
             (move-message-handler anbf portal msg)))

@@ -15,7 +15,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [game [old-monster monster]]
-  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
+  (log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))
@@ -27,7 +27,7 @@
 (defn filter-visible-uniques
   "If a unique monster was remembered and now is visible, remove all remembered instances"
   [game]
-  (let [monsters (vals (curlvl-monsters game))]
+  (let [monsters (curlvl-monsters game)]
     (reduce remove-curlvl-monster game
             (for [m monsters
                   :when ((every-pred unique? (complement :remembered)) m)
@@ -36,8 +36,8 @@
               (position n)))))
 
 (defn- transfer-unpaired [game unpaired]
+  ;(log/debug "unpaired" unpaired)
   ; TODO don't transfer if we would know monsters position with ESP
-  (log/debug "unpaired" unpaired)
   (if-not (or (visible? game unpaired) (= (:glyph unpaired) \I))
     (reset-curlvl-monster game (assoc unpaired :remembered true))
     game))
@@ -49,8 +49,8 @@
           (hallu? (:player new-game)))
     new-game ; TODO track stair followers?
     (loop [pairs {}
-           new-monsters (curlvl-monsters new-game)
-           old-monsters (curlvl-monsters old-game)
+           new-monsters (:monsters (curlvl new-game))
+           old-monsters (:monsters (curlvl old-game))
            dist 0]
       (if (and (> 4 dist) (seq old-monsters))
         (if-let [[p m] (first new-monsters)]
@@ -69,7 +69,7 @@
                      (dissoc old-monsters cp)
                      dist))
             (recur pairs (dissoc new-monsters p) old-monsters dist))
-          (recur pairs (apply dissoc (curlvl-monsters new-game) (keys pairs))
+          (recur pairs (apply dissoc (:monsters (curlvl new-game)) (keys pairs))
                  old-monsters (inc dist)))
         (as-> new-game res
           (reduce transfer-unpaired res (vals old-monsters))

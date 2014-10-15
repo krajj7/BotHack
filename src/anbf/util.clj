@@ -38,17 +38,24 @@
 (defn re-first-groups
   "Return the capturing groups of the first match"
   [re text]
-  (some-> (re-seq re text) first (subvec 1)))
+  (if-let [m (first (re-seq re text))]
+    (if (vector? m)
+      (subvec m 1))))
 
 (defn re-first-group
-  "Return the first capturing group of the first match."
+  "Return the first capturing group of the first match or whole first match if no groups"
   [re text]
-  (some-> (re-seq re text) first (nth 1)))
+  (if-let [m (first (re-seq re text))]
+    (if (vector? m)
+      (nth m 1)
+      m)))
 
 (defn re-any-group
   "Return the first non-nil capturing group of the first match."
   [re text]
-  (some-> (re-seq re text) first (subvec 1) ((partial some identity))))
+  (if-let [m (first (re-seq re text))]
+    (if (vector? m)
+      (some identity (subvec m 1)))))
 
 (defn min-by [f coll]
   (if (seq coll)
@@ -71,6 +78,10 @@
     (Integer/parseInt x)))
 
 (defprotocol Type (typekw [this]))
+
+(extend-type nil
+  Type
+  (typekw [_] nil))
 
 (defn random-nth [coll]
   (if (seq coll)

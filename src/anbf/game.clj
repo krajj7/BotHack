@@ -200,9 +200,9 @@
 
 (defn- update-portal-range [{:keys [player] :as game} temp]
   (let [dist (case temp
-               "hot" 2
-               "very warm" 7
-               "warm" 11)
+               "hot" 3
+               "very warm" 8
+               "warm" 12)
         in-range (set (rectangle (position (- (:x player) dist)
                                            (- (:y player) dist))
                                  (position (+ (:x player) dist)

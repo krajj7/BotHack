@@ -101,7 +101,7 @@
 
 (defn curlvl-monsters [game]
   {:pre [(:dungeon game)]}
-  (-> game curlvl :monsters))
+  (-> game curlvl :monsters vals))
 
 (defn update-curlvl
   "Update the current Level by applying update-fn to its current value and args"
@@ -133,7 +133,7 @@
 (defn update-curlvl-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
   [game pos update-fn & args]
-  {:pre [((curlvl-monsters game) (position pos))]}
+  {:pre [((:monsters (curlvl game)) (position pos))]}
   (apply update-curlvl game update-in [:monsters (position pos)]
          update-fn args))
 
@@ -283,7 +283,7 @@
 (def soko4a-18 "                          |..8.....|     |-|.....|--") ; BoH variant
 (def soko4b-5 "                            |..^^^^^^^^^^^^^^^^^^..|") ; "oR variant
 
-(def soko-recog ; [y trimmed-line :tag]
+(def soko-recog ; [y rtrimmed-line :tag]
   [[14 soko1-14 :soko-1b]
    [12 soko2-12 :soko-1a]
    [16 soko2a-16 :soko-2a]
@@ -320,15 +320,18 @@
     (cond-> game
       (and (= :main branch) (<= 21 curdlvl 28)
            (not (tags :medusa))
+           (some floor? (for [y (range 2 21)]
+                          (at level 3 y)))
            (every? #(or (water? (at level 2 %))
                         (monster-at level (position 2 %)))
                    (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
       (and (= :main branch) (<= 21 curdlvl 28)
            (not (tags :medusa))
-           (unknown? (at level 5 20))
-           (every? #(and (water? (at level 7 %))
-                         (floor? (at level 6 %)))
-                   [15 16 17])) (add-curlvl-tag :medusa :medusa-2)
+           (not-any? floor? (for [y (range 2 21)]
+                              (at level 3 y)))
+           (every? water? [(at level 7 15) (at level 7 16) (at level 7 17)])
+           (wall? (at level 8 15))
+           (wall? (at level 8 17))) (add-curlvl-tag :medusa :medusa-2)
       (and (= :main branch) (<= 25 curdlvl 29)
            (not (tags :castle))
            (or (drawbridge? (at level 14 12))
@@ -520,7 +523,7 @@
   [game]
   (min-by #(distance (:player game) %)
           (filter (partial shopkeeper-look? game)
-                  (vals (curlvl-monsters game)))))
+                  (curlvl-monsters game))))
 
 (def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
 
@@ -563,6 +566,9 @@
       (reduce #(update-at %1 %2 assoc :undiggable true)
               res
               (:undiggable-tiles blueprint))
+      (reduce #(update-at %1 %2 assoc :room :shop)
+              res
+              (:shop blueprint))
       (reduce #(update-at %1 %2
                           assoc :feature :rock :undiggable true :seen true)
               res

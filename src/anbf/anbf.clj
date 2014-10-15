@@ -87,7 +87,8 @@
                          handler)]
             (register-handler anbf p h)
             (swap! action-handlers conj h)))
-        (swap! game #(assoc % :last-position (position (:player %))))
+        (swap! game #(assoc % :last-position (position (:player %))
+                            :last-action* action))
         (if-not (#{:call :name :discoveries :inventory :look :farlook}
                          (typekw action))
           (swap! game #(assoc % :last-path (get action :path (:last-path %))
@@ -135,6 +136,10 @@
     (pay-damage [_ _] true)
     LiftBurdenHandler
     (lift-burden [_ _ _] true)
+    ForceGodHandler
+    (force-god [_ _] true)
+    SeducedEquipRemoveHandler
+    (seduced-remove [_ _] false)
     ; escape the rest by default
     EatWhatHandler
     (eat-what [_ _] "")
@@ -155,10 +160,6 @@
     (die [_ _] (log/warn "died") "")
     KeepSaveHandler
     (keep-save [_ _] "")
-    ForceGodHandler
-    (force-god [_ _] true)
-    SeducedEquipRemoveHandler
-    (seduced-remove [_ _] "")
     CallItemHandler
     (call-item [_ _] "")))
 
