@@ -59,4 +59,16 @@
 (defn unknown-monster [x y turn]
   (new-monster x y turn \I nil))
 
-(defn shopkeeper? [m] (= "shopkeeper" (get-in m [:type :name])))
+(defn typename [m] (get-in m [:type :name]))
+
+(defn shopkeeper? [m] (= "shopkeeper" (typename m)))
+
+(defn high-priest? [m] (= "high priest" (typename m)))
+
+(defn oracle? [m] (= "oracle" (typename m)))
+
+(defn guard? [m] (get-in m [:type :tags :guard]))
+
+(defn unique? [m] (get-in m [:type :gen-flags :unique]))
+
+(defn human? [m] (get-in m [:tags :human]))

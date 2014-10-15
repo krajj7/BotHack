@@ -27,13 +27,11 @@
 (defn filter-visible-uniques
   "If a unique monster was remembered and now is visible, remove all remembered instances"
   [game]
-  (let [monsters (vals (curlvl-monsters game))
-        id (comp :name :type)]
+  (let [monsters (vals (curlvl-monsters game))]
     (reduce remove-curlvl-monster game
             (for [m monsters
-                  :when ((every-pred (complement :remembered)
-                                     (comp :unique :gen-flags :type)) m)
-                  n (filter #(and (= (id m) (id %)) (:remembered %))
+                  :when ((every-pred unique? (complement :remembered)) m)
+                  n (filter #(and (= (typename m) (typename %)) (:remembered %))
                             monsters)]
               (position n)))))
 

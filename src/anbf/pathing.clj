@@ -147,7 +147,7 @@
 (defn- safe-from-guards?
   "Only just enough to handle the most usual corner-case where the only door in the stair-room of minetown is locked.  Potentially dangerous without infravision."
   [level]
-  (not-any? (comp :guard :tags :type) (vals (:monsters level))))
+  (not-any? guard? (vals (:monsters level))))
 
 (defn dare-destroy? [level tile]
   (or (boulder? tile)
@@ -325,7 +325,7 @@
       (if (:adjacent opts)
         (->Path (path-step game level from move-fn path opts) (pop path) to)
         (if-let [step (and (or (= 1 (count path))
-                               (move-fn (-> path pop peek) to)) 
+                               (move-fn (-> path pop peek) to))
                            (path-step game level from move-fn path opts))]
           (->Path step path to)))
       (->Path nil [] to))))
