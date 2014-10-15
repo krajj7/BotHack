@@ -251,6 +251,12 @@
       (or (if (and (re-seq thing-re text) (moved? @game))
             (update-items anbf))
           (condp re-first-group text
+            #"Infidel, you have entered Moloch's Sanctum!  Be gone!"
+            (swap! game #(reduce (fn make-priest-hostile [priest]
+                                   (assoc priest :peaceful false))
+                                 %
+                                 (filter high-priest?
+                                         (vals (curlvl-monsters %)))))
             #"The Amulet of Yendor.* feels (hot|very warm|warm)"
             :>> #(update-on-known-position anbf update-portal-range %)
             #"You feel you could be more dangerous|You feel more confident"
