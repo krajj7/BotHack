@@ -19,7 +19,9 @@
   (update-curlvl-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))
-       (assoc monster :peaceful (:peaceful old-monster))
+       (if (not= :update (:peaceful monster))
+         (assoc monster :peaceful (:peaceful old-monster))
+         monster)
        (if (not= (position old-monster) (position monster))
          (assoc monster :awake true)
          monster))))

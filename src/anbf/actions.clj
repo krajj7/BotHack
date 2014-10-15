@@ -203,7 +203,7 @@
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
-                 assoc :peaceful nil)
+                 assoc :peaceful :update)
           nil)))))
 
 (defaction Pray []
@@ -468,7 +468,9 @@
                       (remove (some-fn :remembered
                                        :friendly
                                        (every-pred :type
-                                                   (comp some? :peaceful))
+                                                   (comp some? :peaceful)
+                                                   (comp (partial not= :update)
+                                                         :peaceful))
                                        (comp #{\I \1 \2 \3 \4 \5} :glyph)))
                       first)]
       (with-reason "examining monster" (->FarLook m)))))

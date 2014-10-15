@@ -212,6 +212,12 @@
                                          (assoc % :walked 1)
                                          %)))))
 
+(defn- update-peaceful-status [game monster-selector]
+  (->> (curlvl-monsters game)
+       (filter monster-selector)
+       (reduce #(update-curlvl-monster %1 %2 assoc :peaceful :update)
+               game)))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (reify
@@ -251,12 +257,10 @@
       (or (if (and (re-seq thing-re text) (moved? @game))
             (update-items anbf))
           (condp re-first-group text
-            #"Infidel, you have entered Moloch's Sanctum!  Be gone!"
-            (swap! game #(reduce (fn make-priest-hostile [priest]
-                                   (assoc priest :peaceful false))
-                                 %
-                                 (filter high-priest?
-                                         (vals (curlvl-monsters %)))))
+            #" appears before you\."
+            (swap! game update-peaceful-status demon-lord?)
+            #"Infidel, you have entered Moloch's Sanctum!"
+            (swap! game update-peaceful-status high-priest?)
             #"The Amulet of Yendor.* feels (hot|very warm|warm)"
             :>> #(update-on-known-position anbf update-portal-range %)
             #"You feel you could be more dangerous|You feel more confident"
