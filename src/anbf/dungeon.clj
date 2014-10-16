@@ -193,6 +193,9 @@
       (some #(and ((:tags %) dlvl-or-tag) %) (vals levels))
       (levels dlvl-or-tag))))
 
+(defn get-dlvl [game branch dlvl-or-tag]
+  (:dlvl (get-level game branch dlvl-or-tag)))
+
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [player level pos]
@@ -454,7 +457,7 @@
            (change-dlvl #(+ % (dec in-branch-depth)))))
 
 (defn dlvl-from-tag [game branch tag after-tag-depth]
-  (some->> (get-level game branch tag) :dlvl
+  (some->> (get-dlvl game branch tag)
            (change-dlvl #(+ % (dec after-tag-depth)))))
 
 (defn ensure-curlvl
@@ -624,5 +627,5 @@
   "Your god won't help you here"
   [game]
   (and (#{:wiztower :main} (branch-key game))
-       (some->> (get-level game :main :castle) :dlvl
+       (some->> (get-dlvl game :main :castle)
                 (dlvl-compare (:dlvl game)) pos?)))

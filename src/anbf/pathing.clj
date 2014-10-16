@@ -820,52 +820,49 @@
     (dlvl-range :main "Dlvl:34" 9)))
 
 (defn- double-stairs? [game stairs? dlvl]
-  #(->> (get-level game :main %) tile-seq (filter stairs?) (more-than? 1)))
+  (->> (get-level game :main dlvl) tile-seq (filter stairs?) (more-than? 1)))
 
 (defn- dlvl-candidate
   "Return good Dlvl to search for given branch/tagged level"
   ([game branch]
-   (or (branch-entry game branch)
-       (case branch
-         :wiztower (or (->> (get-branch game :main) vals
-                            (filter (fn unexplored-tower? [level]
-                                      (and (:fake-wiztower (:tags level))
-                                           (->> (at level fake-wiztower-portal)
-                                                portal?))))
-                            (map :dlvl) first)
-                       (some->>
-                         (or (if-let [end (:dlvl (get-level game :main :end))]
-                               (as-> end res
-                                 (change-dlvl #(- % 4) res)
-                                 (dlvl-range :main res 4)))
-                             (if-let [geh (:dlvl (get-level game :main
-                                                            :gehennom))]
-                               (as-> geh res
-                                 (change-dlvl (partial + 15) res)
-                                 (dlvl-range :main res 8)))
-                             (->> (dlvl-range :main "Dlvl:40" 12)))
-                         (filter (partial possibly-wiztower? game))
-                         (least-explored game :main)))
-         :vlad (or (find-first #(double-stairs? game stairs-up? %)
-                               (vlad-range game))
-                   (least-explored game :main (vlad-range game)))
-         :sokoban (or (find-first #(double-stairs? game stairs-up? %)
+   (or (branch-entry game branch) ; known
+       (case branch ; likely dlvl choices
+         :wiztower (->> (get-branch game :main) vals
+                        (filter (fn unexplored-tower? [level]
+                                  (and (:fake-wiztower (:tags level))
+                                       (->> (at level fake-wiztower-portal)
+                                            portal?))))
+                        (map :dlvl) first)
+         :vlad (find-first (partial double-stairs? game stairs-up?)
+                           (vlad-range game))
+         :sokoban (or (find-first (partial double-stairs? game stairs-up?)
                                   (dlvl-range :main "Dlvl:6" 5))
-                      (if-let [oracle (:dlvl (get-level game :main :oracle))]
+                      (if-let [oracle (get-dlvl game :main :oracle)]
                         (next-dlvl :main oracle))
                       (dlvl-candidate game :main :oracle))
          :quest (first-unvisited game (dlvl-range :main "Dlvl:11" 8))
-         :mines (find-first #(double-stairs? game stairs-down? %)
+         :mines (find-first (partial double-stairs? game stairs-down?)
                             (dlvl-range :main "Dlvl:2" 3))
          nil)
-       (least-explored game :main
-                       (case branch
-                         :mines (dlvl-range :main "Dlvl:2" 3)
-                         (dlvl-range :main)))))
+       (->> (case branch ; fallback - explore entire range
+              :wiztower (filter (partial possibly-wiztower? game)
+                                (or (if-let [end (get-dlvl game :main :end)]
+                                      (as-> end res
+                                        (change-dlvl #(- % 4) res)
+                                        (dlvl-range :main res 4)))
+                                    (if-let [gh (get-dlvl game :main :gehennom)]
+                                      (as-> gh res
+                                        (change-dlvl (partial + 15) res)
+                                        (dlvl-range :main res 8)))
+                                    (dlvl-range :main "Dlvl:40" 12)))
+              :vlad (vlad-range game)
+              :mines (dlvl-range :main "Dlvl:2" 3)
+              (dlvl-range :main))
+            (least-explored game :main))))
   ([game branch tag]
    (or (if (subbranches tag)
          (dlvl-candidate game tag))
-       (:dlvl (get-level game branch tag))
+       (get-dlvl game branch tag)
        (if-not (get-branch game branch)
          (dlvl-candidate game branch))
        (if (#{:end :votd :gehennom :castle} tag)
@@ -874,16 +871,17 @@
          :rogue (->> (dlvl-range :main "Dlvl:15" 4) (first-unvisited game))
          :medusa (->> (dlvl-range :main "Dlvl:21" 8)
                       (take-while
-                        (partial not= (:dlvl (get-level game :main :castle))))
+                        (partial not= (get-dlvl game :main :castle)))
                       (#(or (first-unvisited game %)
                             (least-explored game :main %))))
-         (least-explored game branch
-                         (case tag
-                           :oracle (filter #(possibly-oracle? game %)
-                                           (dlvl-range :main "Dlvl:5" 5))
-                           :minetown (dlvl-range :mines
-                                       (dlvl-from-entrance game :mines 3) 2)
-                           (dlvl-range branch)))))))
+         nil)
+       (->> (case tag
+              :oracle (filter (partial possibly-oracle? game)
+                              (dlvl-range :main "Dlvl:5" 5))
+              :minetown (dlvl-range :mines
+                                    (dlvl-from-entrance game :mines 3) 2)
+              (dlvl-range branch))
+            (least-explored game branch)))))
 
 (defn- enter-branch [game branch]
   ;(log/debug "entering branch" branch)
@@ -952,7 +950,7 @@
                                           branch))))
   ([game branch tag-or-dlvl]
    (let [branch (branch-key game branch)
-         dlvl (or (:dlvl (get-level game branch tag-or-dlvl))
+         dlvl (or (get-dlvl game branch tag-or-dlvl)
                   (next-dlvl branch (:dlvl game)))]
      (->> (get-branch game branch) keys first
           (iterate (partial next-dlvl branch))
