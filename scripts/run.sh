@@ -8,7 +8,7 @@ if [ $(basename `pwd`) = "scripts" ]; then
     cd ..
 fi
 
-cp -v save/1000wizard.gz-equipped-valk-invocation /nh343/var/save/1000wizard.gz
+cp -v save/1000wizard.gz-equipped-valk-2 /nh343/var/save/1000wizard.gz
 mv *.log* *.ttyrec ~/tmp
 # LD_LIBRARY_PATH is necessary for the local shell interface (not needed for
 # ssh/telnet), the JNI interface must be compiled manually beforehand

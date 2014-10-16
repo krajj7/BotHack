@@ -20,7 +20,7 @@
             [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
-(def hostile-dist-thresh 10)
+(def hostile-dist-thresh 4)
 
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> (curlvl-monsters game)
@@ -89,7 +89,7 @@
   (if-not (have game real-amulet?)
     (with-reason "searching for the amulet"
       (or (explore game)
-          (search-level game 5) ; if Rodney leaves the level with it we're screwed
+          (search-level game 1) ; if Rodney leaves the level with it we're screwed
           (seek game stairs-up?)))))
 
 (defn full-explore [game]
@@ -106,22 +106,25 @@
   (with-reason "seeking unknown altar"
     (seek game (every-pred altar? (complement :walked)))))
 
+(defn endgame? [game]
+  (get-level game :main :sanctum))
+
 (defn progress [game]
-  (or #_(if-not (have game real-amulet?)
-        (full-explore game))
-      (explore-level game :mines :minetown)
-      (visit game :mines :end)
-      (visit game :main :medusa)
-      ;(explore-level game :sokoban :end)
-      (explore-level game :quest :end)
-      (explore-level game :vlad :end)
-      (explore-level game :main :end)
-      (explore-level game :wiztower :end)
-      (invocation game)
-      (explore-level game :main :sanctum)
-      (get-amulet game)
-      (visit game :astral)
-      (seek-altar game)))
+  (if-not (endgame? game)
+    (or #_(full-explore game)
+        (explore-level game :mines :minetown)
+        (visit game :mines :end)
+        (visit game :main :medusa)
+        ;(explore-level game :sokoban :end)
+        (explore-level game :quest :end)
+        (explore-level game :main :castle)
+        (explore-level game :vlad :end)
+        (explore-level game :main :end)
+        (explore-level game :wiztower :end)
+        (invocation game))
+    (or (get-amulet game)
+        (visit game :astral)
+        (seek-altar game))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
@@ -298,48 +301,65 @@
           (with-reason "reequip - don't need levi"
             (remove-use game slot))))))
 
+(defn- bait-wizard [game level monster]
+  (if (and (= :magenta (:color monster)) (= \@ (:glyph monster))
+           (not= :water (branch-key game))
+           ((some-fn water? lava?) (at level monster)))
+    (with-reason "baiting possible wizard away from water/lava"
+      ; don't let the book fall into water/lava
+      (or (:step (navigate game #(every? (not-any-fn? lava? water?)
+                                         (neighbors level %))))
+          (->Wait)))))
+
+(defn- bait-giant [game level monster]
+  (if (and (= \H (:glyph monster)) (= "Home 3" (:dlvl level))
+           (not (have-pick game)) (= 12 (:y monster))
+           (< 18 (:x monster) 25))
+    ; only needed until the bot can use wand of striking to break blocking boulders
+    (with-reason "baiting giant away from corridor"
+      (or (:step (navigate game #{(position 26 12)
+                                  (position 16 12)}))
+          (->Wait)))))
+
+(defn- hit [game level player monster]
+  (with-reason "hitting" monster
+    (or (bait-wizard game level monster)
+        (bait-giant game level monster)
+        (wield-weapon game)
+        (if-let [[slot _] (and (= :air (branch-key game))
+                               (not (have-levi-on game))
+                               (have-levi game))]
+          (with-reason "levitation for :air"
+            (make-use game slot)))
+        (if (adjacent? player monster)
+          (if (or (blind? player) (not (monster? (at level monster))))
+            (->Attack (towards player monster))
+            (->Move (towards player monster)))))))
+
 (defn fight [{:keys [player] :as game}]
   (or (if (:engulfed player)
         (with-reason "killing engulfer" (or (wield-weapon game)
                                             (->Move :E))))
-      (let [tgts (hostile-threats game)]
-        (when-let [{:keys [step target]} (navigate game tgts
-                                            {:adjacent true :walking true
-                                             :no-traps true :no-autonav true
-                                             :max-steps
-                                             (if (planes (branch-key game))
-                                               hostile-dist-thresh
-                                               1)})]
-          (with-reason "targetting enemy at" target
-            (let [level (curlvl game)
-                  monster (monster-at level target)]
-              (or (wield-weapon game)
-                  (if (and (:end (:tags level)) (= :wiztower (branch-key game))
-                           (= :magenta (:color monster)) (= \@ (:glyph monster))
-                           ((some-fn water? lava?) (at level target)))
-                    (with-reason "baiting possible wizard away from water/lava"
-                      ; don't let the book fall into water/lava
-                      (or (:step (navigate game #((not-any-fn? lava? water?)
-                                                  (neighbors level %))))
-                          (->Wait))))
-                  (if (and (= \H (:glyph monster)) (= "Home 3" (:dlvl level))
-                           (not (have-pick game)) (= 12 (:y monster))
-                           (< 18 (:x monster) 25))
-                    ; only needed until the bot can use wand of striking to break blocking boulders
-                    (with-reason "baiting giant away from corridor"
-                      (or (:step (navigate game #{(position 26 12)
-                                                  (position 16 12)}))
-                          (->Wait))))
-                  (if-let [[slot _] (and (= :air (branch-key game))
-                                         (not (have-levi-on game))
-                                         (have-levi game))]
-                    (with-reason "levitation for :air"
-                      (make-use game slot)))
-                  step
-                  (if (or (blind? player)
-                          (not (monster? (at level target))))
-                    (->Attack (towards player target))
-                    (->Move (towards player target))))))))))
+      (let [level (curlvl game)
+            adjacent (->> (neighbors player)
+                          (keep (partial monster-at level))
+                          (filter hostile?))]
+        (if-let [monster (or (find-first unique? adjacent)
+                             (find-first priest? adjacent)
+                             (find-first nasty? adjacent))]
+          (hit game level player monster)))
+      (when-let [{:keys [step target]} (navigate game (hostile-threats game)
+                                                 {:adjacent true :no-traps true
+                                                  :walking true :no-autonav true
+                                                  :max-steps
+                                                  (if (planes (branch-key game))
+                                                    1
+                                                    hostile-dist-thresh)})]
+        (let [level (curlvl game)
+              monster (monster-at level target)]
+          (with-reason "targetting enemy" monster
+            (or (hit game level player monster)
+                step))))))
 
 (defn- bribe-demon [prompt]
   (->> prompt

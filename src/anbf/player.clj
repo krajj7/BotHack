@@ -164,7 +164,7 @@
   (have game #(and (#{"boots of levitation" "ring of levitation"}
                              (item-name game %))
                    #_(can-use? %) ; TODO
-                   (or (safe? %) (:in-use %)))))
+                   (or (noncursed? %) (:in-use %)))))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)

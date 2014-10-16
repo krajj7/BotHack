@@ -74,3 +74,7 @@
 (defn unique? [m] (get-in m [:type :gen-flags :unique]))
 
 (defn human? [m] (get-in m [:tags :human]))
+
+(defn priest? [m] (some-> (typename m) (.contains "priest")))
+
+(defn nasty? [m] (get-in m [:tags :nasty]))
