@@ -14,28 +14,33 @@
 (defn- invocation-complete? [game]
   (stairs-down? (at-player game)))
 
-(defn attach-candles [game]
-  (if-let [[slot _] (and (not= 7 (:candles (val (have game "candelabrum"))))
+(defn attach-candles
+  [game]
+  {:pre [(have game candelabrum)]}
+  (if-let [[slot _] (and (not= 7 (:candles (val (have game candelabrum))))
                          (have game candle?))]
     (with-reason "attaching candles to candelabrum"
       (->Apply slot))))
 
 (defn- handle-candelabrum [game]
-  (if-let [[slot candelabrum] (have game "candelabrum")]
+  {:pre [(have game candelabrum {:noncursed true})]}
+  (if-let [[slot candelabrum] (have game candelabrum)]
     (if (or (and (:lit candelabrum) (invocation-complete? game))
             (and (not (:lit candelabrum)) (not (invocation-complete? game))))
       (with-reason "lighting or snuffing out candelabrum"
         (->Apply slot)))))
 
 (defn- ring-bell [game]
+  {:pre [(have game bell {:noncursed true})]}
   (if-not (or (invocation-complete? game)
               (.endsWith (:last-topline game)
                          " issues an unsettling shrill sound..."))
-    (if-let [[slot _] (have game "silver bell")]
+    (if-let [[slot _] (have game bell)]
       (with-reason "ringing the bell"
         (->Apply slot)))))
 
 (defn- read-book [game]
+  {:pre [(have game book {:noncursed true})]}
   (if-not (invocation-complete? game)
     (if-let [[slot _] (have game "Book of the Dead")]
       (with-reason "reading the book"

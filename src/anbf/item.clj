@@ -141,3 +141,7 @@
                                        (complement :locked)
                                        (some-fn noncursed?
                                                 (complement boh?))))
+
+(def candelabrum "Candelabrum of Invocation")
+(def bell "Bell of Opening")
+(def book "Book of the Dead")

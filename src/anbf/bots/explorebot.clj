@@ -133,7 +133,7 @@
        (:end (curlvl-tags game))
   #_(and (= :vlad (branch-key game))
        (:end (curlvl-tags game)))
-  #_(have game "candelabrum")
+  #_(have game candelabrum)
   #_(have game "Orb of Fate")
   ))
 
