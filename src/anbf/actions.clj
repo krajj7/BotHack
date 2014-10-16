@@ -980,6 +980,8 @@
           (if (.startsWith msg "You carefully open")
             (swap! n inc)) ; may occur on same line with "... is empty"
           (condp re-seq msg
+            #"It develops a huge set of teeth and bites you!"
+            (update-items anbf)
             #" seems to be locked\."
             (let [idx (swap! n inc)]
               (swap! game #(update-item-at-player % (nth-container-index % idx)
