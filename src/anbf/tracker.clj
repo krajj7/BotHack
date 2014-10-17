@@ -14,7 +14,7 @@
             [anbf.util :refer :all]
             [clojure.tools.logging :as log]))
 
-(defn- transfer-pair [game [old-monster monster]]
+(defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster game monster
     #(as-> % monster
@@ -24,7 +24,12 @@
          monster)
        (if (not= (position old-monster) (position monster))
          (assoc monster :awake true)
-         monster))))
+         monster)
+       (case (compare (distance-manhattan player old-monster)
+                      (distance-manhattan player monster))
+         -1 (assoc monster :fleeing true)
+         0 (assoc monster :fleeing (:fleeing old-monster))
+         1 (assoc monster :fleeing false)))))
 
 (defn filter-visible-uniques
   "If a unique monster was remembered and now is visible, remove all remembered instances"

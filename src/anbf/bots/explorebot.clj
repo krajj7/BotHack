@@ -31,6 +31,7 @@
                               (> hostile-dist-thresh (distance player %))
                               (not (blind? player))
                               (not (hallu? player))
+                              (not (:fleeing %))
                               (not (digit? %))))))
        set))
 

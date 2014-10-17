@@ -80,6 +80,10 @@
   (max (Math/abs ^long (unchecked-subtract (:x from) (:x to)))
        (Math/abs ^long (unchecked-subtract (:y from) (:y to)))))
 
+(defn distance-manhattan [from to]
+  (unchecked-add (Math/abs ^long (unchecked-subtract (:x from) (:x to)))
+                 (Math/abs ^long (unchecked-subtract (:y from) (:y to)))))
+
 (defn rectangle [NW-corner SE-corner]
   (for [x (range (:x NW-corner) (inc (:x SE-corner)))
         y (range (:y NW-corner) (inc (:y SE-corner)))]
