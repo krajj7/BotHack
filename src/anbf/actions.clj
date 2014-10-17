@@ -862,6 +862,8 @@
           false))
       EatWhatHandler
       (eat-what [_ _]
+        (if (string? slot-or-label)
+          (update-items anbf))
         (when (char? slot-or-label)
           (update-inventory anbf)
           slot-or-label)))))
@@ -933,6 +935,8 @@
           false))
       SacrificeWhatHandler
       (sacrifice-what [_ _]
+        (if (string? slot-or-label)
+          (update-items anbf))
         (when (char? slot-or-label)
           (update-inventory anbf)
           slot-or-label)))))
