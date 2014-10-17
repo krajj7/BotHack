@@ -41,14 +41,14 @@
 (defn monster-glyph? [glyph]
   (or (and (Character/isLetterOrDigit ^Character glyph)
            (not= \8 glyph) (not= \0 glyph))
-       (#{\& \@ \' \; \:} glyph)))
+      (#{\& \@ \' \; \: \~} glyph)))
 
 (defn monster?
   ([tile]
    (monster? (:glyph tile) (:color tile)))
   ([glyph color] ; works better on rogue level and for worm tails
-   (or (and (= \~ glyph) (= :brown color))
-       (and (monster-glyph? glyph) (or color (not= \: glyph))))))
+   (or (and (not= \~ glyph) (monster-glyph? glyph) (or color (not= \: glyph)))
+       (and (= \~ glyph) (= :brown color)))))
 
 ; bot should never get to see :trap - auto-examine
 (def traps #{:trap :antimagic :arrowtrap :beartrap :darttrap :firetrap :hole :magictrap :rocktrap :mine :levelport :pit :polytrap :portal :bouldertrap :rusttrap :sleeptrap :spikepit :squeaky :teletrap :trapdoor :web :statuetrap})

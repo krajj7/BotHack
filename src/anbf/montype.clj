@@ -521,10 +521,14 @@
     "your " (subs desc 5)
     desc))
 
-(defn by-description [text]
+(defn by-description
+  "Return MonsterType by farlook description"
+  [text]
   (let [^String desc (-> text strip-article strip-disposition strip-modifier)
         ghost-or-called (re-seq #"ghost|called" desc)]
-    (or (if (re-seq #"^(?:the )?high priest(?:ess)?$" desc)
+    (or (if (= "tail of a peaceful long worm" desc)
+          (name->monster "long worm tail"))
+        (if (re-seq #"^(?:the )?high priest(?:ess)?$" desc)
           (name->monster "high priest"))
         (if (= desc "mimic")
           (name->monster "large mimic")) ; could be any mimic really

@@ -403,7 +403,7 @@
                          (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
             (when-let [desc (and (monster-glyph? (nth text 0))
                                  (re-any-group farlook-monster-re text))]
-              (let [peaceful? (.startsWith ^String desc "peaceful ")
+              (let [peaceful? (.contains ^String desc "peaceful ")
                     montype (by-description desc)]
                 (log/debug "monster description" text "=>" montype)
                 (swap! game update-curlvl-monster pos assoc
