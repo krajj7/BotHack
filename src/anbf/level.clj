@@ -288,7 +288,11 @@
     :cutoff-rows [1 2]
     :cutoff-cols [0 78 79]
     :features {{:x 55 :y 11} :door-secret
+               {:x 54 :y 9} :door-secret
+               {:x 56 :y 9} :door-secret
                {:x 55 :y 13} :door-secret
+               {:x 56 :y 15} :door-secret
+               {:x 54 :y 15} :door-secret
                {:x 46 :y 12} :door-secret
                {:x 48 :y 12} :trapdoor
                {:x 52 :y 12} :trapdoor
