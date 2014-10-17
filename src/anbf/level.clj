@@ -375,11 +375,6 @@
     :cutoff-cols [79]}
    {:branch :mines
     :tag :minetown-grotto
-    ; problematic unusual-shaped shop
-    :shop [{:x 60 :y 9}  {:x 61 :y 9}  {:x 62 :y 9}
-           {:x 60 :y 10} {:x 61 :y 10} {:x 62 :y 10}
-           {:x 60 :y 11} {:x 61 :y 11} {:x 62 :y 11}
-           {:x 60 :y 12} {:x 61 :y 12} {:x 62 :y 12}]
     :features {{:x 48 :y 4} :stairs-down}}
    {:branch :mines
     :tag :minesend-1

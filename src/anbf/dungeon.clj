@@ -161,7 +161,7 @@
   "Update the Tiles around player's position by applying update-fn to their current value and args"
   [game update-fn & args]
   {:pre [(:dungeon game)]}
-  (reduce #(apply update-curlvl-at game % update-fn args)
+  (reduce #(apply update-curlvl-at %1 %2 update-fn args)
           game
           (neighbors (:player game))))
 
@@ -496,8 +496,9 @@
     (loop [closed #{}
            NW-corner origin
            SE-corner origin
-           open (set (if (shopkeeper-look? game origin)
-                       (including-origin neighbors level origin)))]
+           open (if (shopkeeper-look? game origin)
+                  (set (including-origin neighbors level origin))
+                  #{origin})]
       ;(log/debug (count open) open)
       (if-let [x (first open)]
         (recur (conj closed x)
@@ -515,8 +516,7 @@
 
 (defn reflood-room [game pos]
   (let [tile (at-curlvl game pos)]
-    ; shops are lit so shouldn't be necessary
-    (if (and (:room tile) (not (shop? tile)) (not (:walked tile)))
+    (if (and (:room tile) (not (:walked tile)))
       (do (log/debug "room reflood from:" pos "type:" (:room tile))
           (floodfill-room game pos (:room tile)))
       game)))
@@ -569,9 +569,6 @@
       (reduce #(update-at %1 %2 assoc :undiggable true)
               res
               (:undiggable-tiles blueprint))
-      (reduce #(update-at %1 %2 assoc :room :shop)
-              res
-              (:shop blueprint))
       (reduce #(update-at %1 %2
                           assoc :feature :rock :undiggable true :seen true)
               res
