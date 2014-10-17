@@ -46,6 +46,7 @@
    state ; subset #{:stun :conf :hallu :blind :ill}
    stat-drained
    lycantrophy
+   stoning
    stats ; :str :dex :con :int :wis :cha
    alignment ; :lawful :neutral :chaotic
    can-enhance]

@@ -254,15 +254,26 @@
     ToplineMessageHandler
     (message [_ text]
       (swap! game assoc :last-topline text)
-      (or (if (and (re-seq thing-re text) (moved? @game))
-            (update-items anbf))
-          (condp re-first-group text
+      (or (if-let [level (level-msg text)]
+            (update-on-known-position anbf add-curlvl-tag level))
+          (if-let [room (room-type text)]
+            (update-before-action anbf mark-room room))
+          (condp-all re-first-group text
+            thing-re
+            (if (moved? @game)
+              (update-items anbf))
             #" appears before you\."
             (swap! game update-peaceful-status demon-lord?)
             #"Infidel, you have entered Moloch's Sanctum!"
             (swap! game update-peaceful-status high-priest?)
             #"The Amulet of Yendor.* feels (hot|very warm|warm)"
             :>> #(update-on-known-position anbf update-portal-range %)
+            #"You are slowing down|Your limbs are stiffening"
+            (swap! game assoc-in [:player :stoning] true)
+            #"You feel limber|What a pity - you just ruined a future piece"
+            (swap! game assoc-in [:player :stoning] false)
+            #"You don't feel very well|You are turning a little green|Your limbs are getting oozy|Your skin begins to peel away|You are turning into a green slime"
+            (log/warn "sliming") ; no message on fix :-(
             #"You feel you could be more dangerous|You feel more confident"
             (swap! game assoc-in [:player :can-enhance] true)
             #"You feel weaker"
@@ -330,6 +341,8 @@
             (swap! game add-intrinsic :warning)
             #"You feel less sensitive"
             (swap! game remove-intrinsic :warning)
+            #"You feel stealthy|I grant thee the gift of Stealth"
+            (swap! game add-intrinsic :stealth)
             #"You feel clumsy"
             (swap! game remove-intrinsic :stealth)
             #"You feel less attractive"
@@ -346,12 +359,8 @@
             (swap! game add-intrinsic :search)
             #"You thought you saw something|You tawt you taw a puttie tat"
             (swap! game remove-intrinsic :see-invis)
-            #"You feel quick!"
+            #"You feel quick!|grant thee the gift of Speed"
             (swap! game add-intrinsic :speed)
             #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
             (swap! game remove-intrinsic :speed)
-            nil)
-          (if-let [level (level-msg text)]
-            (update-on-known-position anbf add-curlvl-tag level))
-          (if-let [room (room-type text)]
-            (update-before-action anbf mark-room room))))))
+            nil)))))
