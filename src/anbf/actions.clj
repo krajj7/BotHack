@@ -452,27 +452,28 @@
       (with-reason "examining tile" tile ->Look))))
 
 (defn- examine-features [game]
-  (some->> (curlvl game) tile-seq
-           (find-first (every-pred #(or (unknown-trap? %)
-                                        (and (altar? %) (not (:alignment %))
-                                             (not= :astral (branch-key game))))
-                                   (complement blank?)
-                                   (complement item?)
-                                   (complement monster?)))
-           ->FarLook
-           (with-reason "examining ambiguous feature")))
+  (if-not (:engulfed (:player game))
+    (some->> (curlvl game) tile-seq
+             (find-first (every-pred #(or (unknown-trap? %)
+                                          (and (not= :astral (branch-key game))
+                                               (altar? %) (not (:alignment %))))
+                                     (complement blank?)
+                                     (complement item?)
+                                     (complement monster?)))
+             ->FarLook
+             (with-reason "examining ambiguous feature"))))
 
 (defn- examine-monsters [{:keys [player] :as game}]
-  (when-not (hallu? player)
-    (when-let [m (->> (curlvl-monsters game)
-                      (remove (some-fn :remembered
-                                       :friendly
-                                       (every-pred :type
-                                                   (comp some? :peaceful)
-                                                   (comp (partial not= :update)
-                                                         :peaceful))
-                                       (comp #{\I \1 \2 \3 \4 \5} :glyph)))
-                      first)]
+  (if-not (or (:engulfed player) (hallu? player))
+    (if-let [m (->> (curlvl-monsters game)
+                    (remove (some-fn :remembered
+                                     :friendly
+                                     (every-pred :type
+                                                 (comp some? :peaceful)
+                                                 (comp (partial not= :update)
+                                                       :peaceful))
+                                     (comp #{\I \1 \2 \3 \4 \5} :glyph)))
+                    first)]
       (with-reason "examining monster" (->FarLook m)))))
 
 (defn- inventory-handler [anbf]

@@ -75,3 +75,15 @@
   (if (= 1 (-> frame :cursor :y))
     (str (topline frame) " " (string/trim (cursor-line frame)))
     (topline frame)))
+
+(defn looks-engulfed? [{:keys [cursor lines] :as frame}]
+  (if (and (< 0 (:x cursor) 79)
+           (< 1 (:y cursor) 21))
+    (let [row-before (dec (:x cursor))
+          row-after (inc (:x cursor))
+          line-above (nth lines (dec (:y cursor)))
+          line-at (nth lines (:y cursor))
+          line-below (nth lines (inc (:y cursor)))]
+      (and (= "/-\\" (subs line-above row-before (inc row-after)))
+           (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
+           (= "\\-/" (subs line-below row-before (inc row-after)))))))

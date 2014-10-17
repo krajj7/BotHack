@@ -6,6 +6,7 @@
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
             [anbf.fov :refer :all]
+            [anbf.frame :refer :all]
             [anbf.monster :refer :all]
             [anbf.actions :refer :all]
             [anbf.tile :refer :all]
@@ -123,18 +124,6 @@
       (update-curlvl-at cursor dissoc :blocked)
       (update-curlvl-at cursor update :first-walked #(or % turn))
       (update-curlvl-at cursor assoc :walked turn)))
-
-(defn- looks-engulfed? [{:keys [cursor lines] :as frame}]
-  (if (and (< 0 (:x cursor) 79)
-           (< 1 (:y cursor) 21))
-    (let [row-before (dec (:x cursor))
-          row-after (inc (:x cursor))
-          line-above (nth lines (dec (:y cursor)))
-          line-at (nth lines (:y cursor))
-          line-below (nth lines (inc (:y cursor)))]
-      (and (= "/-\\" (subs line-above row-before (inc row-after)))
-           (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
-           (= "\\-/" (subs line-below row-before (inc row-after)))))))
 
 (defn- update-map [game frame]
   (if (looks-engulfed? frame)
