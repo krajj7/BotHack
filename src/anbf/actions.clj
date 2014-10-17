@@ -240,8 +240,8 @@
                                       :branch-id (branch-key old-game)) game))
       (update-curlvl-at game tile assoc :branch-id (branch-key old-game)))))
 
-(defn stairs-handler [anbf]
-  (let [old-game (-> anbf :game deref)
+(defn stairs-handler [{:keys [game] :as anbf}]
+  (let [old-game @game
         old-branch (branch-key old-game)
         old-dlvl (:dlvl old-game)
         old-stairs (at-player old-game)
@@ -263,11 +263,16 @@
     (reify
       ToplineMessageHandler
       (message [_ text]
-        (if (.contains text "heat and smoke are gone.")
-          (reset! entered-vlad true)))
+        (condp re-seq text
+          #"heat and smoke are gone."
+          (reset! entered-vlad true)
+          #"A mysterious force prevents you from descending"
+          (swap! game update-around (-> (curlvl old-game) :blueprint :leader)
+                 assoc :walked nil) ; revisit
+          nil))
       DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
-        (swap! (:game anbf)
+        (swap! game
                #(let [new-branch (if @entered-vlad
                                    :vlad
                                    (get old-stairs :branch-id
