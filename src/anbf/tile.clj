@@ -171,13 +171,13 @@
 (defn walkable-by [{:keys [feature] :as tile} glyph]
   (assoc tile
          :feature (cond
-                    (and (not (#{\E \X \P} glyph))
+                    (and (not (#{\I \1 \2 \3 \4 \5 \E \X \P} glyph))
                          (door? tile)) :door-open
-                    (and (not (#{\E \X} glyph))
+                    (and (not (#{\I \1 \2 \3 \4 \5 \E \X} glyph))
                          (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
-                         :else feature)
+                    :else feature)
          :dug (or (:dug tile)
-                  (and (diggable? tile) (#{\p \h \r} glyph)))))
+                  (and (diggable? tile) (#{\U \p \h \r} glyph)))))
 
 (defn- door-or-wall [current new-glyph new-color]
   (cond
