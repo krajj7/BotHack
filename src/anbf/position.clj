@@ -58,10 +58,14 @@
    (conj (nbr-fn level pos) (at level pos))))
 
 (defn straight-neighbors
+  ([tile]
+   (filter (partial straight? tile) (neighbors tile)))
   ([level tile]
    (filter (partial straight? tile) (neighbors level tile))))
 
 (defn diagonal-neighbors
+  ([tile]
+   (filter (partial diagonal? tile) (neighbors tile)))
   ([level tile]
    (filter (partial diagonal? tile) (neighbors level tile))))
 

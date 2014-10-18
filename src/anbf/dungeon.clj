@@ -613,15 +613,15 @@
 
 (defn diggable-walls?
   "Are the walls diggable on this level?"
-  [level]
+  [game level]
   (and ;(not= "Home 1" (:dlvl game))
        (not-any? #{:rogue :sanctum :medusa} (:tags level))
        (or (:orcus (:tags level)) (not (:undiggable (:blueprint level))))
-       (not (#{:vlad :astral :sokoban :quest} (branch-key level)))))
+       (not (#{:vlad :astral :sokoban :quest} (branch-key game level)))))
 
-(defn diggable-floor? [level]
+(defn diggable-floor? [game level]
   (not (or (#{:quest :wiztower :vlad :astral :earth :fire :air :water :sokoban}
-                    (branch-key level))
+                     (branch-key game level))
            (:undiggable-floor (:blueprint level))
            (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 

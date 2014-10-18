@@ -332,8 +332,9 @@
                                (have-levi game))]
           (with-reason "levitation for :air"
             (make-use game slot)))
-        (if (adjacent? player monster)
-          (if (or (blind? player) (not (monster? (at level monster))))
+        (if (and (adjacent? player monster))
+          (if (or (not (monster? (at level monster)))
+                  (#{\I \1 \2 \3 \4 \5} (:glyph monster)))
             (->Attack (towards player monster))
             (->Move (towards player monster)))))))
 

@@ -84,24 +84,22 @@
 (defn- unexplored? [tile]
   (and (not (boulder? tile)) (unknown? tile)))
 
-(defn- narrow?
-  "Only works for adjacent diagonals"
-  ([level from to]
-   (narrow? level from to false))
-  ([level from to soko?]
-   (every? #(or ((some-fn rock? wall?) %)
-                (and soko? (boulder? %)))
-           (intersection (set (straight-neighbors level from))
-                         (set (straight-neighbors level to))))))
+(defn narrow?
+  ([game from to] (narrow? game (curlvl game) from to))
+  ([game level from to]
+   (if (and (adjacent? from to) (diagonal? from to))
+     (every? #(or (rock? %) (wall? %)
+                  (and (= :sokoban (branch-key game)) (boulder? %)))
+             (intersection (set (straight-neighbors level from))
+                           (set (straight-neighbors level to)))))))
 
 (defn- edge-passable-walking? [game level from-tile to-tile]
   (or (straight (towards from-tile to-tile))
       (and (diagonal-walkable? game from-tile)
            (diagonal-walkable? game to-tile)
-           (or (not= :sokoban (branch-key game level))
-               (not (narrow? level from-tile to-tile true)))
-           (or (not (narrow? level from-tile to-tile))
-               (not (:thick (:player game)))))))
+           (or (and (not= :sokoban (branch-key game level))
+                    (not (:thick (:player game))))
+               (not (narrow? game level from-tile to-tile))))))
 
 (defn passable-walking?
   "Only needs Move action, no door opening etc., will path through monsters and unexplored tiles"
@@ -277,9 +275,12 @@
                              (if (kickable-door? level to-tile opts)
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
-                          (or (boulder? to-tile) (diggable-walls? level))
+                          (or (boulder? to-tile) (diggable-walls? game level))
                           (dare-destroy? level to-tile))
-                   [8 (dig (:pick opts) dir)]))
+                   (if (or (not (:thick (:player game)))
+                           (not (narrow? game level from-tile to-tile)))
+                     [8 (dig (:pick opts) dir)]
+                     [16 (dig (:pick opts) dir)])))
              (update 0 + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
@@ -645,7 +646,7 @@
   (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %)))]
     (with-reason "going to a trapdoor/hole"
       (or step (descend game)))
-    (if-let [pick (and (diggable-floor? level)
+    (if-let [pick (and (diggable-floor? game level)
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))

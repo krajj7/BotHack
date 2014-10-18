@@ -1,6 +1,7 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
             [multiset.core :refer [multiset]]
+            [clojure.set :refer [intersection]]
             [clojure.string :as string]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
@@ -106,8 +107,6 @@
         (mark-trap-here anbf))
     #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
     (mark-trap-here anbf)
-    #"You are carrying too much to get through"
-    (swap! game assoc-in [:player :thick] true)
     #"activated a magic portal!"
     (reset! portal-atom true)
     #"You feel a strange vibration"
@@ -151,6 +150,16 @@
            (throw (IllegalArgumentException.
                     (str "Invalid direction: " dir))))))
 
+(defn- update-narrow [game target]
+  (as-> game res
+    (assoc-in res [:player :thick] true)
+    (if (= :sokoban (branch-key game))
+      res
+      (reduce #(update-curlvl-at %1 %2 assoc :feature :rock)
+              res
+              (intersection (set (straight-neighbors (:player game)))
+                            (set (straight-neighbors target)))))))
+
 (defaction Move [dir]
   (trigger [_] (direction-trigger dir))
   (handler [_ {:keys [game] :as anbf}]
@@ -185,6 +194,8 @@
                 (condp re-seq msg
                   no-monster-re
                   (swap! game remove-curlvl-monster target)
+                  #"You are carrying too much to get through"
+                  (swap! game update-narrow target)
                   #"You try to move the boulder, but in vain\."
                   (let [boulder-target (in-direction level target dir)]
                     (if (and (diagonal dir) (item? boulder-target))
