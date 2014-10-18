@@ -275,6 +275,8 @@
       ToplineMessageHandler
       (message [_ text]
         (condp re-seq text
+          #"You can't go down here"
+          (swap! game update-at-player assoc :feature nil)
           #"heat and smoke are gone."
           (reset! entered-vlad true)
           #"A mysterious force prevents you from descending"
@@ -848,6 +850,8 @@
         ToplineMessageHandler
         (message [_ msg]
           (condp re-seq msg
+            #"not very comfortable\.\.\."
+            (swap! game update-at-player assoc :feature nil)
             #"Having fun sitting on the (floor|air)\?"
             (swap! game update-at-player assoc :feature :floor)
             (move-message-handler anbf portal msg)))
