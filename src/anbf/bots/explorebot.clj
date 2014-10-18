@@ -52,17 +52,21 @@
         (with-reason "praying for food" ->Pray))))
 
 (defn- handle-illness [{:keys [player] :as game}]
-  (if (:ill (:state player))
-    (with-reason "fixing illness"
-      (or (if-let [[slot _] (have-unihorn game)]
-            (->Apply slot))
-          (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
-            (->Eat slot))
-          (if-let [[slot _] (or (have game "potion of healing" {:blessed true})
-                                (have game #{"potion of extra healing"
-                                             "potion of full healing"}
-                                      {:noncursed true}))]
-            (->Quaff slot))))))
+  (or (if-let [[slot _] (and (unihorn-recoverable? game)
+                             ; rest can wait
+                             (some (:state player) #{:conf :stun :ill :blind})
+                             (have-unihorn game))]
+        (with-reason "applying unihorn to recover" (->Apply slot)))
+      (if (:ill (:state player))
+        (with-reason "fixing illness"
+          (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
+                (->Eat slot))
+              (if-let [[slot _] (or (have game "potion of healing"
+                                          {:blessed true})
+                                    (have game #{"potion of extra healing"
+                                                 "potion of full healing"}
+                                          {:noncursed true}))]
+                (->Quaff slot)))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
