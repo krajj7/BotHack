@@ -82,7 +82,10 @@
 (defn- choice-prompt
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
-  (if (and (status-drawn? frame) (<= (-> frame :cursor :y) 1))
+  (if (and (status-drawn? frame)
+           (<= (-> frame :cursor :y) 1)
+           (> (-> frame :cursor :x) ; no text after cursor
+              (count (re-first-group #"^(.*[^ ]) *$" (cursor-line frame)))))
     (some->> (topline+ frame)
              (re-seq #".*\?\"?  ?\[[^\]]+\]( \(.\))?$")
              ffirst)))
