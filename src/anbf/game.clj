@@ -207,150 +207,176 @@
        (reduce #(update-curlvl-monster %1 %2 assoc :peaceful :update)
                game)))
 
+(defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
+  (or (when (= "Astral Plane" new-dlvl)
+        (log/debug "entering astral")
+        (swap! game assoc :branch-id :astral))
+      (when (subbranches (branch-key @game level))
+        (log/debug "leaving subbranch via portal")
+        (swap! game assoc :branch-id :main))
+      (when (= "Home" (subs new-dlvl 0 4))
+        (log/debug "entering quest portal")
+        (swap! game assoc :branch-id :quest))
+      (when (> (dlvl-number new-dlvl) 35)
+        (log/debug "entering wiztower portal")
+        (swap! game assoc :branch-id :wiztower))
+      (when (= "Fort Ludios" new-dlvl)
+        (log/debug "entering ludios")
+        (swap! game assoc :branch-id :ludios))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
-  (reify
-    AboutToChooseActionHandler
-    (about-to-choose [_ game]
-      (swap! (:game anbf) filter-visible-uniques))
-    RedrawHandler
-    (redraw [_ frame]
-      (swap! game assoc :frame frame))
-    BOTLHandler
-    (botl [_ status]
-      (let [old-dlvl (:dlvl @game)
-            new-dlvl (:dlvl status)]
-        (swap! game update-by-botl status)
-        (when (not= old-dlvl new-dlvl)
-          (dlvl-changed @delegator old-dlvl new-dlvl)
-          (update-on-known-position anbf apply-default-blueprint)
-          (if (and old-dlvl
-                   (= "Home" (subs old-dlvl 0 4))
-                   (= "Dlvl" (subs new-dlvl 0 4)))
-            (swap! game assoc :branch-id :main) ; kicked out of quest
-            (swap! game ensure-curlvl)))))
-    KnowPositionHandler
-    (know-position [_ frame]
-      (swap! game update :player into (:cursor frame)))
-    FullFrameHandler
-    (full-frame [_ frame]
-      (swap! game update-map frame))
-    MultilineMessageHandler
-    (message-lines [_ lines]
-      (or (if (and (re-seq things-re (first lines)) (moved? @game))
-            (update-items anbf))
-          (if-let [level (level-msg (first lines))]
-            (update-on-known-position anbf add-curlvl-tag level))))
-    ToplineMessageHandler
-    (message [_ text]
-      (swap! game assoc :last-topline text)
-      (or (if-let [level (level-msg text)]
-            (update-on-known-position anbf add-curlvl-tag level))
-          (if-let [room (room-type text)]
-            (update-before-action anbf mark-room room))
-          (condp-all re-first-group text
-            thing-re
-            (if (moved? @game)
+  (let [portal (atom nil)
+        old-level (atom nil)]
+    (reify
+      AboutToChooseActionHandler
+      (about-to-choose [_ game]
+        (reset! portal nil)
+        (reset! old-level (curlvl game))
+        (swap! (:game anbf) filter-visible-uniques))
+      DlvlChangeHandler
+      (dlvl-changed [_ old-dlvl new-dlvl]
+        (if @portal
+          (portal-handler anbf @old-level new-dlvl)))
+      RedrawHandler
+      (redraw [_ frame]
+        (swap! game assoc :frame frame))
+      BOTLHandler
+      (botl [_ status]
+        (let [old-dlvl (:dlvl @game)
+              new-dlvl (:dlvl status)]
+          (swap! game update-by-botl status)
+          (when (not= old-dlvl new-dlvl)
+            (dlvl-changed @delegator old-dlvl new-dlvl)
+            (update-on-known-position anbf apply-default-blueprint)
+            (if (and old-dlvl
+                     (= "Home" (subs old-dlvl 0 4))
+                     (= "Dlvl" (subs new-dlvl 0 4)))
+              (swap! game assoc :branch-id :main) ; kicked out of quest
+              (swap! game ensure-curlvl)))))
+      KnowPositionHandler
+      (know-position [_ frame]
+        (swap! game update :player into (:cursor frame)))
+      FullFrameHandler
+      (full-frame [_ frame]
+        (swap! game update-map frame))
+      MultilineMessageHandler
+      (message-lines [_ lines]
+        (or (if (and (re-seq things-re (first lines)) (moved? @game))
               (update-items anbf))
-            #" appears before you\."
-            (swap! game update-peaceful-status demon-lord?)
-            #"Infidel, you have entered Moloch's Sanctum!"
-            (swap! game update-peaceful-status high-priest?)
-            #"The Amulet of Yendor.* feels (hot|very warm|warm)"
-            :>> #(update-on-known-position anbf update-portal-range %)
-            #"You are slowing down|Your limbs are stiffening"
-            (swap! game assoc-in [:player :stoning] true)
-            #"You feel limber|What a pity - you just ruined a future piece"
-            (swap! game assoc-in [:player :stoning] false)
-            #"You don't feel very well|You are turning a little green|Your limbs are getting oozy|Your skin begins to peel away|You are turning into a green slime"
-            (log/warn "sliming") ; no message on fix :-(
-            #"You feel you could be more dangerous|You feel more confident"
-            (swap! game assoc-in [:player :can-enhance] true)
-            #"You feel weaker"
-            (swap! game assoc-in [:player :stat-drained] true)
-            #"makes you feel (better|great)"
-            (swap! game assoc-in [:player :stat-drained] false)
-            #"You feel feverish"
-            (swap! game assoc-in [:player :lycantrophy] true)
-            #"You feel purified"
-            (swap! game assoc-in [:player :lycantrophy] false)
-            #"Your .* feels? somewhat better"
-            (swap! game assoc-in [:player :leg-hurt] false)
-            #"You sink into the lava"
-            (update-at-player-when-known anbf assoc :feature :lava)
-            #"You turn into a"
-            (-> anbf update-inventory update-items)
-            #"You are almost hit"
-            (update-items anbf)
-            #" activated a magic portal!"
-            (if (planes (branch-key @game))
-              (swap! game (comp ensure-curlvl
-                                #(assoc % :branch-id (next-plane %))))
-              (update-at-player-when-known anbf assoc :feature :portal))
-            #"The walls around you begin to bend and crumble!"
-            (swap! game update-at-player assoc :feature :stairs-down)
-            #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you"
-            (update-inventory anbf)
-            #"shop appears to be deserted"
-            (if (< 33 (dlvl @game))
-              (swap! game add-curlvl-tag :orcus))
-            #"You hear the rumble of distant thunder|You hear the studio audience applaud!|You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
-            (do (log/warn "god angered:" text)
-                (swap! game assoc :god-angry true)) ; might as well #quit
-            #"You feel a strange mental acuity|You feel in touch with the cosmos"
-            (swap! game add-intrinsic :telepathy)
-            #"Your senses fail"
-            (swap! game remove-intrinsic :telepathy)
-            #"You feel in control of yourself|You feel centered in your personal space"
-            (swap! game add-intrinsic :telecontrol)
-            #"You feel a momentary chill|You be chillin|You feel cool|You are uninjured|You don't feel hot|The fire doesn't feel hot|You feel rather warm|You feel mildly (?:warm|hot)|enveloped in flames\. But you resist the effects|It seems quite tasty"
-            (swap! game add-intrinsic :fire)
-            #"You feel warmer"
-            (swap! game remove-intrinsic :fire)
-            #"You feel full of hot air|You feel warm|duck some of the blast|You don't feel cold|The frost doesn't seem cold|You feel a (?:little|mild) chill|You're covered in frost. But you resist the effects|You feel mildly chilly"
-            (swap! game add-intrinsic :cold)
-            #"You feel cooler"
-            (swap! game remove-intrinsic :cold)
-            #"You feel wide awake|You feel awake!"
-            (swap! game add-intrinsic :sleep)
-            #"You feel tired!"
-            (swap! game remove-intrinsic :sleep)
-            #"You feel grounded|Your health currently feels amplified|You feel insulated|You feel a mild tingle"
-            (swap! game add-intrinsic :shock)
-            #"You feel conductive"
-            (swap! game remove-intrinsic :shock)
-            #"You feel(?: especially)? healthy|You feel hardy"
-            (swap! game add-intrinsic :poison)
-            #"You feel a little sick"
-            (swap! game remove-intrinsic :poison)
-            #"You feel very jumpy|You feel diffuse"
-            (swap! game add-intrinsic :teleport)
-            #"You feel very firm|You feel totally together"
-            (swap! game add-intrinsic :disintegration)
-            #"You feel sensitive"
-            (swap! game add-intrinsic :warning)
-            #"You feel less sensitive"
-            (swap! game remove-intrinsic :warning)
-            #"You feel stealthy|I grant thee the gift of Stealth"
-            (swap! game add-intrinsic :stealth)
-            #"You feel clumsy"
-            (swap! game remove-intrinsic :stealth)
-            #"You feel less attractive"
-            (swap! game remove-intrinsic :aggravate)
-            #"You feel less jumpy"
-            (swap! game remove-intrinsic :teleport)
-            #"You feel hidden"
-            (swap! game add-intrinsic :invisibility)
-            #"You feel paranoid"
-            (swap! game remove-intrinsic :invisibility)
-            #"You see an image of someone stalking you|You feel transparent|You feel very self-conscious|Your vision becomes clear"
-            (swap! game add-intrinsic :see-invis)
-            #"You feel perceptive!"
-            (swap! game add-intrinsic :search)
-            #"You thought you saw something|You tawt you taw a puttie tat"
-            (swap! game remove-intrinsic :see-invis)
-            #"You feel quick!|grant thee the gift of Speed"
-            (swap! game add-intrinsic :speed)
-            #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
-            (swap! game remove-intrinsic :speed)
-            nil)))))
+            (if-let [level (level-msg (first lines))]
+              (update-on-known-position anbf add-curlvl-tag level))))
+      ToplineMessageHandler
+      (message [_ text]
+        (swap! game assoc :last-topline text)
+        (or (if-let [level (level-msg text)]
+              (update-on-known-position anbf add-curlvl-tag level))
+            (if-let [room (room-type text)]
+              (update-before-action anbf mark-room room))
+            (condp-all re-first-group text
+              thing-re
+              (if (moved? @game)
+                (update-items anbf))
+              #" appears before you\."
+              (swap! game update-peaceful-status demon-lord?)
+              #"Infidel, you have entered Moloch's Sanctum!"
+              (swap! game update-peaceful-status high-priest?)
+              #"The Amulet of Yendor.* feels (hot|very warm|warm)"
+              :>> #(update-on-known-position anbf update-portal-range %)
+              #"You are slowing down|Your limbs are stiffening"
+              (swap! game assoc-in [:player :stoning] true)
+              #"You feel limber|What a pity - you just ruined a future piece"
+              (swap! game assoc-in [:player :stoning] false)
+              #"You don't feel very well|You are turning a little green|Your limbs are getting oozy|Your skin begins to peel away|You are turning into a green slime"
+              (log/warn "sliming") ; no message on fix :-(
+              #"You feel you could be more dangerous|You feel more confident"
+              (swap! game assoc-in [:player :can-enhance] true)
+              #"You feel weaker"
+              (swap! game assoc-in [:player :stat-drained] true)
+              #"makes you feel (better|great)"
+              (swap! game assoc-in [:player :stat-drained] false)
+              #"You feel feverish"
+              (swap! game assoc-in [:player :lycantrophy] true)
+              #"You feel purified"
+              (swap! game assoc-in [:player :lycantrophy] false)
+              #"Your .* feels? somewhat better"
+              (swap! game assoc-in [:player :leg-hurt] false)
+              #"You sink into the lava"
+              (update-at-player-when-known anbf assoc :feature :lava)
+              #"You turn into a"
+              (-> anbf update-inventory update-items)
+              #"You are almost hit"
+              (update-items anbf)
+              #" activated a magic portal!"
+              (do (reset! portal true)
+                  (if (planes (branch-key @game))
+                    (swap! game (comp ensure-curlvl
+                                      #(assoc % :branch-id (next-plane %))))
+                    (update-at-player-when-known anbf assoc :feature :portal)))
+              #"The walls around you begin to bend and crumble!"
+              (swap! game update-at-player assoc :feature :stairs-down)
+              #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you"
+              (update-inventory anbf)
+              #"shop appears to be deserted"
+              (if (< 33 (dlvl @game))
+                (swap! game add-curlvl-tag :orcus))
+              #"You hear the rumble of distant thunder|You hear the studio audience applaud!|You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
+              (do (log/warn "god angered:" text)
+                  (swap! game assoc :god-angry true)) ; might as well #quit
+              #"You feel a strange mental acuity|You feel in touch with the cosmos"
+              (swap! game add-intrinsic :telepathy)
+              #"Your senses fail"
+              (swap! game remove-intrinsic :telepathy)
+              #"You feel in control of yourself|You feel centered in your personal space"
+              (swap! game add-intrinsic :telecontrol)
+              #"You feel a momentary chill|You be chillin|You feel cool|You are uninjured|You don't feel hot|The fire doesn't feel hot|You feel rather warm|You feel mildly (?:warm|hot)|enveloped in flames\. But you resist the effects|It seems quite tasty"
+              (swap! game add-intrinsic :fire)
+              #"You feel warmer"
+              (swap! game remove-intrinsic :fire)
+              #"You feel full of hot air|You feel warm|duck some of the blast|You don't feel cold|The frost doesn't seem cold|You feel a (?:little|mild) chill|You're covered in frost. But you resist the effects|You feel mildly chilly"
+              (swap! game add-intrinsic :cold)
+              #"You feel cooler"
+              (swap! game remove-intrinsic :cold)
+              #"You feel wide awake|You feel awake!"
+              (swap! game add-intrinsic :sleep)
+              #"You feel tired!"
+              (swap! game remove-intrinsic :sleep)
+              #"You feel grounded|Your health currently feels amplified|You feel insulated|You feel a mild tingle"
+              (swap! game add-intrinsic :shock)
+              #"You feel conductive"
+              (swap! game remove-intrinsic :shock)
+              #"You feel(?: especially)? healthy|You feel hardy"
+              (swap! game add-intrinsic :poison)
+              #"You feel a little sick"
+              (swap! game remove-intrinsic :poison)
+              #"You feel very jumpy|You feel diffuse"
+              (swap! game add-intrinsic :teleport)
+              #"You feel very firm|You feel totally together"
+              (swap! game add-intrinsic :disintegration)
+              #"You feel sensitive"
+              (swap! game add-intrinsic :warning)
+              #"You feel less sensitive"
+              (swap! game remove-intrinsic :warning)
+              #"You feel stealthy|I grant thee the gift of Stealth"
+              (swap! game add-intrinsic :stealth)
+              #"You feel clumsy"
+              (swap! game remove-intrinsic :stealth)
+              #"You feel less attractive"
+              (swap! game remove-intrinsic :aggravate)
+              #"You feel less jumpy"
+              (swap! game remove-intrinsic :teleport)
+              #"You feel hidden"
+              (swap! game add-intrinsic :invisibility)
+              #"You feel paranoid"
+              (swap! game remove-intrinsic :invisibility)
+              #"You see an image of someone stalking you|You feel transparent|You feel very self-conscious|Your vision becomes clear"
+              (swap! game add-intrinsic :see-invis)
+              #"You feel perceptive!"
+              (swap! game add-intrinsic :search)
+              #"You thought you saw something|You tawt you taw a puttie tat"
+              (swap! game remove-intrinsic :see-invis)
+              #"You feel quick!|grant thee the gift of Speed"
+              (swap! game add-intrinsic :speed)
+              #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
+              (swap! game remove-intrinsic :speed)
+              nil))))))

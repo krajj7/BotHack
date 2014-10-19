@@ -88,7 +88,7 @@
   (update-at-player-when-known anbf update :feature #(if (traps %) % :trap)))
 
 (defn- move-message-handler
-  [{:keys [game] :as anbf} portal-atom msg]
+  [{:keys [game] :as anbf} msg]
   (condp re-seq msg
     #".*: \"Closed for inventory\"" ; TODO possible degradation
     (update-before-action
@@ -107,8 +107,6 @@
         (mark-trap-here anbf))
     #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
     (mark-trap-here anbf)
-    #"activated a magic portal!"
-    (reset! portal-atom true)
     #"You feel a strange vibration"
     (do (swap! game add-curlvl-tag :end)
         (update-at-player-when-known anbf assoc :vibrating true))
@@ -120,21 +118,6 @@
                   (reduce #(update-curlvl-at %1 %2 assoc :feature nil)
                           game))))
     nil))
-
-(defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
-  (or (when (= "Astral Plane" new-dlvl)
-        (log/debug "entering astral")
-        (swap! game assoc :branch-id :astral))
-      (when (subbranches (branch-key @game level))
-        (log/debug "leaving subbranch via portal")
-        (swap! game assoc :branch-id :main))
-      (when (= "Home" (subs new-dlvl 0 4))
-        (log/debug "entering quest portal")
-        (swap! game assoc :branch-id :quest))
-      (when (> (dlvl-number new-dlvl) 35)
-        (log/debug "entering wiztower portal")
-        (swap! game assoc :branch-id :wiztower))
-      (log/error "entered unknown portal!")))
 
 (defn update-trapped-status [{:keys [game] :as anbf} old-pos]
   (update-on-known-position anbf
@@ -164,7 +147,6 @@
   (trigger [_] (direction-trigger dir))
   (handler [_ {:keys [game] :as anbf}]
     (let [got-message (atom false)
-          portal (atom false)
           old-game @game
           old-player (:player old-game)
           old-pos (position old-player)
@@ -189,7 +171,7 @@
         ToplineMessageHandler
         (message [_ msg]
           (reset! got-message true)
-          (or (move-message-handler anbf portal msg)
+          (or (move-message-handler anbf msg)
               (when-not (dizzy? old-player)
                 (condp re-seq msg
                   no-monster-re
@@ -207,10 +189,6 @@
                   (swap! game update-curlvl-at target
                          #(assoc % :feature (if (blank? %) :rock :wall)))
                   nil))))
-        DlvlChangeHandler
-        (dlvl-changed [_ old-dlvl new-dlvl]
-          (if @portal
-            (portal-handler anbf level new-dlvl)))
         ReallyAttackHandler
         (really-attack [_ _]
           (swap! game update-curlvl-monster (in-direction old-pos dir)
@@ -463,7 +441,7 @@
                         (into {} (for [[c i] inventory] (slot-item c i)))))))))
 
 (defn- examine-tile [{:keys [player] :as game}]
-  (if-let [tile (and (not (blind? player))
+  (if-let [tile (and (not (blind? player)) (not (:engulfed player))
                      (at-player game))]
     (if ((some-fn :new-items unknown? unknown-trap?
                   (every-pred altar? (complement :alignment))) tile)
@@ -786,8 +764,6 @@
   (trigger [_] "_")
   (handler [this {:keys [game] :as anbf}]
     (let [pos (position pos)
-          level (curlvl @game)
-          portal (atom nil)
           path (set (rest (:path this)))]
       (swap! game assoc :last-autonav pos :autonav-stuck false)
       (reify
@@ -800,11 +776,7 @@
             (swap! game assoc :autonav-stuck true)))
         ToplineMessageHandler
         (message [_ msg]
-          (move-message-handler anbf portal msg))
-        DlvlChangeHandler
-        (dlvl-changed [_ old-dlvl new-dlvl]
-          (if @portal
-            (portal-handler anbf level new-dlvl)))
+          (move-message-handler anbf msg))
         AutotravelHandler
         (travel-where [_] pos)))))
 
@@ -844,21 +816,15 @@
 (defaction Sit []
   (trigger [_] "#sit\n")
   (handler [_ {:keys [game] :as anbf}]
-    (let [portal (atom nil)
-          level (curlvl @game)]
-      (reify
-        ToplineMessageHandler
-        (message [_ msg]
-          (condp re-seq msg
-            #"not very comfortable\.\.\."
-            (swap! game update-at-player assoc :feature nil)
-            #"Having fun sitting on the (floor|air)\?"
-            (swap! game update-at-player assoc :feature :floor)
-            (move-message-handler anbf portal msg)))
-        DlvlChangeHandler
-        (dlvl-changed [_ old-dlvl new-dlvl]
-          (if @portal
-            (portal-handler anbf level new-dlvl)))))))
+    (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"not very comfortable\.\.\."
+          (swap! game update-at-player assoc :feature nil)
+          #"Having fun sitting on the (floor|air)\?"
+          (swap! game update-at-player assoc :feature :floor)
+          (move-message-handler anbf msg))))))
 
 (defaction Eat [slot-or-label]
   (trigger [_] "e")
