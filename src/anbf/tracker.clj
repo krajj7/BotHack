@@ -15,7 +15,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
-  (log/debug "transfer:" \newline old-monster "to" \newline monster)
+  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))
@@ -84,16 +84,15 @@
 
 (defn- mark-kill [game old-game]
   (if-let [dir (and (not (impaired? (:player old-game)))
-                    (#{:move :attack} (typekw (:last-action old-game)))
-                    (:dir (:last-action old-game)))]
-    (let [pos (in-direction (:player old-game) dir)
-          tile (at-curlvl game pos)
-          old-monster (or (monster-at (curlvl old-game) pos)
-                          (unknown-monster (:x pos) (:y pos) (:turn game)))]
+                    (#{:move :attack} (typekw (:last-action* game)))
+                    (:dir (:last-action* game)))]
+    (let [level (curlvl game)
+          tile (in-direction level (:player old-game) dir)
+          old-monster (or (monster-at (curlvl old-game) tile)
+                          (unknown-monster (:x tile) (:y tile) (:turn game)))]
       (if (or (item? tile) (monster? tile) (water? tile) ; don't mark deaths that clearly didn't leave a corpse
               (blind? (:player game)))
-        (update-curlvl-at game old-monster
-                          mark-death old-monster (:turn game))
+        (update-curlvl-at game tile mark-death old-monster (:turn game))
         game))
     game))
 
@@ -109,7 +108,7 @@
           (condp re-first-group msg
             #"You (kill|destroy) [^.!]*[.!]"
             (update-before-action anbf mark-kill @old-game)
-            ;#" is (killed|destroyed)"
+            ;#" is (killed|destroyed)" ...
             nil))))))
 
 (defn- only-fresh-deaths? [tile corpse-type turn]
