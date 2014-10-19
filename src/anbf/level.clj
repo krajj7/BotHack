@@ -332,8 +332,8 @@
     :undiggable-tiles wiztower-inner-boundary}
    {:branch :main
     :tag :sanctum
-    :cutoff-rows [1 2 21]
-    :cutoff-cols [0 1 2 3 4 73 74 75 76 77 78 79]
+    :cutoff-rows [1 2 3 4 5 20 21]
+    :cutoff-cols [0 1 2 3 4 71 72 73 74 75 76 77 78 79]
     :features (into {{:x 20 :y 10} :altar
                      {:x 56 :y 14} :door-secret
                      ;{:x 59 :y 12} :door-secret ; better not to know about this useless dead-end
