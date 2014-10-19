@@ -242,6 +242,9 @@
   21 :x 39} {:y 21 :x 40} {:y 21 :x 41} {:y 21 :x 42} {:y 21 :x 43} {:y 21
   :x 44} {:y 21 :x 45} {:y 21 :x 46} {:y 21 :x 47}])
 
+(def geh-maze {:cutoff-cols [0 1 77 78 79]
+               :cutoff-rows [1 2 3 21]})
+
 (def blueprints
   [{:branch :astral
     :features (merge (zipmap astral-walls (repeat :wall))

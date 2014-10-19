@@ -563,43 +563,48 @@
        (or (not (:tag blueprint))
            ((:tags level) (:tag blueprint)))))
 
+(defn- apply-blueprint [level blueprint]
+  (log/debug "applying blueprint" (select-keys blueprint [:branch :tag :dlvl]))
+  (as-> level res
+    (reduce #(update-at %1 %2 assoc :undiggable true)
+            res
+            (:undiggable-tiles blueprint))
+    (reduce #(update-at %1 %2
+                        assoc :feature :rock :undiggable true :seen true)
+            res
+            (for [x (:cutoff-cols blueprint)
+                  y (range 1 22)]
+              (position x y)))
+    (reduce #(update-at %1 %2
+                        assoc :feature :rock :undiggable true :seen true)
+            res
+            (for [x (range 0 80)
+                  y (:cutoff-rows blueprint)]
+              (position x y)))
+    (reduce (fn mark-feature [level [pos feature]]
+              (update-at level pos assoc :seen true :feature
+                         (cond (= :door-secret feature)
+                               (if ((some-fn unknown? wall?) (at level pos))
+                                 :door-secret
+                                 (:feature (at level pos)))
+                               (= :cloud feature) feature
+                               :else (or (:feature (at level pos)) feature))))
+            res
+            (:features blueprint))
+    (reduce (fn add-monster [level [pos monster]]
+              (reset-monster level (known-monster (:x pos) (:y pos) monster)))
+            res
+            (:monsters blueprint))))
+
 (defn- match-blueprint
-  "Apply the matching blueprint to the level"
+  "Find and apply a matching blueprint to the level or return nil"
   [game level]
   (when-let [blueprint (find-first (partial match-level game level) blueprints)]
-    (log/debug "applying blueprint, level:" (:dlvl level)
+    (log/debug "matched blueprint, level:" (:dlvl level)
                "; branch:" (branch-key game level) "; tags:" (:tags level))
-    (as-> level res
-      (assoc res :blueprint blueprint)
-      (reduce #(update-at %1 %2 assoc :undiggable true)
-              res
-              (:undiggable-tiles blueprint))
-      (reduce #(update-at %1 %2
-                          assoc :feature :rock :undiggable true :seen true)
-              res
-              (for [x (:cutoff-cols blueprint)
-                    y (range 1 22)]
-                (position x y)))
-      (reduce #(update-at %1 %2
-                          assoc :feature :rock :undiggable true :seen true)
-              res
-              (for [x (range 0 80)
-                    y (:cutoff-rows blueprint)]
-                (position x y)))
-      (reduce (fn mark-feature [level [pos feature]]
-                (update-at level pos assoc :seen true :feature
-                           (cond (= :door-secret feature)
-                                 (if ((some-fn unknown? wall?) (at level pos))
-                                   :door-secret
-                                   (:feature (at level pos)))
-                                 (= :cloud feature) feature
-                                 :else (or (:feature (at level pos)) feature))))
-              res
-              (:features blueprint))
-      (reduce (fn add-monster [level [pos monster]]
-                (reset-monster level (known-monster (:x pos) (:y pos) monster)))
-              res
-              (:monsters blueprint)))))
+    (-> level
+        (assoc :blueprint blueprint)
+        (apply-blueprint blueprint))))
 
 (defn level-blueprint
   "If the current level doesn't have a blueprint, check for a match and apply it"
@@ -626,8 +631,14 @@
            (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 
 (defn in-gehennom?
-  "Your god won't help you here"
+  "Your god won't help you here (includes VoTD)"
   [game]
   (and (#{:wiztower :main} (branch-key game))
        (some->> (get-dlvl game :main :castle)
                 (dlvl-compare (:dlvl game)) pos?)))
+
+(defn apply-default-blueprint [game]
+  (if (and (in-gehennom? game) (not (:votd (curlvl-tags game)))
+           (some wall? (neighbors (curlvl game) (:player game))))
+    (update-curlvl game apply-blueprint geh-maze)
+    game))

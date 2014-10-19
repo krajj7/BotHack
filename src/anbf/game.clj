@@ -223,6 +223,7 @@
         (swap! game update-by-botl status)
         (when (not= old-dlvl new-dlvl)
           (dlvl-changed @delegator old-dlvl new-dlvl)
+          (update-on-known-position anbf apply-default-blueprint)
           (if (and old-dlvl
                    (= "Home" (subs old-dlvl 0 4))
                    (= "Dlvl" (subs new-dlvl 0 4)))
