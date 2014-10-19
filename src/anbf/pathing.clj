@@ -685,7 +685,7 @@
                                             (< 40 (:x %) 74)
                                             (< 5 (:x %) 40)))))))
           (if (> (dlvl game) 35)
-            (if (unknown? (at level fake-wiztower-portal))
+            (if-not (:walked (at level fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
                 (:step (navigate game fake-wiztower-portal))))
             (with-reason "stepping everywhere to find portal"
@@ -832,8 +832,8 @@
          :wiztower (->> (get-branch game :main) vals
                         (filter (fn unexplored-tower? [level]
                                   (and (:fake-wiztower (:tags level))
-                                       (->> (at level fake-wiztower-portal)
-                                            portal?))))
+                                       ((complement :walked)
+                                        (at level fake-wiztower-portal)))))
                         (map :dlvl) first)
          :vlad (find-first (partial double-stairs? game stairs-up?)
                            (vlad-range game))
