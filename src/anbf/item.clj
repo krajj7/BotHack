@@ -37,7 +37,7 @@
 
 (defn parse-label [label]
   (let [norm-label (string/replace label ; for uniques ("Lord Surtur's partly eaten corpse" => "partly eaten Lord Surtur's corpse"
-                                   #"(.*) partly eaten corpse$"
+                                   #"(?:the )?(.*) partly eaten corpse$"
                                    "partly eaten $1 corpse")
         raw (zipmap item-fields (re-first-groups item-re norm-label))]
     ;(log/debug raw)
