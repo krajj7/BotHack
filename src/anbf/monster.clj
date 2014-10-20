@@ -78,3 +78,7 @@
 (defn priest? [m] (some-> (typename m) (.contains "priest")))
 
 (defn nasty? [m] (get-in m [:tags :nasty]))
+
+(defn rider? [m] (get-in m [:tags :rider]))
+
+(defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))

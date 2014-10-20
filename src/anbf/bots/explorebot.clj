@@ -356,7 +356,10 @@
             adjacent (->> (neighbors player)
                           (keep (partial monster-at level))
                           (filter hostile?))]
-        (if-let [monster (or (find-first unique? adjacent)
+        (if-let [monster (or (if (some pool? (neighbors level player))
+                               (find-first drowner? adjacent))
+                             (find-first rider? adjacent)
+                             (find-first unique? adjacent)
                              (find-first priest? adjacent)
                              (find-first nasty? adjacent))]
           (hit game level player monster)))
