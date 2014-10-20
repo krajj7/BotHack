@@ -11,7 +11,7 @@
    color
    item-glyph
    item-color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :water :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :pool :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
    seen
    first-walked
    walked
@@ -120,7 +120,7 @@
 
 (defmacro ^:private def-feature-preds []
   `(do ~@(for [feature [:rock :floor :wall :stairs-up :stairs-down :corridor
-                        :altar :water :door-open :door-closed :door-locked
+                        :altar :pool :door-open :door-closed :door-locked
                         :door-secret :sink :fountain :grave :throne :bars :tree
                         :drawbridge-raised :drawbridge-lowered :lava :ice
                         :portal :trapdoor :hole :firetrap :cloud]]
@@ -199,7 +199,7 @@
          :green :tree
          :red :lava
          :cyan :bars
-         :blue :water
+         :blue :pool
          :brown :drawbridge-raised
          (or (log/warn "unknown } feature color:" new-color) current))
     \# (cond (traps current) current
@@ -207,7 +207,7 @@
              (= :brown new-color) :drawbridge-lowered
              :else :corridor)
     \_ (if (nil? new-color) :altar current)
-    \~ :water
+    \~ :pool
     \^ (if (traps current) current :trap)
     \] :door-closed
     \| (door-or-wall current new-glyph new-color)
@@ -215,7 +215,7 @@
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
 (defn- mark-seen-features [tile]
-  (if (#{:wall :door-closed :water :lava} (:feature tile))
+  (if (#{:wall :door-closed :pool :lava} (:feature tile))
     (assoc tile :seen true)
     tile))
 

@@ -90,7 +90,7 @@
           tile (in-direction level (:player old-game) dir)
           old-monster (or (monster-at (curlvl old-game) tile)
                           (unknown-monster (:x tile) (:y tile) (:turn game)))]
-      (if (or (item? tile) (monster? tile) (water? tile) ; don't mark deaths that clearly didn't leave a corpse
+      (if (or (item? tile) (monster? tile) (pool? tile) ; don't mark deaths that clearly didn't leave a corpse
               (blind? (:player game)))
         (update-curlvl-at game tile mark-death old-monster (:turn game))
         game))

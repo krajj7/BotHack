@@ -108,7 +108,7 @@
        (edge-passable-walking? game level from-tile to-tile)))
 
 (defn needs-levi? [tile]
-  (#{:water :lava :ice :hole :trapdoor :cloud} (:feature tile)))
+  (#{:pool :lava :ice :hole :trapdoor :cloud} (:feature tile)))
 
 (defn- arbitrary-move [{:keys [player] :as game} level]
   (some->> (neighbors level player)
@@ -294,7 +294,7 @@
        ((not-any-fn? shop? trap? unknown?) to)
        (edge-passable-walking? game level from to)
        (or (safely-walkable? level to)
-           (and ((some-fn water? ice?) to)
+           (and ((some-fn pool? ice?) to)
                 (-> opts :levi (nth 1) :in-use)))
        (not (monster-at level to))))
 
@@ -412,7 +412,7 @@
            (and (not (:walked tile))
                 ((some-fn grave? throne? sink? altar? fountain?) tile))
            (and (or (walkable? tile) (door? tile) (needs-levi? tile))
-                (some (some-fn lava? water? boulder? trap?
+                (some (some-fn lava? pool? boulder? trap?
                                (partial safely-walkable? level))
                       (neighbors level tile))
                 (some (not-any-fn? :seen boulder? (partial monster-at level))
@@ -451,7 +451,7 @@
       (with-reason "searching dead end" (search 10)))))
 
 (defn- pushable-through [game level from to]
-  (and (or ((some-fn walkable? water? lava?) to)
+  (and (or ((some-fn walkable? pool? lava?) to)
            (and (not (boulder? to))
                 (unknown? to))) ; try to push via unexplored tiles
        (or (straight (towards from to))
@@ -651,14 +651,14 @@
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
-                                        (not-any? water? (neighbors level %))
+                                        (not-any? pool? (neighbors level %))
                                         (some wall?
                                               (diagonal-neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter wall?)
                                              (more-than? 1))))
                    (navigate game #(and (#{:pit :floor :corridor} (:feature %))
-                                        (not-any? water? (neighbors level %))
+                                        (not-any? pool? (neighbors level %))
                                         (->> (straight-neighbors level %)
                                              (filter
                                                (partial safely-walkable? level))
@@ -802,7 +802,7 @@
     (if (not-any? #{:wiztower-level :orcus :asmodeus :juiblex :baalzebub}
                   (:tags level))
       (->> fake-wiztower-water (map (partial at level))
-           (remove (some-fn unknown? water?)) (less-than? 5)))
+           (remove (some-fn unknown? pool?)) (less-than? 5)))
     true))
 
 (defn visited?

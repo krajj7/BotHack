@@ -309,10 +309,10 @@
 (defn- bait-wizard [game level monster]
   (if (and (= :magenta (:color monster)) (= \@ (:glyph monster))
            (not= :water (branch-key game))
-           ((some-fn water? lava?) (at level monster)))
+           ((some-fn pool? lava?) (at level monster)))
     (with-reason "baiting possible wizard away from water/lava"
       ; don't let the book fall into water/lava
-      (or (:step (navigate game #(every? (not-any-fn? lava? water?)
+      (or (:step (navigate game #(every? (not-any-fn? lava? pool?)
                                          (neighbors level %))))
           (->Wait)))))
 

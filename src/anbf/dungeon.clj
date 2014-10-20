@@ -330,23 +330,23 @@
            (not (tags :medusa))
            (some floor? (for [y (range 2 21)]
                           (at level 3 y)))
-           (every? #(or (water? (at level 2 %))
+           (every? #(or (pool? (at level 2 %))
                         (monster-at level (position 2 %)))
                    (range 2 21))) (add-curlvl-tag :medusa :medusa-1)
       (and (= :main branch) (<= 21 curdlvl 28)
            (not (tags :medusa))
            (not-any? floor? (for [y (range 2 21)]
                               (at level 3 y)))
-           (every? water? [(at level 7 15) (at level 7 16) (at level 7 17)])
+           (every? pool? [(at level 7 15) (at level 7 16) (at level 7 17)])
            (wall? (at level 8 15))
            (wall? (at level 8 17))) (add-curlvl-tag :medusa :medusa-2)
       (and (= :main branch) (<= 25 curdlvl 29)
            (not (tags :castle))
            (or (drawbridge? (at level 14 12))
-               (and (every? water? (for [x (range 8 16)]
+               (and (every? pool? (for [x (range 8 16)]
                                      (at level x 20)))
                     (wall? (at level 7 20)))
-               (and (every? water? (for [x (range 8 16)]
+               (and (every? pool? (for [x (range 8 16)]
                                      (at level x 4)))
                     (wall? (at level 7 4))))) (add-curlvl-tag :castle)
       (and (= :sokoban branch)
@@ -391,7 +391,7 @@
                (door? (at level 66 12)))) (add-curlvl-tag :asmodeus)
       (and (<= 29 curdlvl 36) (not (:juiblex (:tags level)))
            (->> (tile-seq level)
-                (filter water?)
+                (filter pool?)
                 (more-than? 24))) (add-curlvl-tag :juiblex)
       (and (<= 31 curdlvl 38) (not (tags :baalzebub))
            (or (and (not-any? (fn [[x y]]
@@ -407,7 +407,7 @@
                     (door? (at level 70 12))))) (add-curlvl-tag :baalzebub)
       (and (= branch :main) (<= 40 curdlvl 51) (not (:fake-wiztower tags))
            (->> fake-wiztower-water (map at-level)
-                (some water?))) (add-curlvl-tag :fake-wiztower)
+                (some pool?))) (add-curlvl-tag :fake-wiztower)
       (and (= branch :main) (<= 40 curdlvl) (not (:sanctum tags))
            (= (some-> game (get-level :main :end) dlvl inc)
               curdlvl)) (add-curlvl-tag :sanctum)
