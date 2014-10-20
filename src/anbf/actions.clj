@@ -1046,6 +1046,14 @@
            (->Loot)
            (->Apply bag-slot)))))))
 
+(defaction Dip [item-slot potion-slot]
+  (trigger [_] "#dip\n")
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (reify DipHandler
+      (dip-what [_ _] item-slot)
+      (dip-into-what [_ _] potion-slot))))
+
 (defn examine-handler [anbf]
   (reify ActionHandler
     (choose-action [_ game]

@@ -105,6 +105,8 @@
          (remove nil? [(if (:safe opts) safe?)
                        (if (:noncursed opts) noncursed?)
                        (if (:blessed opts) blessed?)
+                       (if (:nonblessed opts) (complement blessed?))
+                       (if (:know-buc opts) (comp some? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))
                        (if (:in-use opts) :in-use)])))
 
@@ -132,7 +134,9 @@
    Options map can contain:
      :safe - return only known-non-cursed items
      :noncursed - return only items not known to be cursed
+     :nonblessed - return only items not known to be blessed
      :blessed - return only blessed items
+     :know-buc - only items with known buc
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory"
   ([game name-or-set-or-fn]

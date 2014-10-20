@@ -182,7 +182,7 @@
     :>> (partial list sacrifice-it)
     #"^What do you want to eat\?" eat-what
     #"^What do you want to sacrifice\?" sacrifice-what
-    #"^Attach the candles to the candelabrum\?" attach-candelabrum-candles
+    #"^Attach the .*to the candelabrum\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb
     #"^You have a little trouble lifting ([^.]+)\. Continue\?"
     :>> (partial list lift-burden :light)
@@ -194,6 +194,8 @@
     :>> (partial list loot-it)
     #"Do you want to take something out.*" take-something-out
     #"Do you wish to put something in\?" put-something-in
+    #"What do you want to dip\?" dip-what
+    #"What do you want to dip.* into\?" dip-into-what
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

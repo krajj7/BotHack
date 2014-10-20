@@ -244,14 +244,20 @@
          (= :light (:subtype id))
          (= :copper (:material id)))))
 
-(defn uncurse-gear [game]
-  ; TODO passive items (luckstone / orb of fate)
-  (if-let [[_ item] (have game (every-pred cursed? :in-use))]
-    (if-let [[slot scroll] (have game "scroll of remove curse"
-                                 {:noncursed true :bagged true})]
-      (with-reason "uncursing" (:label item)
-        (or (unbag game slot scroll)
-            (->Read slot))))))
+(defn bless-gear [game]
+  (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
+                                        "luckstone" "bag of holding"}
+                                 {:nonblessed true :know-buc true})]
+        (if-let [[water-slot water] (have game holy-water? {:bagged true})]
+          (or (unbag game water-slot water)
+              (with-reason "blessing" item
+                (->Dip slot water-slot)))))
+      (if-let [[_ item] (have game (every-pred cursed? :in-use))]
+        (if-let [[slot scroll] (have game "scroll of remove curse"
+                                     {:noncursed true :bagged true})]
+          (with-reason "uncursing" (:label item)
+            (or (unbag game slot scroll)
+                (->Read slot)))))))
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
@@ -282,7 +288,7 @@
         tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)
         branch (branch-key game)]
-    (or (uncurse-gear game)
+    (or (bless-gear game)
         (wear-armor game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))

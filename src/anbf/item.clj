@@ -42,7 +42,8 @@
         raw (zipmap item-fields (re-first-groups item-re norm-label))]
     ;(log/debug raw)
     (as-> raw res
-      (if-let [buc (re-seq #"^potions? of ((?:un)?holy) water$" (:name res))]
+      (if-let [buc (re-first-group #"^potions? of ((?:un)?holy) water$"
+                                   (:name res))]
         (assoc res
                :name "potion of water"
                :buc (if (= buc "holy") "blessed" "cursed"))
@@ -61,6 +62,9 @@
         (update res :candles #(if (= % "no") 0 (parse-int %)))
         res)
       (reduce #(update %1 %2 str->kw) res [:buc :proof])
+      (if (and (:enchantment raw) (not (:buc res)))
+        (assoc res :buc :uncursed)
+        res)
       (reduce #(update %1 %2 parse-int) res
               (filter (comp seq res) [:cost :enchantment :charges :recharges]))
       (assoc res :erosion (if-let [deg (+ (or (erosion (:erosion1 res)) 0)
@@ -136,6 +140,12 @@
 
 (defn boh? [game item]
   (= "bag of holding" (:name (item-id game item))))
+
+(defn water? [item]
+  (= "potion of water" (:name item)))
+
+(defn holy-water? [item]
+  (and (water? item) (= :blessed (:buc item))))
 
 (def explorable-container? (every-pred (complement know-contents?)
                                        (complement :locked)
