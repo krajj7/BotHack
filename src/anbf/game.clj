@@ -100,9 +100,12 @@
                                    (position (:player game)))
                              (or (and rogue? (rogue-ghost? game level tile))
                                  (monster? glyph color)))
-                      (vector (position tile)
-                              (new-monster (:x tile) (:y tile)
-                                           (:turn game) glyph color))))
+                      (let [monster (new-monster (:x tile) (:y tile)
+                                                 (:turn game) glyph color)]
+                        (if-some [p (and (#{"gremlin"} (typename monster))
+                                         (:gremlins-peaceful game))]
+                          (vector (position tile) (assoc monster :peaceful p))
+                          (vector (position tile) monster)))))
                   (tile-seq level)
                   (->> (:lines frame) rest (apply concat))
                   (->> (:colors frame) rest (apply concat))))))
@@ -236,6 +239,7 @@
         (swap! (:game anbf) filter-visible-uniques))
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
+        (swap! game assoc :gremlins-peaceful nil)
         (if @portal
           (portal-handler anbf @old-level new-dlvl)))
       RedrawHandler

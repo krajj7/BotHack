@@ -398,6 +398,8 @@
               (let [peaceful? (.contains ^String desc "peaceful ")
                     montype (by-description desc)]
                 (log/debug "monster description" text "=>" montype)
+                (if (= "gremlin" (:name montype))
+                  (swap! game assoc :gremlins-peaceful peaceful?))
                 (swap! game update-curlvl-monster pos assoc
                        :peaceful peaceful? :type montype)))
             (log/debug "non-monster farlook result:" text))))))
