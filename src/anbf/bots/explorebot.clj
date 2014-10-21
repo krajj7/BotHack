@@ -152,8 +152,14 @@
 (def desired-suit
   (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail"))
 
+(def desired-boots
+  (ordered-set "speed boots" "iron shoes"))
+
 (def desired-shield
   (ordered-set "shield of reflection" "small shield"))
+
+(def desired-cloak
+  #{"oilskin cloak"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -167,9 +173,10 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
-   (ordered-set "speed boots" "iron shoes")
+   desired-cloak
    desired-suit
    desired-shield
+   desired-boots
    #{"amulet of reflection"}
    #{"amulet of unchanging"}
    desired-weapons])
@@ -238,11 +245,12 @@
             (->Wield slot))))))
 
 (defn- wear-armor [{:keys [player] :as game}]
-  ; TODO boots, helmet etc.
-  (if-let [[slot armor] (some (partial have game) desired-suit)]
-    (if-not (:in-use armor)
-      (with-reason "wearing better armor"
-        (make-use game slot)))))
+  (first (for [category [desired-shield desired-boots
+                         desired-suit desired-cloak]
+               :let [[slot armor] (some (partial have game) category)]
+               :when (and armor (not (:in-use armor)))]
+           (with-reason "wearing better armor"
+             (make-use game slot)))))
 
 (defn light? [game item]
   (let [id (item-id game item)]
