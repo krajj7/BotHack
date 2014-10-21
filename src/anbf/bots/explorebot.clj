@@ -200,9 +200,14 @@
   (let [desired (currently-desired game)
         to-take? #(or (real-amulet? %)
                       (and (desired (item-name game %)) (can-take? %)))]
-    ; TODO include items in containers (item-seq tile)
-    (or (if-let [to-get (seq (for [item (:items (at-player game))
-                                   :let [i (item-name game item)]
+    (or (if-let [to-get (seq (for [item (lootable-items (at-player game))
+                                   :when (to-take? item)]
+                               (:label item)))]
+          (with-reason "looting desirable items"
+            (without-levitation game
+              (take-out \. (->> to-get set vec))))
+          (log/debug "no desired lootable items"))
+        (if-let [to-get (seq (for [item (:items (at-player game))
                                    :when (to-take? item)]
                                (:label item)))]
           (with-reason "getting desirable items"
@@ -210,7 +215,8 @@
               (->PickUp (->> to-get set vec))))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
-                   (navigate game #(some to-take? (:items %)))]
+                   (navigate game #(some to-take? (concat (:items %)
+                                                          (lootable-items %))))]
           (with-reason "want item at" target step))
         (log/debug "no desirable items anywhere"))))
 

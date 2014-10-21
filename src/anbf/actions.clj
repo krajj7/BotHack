@@ -1045,7 +1045,7 @@
                      (put-something-in [_ _] false)))]
      (with-reason "taking" label-or-amt-map "out of container at" bag-slot
        (with-handler (dec priority-top) handler
-         (if (= \, bag-slot)
+         (if (= \. bag-slot)
            (->Loot)
            (->Apply bag-slot)))))))
 

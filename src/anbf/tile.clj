@@ -300,3 +300,6 @@
   (-> tile
       (update :deaths conj [turn monster])
       (assoc :new-items true)))
+
+(defn lootable-items [tile]
+  (mapcat :items (:items tile)))
