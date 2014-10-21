@@ -75,6 +75,9 @@
 (defn dizzy? [player]
   (some (:state player) #{:conf :stun}))
 
+(defn confused? [player]
+  (:conf (:state player)))
+
 (defn thick?
   "True if the player can't pass through narrow diagonals."
   [player]

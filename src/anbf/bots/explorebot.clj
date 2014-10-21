@@ -432,6 +432,27 @@
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
       (->Offer (key (have game real-amulet?))))))
 
+(defn detect-portal [anbf]
+  (reify ActionHandler
+    (choose-action [this {:keys [player] :as game}]
+      (if-let [[scroll s] (and (= :water (branch-key game))
+                               (have game "scroll of gold detection"
+                                     {:safe true :bagged true}))]
+        (with-reason "detecting portal"
+          (or (unbag game scroll s)
+              (when (confused? player)
+                (deregister-handler anbf this)
+                (->Read scroll))
+              (if-let [[potion p] (and (not-any? #(and (> 4 (distance player %))
+                                                       (hostile? %))
+                                                 (curlvl-monsters game))
+                                       (have game #{"potion of confusion"
+                                                    "potion of booze"}
+                                             {:nonblessed true :bagged true}))]
+                (with-reason "confusing self"
+                  (or (unbag game potion p)
+                      (->Quaff potion))))))))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -456,6 +477,7 @@
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (handle-starvation game))))
+      (register-handler -8 (detect-portal anbf))
       (register-handler -7 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-illness game))))
