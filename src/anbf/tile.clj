@@ -297,4 +297,6 @@
   (shops (:room tile)))
 
 (defn mark-death [tile monster turn]
-  (update tile :deaths conj [turn monster]))
+  (-> tile
+      (update :deaths conj [turn monster])
+      (assoc :new-items true)))
