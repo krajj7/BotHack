@@ -84,6 +84,8 @@
           line-above (nth lines (dec (:y cursor)))
           line-at (nth lines (:y cursor))
           line-below (nth lines (inc (:y cursor)))]
-      (and (= "/-\\" (subs line-above row-before (inc row-after)))
+      (and (or (= 1 (:y cursor))
+               (= "/-\\" (subs line-above row-before (inc row-after))))
            (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
-           (= "\\-/" (subs line-below row-before (inc row-after)))))))
+           (or (= "\\-/" (subs line-below row-before (inc row-after)))
+               (= 21 (:y cursor)))))))
