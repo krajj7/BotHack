@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.explorebot"
+ :bot "anbf.bots.wizbot"
  :ttyrec true
  :interface :shell
  ;:start-paused true

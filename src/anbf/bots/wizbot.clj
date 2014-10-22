@@ -1,5 +1,5 @@
-(ns anbf.bots.explorebot
-  "a dungeon-exploring bot"
+(ns anbf.bots.wizbot
+  "a bot that can ascend in wizmode (when properly pre-equipped)"
   (:require [clojure.tools.logging :as log]
             [flatland.ordered.set :refer [ordered-set]]
             [anbf.anbf :refer :all]
@@ -44,9 +44,11 @@
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (weak? player)
         (if-let [[slot food] (have game (every-pred (partial can-eat? player)
-                                                    (complement tin?)))]
+                                                    (complement tin?))
+                                   {:bagged true})]
           (with-reason "weak or worse, eating" food
-            (->Eat slot))))
+            (or (unbag game slot food)
+                (->Eat slot)))))
       (if (and (fainting? (:player game))
                (can-pray? game))
         (with-reason "praying for food" ->Pray))))
@@ -417,7 +419,7 @@
                        (find-first (beneficial? player)) :label
                        ->Eat
                        (without-levitation game)))))
-          (if (hungry? player) ; TODO eat tins
+          (if true #_(hungry? player) ; TODO eat tins
             (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
               (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
