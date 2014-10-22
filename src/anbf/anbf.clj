@@ -140,6 +140,8 @@
     (force-god [_ _] true)
     SeducedEquipRemoveHandler
     (seduced-remove [_ _] false)
+    StopEatingHandler
+    (stop-eating [_ _] true)
     ; escape the rest by default
     EatWhatHandler
     (eat-what [_ _] "")

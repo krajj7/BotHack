@@ -366,6 +366,9 @@
 (defyesnohandler TakeSomethingOutHandler
   (take-something-out [handler ^String prompt]))
 
+(defyesnohandler StopEatingHandler
+  (stop-eating [handler ^String prompt]))
+
 (defmenuhandler TakeOutWhatHandler
   (take-out-what [handler ^clojure.lang.IPersistentMap options]))
 

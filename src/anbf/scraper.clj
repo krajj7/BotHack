@@ -192,6 +192,7 @@
     :>> (partial list lift-burden :extreme)
     #"There is ([^,]+) here, loot it\?"
     :>> (partial list loot-it)
+    #"Stop eating\?" stop-eating
     #"Do you want to take something out.*" take-something-out
     #"Do you wish to put something in\?" put-something-in
     #"What do you want to dip\?" dip-what
