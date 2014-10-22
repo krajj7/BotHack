@@ -155,22 +155,23 @@
 
 (defn- blocked-door
   "If this is a kickable door blocked from one side, return direction from which to kick it"
-  [level tile]
-  (if-let [ws (seq (filter walkable? (straight-neighbors level tile)))]
-    (let [w (first ws)
-          dir (towards tile w)
-          o (in-direction level tile (opposite dir))]
+  [level pos]
+  (if-let [ws (seq (filter (every-pred walkable? (complement trap?))
+                           (straight-neighbors level pos)))]
+    (let [tile (at level pos)
+          w (first ws)
+          dir (towards pos w)
+          o (in-direction level pos (opposite dir))]
       (if (and (empty? (:items tile)) ; don't try to break blocked doors
                (= 1 (count ws))
-               (some (every-pred walkable?
-                                 (complement blank?))
-                     (intersection
-                       (set (diagonal-neighbors level tile))
-                       (set (straight-neighbors level o)))))
+               (some (partial likely-walkable? level)
+                     (intersection (set (diagonal-neighbors level pos))
+                                   (set (straight-neighbors level o)))))
         dir))))
 
 (defn- kickable-door? [level tile opts]
   (and (door? tile)
+       (not (:rogue (:tags level)))
        (not (:walking opts))
        (dare-destroy? level tile)
        (not (item? tile)))) ; don't try to break blocked doors
@@ -203,9 +204,15 @@
                                          (can-remove? game %)))]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
+(defn- blocked?
+  "Stubborn peacefuls"
+  [tile]
+  (> (or (:blocked tile) 0) 20))
+
 (defn pass-monster [game level to-tile dir monster]
-  (if (:peaceful monster)
-    (if (<= (or (:blocked to-tile) 0) 20)
+  (if (or (:peaceful monster)
+          (and (:friendly monster) (diagonal dir) (door? to-tile)))
+    (if-not (blocked? to-tile)
       [50 (with-reason "peaceful blocker" monster
             (fidget game level to-tile))]) ; hopefully will move
     [6 (with-reason "pathing through" monster
@@ -253,8 +260,10 @@
                          [cost (with-reason "assuming levitation" move)]
                          [(+ 2 cost) (with-reason "need levi for next move"
                                        (make-use game slot))]))))
-                 (if (and (door? to-tile) (not monster) (not (:walking opts)))
-                   (or (if (door-secret? to-tile)
+                 (if (and (door? to-tile) (not (:walking opts)))
+                   (or (if monster
+                         (pass-monster game level to-tile dir monster))
+                       (if (door-secret? to-tile)
                          [10 (search 10)]) ; TODO stethoscope
                        (and (kickable-door? level to-tile opts)
                             (blocked-door level to-tile)
@@ -415,7 +424,7 @@
                 (some (some-fn lava? pool? boulder? trap?
                                (partial safely-walkable? level))
                       (neighbors level tile))
-                (some (not-any-fn? :seen boulder? (partial monster-at level))
+                (some (not-any-fn? :seen boulder? blocked?)
                       (neighbors level tile))))
        (not (isolated? level tile))))
 

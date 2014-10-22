@@ -156,6 +156,7 @@
    (let [p (set path)]
      (print-tiles (comp p position) (curlvl game) (constantly \X)))))
 
-(defn print-monsters [game]
-  (print-tiles (constantly true) (curlvl (g))
-               #(or (:glyph (monster-at (curlvl (g)) %)) (:glyph %))))
+(defn print-monsters [game-or-level]
+  (let [level (if (:turn game-or-level) (curlvl game-or-level) game-or-level)]
+    (print-tiles (constantly true) level
+                 #(or (:glyph (monster-at level %)) (:glyph %)))))
