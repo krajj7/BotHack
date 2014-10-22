@@ -45,9 +45,14 @@
 (defn- transfer-unpaired [game unpaired]
   ;(log/debug "unpaired" unpaired)
   ; TODO don't transfer if we would know monsters position with ESP
-  (if-not (or (visible? game unpaired) (= (:glyph unpaired) \I))
-    (reset-curlvl-monster game (assoc unpaired :remembered true))
-    game))
+  (let [tile (at-curlvl game unpaired)]
+    (if (visible? game unpaired)
+      (if (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
+               ((some-fn stairs? boulder? :new-items) tile)
+               (not (monster? tile))) ; maybe a sneaky mimic
+        (reset-curlvl-monster game (assoc unpaired :remembered true))
+        game)
+      game)))
 
 (defn track-monsters
   "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
