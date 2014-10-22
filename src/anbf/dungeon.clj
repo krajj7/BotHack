@@ -533,7 +533,7 @@
           (filter (partial shopkeeper-look? game)
                   (curlvl-monsters game))))
 
-(def ^:private room-re #"Welcome(?: again)? to(?> [A-Z]\S+)+ ([a-z -]+)!")
+(def ^:private room-re #"Welcome(?: again)? to(?: (?:[A-Z]\S+|a))+ ([a-z -]+)!")
 
 (defn room-type [msg]
   ; TODO temples, maybe treasure zoos etc.
