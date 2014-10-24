@@ -5,7 +5,7 @@ A Nethack Bot Framework
 
 An attempt at an implementation of a NetHack bot framework as a base for my master's thesis (at http://www.mff.cuni.cz/to.en).
 
-Written in Clojure but will provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can also play on public servers (http://alt.org/nethack/).
+Written in Clojure but will also provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (http://alt.org/nethack/).
 
 Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.github.io), Saiph (https://github.com/canidae/saiph) and Pogamut (http://pogamut.cuni.cz).
 
@@ -26,7 +26,7 @@ Code for the bot: https://github.com/krajj7/ANBF/blob/master/src/anbf/bots/simpl
 
 Code for the Java bot: https://github.com/krajj7/ANBF/blob/master/javabots/SimpleBot/src/anbf/javabots/SimpleBot.java
 
-**25.5.2014**: The framework can parse the map for basic level layout info and allows for a slightly more complex bot (explorebot.clj) that can explore the first level using A\* pathfinding and charge monsters it encounters.
+**25.5.2014**: The framework can parse the map for basic level layout info and allows for a slightly more complex bot that can explore the first level using A\* pathfinding and charge monsters it encounters.
 
 **14.6.2014**: The bot can navigate effectively as far as minetown/oracle, where it usually gets killed for lack of combat tactics.  It can find hidden doors and passages and looks almost like a newbie human playing ;-)  The framework provides basic monster tracking and shop recognition allowing the bot to deal with (avoid) peaceful monsters and shopkeepers quite nicely.
 
@@ -47,13 +47,13 @@ Item handling is still missing so bots can't cross Medusa's yet, but in wizmode 
 
 **4.10.2014**: Eat action is implemented, allowing both eating from the ground or inventory, and the framework tracks monster deaths, corpse freshness/safety and player intrinsics, so the bot can feed itself on corpses for nutrition and useful resistances.
 
+**23.10.2014**: The framework now finally has at least the features and robustness needed to allow a bot pre-equipped with overpowered gear in wizard mode to beat the game full-auto.  The bot gathers all the invocation artifacts manually, not harming any peacefuls along the way and not using any wizard mode commands itself.  A lot of functionality that will be necessary for a non-wizmode bot to play sucessfully is however still missing.  Progress toward that end will hopefully be swift on the current foundation.
+
+Video of wizmode ascension (6x speedup):  https://www.youtube.com/watch?v=fpCGivGrUVw
+
+Source ttyrec: https://github.com/krajj7/ANBF/tree/master/ttyrec/wizmode-fullauto-asc.ttyrec
+
 ## Roadmap
-
-Wizmode ascension.
-
-More item actions, food.
-
-Item identification.
 
 Smarter combat tactics for the bot, ranged combat.
 
