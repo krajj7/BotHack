@@ -11,6 +11,8 @@ Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.gi
 
 **PLEASE NOTE**:  The project is in pre-alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
+![screenshot](http://krajj7.github.com/ANBF/anbf-repl.png)
+
 ## Milestones reached
 
 **15.3.2014**: A basic GUI-less virtual terminal emulator is working, implemented using the JTA Telnet/SSH/Terminal library (http://www.javatelnet.org/).
@@ -51,7 +53,7 @@ Item handling is still missing so bots can't cross Medusa's yet, but in wizmode 
 
 Video of wizmode ascension (6x speedup):  https://www.youtube.com/watch?v=fpCGivGrUVw
 
-Source ttyrec: https://github.com/krajj7/ANBF/tree/master/ttyrec/wizmode-fullauto-asc.ttyrec
+Source ttyrec: https://github.com/krajj7/ANBF/raw/master/ttyrec/wizmode-fullauto-asc.ttyrec [31MB, realtime duration 1h42m]
 
 ## Roadmap
 
