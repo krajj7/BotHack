@@ -11,7 +11,11 @@ Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.gi
 
 **PLEASE NOTE**:  The project is in pre-alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
+### Screenshot
+
 ![screenshot](http://krajj7.github.com/ANBF/anbf-repl.png)
+
+*Debugging the bot live in the Clojure REPL*
 
 ## Milestones reached
 
