@@ -81,4 +81,6 @@
 
 (defn rider? [m] (get-in m [:tags :rider]))
 
+(defn werecreature? [m] (get-in m [:tags :were]))
+
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))

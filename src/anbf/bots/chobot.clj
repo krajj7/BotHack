@@ -1,5 +1,4 @@
-(ns anbf.bots.wizbot
-  "a bot that can ascend in wizmode (when properly pre-equipped)"
+(ns anbf.bots.chobot
   (:require [clojure.tools.logging :as log]
             [flatland.ordered.set :refer [ordered-set]]
             [anbf.anbf :refer :all]
@@ -20,20 +19,23 @@
             [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
-(def hostile-dist-thresh 4)
+(def hostile-dist-thresh 5)
 
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> (curlvl-monsters game)
        (filter #(and (hostile? %)
-                     (not (and (blind? player) (:remembered %)))
                      (or (adjacent? player %)
-                         (and (> 10 (- (:turn game) (:known %)))
+                         (and (not (and (blind? player) (:remembered %)))
+                              (> 10 (- (:turn game) (:known %)))
                               (> hostile-dist-thresh (distance player %))
                               (not (blind? player))
                               (not (hallu? player))
                               (not (:fleeing %))
                               (not (digit? %))))))
        set))
+
+(defn- threat-map [game]
+  (into {} (for [m (hostile-threats game)] [(position m) m])))
 
 (defn enhance [game]
   (if (:can-enhance (:player game))
@@ -69,16 +71,6 @@
                                                  "potion of full healing"}
                                           {:noncursed true}))]
                 (->Quaff slot)))))))
-
-(defn- handle-impairment [{:keys [player] :as game}]
-  (or (if (:lycantrophy player)
-        (if-not (in-gehennom? game)
-          (with-reason "curing lycantrophy" ->Pray)))
-      (if-let [[slot _] (and (unihorn-recoverable? game)
-                             (have-unihorn game))]
-        (with-reason "applying unihorn to recover" (->Apply slot)))
-      (if (impaired? player)
-        (with-reason "waiting out impairment" ->Wait))))
 
 (defn name-first-amulet [anbf]
   (reify ActionHandler
@@ -118,17 +110,7 @@
 
 (defn progress [game]
   (if-not (endgame? game)
-    (or #_(full-explore game)
-        (explore-level game :mines :minetown)
-        (visit game :mines :end)
-        (visit game :main :medusa)
-        ;(explore-level game :sokoban :end)
-        (explore-level game :quest :end)
-        (explore-level game :main :castle)
-        (explore-level game :vlad :end)
-        (explore-level game :main :end)
-        (explore-level game :wiztower :end)
-        (invocation game))
+    (full-explore game)
     (or (get-amulet game)
         (visit game :astral)
         (seek-altar game))))
@@ -163,13 +145,15 @@
 (def desired-cloak
   #{"oilskin cloak"})
 
+(def blind-tool (ordered-set "blindfold" "towel"))
+
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
    #{"ring of slow digestion"}
    #{"Orb of Fate"}
-   (ordered-set "blindfold" "towel")
+   blind-tool
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
    #{"Bell of Opening"}
@@ -204,6 +188,19 @@
                      (:seen (at sanctum 20 11)))
               (conj res "Amulet of Yendor")))
           res))))
+
+(defn- handle-impairment [{:keys [player] :as game}]
+  (or (if (:lycantrophy player)
+        (if-not (in-gehennom? game)
+          (with-reason "curing lycantrophy" ->Pray)))
+      (if-let [[slot _] (and (unihorn-recoverable? game)
+                             (have-unihorn game))]
+        (with-reason "applying unihorn to recover" (->Apply slot)))
+      (if-let [[slot _] (have game blind-tool {:in-use true :noncursed true})]
+        (with-reason "unblinding self"
+          (->Remove slot)))
+      (if (impaired? player)
+        (with-reason "waiting out impairment" ->Wait))))
 
 (defn consider-items [game]
   (let [desired (currently-desired game)
@@ -348,9 +345,23 @@
                                   (position 16 12)}))
           (->Wait)))))
 
-(defn- hit [game level player monster]
+(defn- hit-floating-eye [{:keys [player] :as game} monster]
+  (if (and (adjacent? player monster)
+           (= "floating eye" (typename monster)))
+    (or (if (or (blind? player)
+                (reflection? game)
+                (free-action? game))
+          (->Attack (towards player monster)))
+        (if-let [[slot _] (have game blind-tool {:noncursed true})]
+          (with-reason "blinding self to kill floating eye"
+            (->PutOn slot)))
+        ; TODO throw stuff, zap wands...
+        )))
+
+(defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
-    (or (bait-wizard game level monster)
+    (or (hit-floating-eye game monster)
+        (bait-wizard game level monster)
         (bait-giant game level monster)
         (wield-weapon game)
         (if-let [[slot _] (and (= :air (branch-key game))
@@ -364,36 +375,89 @@
             (->Attack (towards player monster))
             (->Move (towards player monster)))))))
 
+(defn- kill-engulfer [{:keys [player] :as game}]
+  (if (:engulfed player)
+    (with-reason "killing engulfer" (or (wield-weapon game)
+                                        (->Move :E)))))
+
+(defn- low-hp? [{:keys [hp maxhp] :as player}]
+  (or (< hp 10)
+      (<= (/ hp maxhp) 1/3)))
+
+(defn can-ignore? [game monster]
+  (or (#{"floating eye" "grid bug" "newt"} (typename monster))
+      (= \j (:glyph monster))))
+
+(defn retreat [{:keys [player] :as game}]
+  (if (low-hp? player)
+    (let [level (curlvl game)
+          threats (threat-map game)
+          adjacent (->> (neighbors player)
+                        (keep (partial monster-at level))
+                        (filter hostile?))]
+      (or (kill-engulfer game)
+          ; TODO elbereth
+          (if-let [{:keys [step target]} (navigate game stairs-up?
+                                                   {:walking true
+                                                    :no-autonav true})]
+            (if (stairs-up? (at-player game))
+              (with-reason "retreating upstairs" ->Ascend)
+              step))
+          ; stairs unreachable
+          ))))
+
+(defn- safe-hp? [{:keys [hp maxhp] :as player}]
+  (or (>= (/ hp maxhp) 9/10)))
+
+(defn- recover [{:keys [player] :as game}]
+  (if-not (safe-hp? player)
+    (with-reason "recovering" ->Wait)))
+
 (defn fight [{:keys [player] :as game}]
-  (or (if (:engulfed player)
-        (with-reason "killing engulfer" (or (wield-weapon game)
-                                            (->Move :E))))
-      (let [level (curlvl game)
-            adjacent (->> (neighbors player)
-                          (keep (partial monster-at level))
-                          (filter hostile?))]
-        (if-let [monster (or (if (some pool? (neighbors level player))
-                               (find-first drowner? adjacent))
-                             (find-first rider? adjacent)
-                             (find-first unique? adjacent)
-                             (find-first priest? adjacent)
-                             (find-first nasty? adjacent))]
-          (hit game level player monster)))
-      (when-let [{:keys [step target]} (navigate game (hostile-threats game)
-                                                 {:adjacent true :no-traps true
-                                                  :walking true :no-autonav true
-                                                  :max-steps
-                                                  (if (planes (branch-key game))
-                                                    1
-                                                    hostile-dist-thresh)})]
-        (let [level (curlvl game)
-              monster (monster-at level target)]
-          (with-reason "targetting enemy" monster
-            (or (hit game level player monster)
-                step))))))
+  (let [level (curlvl game)
+        nav-opts {:adjacent true
+                  :no-traps true
+                  :no-autonav true
+                  :walking true
+                  :max-steps (if (planes (branch-key game))
+                               1
+                               hostile-dist-thresh)}]
+    (or (kill-engulfer game)
+        ; TODO if faster than threats move into a more favourable position
+        ; TODO elbereth
+        ; TODO special handling of uniques
+        (let [adjacent (->> (neighbors player)
+                            (keep (partial monster-at level))
+                            (filter hostile?)
+                            (remove (partial can-ignore? game)))]
+          (if-let [monster (or (if (some pool? (neighbors level player))
+                                 (find-first drowner? adjacent))
+                               (find-first rider? adjacent)
+                               (find-first unique? adjacent)
+                               (find-first priest? adjacent)
+                               (find-first werecreature? adjacent)
+                               (find-first nasty? adjacent))]
+            (hit game level monster)))
+        ; TODO ranged
+        (let [threats (->> (hostile-threats game)
+                           (remove (partial can-ignore? game))
+                           set)]
+          (when-let [{:keys [step target]} (navigate game threats nav-opts)]
+            (let [monster (monster-at level target)]
+              (with-reason "targetting enemy" monster
+                (or (hit game level monster)
+                    step)))))
+        (let [leftovers (->> (hostile-threats game)
+                             (filter (partial can-ignore? game))
+                             set)]
+          (when-let [{:keys [step target]} (navigate game leftovers nav-opts)]
+            (let [monster (monster-at level target)]
+              (with-reason "targetting leftover enemy" monster
+                (or (hit game level monster)
+                    step))))))))
 
 (defn- bribe-demon [prompt]
-  (->> prompt
+  (->> prompt ; TODO parse amount and pass as arg in the scraper, not in bot logic
        (re-first-group #"demands ([0-9][0-9]*) zorkmids for safe passage")
        parse-int))
 
@@ -483,10 +547,13 @@
       (register-handler -7 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-illness game))))
-      (register-handler -5 (reify ActionHandler
+      (register-handler -6 (reify ActionHandler
+                             (choose-action [_ game]
+                               (retreat game))))
+      (register-handler -4 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))
-      (register-handler -3 (reify ActionHandler
+      (register-handler -2 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
       (register-handler 0 (reify ActionHandler
@@ -496,14 +563,17 @@
                             (choose-action [_ game]
                               (feed game))))
       (register-handler 2 (reify ActionHandler
-                            (choose-action [_ game]
-                              (consider-items game))))
+                             (choose-action [_ game]
+                               (recover game))))
       (register-handler 3 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers game))))
+                              (consider-items game))))
       (register-handler 4 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers-here game))))
+                              (examine-containers game))))
       (register-handler 5 (reify ActionHandler
+                            (choose-action [_ game]
+                              (examine-containers-here game))))
+      (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

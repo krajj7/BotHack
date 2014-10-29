@@ -173,6 +173,13 @@
                    #_(can-use? %) ; TODO
                    (or (noncursed? %) (:in-use %)))))
 
+(defn reflection? [game]
+  (have game #{"amulet of reflection" "shield of reflection"
+               "silver dragon scale mail"} {:in-use true}))
+
+(defn free-action? [game]
+  (have game "ring of free action" {:in-use true}))
+
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)
       (some (:state player) #{:conf :stun :hallu :ill})

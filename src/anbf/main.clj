@@ -29,6 +29,10 @@
             [cemerick.pomegranate :as pom])
   (:gen-class))
 
+(defn- log-state [game]
+  (log/info "current updated tile:" (at-player game))
+  (log/info "monsters:" (curlvl-monsters game)))
+
 (defn- init-ui [anbf]
   (register-handler anbf (dec priority-top)
     (reify
@@ -51,8 +55,7 @@
         (log/info "Found items:" items))
       AboutToChooseActionHandler
       (about-to-choose [_ game]
-        (log/info "current updated tile:" (at-player game))
-        #_(log/info "monsters:" (curlvl-monsters game)))
+        (log-state game))
       ActionChosenHandler
       (action-chosen [_ action]
         (log/info "Performing action:" (dissoc action :reason)
