@@ -15,7 +15,7 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
-  ;(log/debug "transfer:" \newline old-monster "to" \newline monster)
+  (log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-curlvl-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))
@@ -43,15 +43,14 @@
               (position n)))))
 
 (defn- transfer-unpaired [game unpaired]
-  ;(log/debug "unpaired" unpaired)
+  (log/debug "unpaired" unpaired)
   ; TODO don't transfer if we would know monsters position with ESP
   (let [tile (at-curlvl game unpaired)]
-    (if (visible? game unpaired)
-      (if (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
-               ((some-fn stairs? boulder? :new-items) tile)
-               (not (monster? tile))) ; maybe a sneaky mimic
-        (reset-curlvl-monster game (assoc unpaired :remembered true))
-        game)
+    (if (or (not (visible? game unpaired))
+            (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
+                 ((some-fn stairs? boulder? :new-items) tile)
+                 (not (monster? tile)))) ; maybe a sneaky mimic
+      (reset-curlvl-monster game (assoc unpaired :remembered true))
       game)))
 
 (defn track-monsters
@@ -84,12 +83,13 @@
           (recur pairs (apply dissoc (:monsters (curlvl new-game)) (keys pairs))
                  old-monsters (inc dist)))
         (as-> new-game res
-          (reduce transfer-unpaired res (vals old-monsters))
+          (reduce transfer-unpaired res (vals (dissoc old-monsters
+                                                      (:player new-game))))
           (reduce transfer-pair res (vals pairs)))))))
 
 (defn- mark-kill [game old-game]
-  (if-let [dir (and (not (impaired? (:player old-game)))
-                    (#{:move :attack} (typekw (:last-action* game)))
+  (if-let [dir (and (not (dizzy? (:player old-game)))
+                    (not (hallu? (:player old-game)))
                     (:dir (:last-action* game)))]
     (let [level (curlvl game)
           tile (in-direction level (:player old-game) dir)
@@ -97,7 +97,9 @@
                           (unknown-monster (:x tile) (:y tile) (:turn game)))]
       (if (or (item? tile) (monster? tile) (pool? tile) ; don't mark deaths that clearly didn't leave a corpse
               (blind? (:player game)))
-        (update-curlvl-at game tile mark-death old-monster (:turn game))
+        (-> game
+            (update-curlvl-at tile mark-death old-monster (:turn game))
+            (remove-curlvl-monster tile))
         game))
     game))
 
