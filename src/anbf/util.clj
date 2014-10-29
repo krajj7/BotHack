@@ -57,6 +57,10 @@
     (if (vector? m)
       (some identity (subvec m 1)))))
 
+(defn max-by [f coll]
+  (if (seq coll)
+    (apply (partial max-key f) coll)))
+
 (defn min-by [f coll]
   (if (seq coll)
     (apply (partial min-key f) coll)))

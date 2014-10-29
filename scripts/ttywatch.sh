@@ -8,7 +8,7 @@ fi
 
 trap 'kill $(jobs -pr); exit 0' EXIT
 
-tail -F anbf.log 2>/dev/null | egrep --color=auto 'ERROR|WARN' &
+tail -F anbf.log 2>/dev/null | egrep --color=auto 'ERROR|WARN' & # barf any errors over the output
 last=$(ls -1 *.ttyrec | tail -n 1)
 clear; ttyplay -p "$last" &
 while true; do

@@ -315,7 +315,7 @@
                    (when-let [text (more-prompt frame)]
                      (log/debug "Handling --More-- prompt")
                      (let [res (condp re-seq text
-                                 #"^You don't have that object."
+                                 #"^You don't have that object\."
                                  handle-choice-prompt
                                  #"^To what position do you want to be teleported\?"
                                  handle-location

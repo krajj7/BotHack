@@ -101,8 +101,8 @@
         (explore game :wiztower)
         (invocation game))))
 
-(defn seek-altar [game]
-  (with-reason "seeking unknown altar"
+(defn seek-high-altar [game]
+  (with-reason "seeking unknown high altar"
     (seek game (every-pred altar? (complement :walked)))))
 
 (defn endgame? [game]
@@ -113,7 +113,7 @@
     (full-explore game)
     (or (get-amulet game)
         (visit game :astral)
-        (seek-altar game))))
+        (seek-high-altar game))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"

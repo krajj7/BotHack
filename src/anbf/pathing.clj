@@ -722,7 +722,7 @@
                  (:step (navigate game #(and (< 5 (:x %) 75) (< 6 (:y %) 17)
                                              (not (:walked %))
                                              (not (wall? %)))))))
-             (recheck-dead-ends game level (* mul 30))
+             (recheck-dead-ends game level (min (* mul 30) 50))
              (search-extremities game level (* mul 20))
              ; TODO dig towards unexplored-column
              (if (> mul 1) (search-corridors game level (* mul 5)))

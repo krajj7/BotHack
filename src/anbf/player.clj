@@ -228,7 +228,7 @@
 
 (def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant"})
 
-(defn- safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
+(defn safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
   (and (or (tin? corpse)
            (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
