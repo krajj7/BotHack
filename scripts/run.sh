@@ -6,11 +6,11 @@
 
 ARCH_DIR=~/tmp
 
-#CONFIG="config/shell-config.edn"
-CONFIG="config/shell-wizmode-chobot-config.edn"
+CONFIG="config/shell-config.edn"
+#CONFIG="config/shell-wizmode-chobot-config.edn"
 #SAVE="save/1000wizard.gz-equipped-valk-3"
 #SAVE="save/1000wizard.gz-floating-blindfold"
-SAVE="save/1000wizard.gz-throwing"
+#SAVE="save/1000wizard.gz-throwing"
 
 if [ $(basename `pwd`) = "scripts" ]; then
     cd ..

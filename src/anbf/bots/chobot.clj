@@ -350,20 +350,24 @@
       (have game (some-fn dart? ammo?))
       (have game rocks?)))
 
+(defn- ranged [game monster]
+  ; TODO wands
+  (with-reason "ranged combat"
+    (if-let [[slot _] (have-throwable game)]
+      (->Throw slot (towards (:player game) monster)))))
+
 (defn- hit-floating-eye [{:keys [player] :as game} monster]
   (if (and (adjacent? player monster)
            (= "floating eye" (typename monster)))
-    (or (if (or (blind? player)
-                (reflection? game)
-                (free-action? game))
-          (->Attack (towards player monster)))
-        (if-let [[slot _] (have game blind-tool {:noncursed true})]
-          (with-reason "blinding self to kill floating eye"
-            (->PutOn slot)))
-        (if-let [[slot _] (have-throwable game)]
-          (->Throw slot (towards player monster)))
-        ; TODO zap wands...
-        )))
+    (with-reason "killing floating eye"
+      (or (wield-weapon game)
+          (if (or (blind? player)
+                  (reflection? game)
+                  (free-action? game))
+            (->Attack (towards player monster)))
+          (if-let [[slot _] (have game blind-tool {:noncursed true})]
+            (->PutOn slot))
+          (ranged game monster)))))
 
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
@@ -392,8 +396,8 @@
       (<= (/ hp maxhp) 1/3)))
 
 (defn can-ignore? [game monster]
-  (or (#{"floating eye" "grid bug" "newt" "lichen"} (typename monster))
-      (= \j (:glyph monster))))
+  (or (#{"floating eye" "grid bug" "newt"} (typename monster))
+      (#{\F \j} (:glyph monster))))
 
 (defn can-handle? [{:keys [player] :as game} monster]
   (if (and (= "floating eye" (typename monster))
@@ -420,15 +424,21 @@
                         (keep (partial monster-at level))
                         (filter hostile?))]
       (or (kill-engulfer game)
-          (if (and (some (every-pred (complement :fleeing)
+          (if (and (not (e? (at-player game)))
+                   (some (every-pred (complement :fleeing)
                                      (complement ignores-e?)) adjacent)
                    (not-any? ignores-e? adjacent))
             (with-reason "retreat engrave" (engrave-e game)))
+          (if (and (empty? threats) (stairs-down? (at-player game)))
+            (with-reason "retreated on downstairs"
+              ->Search))
           (if-let [{:keys [step target]} (navigate game stairs-up?
                                                    {:walking true
                                                     :no-autonav true})]
             (if (stairs-up? (at-player game))
-              (with-reason "retreating upstairs" ->Ascend)
+              (if (and (seq threats) (not= 1 (dlvl game)))
+                (with-reason "retreating upstairs" ->Ascend)
+                (with-reason "prepared to retreat upstairs" ->Search))
               step))
           ; stairs unreachable
           ))))
@@ -443,6 +453,30 @@
                                             :max-steps 10 :no-autonav true})))
         (with-reason "recovering" (->Repeated (->Wait) 10)))))
 
+(defn keep-away? [m]
+  (if-let [montype (typename m)]
+    (some #(.contains montype %) ["nymph" "rust monster" "disenchanter"])))
+
+(defn targettable
+  "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there is no risk of hitting non-hostiles or water/lava for non-rays."
+  ([game] (targettable game 6 false))
+  ([game ray?] (targettable game 6))
+  ([{:keys [player] :as game} max-dist ray?]
+   (let [level (curlvl game)]
+     (for [dir directions
+           :let [tiles (->> player
+                            (iterate #(in-direction level % dir))
+                            (take-while some?)
+                            rest
+                            (take max-dist))]
+           ; TODO bounce rays
+           :when (or ray? (not-any? (some-fn pool? lava?) tiles))
+           :let [monsters (->> tiles
+                               (take-while (some-fn walkable? boulder?))
+                               (keep (partial monster-at level)))]
+           :when (and (seq monsters) (every? hostile? monsters))]
+       (first monsters)))))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -454,12 +488,15 @@
                                hostile-dist-thresh)}]
     (or (kill-engulfer game)
         ; TODO if faster than threats move into a more favourable position
-        ; TODO elbereth
         ; TODO special handling of uniques
         (let [adjacent (->> (neighbors player)
                             (keep (partial monster-at level))
                             (filter hostile?)
                             (remove (partial can-ignore? game)))]
+          (if (or (more-than? 2 (remove ignores-e? adjacent))
+                  (some keep-away? adjacent))
+            (with-reason "fight engrave"
+              (engrave-e game)))
           (if-let [monster (or (if (some pool? (neighbors level player))
                                  (find-first drowner? adjacent))
                                (find-first rider? adjacent)
@@ -468,15 +505,22 @@
                                (find-first werecreature? adjacent)
                                (find-first nasty? adjacent))]
             (hit game level monster)))
-        ; TODO ranged
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
                            set)]
-          (when-let [{:keys [step target]} (navigate game threats nav-opts)]
-            (let [monster (monster-at level target)]
-              (with-reason "targetting enemy" monster
-                (or (hit game level monster)
-                    step)))))
+          (or (if-let [m (min-by (partial distance player)
+                                 (filter keep-away? threats))]
+                (if (> 3 (distance player m))
+                  (with-reason "trying to keep away from" m
+                    (engrave-e game))))
+              (if-let [m (some keep-away? (targettable game))]
+                (with-reason "keep-away monster" m
+                  (ranged game m)))
+              (when-let [{:keys [step target]} (navigate game threats nav-opts)]
+                (let [monster (monster-at level target)]
+                  (with-reason "targetting enemy" monster
+                    (or (hit game level monster)
+                        step))))))
         (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
                              (filter (partial can-handle? game))

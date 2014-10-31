@@ -209,14 +209,15 @@
   [tile]
   (> (or (:blocked tile) 0) 20))
 
-(defn pass-monster [game level to-tile dir monster]
+(defn pass-monster [game level to-tile dir monster opts]
   (if (or (:peaceful monster)
           (and (:friendly monster) (diagonal dir) (door? to-tile)))
     (if-not (blocked? to-tile)
       [50 (with-reason "peaceful blocker" monster
             (fidget game level to-tile))]) ; hopefully will move
-    [6 (with-reason "pathing through" monster
-         (->Move dir))]))
+    (if-not (:walking opts)
+      [6 (with-reason "pathing through" monster
+           (->Move dir))])))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
@@ -235,7 +236,7 @@
                           (not (and (kickable-door? level to-tile opts)
                                     (blocked-door level to-tile))))
                    (if monster
-                     (pass-monster game level to-tile dir monster)
+                     (pass-monster game level to-tile dir monster opts)
                      (or (and (shop? to-tile) (not (shop? from-tile))
                               (enter-shop game))
                          (if-not (or (and (:levi opts) need-levi?)
@@ -254,7 +255,7 @@
                    (if-let [[slot item] (:levi opts)]
                      (if-let [[cost move] (if monster
                                             (pass-monster game level to-tile
-                                                          dir monster)
+                                                          dir monster opts)
                                             [1 (->Move dir)])]
                        (if (:in-use item)
                          [cost (with-reason "assuming levitation" move)]
@@ -262,7 +263,7 @@
                                        (make-use game slot))]))))
                  (if (and (door? to-tile) (not (:walking opts)))
                    (or (if monster
-                         (pass-monster game level to-tile dir monster))
+                         (pass-monster game level to-tile dir monster opts))
                        (if (door-secret? to-tile)
                          [10 (search 10)]) ; TODO stethoscope
                        (and (kickable-door? level to-tile opts)
