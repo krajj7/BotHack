@@ -380,3 +380,12 @@
 
 (defchoicehandler ThrowWhatHandler
   (throw-what [handler ^String prompt]))
+
+(defprompthandler EngraveWhatHandler
+  (write-what [handler ^String prompt]))
+
+(defchoicehandler EngraveWithWhatHandler
+  (write-with-what [handler ^String prompt]))
+
+(defyesnohandler EngraveAppendHandler
+  (append-engraving [handler ^String prompt]))

@@ -142,12 +142,12 @@
     #"^Call .*:" call-item
     #"^How much will you offer\?" offer-how-much
     #"^To what level do you want to teleport\?" leveltele
+    #"^What do you want to (?:write|engrave|burn|scribble|scrawl|melt) (?:in|into|on) the (.*?) here\?" write-what
+    #"^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:in|on|melted into) the (.*?) here\?" write-what
     (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
   ; TODO
 ;    qr/^For what do you wish\?/         => 'wish',
-;    qr/^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:in|on|melted into) the (.*?) here\?/ => 'write_what',
 ;    qr/^"Hello stranger, who are you\?"/ => 'vault_guard',
-;    qr/^How much will you offer\?/      => 'donate',
 ;    qr/^What monster do you want to genocide\?/ => 'genocide_species',
 ;    qr/^What class of monsters do you wish to genocide\?/ => 'genocide_class',
   )
@@ -198,6 +198,8 @@
     #"What do you want to dip\?" dip-what
     #"What do you want to dip.* into\?" dip-into-what
     #"What do you want to throw\?" throw-what
+    #"What do you want to write with" write-with-what
+    #"Do you want to add to the current engraving" append-engraving
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

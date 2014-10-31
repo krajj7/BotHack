@@ -84,3 +84,5 @@
 (defn werecreature? [m] (get-in m [:tags :were]))
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))
+
+(defn ignores-e? [m] (get-in m [:tags :no-elbereth]))

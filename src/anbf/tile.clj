@@ -20,6 +20,7 @@
    items ; [Item]
    new-items ; flag if some items changed
    engraving
+   engraving-type ; :dust :semi :permanent
    deaths ; [ turn Monster ], deaths that left no corpse are ignored
    room]
   anbf.bot.ITile)
@@ -303,3 +304,13 @@
 
 (defn lootable-items [tile]
   (mapcat :items (:items tile)))
+
+(defn e?
+  "Is Elbereth inscribed on the current tile?"
+  [tile]
+  (and (:engraving tile) (.contains (:engraving tile) "Elbereth")))
+
+(defn perma-e?
+  "Is Elbereth engraved on the current tile with a permanent method?"
+  [tile]
+  (and (e? tile) (= :permanent (:engraving-type tile))))

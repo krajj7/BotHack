@@ -406,6 +406,12 @@
     false
     true))
 
+(defn engrave-e [{:keys [player] :as game}]
+  (let [tile (at-player game)
+        append? (e? tile)]
+    (if-not (or (perma-e? tile) (impaired? player))
+      (->Engrave \- "Elbereth" append?))))
+
 (defn retreat [{:keys [player] :as game}]
   (if (low-hp? player)
     (let [level (curlvl game)
@@ -414,7 +420,10 @@
                         (keep (partial monster-at level))
                         (filter hostile?))]
       (or (kill-engulfer game)
-          ; TODO elbereth
+          (if (and (some (every-pred (complement :fleeing)
+                                     (complement ignores-e?)) adjacent)
+                   (not-any? ignores-e? adjacent))
+            (with-reason "retreat engrave" (engrave-e game)))
           (if-let [{:keys [step target]} (navigate game stairs-up?
                                                    {:walking true
                                                     :no-autonav true})]
@@ -429,7 +438,10 @@
 
 (defn- recover [{:keys [player] :as game}]
   (if-not (safe-hp? player)
-    (with-reason "recovering" ->Wait)))
+    (or (with-reason "recovering - exploring nearby items"
+          (:step (navigate game :new-items {:walking true :explored true
+                                            :max-steps 10 :no-autonav true})))
+        (with-reason "recovering" (->Repeated (->Wait) 10)))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)

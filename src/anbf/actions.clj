@@ -328,11 +328,14 @@
 
 (def things-re #"^Things that (?:are|you feel) here:|You (?:see|feel)")
 (def thing-re #"You (?:see|feel) here ([^.]+).")
+(def etype-re #"Something is (written|engraved) here (?:in|on) the (?:.*)\.|Some text has been (burned|melted) into the|There's some (graffiti) on the|You see a message (scrawled) in blood here")
+(def etext-re #"You read: \"(.*)\"\.")
 
 (defaction Look []
   (trigger [this] ":")
   (handler [_ {:keys [game delegator] :as anbf}]
-    (let [has-item (atom false)]
+    (let [has-item (atom false)
+          has-engraving (atom false)]
       (swap! game #(if-not (blind? (:player %))
                      (update-at-player % assoc :seen true :new-items false)
                      %))
@@ -345,6 +348,13 @@
             (if ((some-fn unknown? unknown-trap?) (at-player res))
               (update-at-player res assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
+            (if (blind? (:player game))
+              (if-not (= :permanent (:engraving-type (at-player res)))
+                (update-at-player res assoc :engraving nil :engraving-type nil)
+                res)
+              (if (not @has-engraving)
+                (update-at-player res assoc :engraving nil :engraving-type nil)
+                res))
             (if-not @has-item
               (update-at-player res assoc :items [])
               res))))
@@ -374,6 +384,17 @@
                              assoc :items [item]
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
+            (when-let [etype (re-any-group etype-re text)]
+              (reset! has-engraving true)
+              (swap! game update-at-player assoc
+                     :engraving-type ({"written" :dust
+                                       "scrawled" :dust
+                                       "melted" :semi
+                                       "graffiti" :semi
+                                       "engraved" :semi
+                                       "burned" :permanent} etype)))
+            (when-let [etext (re-first-group etext-re text)]
+              (swap! game update-at-player assoc :engraving etext))
             (swap! game update-at-player feature-msg-update
                    text (:rogue (curlvl-tags @game)))))))))
 
@@ -488,7 +509,7 @@
   (register-handler anbf (dec priority-top) (inventory-handler anbf)))
 
 (defn update-items
-  "Re-check current tile for items on the next action"
+  "Re-check current tile for items or engravings on the next action"
   [anbf]
   (update-at-player-when-known anbf assoc :new-items true))
 
@@ -1073,6 +1094,20 @@
       (throw-what [_ _] slot)
       DirectionHandler
       (what-direction [_ _] dir))))
+
+(defaction Engrave [slot what append?]
+  (trigger [_] "E")
+  (handler [_ anbf]
+    (update-items anbf)
+    (if (not= \- slot)
+      (update-inventory anbf))
+    (reify
+      EngraveAppendHandler
+      (append-engraving [_ _] (boolean append?))
+      EngraveWithWhatHandler
+      (write-with-what [_ _] slot)
+      EngraveWhatHandler
+      (write-what [_ _] what))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class
