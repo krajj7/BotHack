@@ -457,7 +457,7 @@
                  (send delegator write (str (ctrl \p)))
                  lastmsg+action))
              (lastmsg+action [frame]
-               (or (when (and (more-prompt? frame) (= 1 (-> frame :cursor :y)))
+               (or (when (and (more-prompt? frame) (topline-cursor? frame))
                      (send delegator write "\n##\n\n")
                      lastmsg-clear)
                    (if (= "# #" (topline frame))
