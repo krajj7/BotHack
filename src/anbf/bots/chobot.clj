@@ -345,6 +345,11 @@
                                   (position 16 12)}))
           (->Wait)))))
 
+(defn have-throwable [game]
+  (or (have game (some-fn dagger? short-sword?))
+      (have game (some-fn dart? ammo?))
+      (have game rocks?)))
+
 (defn- hit-floating-eye [{:keys [player] :as game} monster]
   (if (and (adjacent? player monster)
            (= "floating eye" (typename monster)))
@@ -355,7 +360,9 @@
         (if-let [[slot _] (have game blind-tool {:noncursed true})]
           (with-reason "blinding self to kill floating eye"
             (->PutOn slot)))
-        ; TODO throw stuff, zap wands...
+        (if-let [[slot _] (have-throwable game)]
+          (->Throw slot (towards player monster)))
+        ; TODO zap wands...
         )))
 
 (defn- hit [{:keys [player] :as game} level monster]
@@ -385,8 +392,19 @@
       (<= (/ hp maxhp) 1/3)))
 
 (defn can-ignore? [game monster]
-  (or (#{"floating eye" "grid bug" "newt"} (typename monster))
+  (or (#{"floating eye" "grid bug" "newt" "lichen"} (typename monster))
       (= \j (:glyph monster))))
+
+(defn can-handle? [{:keys [player] :as game} monster]
+  (if (and (= "floating eye" (typename monster))
+           (not (or (blind? player)
+                    (reflection? game)
+                    (free-action? game)
+                    (have-throwable game)
+                    ; TODO used throwables blocked by the eye
+                    (have game blind-tool {:noncursed true}))))
+    false
+    true))
 
 (defn retreat [{:keys [player] :as game}]
   (if (low-hp? player)
@@ -449,6 +467,7 @@
                     step)))))
         (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
+                             (filter (partial can-handle? game))
                              set)]
           (when-let [{:keys [step target]} (navigate game leftovers nav-opts)]
             (let [monster (monster-at level target)]
@@ -565,15 +584,15 @@
       (register-handler 2 (reify ActionHandler
                              (choose-action [_ game]
                                (recover game))))
-      (register-handler 3 (reify ActionHandler
-                            (choose-action [_ game]
-                              (consider-items game))))
       (register-handler 4 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers game))))
+                              (consider-items game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers-here game))))
+                              (examine-containers game))))
       (register-handler 6 (reify ActionHandler
+                            (choose-action [_ game]
+                              (examine-containers-here game))))
+      (register-handler 7 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

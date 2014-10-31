@@ -197,6 +197,7 @@
     #"Do you wish to put something in\?" put-something-in
     #"What do you want to dip\?" dip-what
     #"What do you want to dip.* into\?" dip-into-what
+    #"What do you want to throw\?" throw-what
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -483,22 +484,26 @@
       current-scraper)))
 
 (defn scraper-handler [scraper delegator]
-  (reify
-    ApplyItemHandler
-    (apply-what [_ prompt]
-      (dosync
-        (ref-set scraper (new-scraper delegator prompt))
-        (log/debug "no-mark scraper, prev =" prompt)))
-    ActionChosenHandler
-    (action-chosen [_ action]
-      (dosync
-        (if (= :autotravel (typekw action))
-          (ref-set scraper (new-scraper delegator ""))
-          (ref-set scraper nil)) ; escape sink
-        (log/debug "reset scraper for" (type action))))
-    RedrawHandler
-    (redraw [_ frame]
-      #_(dosync (alter scraper apply-scraper delegator frame))
-      (->> (dosync (alter scraper apply-scraper delegator frame))
-           type
-           (log/debug "next scraper:")))))
+  (let [no-mark (fn [prompt]
+                  (dosync (ref-set scraper (new-scraper delegator prompt))
+                          (log/debug "no-mark scraper, prev =" prompt)))]
+    (reify
+      ThrowWhatHandler
+      (throw-what [_ prompt]
+        (no-mark prompt))
+      ApplyItemHandler
+      (apply-what [_ prompt]
+        (no-mark prompt))
+      ActionChosenHandler
+      (action-chosen [_ action]
+        (dosync
+          (if (= :autotravel (typekw action))
+            (no-mark "")
+            (ref-set scraper nil)) ; escape sink
+          (log/debug "reset scraper for" (type action))))
+      RedrawHandler
+      (redraw [_ frame]
+        #_(dosync (alter scraper apply-scraper delegator frame))
+        (->> (dosync (alter scraper apply-scraper delegator frame))
+             type
+             (log/debug "next scraper:"))))))

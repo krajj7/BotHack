@@ -377,3 +377,6 @@
 
 (defmenuhandler LootWhatHandler
   (loot-what [handler ^clojure.lang.IPersistentMap options]))
+
+(defchoicehandler ThrowWhatHandler
+  (throw-what [handler ^String prompt]))

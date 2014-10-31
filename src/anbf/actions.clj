@@ -1064,6 +1064,16 @@
           (examine-monsters game)
           (examine-features game)))))
 
+(defaction Throw [slot dir]
+  (trigger [_] "t")
+  (handler [_ anbf]
+    (update-inventory anbf)
+    (reify
+      ThrowWhatHandler
+      (throw-what [_ _] slot)
+      DirectionHandler
+      (what-direction [_ _] dir))))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions
