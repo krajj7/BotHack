@@ -155,3 +155,19 @@
 (def candelabrum "Candelabrum of Invocation")
 (def bell "Bell of Opening")
 (def book "Book of the Dead")
+
+(defn dagger? [item]
+  (.contains (:name item) "dagger"))
+
+(defn ammo? [item]
+  (or (.contains (:name item) "arrow")
+      (.contains (:name item) "bolt")))
+
+(defn dart? [item]
+  (.contains (:name item) "dart"))
+
+(defn short-sword? [item]
+  (.contains (:name item) "short sword"))
+
+(defn rocks? [item]
+  (= "rock" (:name item)))
