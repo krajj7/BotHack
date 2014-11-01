@@ -171,3 +171,7 @@
 
 (defn rocks? [item]
   (= "rock" (:name item)))
+
+(defn artifact? [item]
+  (:artifact (or (name->item (:specific item))
+                 (name->item (:name item)))))

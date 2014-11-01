@@ -89,3 +89,10 @@
 
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
+
+(defn corrosive?
+  "Corrodes weapon passively when hit?"
+  [monster]
+  (some #(and (= :passive (:type %))
+              (#{:corrode :acid} (:damage-type %)))
+        (:attacks (:type monster))))

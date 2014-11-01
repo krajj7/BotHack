@@ -369,17 +369,31 @@
             (->PutOn slot))
           (ranged game monster)))))
 
+(defn corrodeproof-weapon [game]
+  (have game (every-pred weapon? (some-fn artifact? :proof)) {:noncursed true}))
+
+(defn hit-corrosive [game monster]
+  (with-reason "hitting corrosive monster" monster
+    (if (corrosive? monster)
+      (or (if-let [[slot item] (have game corrodeproof-weapon)]
+            (if-not (:in-use item)
+              (->Wield slot))
+            (if (wielding game)
+              (->Wield \-)))
+          (->Move (towards (:player game) monster))))))
+
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
-    (or (hit-floating-eye game monster)
-        (bait-wizard game level monster)
+    (or (bait-wizard game level monster)
         (bait-giant game level monster)
-        (wield-weapon game)
         (if-let [[slot _] (and (= :air (branch-key game))
                                (not (have-levi-on game))
                                (have-levi game))]
           (with-reason "levitation for :air"
             (make-use game slot)))
+        (hit-corrosive game monster)
+        (hit-floating-eye game monster)
+        (wield-weapon game)
         (if (and (adjacent? player monster))
           (if (or (not (monster? (at level monster)))
                   (#{\I \1 \2 \3 \4 \5} (:glyph monster)))
@@ -396,19 +410,21 @@
       (<= (/ hp maxhp) 1/3)))
 
 (defn can-ignore? [game monster]
-  (or (#{"floating eye" "grid bug" "newt"} (typename monster))
-      (#{\F \j} (:glyph monster))))
+  (or (passive? monster)
+      (#{"grid bug" "newt"} (typename monster))))
 
 (defn can-handle? [{:keys [player] :as game} monster]
-  (if (and (= "floating eye" (typename monster))
-           (not (or (blind? player)
-                    (reflection? game)
-                    (free-action? game)
-                    (have-throwable game)
-                    ; TODO used throwables blocked by the eye
-                    (have game blind-tool {:noncursed true}))))
-    false
-    true))
+  (cond
+    (= "floating eye" (typename monster)) (not (or (blind? player)
+                                                   (reflection? game)
+                                                   (free-action? game)
+                                                   (have-throwable game)
+                                                   ; TODO used throwables blocked
+                                                   (have game blind-tool
+                                                         {:noncursed true})))
+    (#{"spotted jelly"
+       "ochre jelly"} (typename monster)) (have game corrodeproof-weapon)
+    :else true))
 
 (defn engrave-e [{:keys [player] :as game}]
   (let [tile (at-player game)
