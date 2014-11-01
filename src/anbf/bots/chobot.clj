@@ -65,12 +65,13 @@
         (with-reason "fixing illness"
           (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
                 (->Eat slot))
-              (if-let [[slot _] (or (have game "potion of healing"
-                                          {:buc :blessed})
+              (if-let [[slot item] (or (have game "potion of healing"
+                                          {:buc :blessed :bagged true})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
-                                          {:noncursed true}))]
-                (->Quaff slot)))))))
+                                          {:noncursed true} :bagged true))]
+                (or (unbag game slot item)
+                    (->Quaff slot))))))))
 
 (defn name-first-amulet [anbf]
   (reify ActionHandler
@@ -94,8 +95,10 @@
 (defn full-explore [game]
   (if-not (get-level game :main :sanctum)
     (or (explore game :main :oracle)
-        (explore game :mines)
+        (explore game :mines :minetown)
         ;(explore game :sokoban)
+        (explore game :main :quest)
+        (explore game :mines)
         (explore game :quest)
         (explore game :vlad)
         (explore game :main)
@@ -144,17 +147,28 @@
   (ordered-set "shield of reflection" "small shield"))
 
 (def desired-cloak
-  #{"oilskin cloak"})
+  (ordered-set "cloak of magic resistance" "cloak of displacement" "oilskin cloak" "cloak of protection" "cloak of invisibility"))
+
+(def desired-helmet
+  (ordered-set "helm of telepathy" "helm of brilliance" "dwarvish iron helm" "orcish helm"))
+
+(def desired-gloves
+  (ordered-set "gauntlets of power" "gauntlets of dexterity" "leather gloves"))
 
 (def blind-tool (ordered-set "blindfold" "towel"))
+
+(def always-desired #{"magic lamp" "magic marker" "wand of wishing" "wand of death"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
    #{"ring of slow digestion"}
+   #{"ring of conflict"}
+   #{"ring of invisibility"}
    #{"Orb of Fate"}
    blind-tool
+   #{"brass lantern" "oil lamp"}
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
    #{"Bell of Opening"}
@@ -164,8 +178,14 @@
    desired-suit
    desired-shield
    desired-boots
+   desired-helmet
    #{"amulet of reflection"}
-   #{"amulet of unchanging"}
+   #{"amulet of life saving"}
+   #{"wand of fire"}
+   #{"wand of lightning"}
+   #{"wand of teleportation"}
+   #{"wand of striking"}
+   #{"wand of digging"}
    desired-weapons])
 
 (defn entering-shop? [game]
@@ -174,7 +194,7 @@
 (defn desired-food [game]
   (let [min-nw (if (< 2000 (nutrition-sum game))
                  (nw-ratio-avg game)
-                 30)]
+                 24)]
     (for [food (:food item-kinds)
           :when (and (not (egg? food))
                      (not (corpse? food))
@@ -198,7 +218,7 @@
   (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
               (rest desired-items) ; don't pick that pickaxe back up
               desired-items)
-         res #{}]
+         res always-desired]
     (if-let [c (first cs)]
       (if-let [[slot i] (have game c)]
         (recur (rest cs)
@@ -226,19 +246,26 @@
       (if-let [[slot _] (have game blind-tool {:in-use true :noncursed true})]
         (with-reason "unblinding self"
           (->Remove slot)))
-      (if (impaired? player)
-        (with-reason "waiting out impairment" ->Wait))))
+      (if (or (impaired? player) (:polymorphed player))
+        (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))))
 
-(defn- take-cursed? [item]
-  ((some-fn ring? amulet? scroll? potion? tool? artifact?) item))
+(defn- take-cursed? [game item]
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection"  "bag of holding" "unicorn horn"} (item-name game item))
+      ((some-fn ring? amulet? scroll? potion? tool? artifact?) item)))
+
+(defn- worthwhile? [game item]
+  ; TODO negative enchantment
+  (and (not= "empty" (:specific item))
+       (or (not= :cursed (:buc item))
+           (take-cursed? game item))))
 
 (defn consider-items [game]
   (let [desired (currently-desired game)
         to-take? #(or (real-amulet? %)
                       (and (desired (item-name game %))
+                           (not= "empty" (:specific %))
                            (can-take? %)
-                           (or (not= :cursed (:buc %))
-                               (take-cursed? %))))]
+                           (worthwhile? game %)))]
     (or (if-let [to-get (seq (for [item (lootable-items (at-player game))
                                    :when (to-take? item)]
                                (:label item)))]
@@ -278,7 +305,8 @@
 
 (defn- wear-armor [{:keys [player] :as game}]
   (first (for [category [desired-shield desired-boots
-                         desired-suit desired-cloak]
+                         desired-suit desired-cloak
+                         desired-helmet desired-gloves]
                :let [[slot armor] (some (partial have game) category)]
                :when (and armor (not (:in-use armor)))]
            (with-reason "wearing better armor"
@@ -348,10 +376,9 @@
             (with-reason "reequip - weapon"
               (wield-weapon game))))
         ; TODO multidrop
-        (if-let [[slot _] (have game food? {:buc :cursed})]
-          (with-reason "dropping cursed food" (->Drop slot)))
-        (if-let [[slot _] (have game #(= "empty" (:specific %)))]
-          (with-reason "dropping junk" (->Drop slot)))
+        (if-not (shop? (at-player game))
+          (if-let [[slot _] (have game #(not (worthwhile? game %)))]
+            (with-reason "dropping junk" (->Drop slot))))
         (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
                                (not (#{:water :air} branch))

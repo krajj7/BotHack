@@ -285,6 +285,7 @@
 (defn nw-ratio-avg
   "Nutrition/weight ratio average for all carried food"
   [game]
-  (/ (nutrition-sum game)
-     (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
-             (have-all game food? {:bagged true :noncursed true}))))
+  (if-let [food (seq (have-all game food? {:bagged true :noncursed true}))]
+    (/ (nutrition-sum game)
+       (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
+               food))))

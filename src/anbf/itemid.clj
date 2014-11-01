@@ -61,7 +61,8 @@
             (query discoveries)
             (map name->item)
             seq)
-       (log/error "unknown itemtype for item:" item)) ))
+       (log/error (IllegalArgumentException. "unknown itemtype for item")
+                  item))))
 
 (defn- merge-records
   "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"

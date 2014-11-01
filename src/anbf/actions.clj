@@ -697,7 +697,7 @@
 (defn- possible-autoid
   "Check if the item at slot auto-identified on use"
   [{:keys [game] :as anbf} slot]
-  (if-not (know-id? @game (inventory-slot @game slot))
+  (if-not (or (= \- slot) (know-id? @game (inventory-slot @game slot)))
     (update-discoveries anbf)))
 
 (defaction Wield [slot]
