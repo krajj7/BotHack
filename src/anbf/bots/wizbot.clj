@@ -64,7 +64,7 @@
           (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
                 (->Eat slot))
               (if-let [[slot _] (or (have game "potion of healing"
-                                          {:blessed true})
+                                          {:buc :blessed})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
                                           {:noncursed true}))]

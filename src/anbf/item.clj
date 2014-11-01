@@ -159,6 +159,11 @@
 (defn dagger? [item]
   (.contains (:name item) "dagger"))
 
+(def daggers (->> (:weapon item-kinds)
+                  (filter dagger?)
+                  (map :name)
+                  set))
+
 (defn ammo? [item]
   (or (.contains (:name item) "arrow")
       (.contains (:name item) "bolt")))
@@ -166,12 +171,28 @@
 (defn dart? [item]
   (.contains (:name item) "dart"))
 
+(def ammo (->> (:weapon item-kinds)
+               (filter (some-fn ammo? dart?))
+               (map :name)
+               set))
+
 (defn short-sword? [item]
   (.contains (:name item) "short sword"))
 
 (defn rocks? [item]
   (= "rock" (:name item)))
 
+(defn egg? [item]
+  (re-seq #"\begg\b" (:name item)))
+
 (defn artifact? [item]
   (:artifact (or (name->item (:specific item))
                  (name->item (:name item)))))
+
+(defn nw-ratio
+  "Nutrition/weight ratio of item"
+  [item]
+  (let [id (initial-id item)]
+    (if (not= :food (typekw id))
+      0
+      ((fnil / 0) (:nutrition id) (:weight id)))))

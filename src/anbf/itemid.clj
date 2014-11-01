@@ -80,10 +80,15 @@
 
 ; TODO memoized version?
 (defn item-id
-  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous)"
+  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) taking current discoveries into consideration"
   [game item]
   {:pre [(:discoveries game)]}
   (merge-records (possibilities (:discoveries game) item)))
+
+(defn initial-id
+  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) *without* taking current discoveries into consideration"
+  [item]
+  (merge-records (possibilities initial-discoveries item)))
 
 (defn item-type [item]
   (typekw (first (possibilities initial-discoveries item 1))))

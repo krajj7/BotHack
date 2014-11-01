@@ -107,7 +107,7 @@
   (apply every-pred (base-selector game name-or-set-or-fn)
          (remove nil? [(if (:safe opts) safe?)
                        (if (:noncursed opts) noncursed?)
-                       (if (:blessed opts) blessed?)
+                       (if (:buc opts) (comp (partial = (:buc opts)) :buc))
                        (if (:nonblessed opts) (complement blessed?))
                        (if (:know-buc opts) (comp some? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))
@@ -128,6 +128,13 @@
                      match matches]
                  [slot match]))))))
 
+(defn have-sum
+  "Returns sum of the quantities of matching items"
+  ([game name-or-set-or-fn] (have-sum game name-or-set-or-fn {}))
+  ([game name-or-set-or-fn opts]
+   (reduce (fn [res [_ item]] (+ res (:qty item))) 0
+           (have-all game name-or-set-or-fn opts))))
+
 (defn have
   "Returns the [slot item] of matching item in player's inventory or nil.
    First arg can be:
@@ -135,11 +142,11 @@
      #{String} (set of strings - item name alternatives with no preference)
      fn - predicate function to filter items (gets the Item as arg, not the name)
    Options map can contain:
-     :safe - return only known-non-cursed items
      :noncursed - return only items not known to be cursed
      :nonblessed - return only items not known to be blessed
-     :blessed - return only blessed items
-     :know-buc - only items with known buc
+     :buc <:cursed/:uncursed/:blessed> - return only items known to have given buc
+     :know-buc - items with any (known) buc
+     :safe - same as :know-buc + :noncursed
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory"
   ([game name-or-set-or-fn]
@@ -266,3 +273,18 @@
   "Apply update-fn to item at the inventory slot"
   [game slot update-fn & args]
   (apply update-in game [:player :inventory slot] update-fn args))
+
+(defn nutrition-sum
+  "Sum of nutrition of carried food"
+  [game]
+  (reduce (fn [res [_ item]]
+            ((fnil + 0) (:nutrition (item-id game item)) res))
+          0
+          (have-all game food? {:bagged true :noncursed true})))
+
+(defn nw-ratio-avg
+  "Nutrition/weight ratio average for all carried food"
+  [game]
+  (/ (nutrition-sum game)
+     (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
+             (have-all game food? {:bagged true :noncursed true}))))

@@ -3,6 +3,7 @@
             [flatland.ordered.set :refer [ordered-set]]
             [anbf.anbf :refer :all]
             [anbf.item :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.itemid :refer :all]
             [anbf.handlers :refer :all]
             [anbf.player :refer :all]
@@ -65,7 +66,7 @@
           (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
                 (->Eat slot))
               (if-let [[slot _] (or (have game "potion of healing"
-                                          {:blessed true})
+                                          {:buc :blessed})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
                                           {:noncursed true}))]
@@ -170,6 +171,26 @@
 (defn entering-shop? [game]
   (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
 
+(defn desired-food [game]
+  (let [min-nw (if (< 2000 (nutrition-sum game))
+                 (nw-ratio-avg game)
+                 30)]
+    (for [food (:food item-kinds)
+          :when (and (not (egg? food))
+                     (not (corpse? food))
+                     (> (nw-ratio food) min-nw))]
+      (:name food))))
+
+(defn desired-throwables [game]
+  (let [amt-daggers (have-sum game dagger? {:noncursed true})
+        amt-ammo (have-sum game (some-fn dart? ammo?) {:noncursed true})
+        amt-rocks (have-sum game rocks? {:noncursed true})]
+    (cond
+      (< 5 amt-daggers) []
+      (< 6 amt-ammo) daggers
+      (< 6 amt-rocks) (concat daggers ammo)
+      :else (concat daggers ammo ["rock"]))))
+
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
@@ -181,13 +202,19 @@
     (if-let [c (first cs)]
       (if-let [[slot i] (have game c)]
         (recur (rest cs)
-               (into res (take-while (partial not= (item-name game i)) c)))
+               (into (if (cursed? i)
+                       (conj res (:name i))
+                       res)
+                     (take-while (partial not= (item-name game i)) c)))
         (recur (rest cs) (into res c)))
-      (or (if-let [sanctum (get-level game :main :sanctum)]
-            (if (and (not (have game real-amulet?))
-                     (:seen (at sanctum 20 11)))
-              (conj res "Amulet of Yendor")))
-          res))))
+      (as-> res res
+        (into res (desired-food game))
+        (into res (desired-throwables game))
+        (if-let [sanctum (get-level game :main :sanctum)]
+          (if (and (not (have game real-amulet?))
+                   (:seen (at sanctum 20 11)))
+            (conj res "Amulet of Yendor"))
+          res)))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
@@ -202,10 +229,16 @@
       (if (impaired? player)
         (with-reason "waiting out impairment" ->Wait))))
 
+(defn- take-cursed? [item]
+  ((some-fn ring? amulet? scroll? potion? tool? artifact?) item))
+
 (defn consider-items [game]
   (let [desired (currently-desired game)
         to-take? #(or (real-amulet? %)
-                      (and (desired (item-name game %)) (can-take? %)))]
+                      (and (desired (item-name game %))
+                           (can-take? %)
+                           (or (not= :cursed (:buc %))
+                               (take-cursed? %))))]
     (or (if-let [to-get (seq (for [item (lootable-items (at-player game))
                                    :when (to-take? item)]
                                (:label item)))]
@@ -315,6 +348,8 @@
             (with-reason "reequip - weapon"
               (wield-weapon game))))
         ; TODO multidrop
+        (if-let [[slot _] (have game food? {:buc :cursed})]
+          (with-reason "dropping cursed food" (->Drop slot)))
         (if-let [[slot _] (have game #(= "empty" (:specific %)))]
           (with-reason "dropping junk" (->Drop slot)))
         (use-light game level)
