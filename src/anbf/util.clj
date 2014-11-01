@@ -36,11 +36,12 @@
                 (str "Configuration missing key: " key))))))
 
 (defn re-first-groups
-  "Return the capturing groups of the first match"
+  "Return the capturing groups of the first match or whole first match if no groups"
   [re text]
   (if-let [m (first (re-seq re text))]
     (if (vector? m)
-      (subvec m 1))))
+      (subvec m 1)
+      m)))
 
 (defn re-first-group
   "Return the first capturing group of the first match or whole first match if no groups"

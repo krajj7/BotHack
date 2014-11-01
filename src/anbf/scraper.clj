@@ -153,10 +153,10 @@
   )
 
 (defn- choice-fn [msg]
-  (condp re-first-group msg
+  (condp re-first-groups msg
     #"^\"Shall I remove|^\"Take off your |let me run my fingers" seduced-remove
     #"^Force the gods to be pleased\?" force-god
-    #"^Really attack (.*)\?" :>> (partial list really-attack)
+    #"^Really attack (.*)\?" :>> (partial apply list really-attack)
     #"^Are you sure you want to enter\?" enter-gehennom
     #"^What do you want to wield" wield-what
     #"^What do you want to wear" wear-what
@@ -177,21 +177,22 @@
     #"^What do you want to zap\?" zap-what
     #"^Which ring-finger," which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
-    #"^There (?:is|are) ([^;]+) here; eat (it|one)\?" :>> (partial list eat-it)
-    #"^There (?:is|are) ([^;]+) here; sacrifice (it|one)\?"
-    :>> (partial list sacrifice-it)
+    #"^There (?:is|are) ([^;]+) here; eat (?:it|one)\?"
+    :>> (partial apply list eat-it)
+    #"^There (?:is|are) ([^;]+) here; sacrifice (?:it|one)\?"
+    :>> (partial apply list sacrifice-it)
     #"^What do you want to eat\?" eat-what
     #"^What do you want to sacrifice\?" sacrifice-what
     #"^Attach the .*to the candelabrum\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb
     #"^You have a little trouble lifting ([^.]+)\. Continue\?"
-    :>> (partial list lift-burden :light)
+    :>> (partial apply list lift-burden :light)
     #"^You have much trouble lifting ([^.]+)\. Continue\?"
-    :>> (partial list lift-burden :heavy)
+    :>> (partial apply list lift-burden :heavy)
     #"^You have extreme difficulty lifting ([^.]+)\. Continue\?"
-    :>> (partial list lift-burden :extreme)
+    :>> (partial apply list lift-burden :extreme)
     #"There is ([^,]+) here, loot it\?"
-    :>> (partial list loot-it)
+    :>> (partial apply list loot-it)
     #"Stop eating\?" stop-eating
     #"Do you want to take something out.*" take-something-out
     #"Do you wish to put something in\?" put-something-in
@@ -200,6 +201,8 @@
     #"What do you want to throw\?" throw-what
     #"What do you want to write with" write-with-what
     #"Do you want to add to the current engraving" append-engraving
+    #".* offers ([0-9]+) gold pieces for your ([^.]+)\.  Sell it\?"
+    :>> #(list sell-it (parse-int (first %)) (second %))
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 

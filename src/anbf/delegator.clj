@@ -389,3 +389,6 @@
 
 (defyesnohandler EngraveAppendHandler
   (append-engraving [handler ^String prompt]))
+
+(defyesnohandler SellItHandler
+  (sell-it [handler ^Integer offer ^String what]))

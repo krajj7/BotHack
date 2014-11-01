@@ -143,6 +143,8 @@
     StopEatingHandler
     (stop-eating [_ _] true)
     ; escape the rest by default
+    SellItHandler
+    (sell-it [_ _ _] "")
     EatWhatHandler
     (eat-what [_ _] "")
     OfferHandler
