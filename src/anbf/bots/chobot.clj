@@ -271,7 +271,7 @@
                                (:label item)))]
           (with-reason "looting desirable items"
             (without-levitation game
-              (take-out \. (->> to-get set vec))))
+              (take-out \. (reduce #(assoc %1 %2 nil) {} to-get))))
           (log/debug "no desired lootable items"))
         (if-let [to-get (seq (for [item (:items (at-player game))
                                    :when (to-take? item)]

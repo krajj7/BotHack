@@ -1058,10 +1058,10 @@
                      (take-something-out [_ _] true)
                      TakeOutWhatHandler
                      (take-out-what [_ options]
-                       (set (map (fn select-item [[slot label]]
-                                   (if-let [[_ amt] (find amt-map label)]
-                                     (str amt slot)))
-                                 options)))
+                       (set (keep (fn select-item [[slot label]]
+                                    (if-let [[_ amt] (find amt-map label)]
+                                      (str amt slot)))
+                                  options)))
                      PutSomethingInHandler
                      (put-something-in [_ _] false)))]
      (with-reason "taking" label-or-amt-map "out of container at" bag-slot
