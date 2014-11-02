@@ -562,16 +562,19 @@
              (not (shop? tile)))
       tile)))
 
-(defn unexplored-column
-  "Look for a column of unexplored tiles on segments of the screen."
-  [game level]
+(defn unexplored-columns [game level]
   (if (and (#{:mines :main} (branch-key game level))
            (not (in-gehennom? game))
            (not (:castle (:tags level))))
-    (first (remove (fn column-explored? [x]
-                     (some :feature (for [y (range 2 19)]
-                                      (at level x y))))
-                   [17 40 63]))))
+    (remove (fn column-explored? [x]
+              (some :feature (for [y (range 2 19)]
+                               (at level x y))))
+            [17 20 40 60 63])))
+
+(defn unexplored-column
+  "Look for a column of unexplored tiles on segments of the screen."
+  [game level]
+  (first (unexplored-columns game level)))
 
 (defn- corridor-extremities [level init-cols howmuch]
   (loop [cols init-cols]
@@ -975,6 +978,11 @@
     (or (seek-level game branch tag-or-dlvl)
         (explore game))))
 
+(defn- search-limit [game level]
+  (cond (= :mines (branch-key game)) 10
+        (more-than? 1 (unexplored-columns game level)) 2
+        :else 1))
+
 (defn- explore-step [{:keys [player] :as game}]
   (let [level (curlvl game)
         player-tile (at-player game)]
@@ -986,7 +994,7 @@
         ; TODO search for shops if heard but not found
         (if (unexplored-column game level)
           (with-reason "level not explored enough, searching"
-            (search-level game (if (= :mines (branch-key game)) 10 2))))
+            (search-level game (search-limit game level))))
         (if-let [bldrs (filter #(and (boulder? %) (explorable-tile? level %))
                                (tile-seq level))]
           (if-let [path (navigate game #(and (some (partial adjacent? %) bldrs)
