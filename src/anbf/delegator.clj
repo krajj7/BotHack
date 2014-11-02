@@ -392,3 +392,12 @@
 
 (defyesnohandler SellItHandler
   (sell-it [handler ^Integer offer ^String what]))
+
+(defyesnohandler WizmodeEnhanceHandler
+  (enhance-without-practice [handler ^String prompt]))
+
+(defmenuhandler EnhanceWhatHandler
+  (enhance-what [handler ^clojure.lang.IPersistentMap options]))
+
+(defmenuhandler CurrentSkillsHandler
+  (current-skills [handler ^clojure.lang.IPersistentMap options]))

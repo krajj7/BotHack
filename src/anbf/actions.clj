@@ -618,7 +618,7 @@
 
 (defn with-handler
   ([handler action]
-   (with-handler action priority-default handler))
+   (with-handler priority-default handler action))
   ([priority handler action]
    (update action :handlers conj [priority handler])))
 
@@ -807,8 +807,18 @@
 (defaction Enhance []
   (trigger [_] "#enhance\n")
   (handler [_ {:keys [game] :as anbf}]
-    (log/error "TODO")
-    #_(swap! game (assoc-in [:player :can-enhance] nil))))
+    (reify CurrentSkillsHandler
+      (current-skills [_ _] ; nothing to enhance
+        (swap! game assoc-in [:player :can-enhance] nil)
+        #{}))))
+
+(defn enhance-all
+  "Enhance action with a handler that enhances any skills available"
+  []
+  (with-handler
+    (reify EnhanceWhatHandler ; enhance anything
+      (enhance-what [_ _] #{\a}))
+    (->Enhance)))
 
 (defn- -withHandler
   ([action handler]

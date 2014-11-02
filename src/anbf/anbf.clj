@@ -142,6 +142,8 @@
     (seduced-remove [_ _] false)
     StopEatingHandler
     (stop-eating [_ _] true)
+    WizmodeEnhanceHandler
+    (enhance-without-practice [_ _] false)
     ; escape the rest by default
     SellItHandler
     (sell-it [_ _ _] "")

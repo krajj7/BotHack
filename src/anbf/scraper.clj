@@ -72,6 +72,8 @@
     #"Put in what\?" put-in-what
     #"Take out what\?" take-out-what
     #"Loot which containers\?" loot-what
+    #"Pick a skill to advance" enhance-what
+    #"Current skills" current-skills
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
@@ -166,6 +168,7 @@
     #"^What do you want to ready" ready-what
     #"^What do you want to drop" drop-single
     #"^Die\?" die
+    #"^Advance skills without practice\?" enhance-without-practice
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
     #"^What do you want to name\?" name-what
@@ -341,7 +344,12 @@
                      (handle-menu-response frame))
                    (log/debug "menu response start - not yet rewound")))
              (handle-menu-response [frame]
-               (or (when (and (menu? frame)
+               (or (when (re-seq #"^Unknown command ' |^You are now \w+ skilled"
+                                 (topline frame))
+                     (log/debug "enhance menu done")
+                     (ref-set items nil)
+                     (or (initial frame) initial))
+                   (when (and (menu? frame)
                               (= @menu-nextpage (menu-curpage frame)))
                      (log/debug "responding to menu page" @menu-nextpage
                                 "options" (menu-options frame))

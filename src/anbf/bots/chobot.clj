@@ -39,9 +39,7 @@
 
 (defn enhance [game]
   (if (:can-enhance (:player game))
-    (log/debug "TODO ->Enhance")
-    ; TODO EnhanceHandler
-    #_(->Enhance)))
+    (enhance-all)))
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (weak? player)
