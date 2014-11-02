@@ -89,6 +89,8 @@
 
 (defn ignores-e? [m] (get-in m [:tags :no-elbereth]))
 
+(defn sees-invisible? [m] (get-in m [:tags :see-invis]))
+
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
 

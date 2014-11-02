@@ -305,3 +305,9 @@
   ; TODO current weapon/armor cursed, two handed weapon with shield ...
   (not (and (weapon? item)
             (has-hands? player))))
+
+(defn free-finger?
+  "Does the player have a free ring-finger?"
+  [player]
+  (less-than? 2 (filter (every-pred ring? :in-use)
+                        (vals (:inventory player)))))

@@ -163,6 +163,7 @@
    (ordered-set "ring of levitation" "boots of levitation")
    #{"ring of slow digestion"}
    #{"ring of conflict"}
+   #{"ring of regeneration"}
    #{"ring of invisibility"}
    #{"Orb of Fate"}
    blind-tool
@@ -354,6 +355,15 @@
           (if-let [[slot lamp] (have game (partial light? game))]
             (with-reason "using any light source" (->Apply slot)))))))
 
+(defn remove-rings [{:keys [player] :as game}]
+  (or (if-let [[slot _] (have game "ring of invisibility" {:in-use true})]
+        (with-reason "don't need invis"
+          (remove-use game slot)))
+      (if-let [[slot _] (and (= (:hp player) (:maxhp player))
+                            (have game "ring of regeneration" {:in-use true}))]
+        (with-reason "don't need regen"
+          (remove-use game slot)))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
@@ -361,6 +371,7 @@
         branch (branch-key game)]
     (or (bless-gear game)
         (wear-armor game)
+        (remove-rings game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (every? walkable? tile-path))
@@ -493,38 +504,45 @@
       (->Engrave \- "Elbereth" append?))))
 
 (defn retreat [{:keys [player] :as game}]
-  (if (low-hp? player)
-    (let [level (curlvl game)
-          threats (threat-map game)
-          adjacent (->> (neighbors player)
-                        (keep (partial monster-at level))
-                        (filter hostile?))]
-      (or (kill-engulfer game)
-          (if (and (not (e? (at-player game)))
-                   (some (every-pred (complement :fleeing)
-                                     (complement ignores-e?)) adjacent)
-                   (not-any? ignores-e? adjacent))
-            (with-reason "retreat engrave" (engrave-e game)))
-          (if (and (empty? threats) (stairs-down? (at-player game)))
-            (with-reason "retreated on downstairs"
-              ->Search))
-          (if-let [{:keys [step target]} (navigate game stairs-up?
-                                                   {:walking true
-                                                    :no-autonav true})]
-            (if (stairs-up? (at-player game))
-              (if (and (seq threats) (not= 1 (dlvl game)))
-                (with-reason "retreating upstairs" ->Ascend)
-                (with-reason "prepared to retreat upstairs" ->Search))
-              step))
-          ; stairs unreachable
-          ))))
+  (with-reason "retreating"
+    (if (low-hp? player)
+      (let [level (curlvl game)
+            threats (threat-map game)
+            adjacent (->> (neighbors player)
+                          (keep (partial monster-at level))
+                          (filter hostile?))]
+        (or (kill-engulfer game)
+            (if (and (not (e? (at-player game)))
+                     (some (every-pred (complement :fleeing)
+                                       (complement ignores-e?)) adjacent)
+                     (not-any? ignores-e? adjacent))
+              (with-reason "retreat engrave" (engrave-e game)))
+            (if (and (empty? threats) (stairs-down? (at-player game)))
+              (with-reason "retreated on downstairs"
+                ->Search))
+            (if-let [{:keys [step target]} (navigate game stairs-up?
+                                                     {:walking true
+                                                      :explored true
+                                                      :no-autonav true})]
+              (if (stairs-up? (at-player game))
+                (if (and (seq threats) (not= 1 (dlvl game)))
+                  (with-reason "retreating upstairs" ->Ascend)
+                  (with-reason "prepared to retreat upstairs" ->Search))
+                step))
+            ; stairs unreachable
+            )))))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
   (or (>= (/ hp maxhp) 9/10)))
 
 (defn- recover [{:keys [player] :as game}]
   (if-not (safe-hp? player)
-    (or (with-reason "recovering - exploring nearby items"
+    (or (if-let [[slot _] (and (free-finger? player)
+                               (have game "ring of regeneration"
+                                     {:noncursed true}))]
+          (with-reason "recover - regen"
+            (make-use game slot)))
+        (with-reason "recovering - exploring nearby items"
           (:step (navigate game :new-items {:walking true :explored true
                                             :max-steps 10 :no-autonav true})))
         (with-reason "recovering" (->Repeated (->Wait) 10)))))
@@ -588,7 +606,13 @@
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
                            set)]
-          (or (if-let [m (min-by (partial distance player)
+          (or (if-let [[slot _] (and (free-finger? player)
+                                     (not-any? sees-invisible? threats)
+                                     (have game "ring of invisibility"
+                                           {:noncursed true}))]
+                (with-reason "invis for combat"
+                  (make-use game slot)))
+              (if-let [m (min-by (partial distance player)
                                  (filter (every-pred (partial keep-away? player)
                                                      (complement :fleeing)
                                                      (complement :remembered)
