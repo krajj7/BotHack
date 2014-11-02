@@ -528,9 +528,7 @@
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
                   (with-reason "prepared to retreat upstairs" ->Search))
-                step))
-            ; stairs unreachable
-            )))))
+                step)))))))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
   (or (>= (/ hp maxhp) 9/10)))
