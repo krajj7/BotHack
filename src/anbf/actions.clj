@@ -886,9 +886,17 @@
 (defaction Quaff [slot]
   (trigger [_] "q")
   (handler [_ {:keys [game] :as anbf}]
-    (update-inventory anbf)
-    (reify DrinkWhatHandler
-      (drink-what [_ _] slot))))
+    (reify
+      DrinkHereHandler
+      (drink-here [_ _]
+        (if (= slot \.)
+          (update-tile anbf)
+          false))
+      DrinkWhatHandler
+      (drink-what [_ _]
+        (when (not= slot \.)
+          (update-inventory anbf)
+          slot)))))
 
 (defn use-action [item]
   (case (item-type item)

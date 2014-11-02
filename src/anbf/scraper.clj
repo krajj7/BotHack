@@ -177,6 +177,7 @@
     #"[Ll]ock it\? " lock-it
     #"^What do you want to read\?" read-what
     #"^What do you want to drink\?" drink-what
+    #"^Drink from .*\?" drink-here
     #"^What do you want to zap\?" zap-what
     #"^Which ring-finger," which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage

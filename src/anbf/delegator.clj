@@ -329,6 +329,9 @@
 (defchoicehandler DrinkWhatHandler
   (drink-what [handler ^String prompt]))
 
+(defyesnohandler DrinkHereHandler
+  (drink-here [handler ^String prompt]))
+
 (defchoicehandler ZapWhatHandler
   (zap-what [handler ^String prompt]))
 
