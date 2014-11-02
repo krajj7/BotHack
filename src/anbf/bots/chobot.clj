@@ -249,7 +249,7 @@
         (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))))
 
 (defn- take-cursed? [game item]
-  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection"  "bag of holding" "unicorn horn"} (item-name game item))
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn"} (item-name game item))
       ((some-fn ring? amulet? scroll? potion? tool? artifact?) item)))
 
 (defn- worthwhile? [game item]
@@ -704,6 +704,37 @@
                   (or (unbag game potion p)
                       (->Quaff potion))))))))))
 
+(defn- seek-fountain [game]
+  (with-reason "seeking a fountain to make Excal"
+    (let [oracle (get-level game :main :oracle)]
+      (or (if (or (nil? oracle)
+                  (not-any? :seen (neighbors oracle oracle-position)))
+            (or (seek-level game :main :oracle)
+                (seek game oracle-position {:adjacent true})))
+          (if (some fountain? (tile-seq oracle))
+            (seek-level game :main :oracle))
+          (:step (navigate game fountain?))
+          (if-not (fountain? (at-player game))
+            (some->> (:dlvl oracle) (iterate prev-dlvl) rest
+                     (take-while (partial not= "Dlvl:0"))
+                     (find-first (comp (partial some fountain?) tile-seq
+                                       (partial get-level game :main)))
+                     (seek-level game :main)))
+          (log/warn "all fountains spent, no excal")))))
+
+(defn make-excalibur [anbf]
+  (reify ActionHandler
+    (choose-action [this {:keys [player] :as game}]
+      (if (have game "Excalibur")
+        (do (deregister-handler anbf this)
+            (log/debug "seen excal"))
+        (if-let [[slot _] (and (<= 5 (:xplvl player))
+                               (have game "long sword"))]
+          (with-reason "getting Excal"
+            (or (seek-fountain game)
+                (if (fountain? (at-player game))
+                  (->Dip slot \.)))))))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -759,6 +790,7 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      (register-handler 7 (reify ActionHandler
+      (register-handler 7 (make-excalibur anbf))
+      (register-handler 8 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

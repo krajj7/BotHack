@@ -345,7 +345,7 @@
             (send delegator found-items (:items (at-player game))))
           (as-> game res
             (update-at-player res assoc :examined (:turn game))
-            (if ((some-fn unknown? unknown-trap?) (at-player res))
+            (if ((some-fn unknown? unknown-trap? fountain?) (at-player res))
               (update-at-player res assoc :feature :floor)
               res) ; got no topline message suggesting a special feature
             (if (blind? (:player game))
@@ -508,8 +508,8 @@
   [anbf]
   (register-handler anbf (dec priority-top) (inventory-handler anbf)))
 
-(defn update-items
-  "Re-check current tile for items or engravings on the next action"
+(defn update-tile
+  "Re-check current tile for items/engravings/feature on the next action"
   [anbf]
   (update-at-player-when-known anbf assoc :new-items true))
 
@@ -742,7 +742,7 @@
   (trigger [_] "d")
   (handler [_ anbf]
     (update-inventory anbf)
-    (update-items anbf)
+    (update-tile anbf)
     (swap! (:game anbf) update :player dissoc :thick)
     (reify DropSingleHandler
       (drop-single [_ _] (str (if (> qty 1) qty) slot)))))
@@ -766,7 +766,7 @@
   (trigger [_] ",")
   (handler [_ anbf]
     (update-inventory anbf)
-    (update-items anbf)
+    (update-tile anbf)
     (let [labels (if (string? label-or-list)
               (multiset label-or-list)
               (into (multiset) label-or-list))
@@ -868,17 +868,17 @@
       (message [_ msg]
         (when (= msg "You don't have anything to eat.")
           (update-inventory anbf)
-          (update-items anbf)))
+          (update-tile anbf)))
       EatItHandler
       (eat-it [_ what]
         (if (and (string? slot-or-label)
                  (= what slot-or-label))
-          (update-items anbf)
+          (update-tile anbf)
           false))
       EatWhatHandler
       (eat-what [_ _]
         (if (string? slot-or-label)
-          (update-items anbf))
+          (update-tile anbf))
         (when (char? slot-or-label)
           (update-inventory anbf)
           slot-or-label)))))
@@ -946,12 +946,12 @@
       (sacrifice-it [_ what]
         (if (and (string? slot-or-label)
                  (= what slot-or-label))
-          (update-items anbf)
+          (update-tile anbf)
           false))
       SacrificeWhatHandler
       (sacrifice-what [_ _]
         (if (string? slot-or-label)
-          (update-items anbf))
+          (update-tile anbf))
         (when (char? slot-or-label)
           (update-inventory anbf)
           slot-or-label)))))
@@ -1006,7 +1006,7 @@
             (swap! n inc)) ; may occur on same line with "... is empty"
           (condp re-seq msg
             #"It develops a huge set of teeth and bites you!"
-            (update-items anbf)
+            (update-tile anbf)
             #" seems to be locked\."
             (let [idx (swap! n inc)]
               (swap! game #(update-item-at-player % (nth-container-index % idx)
@@ -1084,9 +1084,17 @@
   (trigger [_] "#dip\n")
   (handler [_ anbf]
     (update-inventory anbf)
-    (reify DipHandler
+    (reify
+      DipHandler
       (dip-what [_ _] item-slot)
-      (dip-into-what [_ _] potion-slot))))
+      (dip-into-what [_ _]
+        (if (not= \. potion-slot)
+          potion-slot))
+      DipHereHandler
+      (dip-here [_ _]
+        (if (= potion-slot \.)
+          (update-tile anbf)
+          false)))))
 
 (defn examine-handler [anbf]
   (reify ActionHandler
@@ -1108,7 +1116,7 @@
 (defaction Engrave [slot what append?]
   (trigger [_] "E")
   (handler [_ anbf]
-    (update-items anbf)
+    (update-tile anbf)
     (if (not= \- slot)
       (update-inventory anbf))
     (reify

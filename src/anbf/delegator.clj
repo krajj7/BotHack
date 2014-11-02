@@ -354,6 +354,9 @@
   (dip-what [handler ^String prompt])
   (dip-into-what [handler ^String prompt]))
 
+(defyesnohandler DipHereHandler
+  (dip-here [handler ^String prompt]))
+
 (defyesnohandler LiftBurdenHandler
   (lift-burden [handler ^clojure.lang.Keyword burden ^String item-label]))
 

@@ -73,18 +73,20 @@
     dlvl))
 
 (defn prev-dlvl
-  "Dlvl closer to branch entry (for dlvl within the branch), no change for unnumbered dlvls."
-  [branch dlvl]
-  (if (upwards? branch)
-    (change-dlvl inc dlvl)
-    (change-dlvl dec dlvl)))
+  "Dlvl closer to branch entry (for dlvl within the branch), no change for unnumbered dlvls.  Single arg variant assumes :main branch."
+  ([dlvl] (prev-dlvl :main dlvl))
+  ([branch dlvl]
+   (if (upwards? branch)
+     (change-dlvl inc dlvl)
+     (change-dlvl dec dlvl))))
 
 (defn next-dlvl
-  "Dlvl further from branch entry (for dlvl within the branch), no change for unnumbered dlvls."
-  [branch dlvl]
-  (if (upwards? branch)
-    (change-dlvl dec dlvl)
-    (change-dlvl inc dlvl)))
+  "Dlvl further from branch entry (for dlvl within the branch), no change for unnumbered dlvls.  Single arg variant assumes :main branch."
+  ([dlvl] (next-dlvl :main dlvl))
+  ([branch dlvl]
+   (if (upwards? branch)
+     (change-dlvl dec dlvl)
+     (change-dlvl inc dlvl))))
 
 (defn branch-key
   ([{:keys [branch-id] :as game}]

@@ -64,6 +64,8 @@
   (for [y (range 1 22)]
     (at level x y)))
 
+(def oracle-position {:x 39 :y 12})
+
 (def wiztower-boundary
   (set (concat (for [y (range 5 20)
                      pos [(position 23 y)

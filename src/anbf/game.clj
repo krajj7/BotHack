@@ -267,7 +267,7 @@
       MultilineMessageHandler
       (message-lines [_ lines]
         (or (if (and (re-seq things-re (first lines)) (moved? @game))
-              (update-items anbf))
+              (update-tile anbf))
             (if-let [level (level-msg (first lines))]
               (update-on-known-position anbf add-curlvl-tag level))))
       ToplineMessageHandler
@@ -280,7 +280,7 @@
             (condp-all re-first-group text
               thing-re
               (if (moved? @game)
-                (update-items anbf))
+                (update-tile anbf))
               #" appears before you\."
               (swap! game update-peaceful-status demon-lord?)
               #"Infidel, you have entered Moloch's Sanctum!"
@@ -308,9 +308,9 @@
               #"You sink into the lava"
               (update-at-player-when-known anbf assoc :feature :lava)
               #"You turn into a"
-              (-> anbf update-inventory update-items)
+              (-> anbf update-inventory update-tile)
               #"You are almost hit"
-              (update-items anbf)
+              (update-tile anbf)
               #" activated a magic portal!"
               (do (reset! portal true)
                   (if (planes (branch-key @game))

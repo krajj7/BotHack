@@ -201,6 +201,7 @@
     #"Do you wish to put something in\?" put-something-in
     #"What do you want to dip\?" dip-what
     #"What do you want to dip.* into\?" dip-into-what
+    #"^Dip the .* into the .*\?" dip-here
     #"What do you want to throw\?" throw-what
     #"What do you want to write with" write-with-what
     #"Do you want to add to the current engraving" append-engraving

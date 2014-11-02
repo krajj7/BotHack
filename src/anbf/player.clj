@@ -303,8 +303,8 @@
 
 (defn can-use? [player item]
   ; TODO current weapon/armor cursed, two handed weapon with shield ...
-  (not (and (weapon? item)
-            (has-hands? player))))
+  (or (has-hands? player)
+      (not (weapon? item))))
 
 (defn free-finger?
   "Does the player have a free ring-finger?"
