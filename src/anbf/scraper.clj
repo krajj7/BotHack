@@ -228,21 +228,24 @@
   (and (.startsWith ^String (nth-line frame 1) "NetHack, Copyright")
        (before-cursor? frame "] ")))
 
-(def ^:private botl1-re #"^(\w+)?.*?St:(\d+(?:\/(?:\*\*|\d+))?) Dx:(\d+) Co:(\d+) In:(\d+) Wi:(\d+) Ch:(\d+)\s*(\w+)\s*(?:S:(\d+))?.*$" )
+(def ^:private botl1-re #"^(\w+)?(?: the (.*[^ ]))? +St:(\d+(?:\/(?:\*\*|\d+))?) Dx:(\d+) Co:(\d+) In:(\d+) Wi:(\d+) Ch:(\d+)\s*(\w+)\s*(?:S:(\d+))?.*$" )
 
-(def ^:private botl2-re #"^(Dlvl:\d+|Home \d+|Fort Ludios|End Game|Astral Plane)\s+(?:\$|\*):(\d+)\s+HP:(\d+)\((\d+)\)\s+Pw:(\d+)\((\d+)\)\s+AC:([0-9-]+)\s+(?:Exp|Xp|HD):(\d+)(?:\/(\d+))?\s+T:(\d+)\s+(.*?)\s*$")
+(def ^:private botl2-re #"^(Dlvl:\d+|Home \d+|Fort Ludios|End Game|Astral Plane)\s+(?:\$|\*):(\d+)\s+HP:(\d+)\((\d+)\)\s+Pw:(\d+)\((\d+)\)\s+AC:([0-9-]+)\s+(Exp|Xp|HD):(\d+)(?:\/(\d+))?\s+T:(\d+)\s+(.*?)\s*$")
 
 (defn- parse-botls [[botl1 botl2]]
   (merge
     (if-let [status (re-first-groups botl1-re botl1)]
       {:nickname (status 0)
-       :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 1 7))
-       :alignment (str->kw (status 7))
-       :score (-> (status 8) parse-int)}
+       :title (status 1)
+       :stats (zipmap [:str :dex :con :int :wis :cha] (subvec status 2 8))
+       :alignment (str->kw (status 8))
+       :score (-> (status 9) parse-int)}
       (log/error "failed to parse botl1 " botl1))
     (if-let [status (re-first-groups botl2-re botl2)]
-      (zipmap [:dlvl :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
-              (conj (map parse-int (subvec status 1 10))
+      (zipmap [:dlvl :xp-label :gold :hp :maxhp :pw :maxpw :ac :xplvl :xp :turn]
+              (conj (map parse-int (concat (subvec status 1 7)
+                                           (subvec status 8 11)))
+                    (status 7)
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
     {:state (set (for [[substr state] {" Bl" :blind " Stun" :stun " Conf" :conf

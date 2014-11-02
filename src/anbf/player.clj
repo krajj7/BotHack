@@ -1,12 +1,14 @@
 (ns anbf.player
   "representation of the bot avatar"
-  (:require [anbf.util :refer :all]
+  (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
+            [anbf.util :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
+            [anbf.montype :refer :all]
             [anbf.itemid :refer :all]
             [anbf.itemtype :refer :all]
-            [anbf.item :refer :all]
-            [clojure.tools.logging :as log]))
+            [anbf.item :refer :all]))
 
 (defn hungry?
   "Returns hunger state if it is Hungry or worse, else nil"
@@ -26,6 +28,7 @@
 
 (defrecord Player
   [nickname
+   title
    role
    race
    hp
@@ -45,6 +48,7 @@
    leg-hurt
    state ; subset #{:stun :conf :hallu :blind :ill}
    stat-drained
+   polymorphed
    lycantrophy
    stoning
    stats ; :str :dex :con :int :wis :cha
@@ -61,7 +65,11 @@
   (map->Player {}))
 
 (defn update-player [player status]
-  (->> (keys player) (select-keys status) (into player)))
+  (assoc (->> (keys player) (select-keys status) (into player))
+         :polymorphed (if (= "HD" (:xp-label status))
+                        (some->> (:title status)
+                                 string/lower-case
+                                 name->monster))))
 
 (defn blind? [player]
   (:blind (:state player)))
@@ -289,3 +297,11 @@
     (/ (nutrition-sum game)
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
                food))))
+
+(defn has-hands? [player]
+  (not (get-in player [:polymorphed :tags :nohands])))
+
+(defn can-use? [player item]
+  ; TODO current weapon/armor cursed, two handed weapon with shield ...
+  (not (and (weapon? item)
+            (has-hands? player))))

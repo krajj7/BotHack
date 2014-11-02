@@ -297,9 +297,8 @@
 
 (defn- wield-weapon [{:keys [player] :as game}]
   (if-let [[slot weapon] (some (partial have game) desired-weapons)]
-    (if-not (:wielded weapon)
+    (if-not (or (:wielded weapon) (not (can-use? player weapon)))
       (or (uncurse-weapon game)
-          ; TODO can-wield?
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
 
@@ -308,7 +307,7 @@
                          desired-suit desired-cloak
                          desired-helmet desired-gloves]
                :let [[slot armor] (some (partial have game) category)]
-               :when (and armor (not (:in-use armor)))]
+               :when (and armor (not (:in-use armor)) (can-use? player armor))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
 
@@ -492,7 +491,7 @@
 (defn engrave-e [{:keys [player] :as game}]
   (let [tile (at-player game)
         append? (e? tile)]
-    (if-not (or (perma-e? tile) (impaired? player))
+    (if-not (or (not (has-hands? player)) (perma-e? tile) (impaired? player))
       (->Engrave \- "Elbereth" append?))))
 
 (defn retreat [{:keys [player] :as game}]
