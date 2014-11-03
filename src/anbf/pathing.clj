@@ -770,7 +770,7 @@
                 step (with-reason "looking for the" stairs
                        (seek game #(and (has-feature? % stairs)
                                         (if-let [b (branch-key game %)]
-                                          (= b branch)
+                                          (or (= b branch) (not (branches b)))
                                           true))
                              (if (= :stairs-down stairs) {:go-down true})))]
             (or step action))))))
