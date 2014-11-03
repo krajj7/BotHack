@@ -49,10 +49,7 @@
                                "grave" :grave
                                "molten lava" :lava
                                "pool of water" :pool
-                               (trap-names feature-txt))))
-      (if (trap? tile) ; no feature msg => no trap
-        (assoc tile :feature :floor))
-      tile))
+                               (trap-names feature-txt))))))
 
 (defn with-reason
   "Updates an action to attach reasoning (purely for debugging purposes)"
@@ -335,7 +332,8 @@
   (trigger [this] ":")
   (handler [_ {:keys [game delegator] :as anbf}]
     (let [has-item (atom false)
-          has-engraving (atom false)]
+          has-engraving (atom false)
+          has-feature (atom false)]
       (swap! game #(if-not (blind? (:player %))
                      (update-at-player % assoc :seen true :new-items false)
                      %))
@@ -345,9 +343,6 @@
             (send delegator found-items (:items (at-player game))))
           (as-> game res
             (update-at-player res assoc :examined (:turn game))
-            (if ((some-fn unknown? unknown-trap? fountain?) (at-player res))
-              (update-at-player res assoc :feature :floor)
-              res) ; got no topline message suggesting a special feature
             (if (blind? (:player game))
               (if-not (= :permanent (:engraving-type (at-player res)))
                 (update-at-player res assoc :engraving nil :engraving-type nil)
@@ -355,6 +350,10 @@
               (if (not @has-engraving)
                 (update-at-player res assoc :engraving nil :engraving-type nil)
                 res))
+            (if (and (not @has-feature)
+                     ((not-any-fn? floor? corridor?) (at-player res)))
+              (update-at-player res assoc :feature :floor)
+              res)
             (if-not @has-item
               (update-at-player res assoc :items [])
               res))))
@@ -374,6 +373,7 @@
         ToplineMessageHandler
         (message [_ text]
           (when-not (and (= text "But you can't reach it!")
+                         (reset! has-feature true)
                          (reset! has-item true))
             (when-let [item (some->> text
                                      (re-first-group thing-re)
@@ -395,8 +395,12 @@
                                        "burned" :permanent} etype)))
             (when-let [etext (re-first-group etext-re text)]
               (swap! game update-at-player assoc :engraving etext))
-            (swap! game update-at-player feature-msg-update
-                   text (:rogue (curlvl-tags @game)))))))))
+            (swap! game update-at-player
+                   #(if-let [new-tile (feature-msg-update
+                                        % text (:rogue (curlvl-tags @game)))]
+                      (do (reset! has-feature true)
+                          new-tile)
+                      %))))))))
 
 (def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
 (def farlook-trap-re #"^\^ * a trap \(([^)]*)\)")
