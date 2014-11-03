@@ -500,13 +500,16 @@
 (defn engrave-e [{:keys [player] :as game}]
   (let [tile (at-player game)
         append? (e? tile)]
-    (if-not (or (not (has-hands? player)) (perma-e? tile) (impaired? player))
+    (if-not (or (not (can-engrave? game))
+                (perma-e? tile)
+                (not (engravable? tile)))
       (->Engrave \- "Elbereth" append?))))
 
 (defn retreat [{:keys [player] :as game}]
   (with-reason "retreating"
     (if (low-hp? player)
       (let [level (curlvl game)
+            tile (at level player)
             threats (threat-map game)
             adjacent (->> (neighbors player)
                           (keep (partial monster-at level))
@@ -515,8 +518,18 @@
             (if (and (not (e? (at-player game)))
                      (some (every-pred (complement :fleeing)
                                        (complement ignores-e?)) adjacent)
-                     (not-any? ignores-e? adjacent))
-              (with-reason "retreat engrave" (engrave-e game)))
+                     (not-any? ignores-e? adjacent)
+                     (can-engrave? game))
+              (if (engravable? tile)
+                (with-reason "retreat engrave" (engrave-e game))
+                (if-let [t (some #(and (engravable? %)
+                                       (not (monster-at level %))
+                                       (less-than? (count adjacent)
+                                                   (filter threats
+                                                           (neighbors %))))
+                                 (neighbors level tile))]
+                  (with-reason "moving to neighbor tile to engrave"
+                    (->Move (towards player t))))))
             (if (and (empty? threats) (stairs-down? (at-player game)))
               (with-reason "retreated on downstairs"
                 ->Search))

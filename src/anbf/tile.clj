@@ -314,3 +314,8 @@
   "Is Elbereth engraved on the current tile with a permanent method?"
   [tile]
   (and (e? tile) (= :permanent (:engraving-type tile))))
+
+(defn engravable?
+  "Considers water/air plane tiles engravable (can-engrave? catches this case)"
+  [tile]
+  ((not-any-fn? pool? lava? fountain? altar? grave?) tile))

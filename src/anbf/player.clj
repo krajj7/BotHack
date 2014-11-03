@@ -311,3 +311,11 @@
   [player]
   (less-than? 2 (filter (every-pred ring? :in-use)
                         (vals (:inventory player)))))
+
+(defn can-engrave?
+  "Checks if the player is capable of engraving (also for non-engravable planes)"
+  [{:keys [player] :as game}]
+  (not (or (not (has-hands? player))
+           (impaired? player)
+           (#{:air :water} (branch-key game))
+           (have-levi-on game))))
