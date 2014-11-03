@@ -551,7 +551,7 @@
         (and (= "homunculus" montype) (not (have-intrinsic? player :sleep))))))
 
 (defn targettable
-  "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there is no risk of hitting non-hostiles or water/lava for non-rays."
+  "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there seems to be no risk of hitting non-hostiles or water/lava for non-rays."
   ([game] (targettable game 6 false))
   ([game ray?] (targettable game 6))
   ([{:keys [player] :as game} max-dist ray?]
@@ -567,8 +567,10 @@
            :let [monsters (->> tiles
                                (take-while (some-fn walkable? boulder?))
                                (keep (partial monster-at level)))]
-           :when (and (seq monsters) (every? hostile? monsters))]
-       (first monsters)))))
+           :when (every? hostile? monsters)
+           :let [target (first monsters)]
+           :when (and target (not (:remembered target)))]
+       target))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
