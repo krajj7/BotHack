@@ -94,6 +94,9 @@
 (defn item-type [item]
   (typekw (first (possibilities initial-discoveries item 1))))
 
+(defn item-subtype [item]
+  (:subtype (first (possibilities initial-discoveries item 1))))
+
 (defn item-name [game item]
   (:name (item-id game item)))
 

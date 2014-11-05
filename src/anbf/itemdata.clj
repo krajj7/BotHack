@@ -1773,28 +1773,28 @@
     :ac 0
     :mc 0
     :material :cloth
-    :subtype "shirt"}
+    :subtype :shirt}
    {:name "T-shirt"
     :price 2
     :weight 5
     :ac 0
     :mc 0
     :material :cloth
-    :subtype "shirt"}
+    :subtype :shirt}
    {:name "leather jacket"
     :price 10
     :weight 30
     :ac 1
     :mc 0
     :material :leather
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "leather armor"
     :price 5
     :weight 150
     :ac 2
     :mc 0
     :material :leather
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "orcish ring mail"
     :price 80
     :weight 250
@@ -1802,28 +1802,28 @@
     :material :iron
     :mc 1
     :appearances ["crude ring mail"]
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "studded leather armor"
     :price 15
     :weight 200
     :ac 3
     :material :leather
     :mc 1
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "ring mail"
     :price 100
     :weight 250
     :ac 3
     :mc 0
     :material :iron
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "scale mail"
     :price 45
     :weight 250
     :ac 4
     :mc 0
     :material :iron
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "orcish chain mail"
     :price 75
     :weight 300
@@ -1831,189 +1831,189 @@
     :material :iron
     :mc 1
     :appearances ["crude chain mail"]
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "chain mail"
     :price 75
     :weight 300
     :ac 5
     :material :iron
     :mc 1
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "elven mithril-coat"
     :price 240
     :weight 150
     :ac 5
     :material :mithril
     :mc 3
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "splint mail"
     :price 80
     :weight 400
     :ac 6
     :material :iron
     :mc 1
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "banded mail"
     :price 90
     :weight 350
     :ac 6
     :mc 0
     :material :iron
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "dwarvish mithril-coat"
     :price 240
     :weight 150
     :ac 6
     :material :mithril
     :mc 3
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "bronze plate mail"
     :price 400
     :weight 450
     :ac 6
     :mc 0
     :material :copper
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "plate mail"
     :price 600
     :weight 450
     :ac 7
     :material :iron
     :mc 2
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "crystal plate mail"
     :price 820
     :weight 450
     :ac 7
     :material :glass
     :mc 2
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "red dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "white dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "orange dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "blue dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "green dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "yellow dragon scales"
     :price 500
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "black dragon scales"
     :price 700
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "silver dragon scales"
     :price 700
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "gray dragon scales"
     :price 700
     :weight 40
     :ac 3
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "red dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "white dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "orange dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "blue dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "green dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "yellow dragon scale mail"
     :price 900
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "black dragon scale mail"
     :price 1200
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "silver dragon scale mail"
     :price 1200
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "gray dragon scale mail"
     :price 1200
     :weight 40
     :ac 9
     :mc 0
     :material :dragon-hide
-    :subtype :body-armor}
+    :subtype :suit}
    {:name "mummy wrapping"
     :price 2
     :weight 3
@@ -2722,14 +2722,14 @@
       :price 60
       :weight 200
       :charge 0
-      :subtype "trap"
+      :subtype :trap
       :material :iron}
      {:name "land mine"
       :price 180
       :weight 300
       :charge 0
       :appearances ["land mine"]
-      :subtype "trap"
+      :subtype :trap
       :material :iron}
      {:name "pick-axe"
       :sdam "d6"
