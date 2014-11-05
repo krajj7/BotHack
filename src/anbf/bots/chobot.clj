@@ -92,9 +92,8 @@
 
 (defn full-explore [game]
   (if-not (get-level game :main :sanctum)
-    (or (explore game :main :oracle)
-        (explore game :mines :minetown)
-        ;(explore game :sokoban)
+    (or (explore game :mines :minetown)
+        (visit game :sokoban)
         (explore game :main :quest)
         (explore game :mines)
         (explore game :quest)
@@ -748,6 +747,48 @@
                 (if (fountain? (at-player game))
                   (->Dip slot \.)))))))))
 
+(defn make-excal [{:keys [player] :as game}]
+  (if-let [[slot _] (and (<= 5 (:xplvl player))
+                         (have game "long sword"))]
+    (with-reason "getting Excal"
+      (or (seek-fountain game)
+          (if (fountain? (at-player game))
+            (without-levitation game (->Dip slot \.)))))))
+
+(defn- robbable-dwarf? [m]
+  (#{"dwarf" "dwarf lord"} (typename m)))
+
+(defn find-armor [{:keys [player] :as game}]
+  (with-reason "getting armor from dwarves"
+    (let [level (curlvl game)]
+      (or (if (safe-from-guards? level)
+            (if-let [{:keys [step target]} (navigate game
+                                                     #(->> (monster-at level %)
+                                                           robbable-dwarf?)
+                                                     {:adjacent true})]
+            (with-reason "robbing a poor peaceful dorf"
+              (or step (->Attack (towards player target))))))
+          (if (= :mines (branch-key game))
+            (explore game))
+          (explore game :mines)))))
+
+(defn earlygame
+  "First tasks: get a suit of armor from the mines and make Excalibur"
+  [anbf]
+  (let [excal-maker (reify ActionHandler
+                      (choose-action [this game]
+                        (if (have game "Excalibur")
+                          (do (log/warn "got excal")
+                              (deregister-handler anbf this))
+                          (make-excal game))))
+        suit-getter (reify ActionHandler
+                      (choose-action [this game]
+                        (if (have game desired-suit {:in-use true})
+                          (do (log/warn "got suit")
+                              (replace-handler anbf this excal-maker))
+                          (find-armor game))))]
+    suit-getter))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -803,7 +844,7 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      (register-handler 7 (make-excalibur anbf))
+      (register-handler 7 (earlygame anbf))
       (register-handler 8 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

@@ -143,7 +143,7 @@
        (or (arbitrary-move game level)
            (->Search))))))
 
-(defn- safe-from-guards?
+(defn safe-from-guards?
   "Only just enough to handle the most usual corner-case where the only door in the stair-room of minetown is locked.  Potentially dangerous without infravision."
   [level]
   (not-any? guard? (vals (:monsters level))))
