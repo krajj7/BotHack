@@ -144,7 +144,7 @@
   (ordered-set "shield of reflection" "small shield"))
 
 (def desired-cloak
-  (ordered-set "cloak of magic resistance" "cloak of displacement" "oilskin cloak" "cloak of protection" "cloak of invisibility"))
+  (ordered-set "cloak of magic resistance" "cloak of displacement" "oilskin cloak" "cloak of protection" "cloak of invisibility" "elven cloak" "dwarvish cloak"))
 
 (def desired-helmet
   (ordered-set "helm of telepathy" "helm of brilliance" "dwarvish iron helm" "orcish helm"))
@@ -252,8 +252,8 @@
       ((some-fn ring? amulet? scroll? potion? tool? artifact?) item)))
 
 (defn- worthwhile? [game item]
-  ; TODO negative enchantment
-  (and (not= "empty" (:specific item))
+  (and (not (and (:enchantment item) (> -1 (:enchantment item))))
+       (not= "empty" (:specific item))
        (or (not= :cursed (:buc item))
            (take-cursed? game item))))
 
@@ -522,8 +522,7 @@
                           (filter hostile?))]
         (or (pray-for-hp game)
             (kill-engulfer game)
-            (if (and (not (e? (at-player game)))
-                     (some (every-pred (complement :fleeing)
+            (if (and (some (every-pred (complement :fleeing)
                                        (complement ignores-e?)) adjacent)
                      (not-any? ignores-e? adjacent)
                      (can-engrave? game))
@@ -734,71 +733,49 @@
                 (seek game oracle-position {:adjacent true})))
           (if (some fountain? (tile-seq oracle))
             (seek-level game :main :oracle))
-          (:step (navigate game fountain?))
-          (if-not (fountain? (at-player game))
-            (some->> (:dlvl oracle) (iterate prev-dlvl) rest
-                     (take-while (partial not= "Dlvl:0"))
-                     (find-first (comp (partial some fountain?) tile-seq
-                                       (partial get-level game :main)))
-                     (seek-level game :main)))
-          (if (or (not minetown) (some fountain? (tile-seq minetown)))
-            (seek-level game :mines :minetown))
-          (log/warn "all fountains spent, no excal")))))
+          (if-let [{:keys [step]} (navigate game fountain?)]
+            step
+            (or (some->> (:dlvl oracle) (iterate prev-dlvl) rest
+                         (take-while (partial not= "Dlvl:0"))
+                         (find-first (comp (partial some fountain?) tile-seq
+                                           (partial get-level game :main)))
+                         (seek-level game :main))
+                (if (or (not minetown) (some fountain? (tile-seq minetown)))
+                  (seek-level game :mines :minetown))
+                (log/warn "all fountains spent, no excal")))))))
 
-(defn make-excalibur [anbf]
-  (reify ActionHandler
-    (choose-action [this {:keys [player] :as game}]
-      (if (have game "Excalibur")
-        (do (deregister-handler anbf this)
-            (log/debug "seen excal"))
-        (if-let [[slot _] (and (<= 5 (:xplvl player))
-                               (have game "long sword"))]
-          (with-reason "getting Excal"
-            (or (seek-fountain game)
-                (if (fountain? (at-player game))
-                  (->Dip slot \.)))))))))
-
-(defn make-excal [{:keys [player] :as game}]
+(defn make-excal
+  "When we have appropriate armor and xp, dip for Excalibur"
+  [{:keys [player] :as game}]
   (if-let [[slot _] (and (<= 5 (:xplvl player))
+                         (or (<= (:ac player) 3)
+                             (get-level game :mines :end))
                          (have game "long sword"))]
     (with-reason "getting Excal"
       (or (seek-fountain game)
           (if (fountain? (at-player game))
             (without-levitation game (->Dip slot \.)))))))
 
-(defn- robbable-dwarf? [m]
+(defn excal-handler [anbf]
+  (reify ActionHandler
+    (choose-action [this game]
+      (if (have game "Excalibur")
+        (do (deregister-handler anbf this)
+            (log/warn "got excal"))
+        (make-excal game)))))
+
+(defn rob? [m]
   (#{"dwarf" "dwarf lord"} (typename m)))
 
-(defn find-armor [{:keys [player] :as game}]
-  (with-reason "getting armor from dwarves"
-    (let [level (curlvl game)]
-      (or (if (safe-from-guards? level)
-            (if-let [{:keys [step target]} (navigate game
-                                                     #(->> (monster-at level %)
-                                                           robbable-dwarf?)
-                                                     {:adjacent true})]
+(defn rob-peacefuls [{:keys [player] :as game}]
+  (let [level (curlvl game)]
+    (or (if (and (safe-from-guards? level)
+                 (not (shop? (at level player))))
+          (if-let [{:keys [step target]} (navigate game
+                                                   #(rob? (monster-at level %))
+                                                   {:adjacent true})]
             (with-reason "robbing a poor peaceful dorf"
-              (or step (->Attack (towards player target))))))
-          (if (= :mines (branch-key game))
-            (explore game))
-          (explore game :mines)))))
-
-(defn earlygame
-  "First tasks: get a suit of armor from the mines and make Excalibur"
-  [anbf]
-  (let [excal-maker (reify ActionHandler
-                      (choose-action [this game]
-                        (if (have game "Excalibur")
-                          (do (log/warn "got excal")
-                              (deregister-handler anbf this))
-                          (make-excal game))))
-        suit-getter (reify ActionHandler
-                      (choose-action [this game]
-                        (if (have game desired-suit {:in-use true})
-                          (do (log/warn "got suit")
-                              (replace-handler anbf this excal-maker))
-                          (find-armor game))))]
-    suit-getter))
+              (or step (->Attack (towards player target)))))))))
 
 (defn init [anbf]
   (-> anbf
@@ -855,7 +832,10 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      (register-handler 7 (earlygame anbf))
+      (register-handler 7 (excal-handler anbf))
       (register-handler 8 (reify ActionHandler
+                            (choose-action [this game]
+                              (rob-peacefuls game))))
+      (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))
