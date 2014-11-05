@@ -504,6 +504,13 @@
                 (not (engravable? tile)))
       (->Engrave \- "Elbereth" append?))))
 
+(defn pray-for-hp [{:keys [player] :as game}]
+  (if (and (can-pray? game)
+           (or (> 6 (:hp player))
+               (> (quot (:maxhp player) 7)
+                  (quot (:hp player) (:maxhp player)))))
+    (with-reason "praying for hp" ->Pray)))
+
 (defn retreat [{:keys [player] :as game}]
   (with-reason "retreating"
     (if (low-hp? player)
@@ -513,7 +520,8 @@
             adjacent (->> (neighbors player)
                           (keep (partial monster-at level))
                           (filter hostile?))]
-        (or (kill-engulfer game)
+        (or (pray-for-hp game)
+            (kill-engulfer game)
             (if (and (not (e? (at-player game)))
                      (some (every-pred (complement :fleeing)
                                        (complement ignores-e?)) adjacent)
