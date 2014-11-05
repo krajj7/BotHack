@@ -909,16 +909,20 @@
     :tool ->PutOn
     :armor ->Wear))
 
-(defn make-use [game slot]
-  ; TODO if slot already occupied
-  ((use-action (inventory-slot game slot)) slot))
-
 (defn remove-action [item]
   (case (item-type item)
     :ring ->Remove
     :amulet ->Remove
     :tool ->Remove
     :armor ->TakeOff))
+
+(defn make-use [game slot]
+  (if-let [[[blocker-slot blocker] & _ :as blockers]
+           (blockers game (inventory-slot game slot))]
+    (if (not-any? cursed? (vals blockers))
+      (if blocker
+        ((remove-action blocker) blocker-slot)
+        ((use-action (inventory-slot game slot)) slot)))))
 
 (defn remove-use [game slot]
   (let [item (inventory-slot game slot)]

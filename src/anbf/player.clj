@@ -97,11 +97,6 @@
 (defn inventory [game]
   (-> game :player :inventory))
 
-(defn inventory-slot
-  "Return item for the inventory slot"
-  [game slot]
-  (get-in game [:player :inventory slot]))
-
 (defn- base-selector [game name-or-set-or-fn]
   (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
         (set? name-or-set-or-fn) (some-fn (comp name-or-set-or-fn
@@ -319,3 +314,29 @@
            (impaired? player)
            (#{:air :water} (branch-key game))
            (have-levi-on game))))
+
+(def slots
+  [:helmet :cloak :suit :shirt :shield :gloves :boots :accessory])
+
+(def blocker-slots
+  (reduce #(update %1 %2 conj %2) {:suit [:cloak]
+                                   :shirt [:cloak :suit]} slots))
+
+(defn inventory-slot
+  "Return item for the inventory slot (letter or slot keyword)"
+  [game slot]
+  {:pre [(or (char? slot) (slots slot))]}
+  (if (char? slot)
+    (get-in game [:player :inventory slot])
+    (have game (every-pred :worn
+                           (comp (partial = slot) item-subtype)))))
+
+(defn blockers ; TODO extend to weapons, consider cursed two-hander...
+  "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
+  [game armor]
+  (if-let [subtype (item-subtype armor)]
+    (for [btype (blocker-slots subtype)
+          :let [blocker (have game (every-pred :worn (comp (partial = btype)
+                                                           item-subtype)))]
+          :when blocker]
+      blocker)))
