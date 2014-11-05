@@ -726,7 +726,8 @@
 
 (defn- seek-fountain [game]
   (with-reason "seeking a fountain to make Excal"
-    (let [oracle (get-level game :main :oracle)]
+    (let [oracle (get-level game :main :oracle)
+          minetown (get-level game :mines :minetown)]
       (or (if (or (nil? oracle)
                   (not-any? :seen (neighbors oracle oracle-position)))
             (or (seek-level game :main :oracle)
@@ -740,6 +741,8 @@
                      (find-first (comp (partial some fountain?) tile-seq
                                        (partial get-level game :main)))
                      (seek-level game :main)))
+          (if (or (not minetown) (some fountain? (tile-seq minetown)))
+            (seek-level game :mines :minetown))
           (log/warn "all fountains spent, no excal")))))
 
 (defn make-excalibur [anbf]
