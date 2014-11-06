@@ -472,6 +472,8 @@
   (if-let [tile (and (not (blind? player)) (not (:engulfed player))
                      (at-player game))]
     (if ((some-fn :new-items unknown? unknown-trap?
+                  (every-pred e? (complement perma-e?)
+                              (comp (partial not= (:turn game)) :examined))
                   (every-pred altar? (complement :alignment))) tile)
       (with-reason "examining tile" tile ->Look))))
 
