@@ -230,16 +230,22 @@
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
+        levelport (atom nil)
         old-level (atom nil)]
     (reify
       AboutToChooseActionHandler
       (about-to-choose [_ game]
         (reset! portal nil)
+        (reset! levelport nil)
         (reset! old-level (curlvl game))
         (swap! (:game anbf) filter-visible-uniques))
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
         (swap! game assoc :gremlins-peaceful nil)
+        (if (and @levelport
+                 (= :mines (branch-key @game))
+                 (not (get-level game :mines new-dlvl)))
+          (swap! game assoc :branch-id :main))
         (if @portal
           (portal-handler anbf @old-level new-dlvl)))
       RedrawHandler
@@ -281,6 +287,8 @@
               thing-re
               (if (moved? @game)
                 (update-tile anbf))
+              #"You step onto a level teleport trap!"
+              (reset! levelport true)
               #" appears before you\."
               (swap! game update-peaceful-status demon-lord?)
               #"Infidel, you have entered Moloch's Sanctum!"
