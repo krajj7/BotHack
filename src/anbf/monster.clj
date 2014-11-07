@@ -100,3 +100,5 @@
   (some #(and (= :passive (:type %))
               (#{:corrode :acid} (:damage-type %)))
         (:attacks (:type monster))))
+
+(defn sessile? [m] (get-in m [:tags :sessile]))
