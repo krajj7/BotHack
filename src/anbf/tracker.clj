@@ -46,10 +46,10 @@
   (log/debug "unpaired" unpaired)
   ; TODO don't transfer if we would know monsters position with ESP
   (let [tile (at-curlvl game unpaired)]
-    (if (or (not (visible? game unpaired))
-            (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
-                 ((some-fn stairs? boulder? :new-items) tile)
-                 (not (monster? tile)))) ; maybe a sneaky mimic
+    (if (and (not (monster? tile))
+             (or (not (visible? game unpaired))
+                 (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
+                      ((some-fn stairs? boulder? :new-items) tile))))
       (reset-monster game (assoc unpaired :remembered true))
       game)))
 
