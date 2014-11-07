@@ -59,14 +59,4 @@ Video of wizmode ascension (6x speedup):  https://www.youtube.com/watch?v=fpCGiv
 
 Source ttyrec: https://github.com/krajj7/ANBF/raw/master/ttyrec/wizmode-fullauto-asc.ttyrec [31MB, realtime duration 1h42m]
 
-## Roadmap
-
-Smarter combat tactics for the bot, ranged combat.
-
-Utilities for shopping and price-identification of items.
-
-Utilities for solving sokoban.
-
-Utilities for trapping cross-aligned minetown priest.
-
-...
+**14.11.2014**: A new non-wizmode playing bot can now execute a decent early-game strategy, it can deal with common early-game hazards like floating eyes, get armor by robbing dwarves, dip for Excalibur and survive by fighting cautiously and abusing Elbereth.  Inventory management is still basic and the bot ignores many potentially useful items.
