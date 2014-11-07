@@ -428,8 +428,14 @@
 (defn- isolated? [level tile]
   (every? (every-pred blank? unknown?) (neighbors level tile)))
 
+(defn- probably-dug? [level tile]
+  (or (dug? tile)
+      (and (boulder? tile)
+           (more-than? 2 (filter (some-fn boulder? corridor?)
+                                 (straight-neighbors level tile))))))
+
 (defn- explorable-tile? [level tile]
-  (and (not (and (dug? tile) (boulder? tile)))
+  (and (not (probably-dug? level tile))
        (or (and (unknown? tile) (not (blank? tile)))
            (:new-items tile)
            (and (not (:walked tile))
