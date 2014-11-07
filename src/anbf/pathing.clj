@@ -132,12 +132,12 @@
        (if target
          (reify AboutToChooseActionHandler
            (about-to-choose [_ new-game]
-             (if-let [m (curlvl-monster-at new-game target)]
+             (if-let [m (monster-at new-game target)]
                (when (:peaceful m) ; target did not move
                  (log/debug "blocked by peaceful" target)
                  (if-not (and (shopkeeper? m) ; shks may need more patience
                               (shop? (at-player new-game)))
-                   (swap! (:game anbf) update-curlvl-at target
+                   (swap! (:game anbf) update-at target
                           update :blocked (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
        (or (arbitrary-move game level)
@@ -153,6 +153,20 @@
       (and (or (not ((:tags level) :minetown))
                (safe-from-guards? level))
            (not (shop? tile)))))
+
+(defn likely-walkable?
+  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
+  [level tile]
+  (and (walkable? tile)
+       (or (if-let [m (monster-at level tile)]
+             (not= \; (:glyph m)))
+           (:feature tile)
+           (item? tile))))
+
+(defn safely-walkable? [level tile]
+  (if tile
+    (and (likely-walkable? level tile)
+         ((not-any-fn? trap? ice? drawbridge-lowered?) tile))))
 
 (defn- blocked-door
   "If this is a kickable door blocked from one side, return direction from which to kick it"

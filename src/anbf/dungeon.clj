@@ -120,41 +120,44 @@
   {:pre [(:dungeon game)]}
   (-> game curlvl :tags))
 
-(defn remove-curlvl-monster
+(defn remove-monster
   "Removes a monster from the given position"
   [game pos]
   {:pre [(:dungeon game)]}
   (update-curlvl game update :monsters dissoc (position pos)))
 
-(defn reset-curlvl-monster
+(defn reset-monster
   "Sets the monster at the given position to the new value"
-  [game monster]
-  {:pre [(:dungeon game)]}
-  (update-curlvl game reset-monster monster))
+  [game-or-level monster]
+  (if (:dungeon game-or-level)
+    (update-curlvl game-or-level reset-monster monster)
+    (assoc-in game-or-level [:monsters (position monster)] monster)))
 
-(defn update-curlvl-monster
+(defn update-monster
   "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
   [game pos update-fn & args]
   {:pre [((:monsters (curlvl game)) (position pos))]}
   (apply update-curlvl game update-in [:monsters (position pos)]
          update-fn args))
 
-(defn curlvl-monster-at
-  "Returns the monster at the position on the current level"
-  [game pos]
-  (-> game curlvl (monster-at pos)))
+(defn monster-at [game-or-level pos]
+  (if (:monsters game-or-level)
+    (get-in game-or-level [:monsters (position pos)])
+    (monster-at (curlvl game-or-level) pos)))
 
-(defn update-curlvl-at
-  "Update the Tile on current level at given position by applying update-fn to its current value and args"
-  [game pos update-fn & args]
-  {:pre [(:dungeon game)]}
-  (apply update-curlvl game update-at pos update-fn args))
+(defn update-at
+  "Update the Tile on current or given level at given position by applying update-fn to its current value and args"
+  [game-or-level pos update-fn & args]
+  (if (:dungeon game-or-level)
+    (apply update-curlvl game-or-level update-at pos update-fn args)
+    (apply update-in game-or-level [:tiles (dec (:y pos)) (:x pos)]
+           update-fn args)))
 
 (defn update-at-player
   "Update the Tile at player's position by applying update-fn to its current value and args"
   [game update-fn & args]
   {:pre [(:dungeon game)]}
-  (apply update-curlvl-at game (:player game) update-fn args))
+  (apply update-at game (:player game) update-fn args))
 
 (defn update-item-at-player [game idx update-fn & args]
   (apply update-at-player game update-in [:items idx] update-fn args))
@@ -163,7 +166,7 @@
   "Update the Tiles around (not including) given position by applying update-fn to their current value and args"
   [game pos update-fn & args]
   {:pre [(:dungeon game)]}
-  (reduce #(apply update-curlvl-at %1 %2 update-fn args)
+  (reduce #(apply update-at %1 %2 update-fn args)
           game
           (neighbors pos)))
 
@@ -369,7 +372,8 @@
                         (more-than? 45)))
                  [8 16])) (add-curlvl-tag :bigroom)
       (and (= :main branch) (<= 5 curdlvl 9)
-           (some oracle? (vals (:monsters level)))) (add-curlvl-tag :oracle)
+           (some oracle?
+                 (curlvl-monsters (:last-state game)))) (add-curlvl-tag :oracle)
       (and (= :main branch) (<= 36 curdlvl 47) (not (tags :wiztower-level))
            (or (some :undiggable (map at-level wiztower-inner-boundary))
                (and (not-any? floor? (map at-level wiztower-inner-boundary))
@@ -486,11 +490,11 @@
                    (- (:y SE-corner) (:y NW-corner))))
     (log/error "spilled room at" (:dlvl game) (branch-key game)))
   (as-> game res
-    (reduce #(update-curlvl-at %1 %2 assoc :room kind)
+    (reduce #(update-at %1 %2 assoc :room kind)
             res
             (rectangle NW-corner SE-corner))
     (if (shops kind)
-      (reduce #(update-curlvl-at %1 %2 assoc :feature :wall)
+      (reduce #(update-at %1 %2 assoc :feature :wall)
               res
               (filter (comp unknown? (partial at-curlvl game))
                       (rectangle-boundary NW-corner SE-corner)))
@@ -550,7 +554,7 @@
         (floodfill-room res roomkeeper kind)
         res)
       (if (and (adjacent? (:last-position game) (:player game)))
-        (update-curlvl-at res (:last-position game) assoc :room nil)
+        (update-at res (:last-position game) assoc :room nil)
         res)))
 
 (defn- match-level

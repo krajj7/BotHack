@@ -72,15 +72,15 @@
                 (throw (IllegalArgumentException.
                          (str "Invalid direction: " dir))))))
   (handler [_ {:keys [game] :as anbf}]
-    (let [old-player (:player @game)]
+    (when-let [target (and (not (dizzy? (:player @game)))
+                           (in-direction (:player @game) dir))]
+      (swap! game update-monster target assoc :awake true)
       (reify ToplineMessageHandler
         (message [_ msg]
-          (when-let [target (and (re-seq no-monster-re msg)
-                                 (not (dizzy? old-player))
-                                 (in-direction old-player dir))]
-            (swap! game update-curlvl-at target
+          (when (re-seq no-monster-re msg)
+            (swap! game update-at target
                    #(if (blank? %) (assoc % :feature :rock) %))
-            (swap! game remove-curlvl-monster target)))))))
+            (swap! game remove-monster target)))))))
 
 (defn mark-trap-here [anbf]
   (update-at-player-when-known anbf update :feature #(if (traps %) % :trap)))
@@ -96,7 +96,7 @@
                   (find-first door?)
                   (including-origin straight-neighbors (curlvl game))
                   (remove #(= (position (:player game)) (position %)))
-                  (reduce #(update-curlvl-at %1 %2 assoc :room :shop)
+                  (reduce #(update-at %1 %2 assoc :room :shop)
                           (add-curlvl-tag game :shop-closed)))))
     #"You crawl to the edge of the pit\.|You disentangle yourself\."
     (swap! game assoc-in [:player :trapped] false)
@@ -113,7 +113,7 @@
       anbf (fn [game]
              (->> (neighbors (curlvl game) (:player game))
                   (filter #(= \m (:glyph %)))
-                  (reduce #(update-curlvl-at %1 %2 assoc :feature nil)
+                  (reduce #(update-at %1 %2 assoc :feature nil)
                           game))))
     nil))
 
@@ -136,7 +136,7 @@
     (assoc-in res [:player :thick] true)
     (if (= :sokoban (branch-key game))
       res
-      (reduce #(update-curlvl-at %1 %2 assoc :feature :rock)
+      (reduce #(update-at %1 %2 assoc :feature :rock)
               res
               (intersection (set (straight-neighbors (:player game)))
                             (set (straight-neighbors target)))))))
@@ -154,13 +154,13 @@
       (if (and (not (:trapped old-player)) (diagonal dir) (item? target))
         (update-on-known-position anbf
           #(if (and (= (position (:player %)) old-pos)
-                    (not (curlvl-monster-at % target))
+                    (not (monster-at % target))
                     (not @got-message))
              ; XXX in vanilla (or without the right option) this also happens with walls/rock, but NAO has a message
              (if (and (= :move (typekw (:last-action old-game)))
                       (= dir (:dir (:last-action old-game))))
                (do ;(log/warn "stuck twice on diagonal movement => possibly door at" target)
-                   (update-curlvl-at % (in-direction old-pos dir)
+                   (update-at % (in-direction old-pos dir)
                                      assoc :feature :door-open))
                (do ;(log/warn "retry diagonal move towards" target)
                    %)) ; NH actually seems to ignore a move in some cases
@@ -173,24 +173,23 @@
               (when-not (dizzy? old-player)
                 (condp re-seq msg
                   no-monster-re
-                  (swap! game remove-curlvl-monster target)
+                  (swap! game remove-monster target)
                   #"You are carrying too much to get through"
                   (swap! game update-narrow target)
                   #"You try to move the boulder, but in vain\."
                   (let [boulder-target (in-direction level target dir)]
                     (if (and (diagonal dir) (item? boulder-target))
-                      (swap! game update-curlvl-at boulder-target
+                      (swap! game update-at boulder-target
                              assoc :feature :door-open)
-                      (swap! game update-curlvl-at boulder-target
+                      (swap! game update-at boulder-target
                              assoc :feature :rock)))
                   #"It's a wall\."
-                  (swap! game update-curlvl-at target
+                  (swap! game update-at target
                          #(assoc % :feature (if (blank? %) :rock :wall)))
                   nil))))
         ReallyAttackHandler
         (really-attack [_ _]
-          (swap! game update-curlvl-monster (in-direction old-pos dir)
-                 assoc :peaceful :update)
+          (swap! game update-monster target assoc :peaceful :update)
           nil)))))
 
 (defaction Pray []
@@ -201,7 +200,7 @@
 (defn- update-searched [{:keys [player turn] :as game} start]
   ; TODO maybe take speed into consideration
   (let [turns (inc (- turn start))]
-    (reduce #(update-curlvl-at %1 %2 update :searched (partial + turns)) game
+    (reduce #(update-at %1 %2 update :searched (partial + turns)) game
             (including-origin neighbors player))))
 
 (defaction Search []
@@ -217,15 +216,15 @@
 (defn- mark-branch-entrance [game tile old-game origin-feature]
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so mark the surroundings too to be sure (but two sets of stairs may be next to each other and this breaks if that happens and there are some followers... too bad)"
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
-    (update-curlvl-at game tile assoc :branch-id :main) ; mark portal
+    (update-at game tile assoc :branch-id :main) ; mark portal
     (if (some (some-fn :friendly (comp :follows :type))
               (mapcat (partial monster-at (curlvl old-game))
                       (neighbors (:player old-game))))
       (->> (including-origin neighbors (curlvl game) tile)
            (remove #(has-feature? % origin-feature))
-           (reduce #(update-curlvl-at %1 %2 assoc
-                                      :branch-id (branch-key old-game)) game))
-      (update-curlvl-at game tile assoc :branch-id (branch-key old-game)))))
+           (reduce #(update-at %1 %2 assoc :branch-id (branch-key old-game))
+                   game))
+      (update-at game tile assoc :branch-id (branch-key old-game)))))
 
 (defn stairs-handler [{:keys [game] :as anbf}]
   (let [old-game @game
@@ -302,11 +301,11 @@
       (message [_ text]
         (let [door (in-direction (:player @game) dir)]
           (case text
-            "This door is already closed." (swap! game update-curlvl-at door
+            "This door is already closed." (swap! game update-at door
                                                   assoc :feature :door-closed)
-            "This doorway has no door." (swap! game update-curlvl-at door
+            "This doorway has no door." (swap! game update-at door
                                                assoc :feature nil)
-            "You see no door there." (swap! game update-curlvl-at door
+            "You see no door there." (swap! game update-at door
                                             assoc :feature nil)
             nil))))))
 
@@ -412,10 +411,10 @@
     (reify ToplineMessageHandler
       (message [_ text]
         (or (when-let [align (re-first-group #"\(([^ ]*) altar\)$" text)]
-              (swap! game update-curlvl-at pos assoc
+              (swap! game update-at pos assoc
                      :alignment (str->kw align)))
             (when-let [trap (re-first-group farlook-trap-re text)]
-              (swap! game update-curlvl-at pos assoc :feature
+              (swap! game update-at pos assoc :feature
                      (or (trap-names trap)
                          (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
             (when-let [desc (and (monster-glyph? (nth text 0))
@@ -425,7 +424,7 @@
                 (log/debug "monster description" text "=>" montype)
                 (if (= "gremlin" (:name montype))
                   (swap! game assoc :gremlins-peaceful peaceful?))
-                (swap! game update-curlvl-monster pos assoc
+                (swap! game update-monster pos assoc
                        :peaceful peaceful? :type montype)))
             (log/debug "non-monster farlook result:" text))))))
 
@@ -443,7 +442,7 @@
                       "You succeed in locking the door." :door-locked
                       :nil)]
     (if (not= :nil new-feature)
-      (swap! game update-curlvl-at door assoc :feature new-feature))))
+      (swap! game update-at door assoc :feature new-feature))))
 
 (defaction Open [dir]
   (trigger [_] (str \o (vi-directions (enum->kw dir))))
@@ -647,18 +646,17 @@
                  (swap! game assoc-in [:player :trapped] true)
                  #"This wall (seems|is) too hard to dig into\."
                  (if-not (:orcus (:tags (curlvl @game)))
-                   (swap! game #(update-curlvl-at %
-                                                  (in-direction (:player %) dir)
-                                                  assoc :undiggable true)))
+                   (swap! game #(update-at % (in-direction (:player %) dir)
+                                           assoc :undiggable true)))
                  #"You make an opening"
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                               assoc :dug true :feature :floor))
+                 (swap! game #(update-at % (in-direction (:player %) dir)
+                                         assoc :dug true :feature :floor))
                  #"You succeed in cutting away some rock"
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                            assoc :dug true :feature :corridor))
+                 (swap! game #(update-at % (in-direction (:player %) dir)
+                                         assoc :dug true :feature :corridor))
                  #"^You swing your pick"
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                                assoc :feature nil))
+                 (swap! game #(update-at % (in-direction (:player %) dir)
+                                         assoc :feature nil))
                  #"here is too hard to"
                  (swap! game add-curlvl-tag :undiggable-floor)
                  #"You dig a pit"
@@ -691,13 +689,13 @@
              LockHandler
              (lock-it [_ _]
                (if (dirmap dir)
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                                assoc :feature :door-closed)))
+                 (swap! game #(update-at % (in-direction (:player %) dir)
+                                         assoc :feature :door-closed)))
                false)
              (unlock-it [_ _]
                (if (dirmap dir)
-                 (swap! game #(update-curlvl-at % (in-direction (:player %) dir)
-                                                assoc :feature :door-locked)))
+                 (swap! game #(update-at % (in-direction (:player %) dir)
+                                         assoc :feature :door-locked)))
                true))))))
 
 (defn- possible-autoid

@@ -88,11 +88,12 @@
             (register-handler anbf p h)
             (swap! action-handlers conj h)))
         (swap! game #(assoc % :last-position (position (:player %))
-                            :last-action* action))
+                              :last-action* action
+                              :last-state (dissoc % :last-state)))
         (if-not (#{:call :name :discoveries :inventory :look :farlook}
                          (typekw action))
           (swap! game #(assoc % :last-path (get action :path (:last-path %))
-                              :last-action action)))))))
+                                :last-action action)))))))
 
 (defn pause [anbf]
   (send (:delegator anbf) set-inhibition true)
@@ -172,7 +173,8 @@
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))
   ([fname]
-   (let [delegator (agent (new-delegator nil) :error-handler #(log/error %2))
+   (let [delegator (agent (new-delegator nil)
+                          :error-handler #(log/error %2 "delegator error"))
          config (load-config fname)
          jta (init-jta config delegator)
          scraper-fn (ref nil)

@@ -27,32 +27,6 @@
 (defn new-level [dlvl branch-id]
   (Level. dlvl branch-id #{} nil (initial-tiles) {}))
 
-(defn update-at
-  "Update the level tile at given position by applying update-fn to its current value and args"
-  [level pos update-fn & args]
-  (apply update-in level [:tiles (dec (:y pos)) (:x pos)] update-fn args))
-
-(defn monster-at [level pos]
-  {:pre [(:monsters level)]}
-  (get-in level [:monsters (position pos)]))
-
-(defn reset-monster [level monster]
-  (assoc-in level [:monsters (position monster)] monster))
-
-(defn likely-walkable?
-  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
-  [level tile]
-  (and (walkable? tile)
-       (or (if-let [m (monster-at level tile)]
-             (not= \; (:glyph m)))
-           (:feature tile)
-           (item? tile))))
-
-(defn safely-walkable? [level tile]
-  (if tile
-    (and (likely-walkable? level tile)
-         ((not-any-fn? trap? ice? drawbridge-lowered?) tile))))
-
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"
   [level]

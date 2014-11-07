@@ -16,7 +16,7 @@
 
 (defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
-  (update-curlvl-monster game monster
+  (update-monster game monster
     #(as-> % monster
        (into monster (select-some old-monster [:type :cancelled :awake]))
        (if (not= :update (:peaceful monster))
@@ -35,7 +35,7 @@
   "If a unique monster was remembered and now is visible, remove all remembered instances"
   [game]
   (let [monsters (curlvl-monsters game)]
-    (reduce remove-curlvl-monster game
+    (reduce remove-monster game
             (for [m monsters
                   :when ((every-pred unique? (complement :remembered)) m)
                   n (filter #(and (= (typename m) (typename %)) (:remembered %))
@@ -50,7 +50,7 @@
             (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
                  ((some-fn stairs? boulder? :new-items) tile)
                  (not (monster? tile)))) ; maybe a sneaky mimic
-      (reset-curlvl-monster game (assoc unpaired :remembered true))
+      (reset-monster game (assoc unpaired :remembered true))
       game)))
 
 (defn track-monsters
@@ -98,23 +98,20 @@
       (if (or (item? tile) (monster? tile) (pool? tile) ; don't mark deaths that clearly didn't leave a corpse
               (blind? (:player game)))
         (-> game
-            (update-curlvl-at tile mark-death old-monster (:turn game))
-            (remove-curlvl-monster tile))
+            (update-at tile mark-death old-monster (:turn game))
+            (remove-monster tile))
         game))
     game))
 
 (defn death-tracker [anbf]
-  (let [old-game (atom nil)]
-    (reify
-      ActionChosenHandler
-      (action-chosen [_ _]
-        (reset! old-game @(:game anbf)))
-      ToplineMessageHandler
-      (message [_ msg]
-        (if (and @old-game (not (hallu? (:player @old-game))))
+  (reify
+    ToplineMessageHandler
+    (message [_ msg]
+      (if-let [old-game (:last-state @(:game anbf))]
+        (if (not (hallu? (:player old-game)))
           (condp re-first-group msg
             #"You (kill|destroy) [^.!]*[.!]"
-            (update-before-action anbf mark-kill @old-game)
+            (update-before-action anbf mark-kill old-game)
             ;#" is (killed|destroyed)" ...
             nil))))))
 

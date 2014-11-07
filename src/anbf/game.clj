@@ -124,9 +124,9 @@
       infer-tags
       level-blueprint
       (reflood-room cursor)
-      (update-curlvl-at cursor dissoc :blocked)
-      (update-curlvl-at cursor update :first-walked #(or % turn))
-      (update-curlvl-at cursor assoc :walked turn)))
+      (update-at cursor dissoc :blocked)
+      (update-at cursor update :first-walked #(or % turn))
+      (update-at cursor assoc :walked turn)))
 
 (defn- update-map [game frame]
   (if (looks-engulfed? frame)
@@ -207,7 +207,7 @@
 (defn- update-peaceful-status [game monster-selector]
   (->> (curlvl-monsters game)
        (filter monster-selector)
-       (reduce #(update-curlvl-monster %1 %2 assoc :peaceful :update)
+       (reduce #(update-monster %1 %2 assoc :peaceful :update)
                game)))
 
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
@@ -230,15 +230,13 @@
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
-        levelport (atom nil)
-        old-level (atom nil)]
+        levelport (atom nil)]
     (reify
       AboutToChooseActionHandler
-      (about-to-choose [_ game]
+      (about-to-choose [_ _]
         (reset! portal nil)
         (reset! levelport nil)
-        (reset! old-level (curlvl game))
-        (swap! (:game anbf) filter-visible-uniques))
+        (swap! game filter-visible-uniques))
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
         (swap! game assoc :gremlins-peaceful nil)
@@ -247,7 +245,7 @@
                  (not (get-level game :mines new-dlvl)))
           (swap! game assoc :branch-id :main))
         (if @portal
-          (portal-handler anbf @old-level new-dlvl)))
+          (portal-handler anbf (curlvl (:last-state @game)) new-dlvl)))
       RedrawHandler
       (redraw [_ frame]
         (swap! game assoc :frame frame))

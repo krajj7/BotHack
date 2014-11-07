@@ -7,6 +7,7 @@
 ARCH_DIR=~/tmp
 
 CONFIG="config/shell-config.edn"
+NH_VAR="/nh343/var"
 #CONFIG="config/shell-wizmode-chobot-config.edn"
 #SAVE="save/1000wizard.gz-equipped-valk-3"
 #SAVE="save/1000wizard.gz-floating-blindfold"
@@ -16,9 +17,11 @@ if [ $(basename `pwd`) = "scripts" ]; then
     cd ..
 fi
 
-rm /nh343/var/save/*
+rm "$NH_VAR"/bon*
+rm "$NH_VAR"/save/*
+
 if [ -n "$SAVE" ]; then
-    cp -v "$SAVE" /nh343/var/save/1000wizard.gz
+    cp -v "$SAVE" "$NH_VAR"/save/1000wizard.gz
 fi
 arch="$ARCH_DIR/$(date +%Y-%m-%d.%H-%M-%S)"
 mkdir -pv "$arch"
