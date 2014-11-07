@@ -227,6 +227,12 @@
         (log/debug "entering ludios")
         (swap! game assoc :branch-id :ludios))))
 
+(defn update-fleeing [game desc]
+  (->> (curlvl-monsters game)
+       (filter #(and (adjacent? (:player game) %)
+                     (= desc (typename %))))
+       (reduce #(update-monster %1 %2 assoc :fleeing true) game)))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
@@ -285,6 +291,8 @@
               thing-re
               (if (moved? @game)
                 (update-tile anbf))
+              #"The ([^!]+) turns to flee!"
+              :>> (partial swap! game update-fleeing)
               #"You step onto a level teleport trap!"
               (reset! levelport true)
               #" appears before you\."
@@ -292,7 +300,7 @@
               #"Infidel, you have entered Moloch's Sanctum!"
               (swap! game update-peaceful-status high-priest?)
               #"The Amulet of Yendor.* feels (hot|very warm|warm)"
-              :>> #(update-on-known-position anbf update-portal-range %)
+              :>> (partial update-on-known-position anbf update-portal-range)
               #"You are slowing down|Your limbs are stiffening"
               (swap! game assoc-in [:player :stoning] true)
               #"You feel limber|What a pity - you just ruined a future piece"
