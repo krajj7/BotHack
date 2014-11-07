@@ -306,8 +306,7 @@
        (edge-passable-walking? game level from to)
        (or (safely-walkable? level to)
            (and ((some-fn pool? ice?) to)
-                (-> opts :levi (nth 1) :in-use)))
-       (not (monster-at level to))))
+                (-> opts :levi (nth 1) :in-use)))))
 
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))
@@ -321,8 +320,7 @@
                                      (partial autonavigable? game level opts))
                              (mapv second))
           target (some-> (peek autonavigable) position)]
-      (if (and target
-               (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
+      (if (and (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
                (more-than? 3 autonavigable)
                (not-any? (partial monster-at level) (neighbors from)))
         target))))
@@ -494,6 +492,7 @@
 (defn- unblocked-boulder? [game level tile]
   (some #(and (safely-walkable? level (in-direction level tile
                                                     (towards % tile)))
+              (not (monster-at level %))
               (pushable-through game level tile %))
         (neighbors level tile)))
 
