@@ -264,9 +264,10 @@
                            (not= "empty" (:specific %))
                            (can-take? %)
                            (worthwhile? game %)))]
-    (or (if-let [to-get (seq (for [item (lootable-items (at-player game))
-                                   :when (to-take? item)]
-                               (:label item)))]
+    (or (if-let [to-get (and (not (shop? (at-player game)))
+                             (seq (for [item (lootable-items (at-player game))
+                                        :when (to-take? item)]
+                                    (:label item))))]
           (with-reason "looting desirable items"
             (without-levitation game
               (take-out \. (reduce #(assoc %1 %2 nil) {} to-get))))
