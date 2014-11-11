@@ -91,6 +91,10 @@
   [player]
   (not (:thick player)))
 
+(defn has-hands? [player]
+  ; TODO two handed weapon with shield ...
+  (not (get-in player [:polymorphed :tags :nohands])))
+
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil
 
@@ -105,6 +109,40 @@
         :else (some-fn (comp (partial = name-or-set-or-fn) :name)
                        (comp (partial = name-or-set-or-fn)
                              (partial item-name game)))))
+
+(def slots
+  [:helmet :cloak :suit :shirt :shield :gloves :boots :accessory])
+
+(def blocker-slots
+  (reduce #(update %1 %2 conj %2) {:suit [:cloak]
+                                   :shirt [:cloak :suit]} slots))
+
+(declare have)
+
+(defn inventory-slot
+  "Return item for the inventory slot (letter or slot keyword)"
+  [game slot]
+  {:pre [(or (char? slot) (slots slot))]}
+  (if (char? slot)
+    (get-in game [:player :inventory slot])
+    (have game (every-pred :worn
+                           (comp (partial = slot) item-subtype)))))
+
+(defn blockers ; TODO extend to weapons, consider cursed two-hander...
+  "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
+  [game armor]
+  (if-let [subtype (item-subtype armor)]
+    (for [btype (blocker-slots subtype)
+          :let [blocker (have game (every-pred :worn (comp (partial = btype)
+                                                           item-subtype)))]
+          :when blocker]
+      blocker)))
+
+(defn cursed-blockers [game slot]
+  (if-let [[[blocker-slot blocker] & _ :as blockers]
+           (blockers game (inventory-slot game slot))]
+    (->> (map secondv blockers)
+         (filter cursed?) seq)))
 
 (defn- have-selector [game name-or-set-or-fn opts]
   (apply every-pred (base-selector game name-or-set-or-fn)
@@ -122,8 +160,17 @@
    (have-all game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]
    (let [selector (have-selector game name-or-set-or-fn opts)]
-     (concat (filter (comp selector val)
-                     (inventory game))
+     (concat (for [[slot item] (inventory game)
+                   :when (and (selector item)
+                              (not (and (:can-use opts)
+                                        (not (:in-use item))
+                                        (and (weapon? item)
+                                             (not (has-hands? (:player game))))
+                                        (cursed-blockers game slot)))
+                              (not (and (:can-remove opts)
+                                        (:in-use item)
+                                        (cursed-blockers game slot))))]
+               [slot item])
              (if (:bagged opts)
                (for [[slot bag :as entry] (inventory game)
                      :when (container? bag)
@@ -151,25 +198,23 @@
      :know-buc - items with any (known) buc
      :safe - same as :know-buc + :noncursed
      :in-use - if false only non-used items, if true only used (worn/wielded)
-     :bagged - return slot of bag containing the item if it is not present in main inventory"
+     :bagged - return slot of bag containing the item if it is not present in main inventory
+     :can-remove - returns only items that are unused or not blocked by anything cursed
+     :can-use - returns only items that are already in use or not blocked by anything cursed"
   ([game name-or-set-or-fn]
    (have game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]
    (first (have-all game name-or-set-or-fn opts))))
 
-(defn have-blessed
-  "Like 'have' but return only blessed items"
-  [game name-or-set-or-fn]
-  (have game (every-pred blessed?
-                         (have-selector game name-or-set-or-fn))))
+(defn have-usable [game smth]
+  (have game smth {:can-use true}))
 
 (defn have-unihorn [game]
   (have game "unicorn horn" {:noncursed true}))
 
 (defn have-pick [game]
-  ; TODO (can-wield? ...)
-  (have game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
-                   (or (not (cursed? %)) (:in-use %)))))
+  (have-usable game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
+                          (or (not (cursed? %)) (:in-use %)))))
 
 (defn have-key [game]
   (have game #{"skeleton key" "lock pick" "credit card"}))
@@ -180,7 +225,6 @@
 (defn have-levi [game]
   (have game #(and (#{"boots of levitation" "ring of levitation"}
                              (item-name game %))
-                   #_(can-use? %) ; TODO
                    (or (noncursed? %) (:in-use %)))))
 
 (defn reflection? [game]
@@ -197,8 +241,8 @@
            (not (have game #(and (#{"towel" "blindfold"} (item-name game %))
                                  (:in-use %)))))))
 
-(defn can-remove? [game item]
-  (not (cursed? item))) ; TODO not obstructed by cursed item / weapon
+(defn can-remove? [game slot]
+  (empty? (cursed-blockers game slot)))
 
 (defn wielding
   "Return the wielded [slot item] or nil"
@@ -293,17 +337,10 @@
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
                food))))
 
-(defn has-hands? [player]
-  (not (get-in player [:polymorphed :tags :nohands])))
-
-(defn can-use? [player item]
-  ; TODO current weapon/armor cursed, two handed weapon with shield ...
-  (or (has-hands? player)
-      (not (weapon? item))))
-
 (defn free-finger?
   "Does the player have a free ring-finger?"
   [player]
+  ; TODO cursed gloves
   (less-than? 2 (filter (every-pred ring? :in-use)
                         (vals (:inventory player)))))
 
@@ -314,32 +351,6 @@
            (impaired? player)
            (#{:air :water} (branch-key game))
            (have-levi-on game))))
-
-(def slots
-  [:helmet :cloak :suit :shirt :shield :gloves :boots :accessory])
-
-(def blocker-slots
-  (reduce #(update %1 %2 conj %2) {:suit [:cloak]
-                                   :shirt [:cloak :suit]} slots))
-
-(defn inventory-slot
-  "Return item for the inventory slot (letter or slot keyword)"
-  [game slot]
-  {:pre [(or (char? slot) (slots slot))]}
-  (if (char? slot)
-    (get-in game [:player :inventory slot])
-    (have game (every-pred :worn
-                           (comp (partial = slot) item-subtype)))))
-
-(defn blockers ; TODO extend to weapons, consider cursed two-hander...
-  "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
-  [game armor]
-  (if-let [subtype (item-subtype armor)]
-    (for [btype (blocker-slots subtype)
-          :let [blocker (have game (every-pred :worn (comp (partial = btype)
-                                                           item-subtype)))]
-          :when blocker]
-      blocker)))
 
 (defn weight-mod [game item]
   (if (and (:items item) (boh? item))

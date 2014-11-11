@@ -239,17 +239,16 @@
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (if-let [[slot weapon] (some (partial have game) desired-weapons)]
+  (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
     (if-not (:wielded weapon)
       (or (uncurse-weapon game)
-          ; TODO can-wield?
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
 
 (defn- wear-armor [{:keys [player] :as game}]
   (first (for [category [desired-shield desired-boots
                          desired-suit desired-cloak]
-               :let [[slot armor] (some (partial have game) category)]
+               :let [[slot armor] (some (partial have-usable game) category)]
                :when (and armor (not (:in-use armor)))]
            (with-reason "wearing better armor"
              (make-use game slot)))))

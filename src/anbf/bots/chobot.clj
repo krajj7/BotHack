@@ -254,7 +254,8 @@
 (defn- worthwhile? [game item]
   (and (not (and (:enchantment item) (> -1 (:enchantment item))))
        (not= "empty" (:specific item))
-       (or (not= :cursed (:buc item))
+       (or (and (not= :cursed (:buc item))
+                (> 2 (or (:erosion item) 0)))
            (take-cursed? game item))))
 
 (defn consider-items [game]
@@ -295,8 +296,8 @@
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (if-let [[slot weapon] (some (partial have game) desired-weapons)]
-    (if-not (or (:wielded weapon) (not (can-use? player weapon)))
+  (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
+    (if-not (:wielded weapon)
       (or (uncurse-weapon game)
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
@@ -305,8 +306,8 @@
   (first (for [category [desired-shield desired-boots
                          desired-suit desired-cloak
                          desired-helmet desired-gloves]
-               :let [[slot armor] (some (partial have game) category)]
-               :when (and armor (not (:in-use armor)) (can-use? player armor))]
+               :let [[slot armor] (some (partial have-usable game) category)]
+               :when (and armor (not (:in-use armor)))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
 
@@ -364,12 +365,22 @@
         (with-reason "don't need regen"
           (remove-use game slot)))))
 
+(defn drop-junk [game]
+  ; TODO multidrop
+  (if-not (shop? (at-player game))
+    (if-let [[slot _] (have game (complement (partial worthwhile? game))
+                            {:can-remove true})]
+      (with-reason "dropping junk"
+        (or (remove-use game slot)
+            (->Drop slot))))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)
         branch (branch-key game)]
     (or (bless-gear game)
+        (drop-junk game)
         (wear-armor game)
         (remove-rings game)
         (if (and (not= :wield (some-> game :last-action typekw))
@@ -383,10 +394,6 @@
                 (->Wield slot)))
             (with-reason "reequip - weapon"
               (wield-weapon game))))
-        ; TODO multidrop
-        (if-not (shop? (at-player game))
-          (if-let [[slot _] (have game #(not (worthwhile? game %)))]
-            (with-reason "dropping junk" (->Drop slot))))
         (use-light game level)
         (if-let [[slot _] (and (not (needs-levi? (at-player game)))
                                (not (#{:water :air} branch))

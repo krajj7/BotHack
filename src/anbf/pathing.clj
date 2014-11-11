@@ -203,20 +203,12 @@
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
-  (or (if-let [[slot _] (have game #(and (#{"pick-axe" "dwarvish mattock"}
-                                                       (item-name game %))
-                                         (or (not (cursed? %))
-                                             (not (:in-use %)))))]
+  (or (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
+                              {:can-remove true})]
         [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
-      (if-let [[slot _] (have game #(and (= "ring of invisibility"
-                                            (item-name game %))
-                                         (:in-use %)
-                                         (can-remove? game %)))]
+      (if-let [[slot _] (have game "ring of invisibility" {:can-remove true})]
         [2 (with-reason "removing invis to enter shop" (->Remove slot))])
-      (if-let [[slot _] (have game #(and (= "cloak of invisibility"
-                                            (item-name game %))
-                                         (:in-use %)
-                                         (can-remove? game %)))]
+      (if-let [[slot _] (have game "cloak of invisibility" {:can-remove true})]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn blocked?
@@ -332,7 +324,7 @@
                      (partition 2))
           autonavigable (->> steps (take-while
                                      (partial autonavigable? game level opts))
-                             (mapv second))
+                             (mapv secondv))
           target (some-> (peek autonavigable) position)]
       (if (and (not (and (:autonav-stuck game) (= (:last-autonav game) target)))
                (more-than? 3 autonavigable)

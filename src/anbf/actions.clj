@@ -916,19 +916,22 @@
     :tool ->Remove
     :armor ->TakeOff))
 
-(defn make-use [game slot]
+(defn remove-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]
            (blockers game (inventory-slot game slot))]
-    (if (not-any? cursed? (vals blockers))
-      (if blocker
-        ((remove-action blocker) blocker-slot)
-        ((use-action (inventory-slot game slot)) slot)))))
+    (if (and blocker (not-any? cursed? (map secondv blockers)))
+      ((remove-action blocker) blocker-slot))))
+
+(defn make-use [game slot]
+  (let [item (inventory-slot game slot)]
+    (if-not (or (:in-use item) (cursed-blockers game slot))
+      (or (remove-blockers game slot)
+          ((use-action item) slot)))))
 
 (defn remove-use [game slot]
   (let [item (inventory-slot game slot)]
-    (if (noncursed? item)
-      ((remove-action item) slot)
-      (log/warn "tried to remove cursed item"))))
+    (if (and (:in-use item))
+      (remove-blockers game slot))))
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation

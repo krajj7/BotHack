@@ -140,3 +140,6 @@
     `(let [~gpred ~pred
            ~gexpr ~expr]
        ~(emit gpred gexpr clauses))))
+
+(defn secondv [v]
+  (nth v 1))
