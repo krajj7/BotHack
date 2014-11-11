@@ -372,6 +372,7 @@
                         (more-than? 45)))
                  [8 16])) (add-curlvl-tag :bigroom)
       (and (= :main branch) (<= 5 curdlvl 9)
+           (= (:dlvl (:last-state game)) (:dlvl game))
            (some oracle?
                  (curlvl-monsters (:last-state game)))) (add-curlvl-tag :oracle)
       (and (= :main branch) (<= 36 curdlvl 47) (not (tags :wiztower-level))

@@ -507,8 +507,7 @@
 (defn pray-for-hp [{:keys [player] :as game}]
   (if (and (can-pray? game)
            (or (> 6 (:hp player))
-               (> (quot (:maxhp player) 7)
-                  (quot (:hp player) (:maxhp player)))))
+               (>= (quot (:maxhp player) 7) (:hp player))))
     (with-reason "praying for hp" ->Pray)))
 
 (defn retreat [{:keys [player] :as game}]

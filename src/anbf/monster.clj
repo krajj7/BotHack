@@ -73,23 +73,23 @@
 
 (defn unique? [m] (get-in m [:type :gen-flags :unique]))
 
-(defn human? [m] (get-in m [:tags :human]))
+(defn human? [m] (get-in m [:type :tags :human]))
 
 (defn priest? [m] (some-> (typename m) (.contains "priest")))
 
-(defn nasty? [m] (get-in m [:tags :nasty]))
+(defn nasty? [m] (get-in m [:type :tags :nasty]))
 
-(defn rider? [m] (get-in m [:tags :rider]))
+(defn rider? [m] (get-in m [:type :tags :rider]))
 
 (defn unicorn? [m] (some-> (typename m) (.contains " unicorn")))
 
-(defn werecreature? [m] (get-in m [:tags :were]))
+(defn werecreature? [m] (get-in m [:type :tags :were]))
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))
 
-(defn ignores-e? [m] (get-in m [:tags :no-elbereth]))
+(defn ignores-e? [m] (get-in m [:type :tags :no-elbereth]))
 
-(defn sees-invisible? [m] (get-in m [:tags :see-invis]))
+(defn sees-invisible? [m] (get-in m [:type :tags :see-invis]))
 
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
@@ -101,4 +101,4 @@
               (#{:corrode :acid} (:damage-type %)))
         (:attacks (:type monster))))
 
-(defn sessile? [m] (get-in m [:tags :sessile]))
+(defn sessile? [m] (get-in m [:type :tags :sessile]))
