@@ -67,7 +67,7 @@
                                           {:buc :blessed :bagged true})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
-                                          {:noncursed true} :bagged true))]
+                                          {:noncursed true :bagged true}))]
                 (or (unbag game slot item)
                     (->Quaff slot))))))))
 
@@ -523,7 +523,7 @@
         (or (pray-for-hp game)
             (kill-engulfer game)
             (if (and (some (every-pred (complement :fleeing)
-                                       (complement ignores-e?)) adjacent)
+                                       (complement passive?)) adjacent)
                      (not-any? ignores-e? adjacent)
                      (can-engrave? game))
               (if (engravable? tile)
@@ -547,10 +547,16 @@
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
                   (with-reason "prepared to retreat upstairs" ->Search))
-                step)))))))
+                step))
+            (log/debug "retreat failed"))))))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
   (or (>= (/ hp maxhp) 9/10)))
+
+(defn exposed? [game level pos]
+  (->> (neighbors level pos)
+       (filter (some-fn walkable? water?))
+       (more-than? 2)))
 
 (defn- recover [{:keys [player] :as game}]
   (if-not (safe-hp? player)
@@ -562,6 +568,10 @@
         (with-reason "recovering - exploring nearby items"
           (:step (navigate game :new-items {:walking true :explored true
                                             :max-steps 10 :no-autonav true})))
+        (with-reason "recover - moving to safer position"
+          (:step (navigate game
+                           (complement (partial exposed? game (curlvl game)))
+                           {:max-steps 8 :no-traps true :explored true})))
         (with-reason "recovering" (->Repeated (->Wait) 10)))))
 
 (defn keep-away? [player m]
@@ -601,19 +611,31 @@
                                1
                                hostile-dist-thresh)}]
     (or (kill-engulfer game)
-        ; TODO if faster than threats move into a more favourable position
         ; TODO special handling of uniques
-        (let [adjacent (->> (neighbors player)
+        (let [threats (->> (hostile-threats game)
+                           (remove (partial can-ignore? game))
+                           set)
+              adjacent (->> (neighbors player)
                             (keep (partial monster-at level))
                             (filter hostile?)
                             (remove (partial can-ignore? game)))]
           (or (if (and (not (e? (at-player game)))
-                       (or (more-than? 2 (remove ignores-e? adjacent))
+                       (or (more-than? 1 (remove (some-fn :fleeing
+                                                          ignores-e?) adjacent))
                            (some (every-pred (partial keep-away? player)
                                              (complement :fleeing))
                                  adjacent)))
                 (with-reason "fight engrave"
                   (engrave-e game)))
+              (if (and (exposed? game level player) (more-than? 2 adjacent))
+                (with-reason "moving to non-exposed position"
+                  (:step (navigate game #(and (not (exposed? game level %))
+                                              (not-any?
+                                                (partial monster-at level)
+                                                (including-origin neighbors %)))
+                                   ; TODO if faster than threats increase max-steps
+                                   {:max-steps 2 :no-traps true
+                                    :walking true :explored true}))))
               (if-let [monster (or (if (some pool? (neighbors level player))
                                      (find-first drowner? adjacent))
                                    (find-first rider? adjacent)
@@ -621,11 +643,8 @@
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
                                    (find-first nasty? adjacent))]
-                (hit game level monster))))
-        (let [threats (->> (hostile-threats game)
-                           (remove (partial can-ignore? game))
-                           set)]
-          (or (if-let [[slot _] (and (free-finger? player)
+                (hit game level monster))
+              (if-let [[slot _] (and (free-finger? player)
                                      (not-any? sees-invisible? threats)
                                      (have game "ring of invisibility"
                                            {:noncursed true}))]
@@ -649,6 +668,15 @@
                 (let [monster (monster-at level target)]
                   (with-reason "targetting enemy" monster
                     (or (hit game level monster)
+                        (if (and (more-than? 2 (filter :awake threats))
+                                 (not (exposed? game level player))
+                                 (exposed? game level
+                                           (in-direction player (:dir step))))
+                          (with-reason "staying in more favourable position"
+                            ->Search))
+                        (if (some #(and (= 2 (distance player %)) (:awake %))
+                                  threats)
+                          (with-reason "baiting monsters" ->Search))
                         step))))))
         (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
