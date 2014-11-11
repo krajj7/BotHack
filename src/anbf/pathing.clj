@@ -219,7 +219,7 @@
                                          (can-remove? game %)))]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
-(defn- blocked?
+(defn blocked?
   "Stubborn peacefuls"
   [tile]
   (> (or (:blocked tile) 0) 20))

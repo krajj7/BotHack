@@ -799,9 +799,10 @@
   (let [level (curlvl game)]
     (or (if (and (safe-from-guards? level)
                  (not (shop? (at level player))))
-          (if-let [{:keys [step target]} (navigate game
-                                                   #(rob? (monster-at level %))
-                                                   {:adjacent true})]
+          (if-let [{:keys [step target]}
+                   (navigate game #(or (blocked? %)
+                                       (rob? (monster-at level %)))
+                             {:adjacent true})]
             (with-reason "robbing a poor peaceful dorf"
               (or step (->Attack (towards player target)))))))))
 

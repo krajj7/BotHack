@@ -98,6 +98,7 @@
       (if (or (item? tile) (monster? tile) (pool? tile) ; don't mark deaths that clearly didn't leave a corpse
               (blind? (:player game)))
         (-> game
+            (update-at tile dissoc :blocked)
             (update-at tile mark-death old-monster (:turn game))
             (remove-monster tile))
         game))
