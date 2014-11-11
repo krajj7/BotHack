@@ -340,3 +340,33 @@
                                                            item-subtype)))]
           :when blocker]
       blocker)))
+
+(defn weight-mod [game item]
+  (if (and (:items item) (boh? item))
+    (case (:buc item)
+      :blessed (comp inc (partial * 0.25))
+      :cursed (partial * 2)
+      (comp inc (partial * 0.5)))
+    identity))
+
+(defn weight-sum [game]
+  (reduce + (for [[_ item] (inventory game)
+                  :let [q (weight-mod game item)]
+                  i (conj (:items item) item)
+                  :let [w (item-weight i)]
+                  :when w]
+              (* (:qty i) (if (= i item) w (q w))))))
+
+(defn effective-str [s]
+  (cond (= 2 (.length s)) (parse-int s)
+        (.endsWith s "**") 21
+        (< 49 (parse-int (subs s 3))) 19
+        :else 20))
+
+(defn capacity [{:keys [stats] :as player}]
+  (min 1000
+       (+ 50 (* 25 (+ (parse-int (:con stats))
+                      (effective-str (:str stats)))))))
+
+(defn weight-to-burden [game]
+  (- (capacity (:player game)) (weight-sum game)))

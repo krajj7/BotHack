@@ -97,6 +97,9 @@
 (defn item-subtype [item]
   (:subtype (first (possibilities initial-discoveries item 1))))
 
+(defn item-weight [item]
+  (:weight (first (possibilities initial-discoveries item 1))))
+
 (defn item-name [game item]
   (:name (item-id game item)))
 
