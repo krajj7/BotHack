@@ -521,6 +521,7 @@
                           (keep (partial monster-at level))
                           (filter hostile?))]
         (or (pray-for-hp game)
+            ; TODO escape items - teleportation, digging, perma-e
             (kill-engulfer game)
             (if (and (some (every-pred (complement :fleeing)
                                        (complement passive?)) adjacent)
@@ -642,6 +643,7 @@
                                    (find-first unique? adjacent)
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
+                                   (find-first ignores-e? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
               (if-let [[slot _] (and (free-finger? player)
