@@ -30,6 +30,7 @@
   (:gen-class))
 
 (defn- log-state [game]
+  (log/info "current branch:" (branch-key game))
   (log/info "current updated tile:" (at-player game))
   (log/info "monsters:" (curlvl-monsters game)))
 

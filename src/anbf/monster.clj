@@ -91,6 +91,8 @@
 
 (defn sees-invisible? [m] (get-in m [:type :tags :see-invis]))
 
+(defn follower? [m] (get-in m [:type :tags :follows]))
+
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
 

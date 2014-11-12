@@ -6,6 +6,7 @@
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]
+            [anbf.monster :refer :all]
             [anbf.montype :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
@@ -217,7 +218,7 @@
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so mark the surroundings too to be sure (but two sets of stairs may be next to each other and this breaks if that happens and there are some followers... too bad)"
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-at game tile assoc :branch-id :main) ; mark portal
-    (if (some (some-fn :friendly (comp :follows :type))
+    (if (some (some-fn :friendly follower?)
               (mapcat (partial monster-at (curlvl old-game))
                       (neighbors (:player old-game))))
       (->> (including-origin neighbors (curlvl game) tile)
@@ -261,10 +262,13 @@
       DlvlChangeHandler
       (dlvl-changed [this old-dlvl new-dlvl]
         (swap! game
-               #(let [new-branch (if @entered-vlad
-                                   :vlad
-                                   (get old-stairs :branch-id
-                                        (initial-branch-id % new-dlvl)))]
+               #(let [new-branch (cond
+                                   @entered-vlad :vlad
+                                   (and (subbranches old-branch)
+                                        (= (branch-entry game old-branch)
+                                           new-dlvl)) :main
+                                   :else (get old-stairs :branch-id
+                                              (initial-branch-id % new-dlvl)))]
                   (-> %
                       (update-in [:dungeon :levels old-branch old-dlvl :tags]
                                  conj new-branch)

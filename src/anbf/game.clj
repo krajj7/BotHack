@@ -248,7 +248,8 @@
         (swap! game assoc :gremlins-peaceful nil)
         (if (and @levelport
                  (= :mines (branch-key @game))
-                 (not (get-level game :mines new-dlvl)))
+                 (not (neg? (dlvl-compare (branch-entry @game :mines)
+                                          new-dlvl))))
           (swap! game assoc :branch-id :main))
         (if @portal
           (portal-handler anbf (curlvl (:last-state @game)) new-dlvl)))
