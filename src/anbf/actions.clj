@@ -522,7 +522,7 @@
   [anbf]
   (update-at-player-when-known anbf assoc :new-items true))
 
-(def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*) \(([^\)]*)\)$|^([^(]+)$")
+(def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*)( called [^(]+)? \(([^\)]*)\)$|^([^(]+)$")
 
 (defn- discovery-demangle [section appearance]
   (case section
@@ -547,8 +547,8 @@
                       lines lines-all
                       discoveries []]
                  (if-let [line (first lines)]
-                   (let [[group id appearance _] (re-first-groups
-                                                   discoveries-re line)]
+                   (let [[group id _ appearance _] (re-first-groups
+                                                     discoveries-re line)]
                      (if group
                        (recur group (rest lines) discoveries)
                        (if (= section "Unique Items")
@@ -581,10 +581,24 @@
       (name-menu [_ _] \b)
       NameWhatHandler
       (name-what [_ _] slot)
-      NameItemHandler
-      (name-item [_ _] name))))
+      WhatNameHandler
+      (what-name [_ _] name))))
 
-(defn update-name [anbf slot name]
+(defaction Call [slot name]
+  (trigger [_] "#call\n")
+  (handler [_ {:keys [game] :as anbf}]
+    (update-inventory anbf)
+    (update-tile anbf)
+    (update-discoveries anbf)
+    (reify
+      NameMenuHandler
+      (name-menu [_ _] \c)
+      CallWhatHandler
+      (call-what [_ _] slot)
+      CallWhatNameHandler
+      (call-what-name [_ _] name))))
+
+(defn name-item [anbf slot name]
   "Name an item on the next action"
   (register-handler anbf priority-top
                     (reify ActionHandler
@@ -603,7 +617,7 @@
       (message [_ msg]
         (condp re-seq msg
           #"has no oil|has run out of power"
-          (update-name anbf slot "empty")
+          (name-item anbf slot "empty")
           #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)
           #" seems to be locked"
@@ -1149,6 +1163,14 @@
       (write-with-what [_ _] slot)
       EngraveWhatHandler
       (write-what [_ _] what))))
+
+(defn call-id-handler
+  "Automatically disambiguate items like lamp, stone, harp etc. by calling them something random"
+  [anbf]
+  (reify ActionHandler
+    (choose-action [_ game]
+      (if-let [[slot item] (have game (partial ambiguous-appearance? game))]
+        (->Call slot (gensym (last-word (:name item))))))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

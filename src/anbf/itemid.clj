@@ -83,13 +83,19 @@
 (defn item-id
   "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) taking current discoveries into consideration"
   [game item]
-  {:pre [(:discoveries game)]}
+  {:pre [(:discoveries game) (:name item)]}
   (merge-records (possibilities (:discoveries game) item)))
 
 (defn initial-id
   "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) *without* taking current discoveries into consideration"
   [item]
   (merge-records (possibilities initial-discoveries item)))
+
+(defn possible-ids
+  "Return all possible ItemTypes for the given item"
+  [game item]
+  {:pre [(:discoveries game) (:name item)]}
+  (possibilities (:discoveries game) item))
 
 (defn item-type [item]
   (typekw (first (possibilities initial-discoveries item 1))))
@@ -109,31 +115,35 @@
   (some? (item-name game item)))
 
 (defn add-discovery [game appearance id]
-  (if (or (blind-appearances appearance) (= appearance id))
+  (if (or (blind-appearances appearance) (= appearance id)
+          (not (exclusive-appearances appearance))) ; old gray stones will stay gray stones...
     game
     (let [id (get jap->eng id id)]
       (log/debug "adding discovery: >" appearance "< is >" id "<")
       (update game :discoveries
               (fn integrate-discovery [db]
-                (if (exclusive-appearances appearance)
-                  (as-> db res
-                    (reduce #(db-retraction %1 itemid-appearance
-                                            %2 appearance)
-                            res
-                            (query res
-                                   (run* [q]
-                                         (itemid-appearance q appearance))))
-                    (reduce #(db-retraction %1 itemid-appearance
-                                            id %2)
-                            res
-                            (query res
-                                   (run* [q]
-                                         (itemid-appearance id q))))
-                    (db-fact res itemid-appearance id appearance))
-                  db)))))) ; old gray stones will stay gray stones...
+                (as-> db res
+                  (reduce #(db-retraction %1 itemid-appearance
+                                          %2 appearance)
+                          res
+                          (query res
+                                 (run* [q]
+                                       (itemid-appearance q appearance))))
+                  (reduce #(db-retraction %1 itemid-appearance
+                                          id %2)
+                          res
+                          (query res
+                                 (run* [q]
+                                       (itemid-appearance id q))))
+                  (db-fact res itemid-appearance id appearance)))))))
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]
             (add-discovery game appearance id))
           game
           discoveries))
+
+(defn ambiguous-appearance? [game item]
+  (not (or (:generic item)
+           (exclusive-appearances (:name item))
+           (know-id? game item))))

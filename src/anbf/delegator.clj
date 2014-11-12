@@ -294,9 +294,6 @@
   `(defprotocol-delegated String (partial respond-escapable newline-terminate)
      ~protocol ~@proto-methods))
 
-(defprompthandler CallItemHandler
-  (call-item [handler ^String prompt]))
-
 (defmacro ^:private defmenuhandler [protocol & proto-methods]
   `(defprotocol-delegated clojure.lang.IPersistentSet
      (partial respond-escapable respond-menu)
@@ -311,8 +308,14 @@
 (defchoicehandler NameWhatHandler
   (name-what [handler ^String prompt]))
 
-(defprompthandler NameItemHandler
-  (name-item [handler ^String prompt]))
+(defprompthandler WhatNameHandler
+  (what-name [handler ^String prompt]))
+
+(defchoicehandler CallWhatHandler
+  (call-what [handler ^String prompt]))
+
+(defprompthandler CallWhatNameHandler
+  (call-what-name [handler ^String prompt]))
 
 (defprompthandler OfferHandler
   (offer-how-much [handler ^String prompt]))

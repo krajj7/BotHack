@@ -157,3 +157,5 @@
           (dissoc m k)))
       m)
     (dissoc m k)))
+
+(defn last-word [s] (re-first-group #"([^ ]+$)" s))

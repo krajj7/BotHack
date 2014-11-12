@@ -140,8 +140,8 @@
 
 (defn- prompt-fn [msg]
   (condp re-seq msg
-    #"^What do you want to name this" name-item
-    #"^Call .*:" call-item
+    #"^What do you want to name this" what-name
+    #"^Call .*:" call-what-name
     #"^How much will you offer\?" offer-how-much
     #"^To what level do you want to teleport\?" leveltele
     #"^What do you want to (?:write|engrave|burn|scribble|scrawl|melt) (?:in|into|on) the (.*?) here\?" write-what
@@ -172,6 +172,7 @@
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
     #"^What do you want to name\?" name-what
+    #"^What do you want to call\?" call-what
     #"There is .*force its lock\?" force-lock
     #"[Uu]nlock it\? " unlock-it
     #"[Ll]ock it\? " lock-it

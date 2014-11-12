@@ -6,6 +6,7 @@
             [anbf.actions :refer :all]
             [anbf.delegator :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
             [anbf.handlers :refer :all]
@@ -167,8 +168,8 @@
     (die [_ _] (log/warn "died") "")
     KeepSaveHandler
     (keep-save [_ _] "")
-    CallItemHandler
-    (call-item [_ _] "")))
+    CallWhatNameHandler
+    (call-what-name [_ _] "")))
 
 (defn new-anbf
   ([] (new-anbf "config/shell-config.edn"))
@@ -194,6 +195,7 @@
          (register-handler priority-top (set-race-role-handler anbf))
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
+         (register-handler priority-top (call-id-handler anbf))
          (register-handler priority-bottom prompt-escape)
          (register-handler priority-top (reset-exploration anbf))
          (register-handler priority-top (death-tracker anbf))
