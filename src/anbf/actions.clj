@@ -777,12 +777,12 @@
       (ready-what [_ _] slot))))
 
 (defn ->Drop
-  ([slot-or-list qty]
-   (if (char? slot-or-list)
-     (->DropSingle slot-or-list qty)
-     (throw (UnsupportedOperationException. "multidrop not yet implemented"))))
-  ([slot-or-list]
-   (->DropSingle slot-or-list 1)))
+  ([slot qty]
+   (->DropSingle slot qty))
+  ([slot-or-map]
+   (if (char? slot-or-map)
+     (->DropSingle slot-or-map 1)
+     (throw (UnsupportedOperationException. "multidrop not yet implemented")))))
 
 (defaction PickUp [label-or-list]
   (trigger [_] ",")

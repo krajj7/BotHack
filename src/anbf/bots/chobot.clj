@@ -368,11 +368,13 @@
 (defn drop-junk [game]
   ; TODO multidrop
   (if-not (shop? (at-player game))
-    (if-let [[slot _] (have game (complement (partial worthwhile? game))
-                            {:can-remove true})]
-      (with-reason "dropping junk"
-        (or (remove-use game slot)
-            (->Drop slot))))))
+    (or (if-let [[slot _] (have game (complement (partial worthwhile? game))
+                                {:can-remove true})]
+          (with-reason "dropping junk"
+            (or (remove-use game slot)
+                (->Drop slot))))
+        (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
+          (->Drop slot (- (:qty item) 7))))))
 
 (defn reequip [game]
   (let [level (curlvl game)
