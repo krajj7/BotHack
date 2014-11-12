@@ -126,7 +126,7 @@
         unsafe-deaths (filter (fn [[death-turn {montype :type :as monster}]]
                                 (or (<= 30 (- turn death-turn))
                                     (not montype)
-                                    (and (.contains (:name montype) " zombie")
+                                    (and (undead? monster)
                                          (.contains (:name montype)
                                                     (:name corpse-type)))))
                               relevant-deaths)

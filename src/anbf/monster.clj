@@ -93,6 +93,8 @@
 
 (defn follower? [m] (get-in m [:type :tags :follows]))
 
+(defn undead? [m] (get-in m [:type :tags :undead]))
+
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
 
