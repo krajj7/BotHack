@@ -196,3 +196,6 @@
     (if (not= :food (typekw id))
       0
       ((fnil / 0) (:nutrition id) (:weight id)))))
+
+(defn gold? [item]
+  (= "gold piece" (:name item)))

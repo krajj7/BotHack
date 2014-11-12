@@ -65,11 +65,15 @@
   (map->Player {}))
 
 (defn update-player [player status]
-  (assoc (->> (keys player) (select-keys status) (into player))
-         :polymorphed (if (= "HD" (:xp-label status))
-                        (some->> (:title status)
-                                 string/lower-case
-                                 name->monster))))
+  (cond-> (->> (keys player) (select-keys status) (into player))
+    (= "HD" (:xp-label status)) (assoc :polymorphed (some->> (:title status)
+                                                             string/lower-case
+                                                             name->monster))
+    (zero? (:gold status)) (dissoc-in [:inventory \$])
+    (pos? (:gold status)) (assoc-in [:inventory \$]
+                                    (assoc (label->item "uncursed gold piece")
+                                           :qty (:gold status)))))
+
 
 (defn blind? [player]
   (:blind (:state player)))
@@ -381,3 +385,13 @@
 
 (defn weight-to-burden [game]
   (- (capacity (:player game)) (weight-sum game)))
+
+(defn available-gold
+  "Return the amount of gold the player has in main inventory"
+  [game]
+  (get-in game [:player :inventory \$ :qty]))
+
+(defn gold
+  "Return the amount of gold the player has including bagged gold"
+  [game]
+  (have-sum game gold? {:bagged true}))
