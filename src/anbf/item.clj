@@ -92,6 +92,9 @@
 (defn cursed? [item]
   (= :cursed (:buc item)))
 
+(defn uncursed? [item]
+  (= :uncursed (:buc item)))
+
 (defn noncursed? [item]
   (not= :cursed (:buc item)))
 

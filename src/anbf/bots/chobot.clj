@@ -135,7 +135,7 @@
                "katana" "long sword"))
 
 (def desired-suit
-  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarwish mithril-coat" "elven mithril-coat" "scale mail"))
+  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail"))
 
 (def desired-boots
   (ordered-set "speed boots" "iron shoes"))
@@ -166,17 +166,19 @@
    #{"ring of invisibility"}
    #{"Orb of Fate"}
    blind-tool
-   #{"brass lantern" "oil lamp"}
+   (ordered-set "oil lamp" "brass lantern")
    #{"unicorn horn"}
    #{"Candelabrum of Invocation"}
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
+   #{"bag of holding"}
    desired-cloak
    desired-suit
    desired-shield
    desired-boots
    desired-helmet
+   desired-gloves
    #{"amulet of reflection"}
    #{"amulet of life saving"}
    #{"wand of fire"}
@@ -185,6 +187,8 @@
    #{"wand of striking"}
    #{"wand of digging"}
    desired-weapons])
+
+(def desired-singular (set (apply concat desired-items)))
 
 (defn entering-shop? [game]
   (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
@@ -209,6 +213,24 @@
       (< 6 amt-rocks) (concat daggers ammo)
       :else (concat daggers ammo ["rock"]))))
 
+(defn utility
+  ([item]
+   (cond-> 0
+     (:erosion item) (- (:erosion item))
+     (:enchantment item) (+ (:enchantment item))
+     (:charges item) (+ (:charges item))
+     (:proof item) (+ 3)
+     (blessed? item) (+ 2)
+     (uncursed? (:buc item)) inc
+     (cursed? item) dec))
+  ([game item]
+   (+ (utility item)
+      (let [iname (item-name game item)
+            cat (find-first #(% iname) desired-items)]
+        (if-let [cat-vec (and (some? cat) (vec cat))]
+          (* 15 (- (count cat-vec) (.indexOf cat-vec iname)))
+          0)))))
+
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
@@ -218,11 +240,9 @@
               desired-items)
          res always-desired]
     (if-let [c (first cs)]
-      (if-let [[slot i] (have game c)]
+      (if-let [[slot i] (have game c {:bagged true})]
         (recur (rest cs)
-               (into (if (cursed? i)
-                       (conj res (:name i))
-                       res)
+               (into (conj res (:name i))
                      (take-while (partial not= (item-name game i)) c)))
         (recur (rest cs) (into res c)))
       (as-> res res
@@ -262,6 +282,11 @@
   (let [desired (currently-desired game)
         to-take? #(or (real-amulet? %)
                       (and (desired (item-name game %))
+                           (if-let [[_ o] (and (desired-singular (:name %))
+                                               (have game (:name %)
+                                                     {:bagged true}))]
+                             (> (utility %) (utility o))
+                             true)
                            (not= "empty" (:specific %))
                            (can-take? %)
                            (worthwhile? game %)))]
@@ -366,13 +391,24 @@
           (remove-use game slot)))))
 
 (defn drop-junk [game]
-  ; TODO multidrop
   (if-not (shop? (at-player game))
     (or (if-let [[slot _] (have game (complement (partial worthwhile? game))
                                 {:can-remove true})]
           (with-reason "dropping junk"
             (or (remove-use game slot)
                 (->Drop slot))))
+        (loop [[cat & more] desired-items]
+          (let [cat-items (have-all game cat {:bagged true})]
+            (if (more-than? 1 cat-items)
+              (if-let [[slot item] (min-by (comp (partial utility game) secondv)
+                                           cat-items)]
+                (with-reason "dropping less useful duplicate"
+                  (or (remove-use game slot)
+                      (unbag game slot item)
+                      (if-not (:in-use item)
+                        (->Drop slot)))))
+              (if (seq more)
+                (recur more)))))
         (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
           (->Drop slot (- (:qty item) 7))))))
 
