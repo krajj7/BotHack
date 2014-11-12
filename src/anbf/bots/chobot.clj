@@ -497,6 +497,14 @@
               (->Wield \-)))
           (->Move (towards (:player game) monster))))))
 
+(defn kite [{:keys [player] :as game} monster]
+  (if (and (adjacent? player monster)
+           (#{"black pudding" "brown pudding" "dwarf"} (typename monster))
+           (not (:just-moved monster)))
+    (with-reason "kite"
+      (:step (navigate game #(= 2 (distance monster %))
+                       {:max-steps 1 :no-traps true})))))
+
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
     (or (bait-wizard game level monster)
@@ -509,6 +517,7 @@
         (if (adjacent? player monster)
           (or (hit-corrosive game monster)
               (hit-floating-eye game monster)
+              (kite game monster)
               (wield-weapon game)
               (if (or (not (monster? (at level monster)))
                       (#{\I \1 \2 \3 \4 \5} (:glyph monster)))
@@ -535,7 +544,6 @@
                                               (reflection? game)
                                               (free-action? game)
                                               (have-throwable game)
-                                              ; TODO used throwables blocked
                                               (have game blind-tool
                                                     {:noncursed true}))
     (#{"spotted jelly"

@@ -23,7 +23,7 @@
          (assoc monster :peaceful (:peaceful old-monster))
          monster)
        (if (not= (position old-monster) (position monster))
-         (assoc monster :awake true)
+         (assoc monster :awake true :just-moved true)
          monster)
        (case (compare (distance-manhattan player old-monster)
                       (distance-manhattan player monster))
