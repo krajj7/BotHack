@@ -320,6 +320,8 @@
               (swap! game assoc-in [:player :lycantrophy] false)
               #"Your .* feels? somewhat better"
               (swap! game assoc-in [:player :leg-hurt] false)
+              #"It's a wall\."
+              (swap! game assoc-in [:player :trapped] false)
               #"You sink into the lava"
               (update-at-player-when-known anbf assoc :feature :lava)
               #"You turn into a"

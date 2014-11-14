@@ -111,16 +111,27 @@
 (defn needs-levi? [tile]
   (#{:pool :lava :ice :hole :trapdoor :cloud} (:feature tile)))
 
-(defn- arbitrary-move [{:keys [player] :as game} level]
-  (some->> (neighbors level player)
-           (remove (partial monster-at level))
-           ; FIXME this should use :last-path
-           (filterv #(or (passable-walking? game level (at level player) %)
-                         (unexplored? %)))
-           random-nth
-           (towards player)
-           ->Move
-           (with-reason "arbitrary direction")))
+(defn arbitrary-move
+  ([game level] (arbitrary-move game level false))
+  ([{:keys [player] :as game} level diagonal?]
+   (some->> (if diagonal?
+              (diagonal-neighbors level player)
+              (neighbors level player))
+            (remove (partial monster-at level))
+            (filterv #(or (passable-walking? game level (at level player) %)
+                          (unexplored? %)))
+            random-nth
+            (towards player)
+            ->Move
+            (with-reason "arbitrary direction"))))
+
+(defn untrap-move [{:keys [player] :as game} level]
+  (with-reason "untrap move"
+    (or (if-let [wall (find-first (some-fn wall? rock? door-closed?)
+                                  (diagonal-neighbors level player))]
+          (->Move (towards player wall)))
+        (arbitrary-move game level :diagonal)
+        (arbitrary-move game level))))
 
 (defn fidget
   "Move around randomly or wait to make a peaceful move out of the way"
@@ -344,7 +355,7 @@
                   (->Autotravel target))
                 (if (:trapped (:player game))
                   (with-reason "untrapping self"
-                    (arbitrary-move game level)))
+                    (untrap-move game level)))
                 (nth (move-fn from start) 1))
             (assoc :path path))))
 
