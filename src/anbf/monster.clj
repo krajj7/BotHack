@@ -87,7 +87,7 @@
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))
 
-(defn ignores-e? [m] (get-in m [:type :tags :no-elbereth]))
+(defn ignores-e? [m] (get-in m [:type :resistances :elbereth]))
 
 (defn sees-invisible? [m] (get-in m [:type :tags :see-invis]))
 
