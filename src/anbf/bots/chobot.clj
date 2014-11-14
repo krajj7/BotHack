@@ -499,7 +499,8 @@
 
 (defn kite [{:keys [player] :as game} monster]
   (if (and (adjacent? player monster)
-           (#{"black pudding" "brown pudding" "dwarf"} (typename monster))
+           (#{"black pudding" "brown pudding" "dwarf" "mumak"}
+                     (typename monster))
            (not (:just-moved monster)))
     (with-reason "kite"
       (:step (navigate game #(= 2 (distance monster %))
@@ -536,7 +537,8 @@
 (defn can-ignore? [game monster]
   (or (passive? monster)
       (unicorn? monster)
-      (#{"grid bug" "newt" "leprechaun"} (typename monster))))
+      (#{"grid bug" "newt" "leprechaun"} (typename monster))
+      (and (mimic? monster) (not (adjacent? (:player game) monster)))))
 
 (defn can-handle? [{:keys [player] :as game} monster]
   (cond
@@ -564,6 +566,11 @@
                (>= (quot (:maxhp player) 7) (:hp player))))
     (with-reason "praying for hp" ->Pray)))
 
+(defn exposed? [game level pos]
+  (->> (neighbors level pos)
+       (filter (some-fn walkable? water?))
+       (more-than? 2)))
+
 (defn retreat [{:keys [player] :as game}]
   (with-reason "retreating"
     (if (low-hp? player)
@@ -590,27 +597,32 @@
                                  (neighbors level tile))]
                   (with-reason "moving to neighbor tile to engrave"
                     (->Move (towards player t))))))
-            (if (and (empty? threats) (stairs-down? (at-player game)))
+            (if (and (empty? threats) (stairs-down? tile))
               (with-reason "retreated on downstairs"
                 ->Search))
             (if-let [{:keys [step target]} (navigate game stairs-up?
                                                      {:walking true
                                                       :explored true
                                                       :no-autonav true})]
-              (if (stairs-up? (at-player game))
+              (if (stairs-up? (at level player))
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
                   (with-reason "prepared to retreat upstairs" ->Search))
-                step))
+                (if (or (not (:dir step))
+                        (stairs-up? (:target step))
+                        (not-any? threats (neighbors
+                                            (in-direction player (:dir step)))))
+                  step)))
+            (if-let [nbr (find-first #(and (not (exposed? game level %))
+                                           (passable-walking? game level tile %)
+                                           (not-any? threats (neighbors %)))
+                                     (neighbors level tile))]
+              (with-reason "running away"
+                (->Move (towards tile nbr))))
             (log/debug "retreat failed"))))))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
   (or (>= (/ hp maxhp) 9/10)))
-
-(defn exposed? [game level pos]
-  (->> (neighbors level pos)
-       (filter (some-fn walkable? water?))
-       (more-than? 2)))
 
 (defn- recover [{:keys [player] :as game}]
   (if-not (safe-hp? player)
@@ -630,7 +642,8 @@
 
 (defn keep-away? [player m]
   (if-let [montype (typename m)]
-    (or (some #(.contains montype %) ["nymph" "rust monster" "disenchanter"])
+    (or (some #(.contains montype %)
+              ["nymph" "rust monster" "disenchanter" "mind flayer"])
         (and (= "homunculus" montype) (not (have-intrinsic? player :sleep))))))
 
 (defn targettable
@@ -654,6 +667,12 @@
            :let [target (first monsters)]
            :when (and target (not (:remembered target)))]
        target))))
+
+(defn mobile? [game monster]
+  (and (not (mimic? monster))
+       (not (sessile? monster))
+       (or (:awake monster)
+           (> 3 (- (:turn game) (:known monster))))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
@@ -681,7 +700,8 @@
                                  adjacent)))
                 (with-reason "fight engrave"
                   (engrave-e game)))
-              (if (and (exposed? game level player) (more-than? 2 adjacent))
+              (if (and (exposed? game level player)
+                       (more-than? 1 (filter (partial mobile? game) adjacent)))
                 (with-reason "moving to non-exposed position"
                   (:step (navigate game #(and (not (exposed? game level %))
                                               (not-any?
@@ -709,7 +729,7 @@
                                  (filter (every-pred (partial keep-away? player)
                                                      (complement :fleeing)
                                                      (complement :remembered)
-                                                     :awake)
+                                                     (partial mobile? game))
                                          threats))]
                 (if (> 3 (distance player m))
                   (with-reason "trying to keep away from" m
@@ -723,13 +743,15 @@
                 (let [monster (monster-at level target)]
                   (with-reason "targetting enemy" monster
                     (or (hit game level monster)
-                        (if (and (more-than? 2 (filter :awake threats))
+                        (if (and (more-than? 2 (filter (partial mobile? game)
+                                                       threats))
                                  (not (exposed? game level player))
                                  (exposed? game level
                                            (in-direction player (:dir step))))
                           (with-reason "staying in more favourable position"
                             ->Search))
-                        (if (some #(and (= 2 (distance player %)) (:awake %))
+                        (if (some #(and (= 2 (distance player %))
+                                        (mobile? game %))
                                   threats)
                           (with-reason "baiting monsters" ->Search))
                         step))))))

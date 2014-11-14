@@ -83,6 +83,8 @@
 
 (defn unicorn? [m] (some-> (typename m) (.contains " unicorn")))
 
+(defn mimic? [m] (some-> (typename m) (.contains "mimic")))
+
 (defn werecreature? [m] (get-in m [:type :tags :were]))
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))

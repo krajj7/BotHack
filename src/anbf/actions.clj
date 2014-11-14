@@ -192,7 +192,8 @@
                   nil))))
         ReallyAttackHandler
         (really-attack [_ _]
-          (swap! game update-monster target assoc :peaceful :update)
+          (update-before-action anbf update-monster target
+                                assoc :peaceful :update)
           nil)))))
 
 (defaction Pray []
