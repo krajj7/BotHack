@@ -134,11 +134,11 @@
     (assoc-in game-or-level [:monsters (position monster)] monster)))
 
 (defn update-monster
-  "Update the monster on current level at given position by applying update-fn to its current value and args.  Throw exception if there is no monster."
+  "Update the monster on current level at given position (if there is one) by applying update-fn to its current value and args."
   [game pos update-fn & args]
-  {:pre [((:monsters (curlvl game)) (position pos))]}
-  (apply update-curlvl game update-in [:monsters (position pos)]
-         update-fn args))
+  (if ((:monsters (curlvl game)) (position pos))
+    (apply update-curlvl game update-in [:monsters (position pos)]
+           update-fn args)))
 
 (defn monster-at [game-or-level pos]
   (if (:monsters game-or-level)

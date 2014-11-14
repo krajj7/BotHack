@@ -73,9 +73,11 @@
                 (throw (IllegalArgumentException.
                          (str "Invalid direction: " dir))))))
   (handler [_ {:keys [game] :as anbf}]
+    (if (dizzy? (:player @game))
+      (swap! game update-around-player update-monster assoc :peaceful :update))
     (when-let [target (and (not (dizzy? (:player @game)))
                            (in-direction (:player @game) dir))]
-      (swap! game update-monster target assoc :awake true)
+      (swap! game update-monster target assoc :awake true :peaceful :update)
       (reify ToplineMessageHandler
         (message [_ msg]
           (when (re-seq no-monster-re msg)
