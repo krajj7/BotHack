@@ -1,5 +1,6 @@
 # slightly altered TAEB settings
 
+OPTIONS=!bones
 OPTIONS=lit_corridor
 
 # more feedback!

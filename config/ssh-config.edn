@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.explorebot"
+ :bot "anbf.bots.chobot"
  :interface :ssh
  :menubot "anbf.bots.dgl-menu"
  :host "acehack.de"
@@ -9,4 +9,5 @@
  :dgl-login "dumbbot"
  :dgl-pass "tops3cr3t"
  :ttyrec true
+ :no-exit true
 }

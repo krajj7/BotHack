@@ -4,13 +4,14 @@
             [anbf.util :refer :all]
             [anbf.frame :refer :all]
             [anbf.delegator :refer :all]
+            [anbf.handlers :refer :all]
             [clojure.tools.logging :as log]))
 
 (defn- login-sequence [login pass]
   (format "%s\n%s\n" login pass))
 
 (defn- menu-drawn? [frame]
-  (and (some #(.contains % "q) Quit") (:lines frame))
+  (and (some (partial re-seq #"q\) (Quit|Back)") (:lines frame))
        (before-cursor? frame "=> ")))
 
 (defn- user-prompt? [frame]
@@ -18,7 +19,7 @@
        (before-cursor? frame "=> ")))
 
 (defn- logged-in? [frame]
-  (some #(.contains % "Logged in as: ") (:lines frame)))
+  (some #(.contains % "Logged in as ") (:lines frame)))
 
 (defn init [{:keys [delegator config] :as anbf}]
   (let [logged-in (reify RedrawHandler
@@ -30,7 +31,7 @@
                         (log/info "DGL menubot finished")
                         (send delegator started)
             ; the n is for acehack.de to select NetHack, for nao it does nothing
-                        (send delegator write "np")))) ; play!
+                        (send delegator write "2p")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (user-prompt? frame)
