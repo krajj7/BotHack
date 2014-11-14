@@ -243,7 +243,8 @@
                              (walkable? to-tile))
                         (needs-levi? to-tile))]
      (some-> (or (if (and (passable-walking? game level from-tile to-tile)
-                          (or (:feature to-tile) (not (:explored opts)))
+                          (or (not (:explored opts))
+                              (:new-items to-tile) (:feature to-tile))
                           (not (and (kickable-door? level to-tile opts)
                                     (blocked-door level to-tile))))
                    (if monster
