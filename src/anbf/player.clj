@@ -69,6 +69,7 @@
     (= "HD" (:xp-label status)) (assoc :polymorphed (some->> (:title status)
                                                              string/lower-case
                                                              name->monster))
+    (= "Exp" (:xp-label status)) (assoc :polymorphed nil)
     (zero? (:gold status)) (dissoc-in [:inventory \$])
     (pos? (:gold status)) (assoc-in [:inventory \$]
                                     (assoc (label->item "uncursed gold piece")
