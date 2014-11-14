@@ -45,7 +45,7 @@
   (or (if (weak? player)
         (if-let [[slot food] (have game (every-pred (partial can-eat? player)
                                                     (complement tin?))
-                                   {:bagged true})]
+                                   #{:bagged})]
           (with-reason "weak or worse, eating" food
             (or (unbag game slot food)
                 (->Eat slot)))))
@@ -61,13 +61,13 @@
         (with-reason "applying unihorn to recover" (->Apply slot)))
       (if (:ill (:state player))
         (with-reason "fixing illness"
-          (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
+          (or (if-let [[slot _] (have game "eucalyptus leaf" #{:noncursed})]
                 (->Eat slot))
               (if-let [[slot item] (or (have game "potion of healing"
                                           {:buc :blessed :bagged true})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
-                                          {:noncursed true :bagged true}))]
+                                          #{:noncursed :bagged}))]
                 (or (unbag game slot item)
                     (->Quaff slot))))))))
 
@@ -204,9 +204,9 @@
       (:name food))))
 
 (defn desired-throwables [game]
-  (let [amt-daggers (have-sum game dagger? {:noncursed true})
-        amt-ammo (have-sum game (some-fn dart? ammo?) {:noncursed true})
-        amt-rocks (have-sum game rocks? {:noncursed true})]
+  (let [amt-daggers (have-sum game dagger? #{:noncursed})
+        amt-ammo (have-sum game (some-fn dart? ammo?) #{:noncursed})
+        amt-rocks (have-sum game rocks? #{:noncursed})]
     (cond
       (< 5 amt-daggers) []
       (< 6 amt-ammo) daggers
@@ -240,7 +240,7 @@
               desired-items)
          res always-desired]
     (if-let [c (first cs)]
-      (if-let [[slot i] (have game c {:bagged true})]
+      (if-let [[slot i] (have game c #{:bagged})]
         (recur (rest cs)
                (into (conj res (:name i))
                      (take-while (partial not= (item-name game i)) c)))
@@ -261,7 +261,7 @@
       (if-let [[slot _] (and (unihorn-recoverable? game)
                              (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
-      (if-let [[slot _] (have game blind-tool {:in-use true :noncursed true})]
+      (if-let [[slot _] (have game blind-tool #{:in-use :noncursed})]
         (with-reason "unblinding self"
           (->Remove slot)))
       (if (or (impaired? player) (:polymorphed player))
@@ -284,7 +284,7 @@
                       (and (desired (item-name game %))
                            (if-let [[_ o] (and (desired-singular (:name %))
                                                (have game (:name %)
-                                                     {:bagged true}))]
+                                                     #{:bagged}))]
                              (> (utility %) (utility o))
                              true)
                            (not= "empty" (:specific %))
@@ -315,7 +315,7 @@
   (if-let [[_ weapon] (wielding game)]
     (if-let [[slot scroll] (and (cursed? weapon)
                                 (have game "scroll of remove curse"
-                                      {:noncursed true :bagged true}))]
+                                      #{:noncursed :bagged}))]
       (with-reason "uncursing weapon" (:label weapon)
         (or (unbag game slot scroll)
             (->Read slot))))))
@@ -345,14 +345,14 @@
 (defn bless-gear [game]
   (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
                                         "luckstone" "bag of holding"}
-                                 {:nonblessed true :know-buc true})]
-        (if-let [[water-slot water] (have game holy-water? {:bagged true})]
+                                 #{:nonblessed :know-buc})]
+        (if-let [[water-slot water] (have game holy-water? #{:bagged})]
           (or (unbag game water-slot water)
               (with-reason "blessing" item
                 (->Dip slot water-slot)))))
       (if-let [[_ item] (have game (every-pred cursed? :in-use))]
         (if-let [[slot scroll] (have game "scroll of remove curse"
-                                     {:noncursed true :bagged true})]
+                                     #{:noncursed :bagged})]
           (with-reason "uncursing" (:label item)
             (or (unbag game slot scroll)
                 (->Read slot)))))))
@@ -382,23 +382,23 @@
             (with-reason "using any light source" (->Apply slot)))))))
 
 (defn remove-rings [{:keys [player] :as game}]
-  (or (if-let [[slot _] (have game "ring of invisibility" {:in-use true})]
+  (or (if-let [[slot _] (have game "ring of invisibility" #{:in-use})]
         (with-reason "don't need invis"
           (remove-use game slot)))
       (if-let [[slot _] (and (= (:hp player) (:maxhp player))
-                            (have game "ring of regeneration" {:in-use true}))]
+                            (have game "ring of regeneration" #{:in-use}))]
         (with-reason "don't need regen"
           (remove-use game slot)))))
 
 (defn drop-junk [game]
   (if-not (shop? (at-player game))
     (or (if-let [[slot _] (have game (complement (partial worthwhile? game))
-                                {:can-remove true})]
+                                #{:can-remove})]
           (with-reason "dropping junk"
             (or (remove-use game slot)
                 (->Drop slot))))
         (loop [[cat & more] desired-items]
-          (let [cat-items (have-all game cat {:bagged true})]
+          (let [cat-items (have-all game cat #{:bagged})]
             (if (more-than? 1 cat-items)
               (if-let [[slot item] (min-by (comp (partial utility game) secondv)
                                            cat-items)]
@@ -480,12 +480,12 @@
                   (reflection? game)
                   (free-action? game))
             (->Attack (towards player monster)))
-          (if-let [[slot _] (have game blind-tool {:noncursed true})]
+          (if-let [[slot _] (have game blind-tool #{:noncursed})]
             (->PutOn slot))
           (ranged game monster)))))
 
 (defn corrodeproof-weapon [game]
-  (have game (every-pred weapon? (some-fn artifact? :proof)) {:noncursed true}))
+  (have game (every-pred weapon? (some-fn artifact? :proof)) #{:noncursed}))
 
 (defn hit-corrosive [game monster]
   (with-reason "hitting corrosive monster" monster
@@ -547,7 +547,7 @@
                                               (free-action? game)
                                               (have-throwable game)
                                               (have game blind-tool
-                                                    {:noncursed true}))
+                                                    #{:noncursed}))
     (#{"spotted jelly"
        "ochre jelly"} (typename monster)) (have game corrodeproof-weapon)
     :else true))
@@ -601,9 +601,8 @@
               (with-reason "retreated on downstairs"
                 ->Search))
             (if-let [{:keys [step target]} (navigate game stairs-up?
-                                                     {:walking true
-                                                      :explored true
-                                                      :no-autonav true})]
+                                                     #{:walking :explored
+                                                       :no-autonav})]
               (if (stairs-up? (at level player))
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
@@ -628,7 +627,7 @@
   (if-not (safe-hp? player)
     (or (if-let [[slot _] (and (free-finger? player)
                                (have game "ring of regeneration"
-                                     {:noncursed true}))]
+                                     #{:noncursed}))]
           (with-reason "recover - regen"
             (make-use game slot)))
         (with-reason "recovering - exploring nearby items"
@@ -722,7 +721,7 @@
               (if-let [[slot _] (and (free-finger? player)
                                      (not-any? sees-invisible? threats)
                                      (have game "ring of invisibility"
-                                           {:noncursed true}))]
+                                           #{:noncursed}))]
                 (with-reason "invis for combat"
                   (make-use game slot)))
               (if-let [m (min-by (partial distance player)
@@ -812,7 +811,7 @@
     (choose-action [this {:keys [player] :as game}]
       (if-let [[scroll s] (and (= :water (branch-key game))
                                (have game "scroll of gold detection"
-                                     {:safe true :bagged true}))]
+                                     #{:safe :bagged}))]
         (with-reason "detecting portal"
           (or (unbag game scroll s)
               (when (confused? player)
@@ -823,7 +822,7 @@
                                                  (curlvl-monsters game))
                                        (have game #{"potion of confusion"
                                                     "potion of booze"}
-                                             {:nonblessed true :bagged true}))]
+                                             #{:nonblessed :bagged}))]
                 (with-reason "confusing self"
                   (or (unbag game potion p)
                       (->Quaff potion))))))))))
@@ -879,7 +878,7 @@
           (if-let [{:keys [step target]}
                    (navigate game #(or (blocked? %)
                                        (rob? (monster-at level %)))
-                             {:adjacent true})]
+                             #{:adjacent})]
             (with-reason "robbing a poor peaceful dorf"
               (or step (->Attack (towards player target)))))))))
 

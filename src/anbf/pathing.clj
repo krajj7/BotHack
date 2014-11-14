@@ -204,11 +204,11 @@
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
   (or (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
-                              {:can-remove true})]
+                              #{:can-remove})]
         [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
-      (if-let [[slot _] (have game "ring of invisibility" {:can-remove true})]
+      (if-let [[slot _] (have game "ring of invisibility" #{:can-remove})]
         [2 (with-reason "removing invis to enter shop" (->Remove slot))])
-      (if-let [[slot _] (have game "cloak of invisibility" {:can-remove true})]
+      (if-let [[slot _] (have game "cloak of invisibility" #{:can-remove})]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn blocked?
@@ -360,8 +360,8 @@
       (->Path nil [] to))))
 
 (defn navigate
-  "Return shortest Path for given target position or predicate, will use A* or Dijkstra's algorithm as appropriate.
-  Supported options:
+  "Return shortest Path for given target position or predicate (a set of positions or any fn that takes a tile and returns boolean), will use A* or Dijkstra's algorithm as appropriate.
+  Supported options (a map or a set if all vals of the map would be true):
     :walking - don't use actions except Move (no door opening etc.)
     :adjacent - path to closest adjacent tile instead of the target directly
     :explored - don't path through unknown tiles
@@ -376,10 +376,8 @@
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
     {:keys [max-steps walking adjacent no-dig no-levitation] :as opts}]
-   [{:pre [(or (keyword? pos-or-goal-fn)
-               (fn? pos-or-goal-fn)
-               (set? pos-or-goal-fn)
-               (position pos-or-goal-fn))]}]
+   [{:pre [((some-fn ifn? position) pos-or-goal-fn)
+           ((some-fn map? set?) opts)]}]
    (log/debug "navigating" pos-or-goal-fn opts)
    (let [level (curlvl game)
          levi (and (not no-levitation)
@@ -390,6 +388,7 @@
                    (not no-dig)
                    (have-pick game))
          opts (cond-> opts
+                (set? opts) (zipmap (repeat true))
                 levi (assoc :levi levi)
                 pick (assoc :pick pick))
          move-fn #(move game level %1 %2 opts)]
@@ -558,7 +557,7 @@
 
 (defn- search-walls [game level howmuch]
   (let [searchable? (partial searchable-wall? level howmuch)]
-    (if-let [p (navigate game searchable? {:adjacent true})]
+    (if-let [p (navigate game searchable? #{:adjacent})]
       (with-reason "searching walls"
         (or (:step p) (search 10))))))
 
@@ -1006,7 +1005,7 @@
         player-tile (at-player game)]
     (or (search-dead-end game 20)
         (if-let [path (navigate game (partial explorable-tile? level)
-                                {:prefer-items true :no-fight true})]
+                                #{:prefer-items :no-fight})]
           (with-reason "exploring" (at level (:target path))
             (:step path)))
         ; TODO search for shops if heard but not found

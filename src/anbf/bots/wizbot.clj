@@ -45,7 +45,7 @@
   (or (if (weak? player)
         (if-let [[slot food] (have game (every-pred (partial can-eat? player)
                                                     (complement tin?))
-                                   {:bagged true})]
+                                   #{:bagged})]
           (with-reason "weak or worse, eating" food
             (or (unbag game slot food)
                 (->Eat slot)))))
@@ -61,13 +61,13 @@
         (with-reason "applying unihorn to recover" (->Apply slot)))
       (if (:ill (:state player))
         (with-reason "fixing illness"
-          (or (if-let [[slot _] (have game "eucalyptus leaf" {:noncursed true})]
+          (or (if-let [[slot _] (have game "eucalyptus leaf" #{:noncursed})]
                 (->Eat slot))
               (if-let [[slot _] (or (have game "potion of healing"
                                           {:buc :blessed})
                                     (have game #{"potion of extra healing"
                                                  "potion of full healing"}
-                                          {:noncursed true}))]
+                                          #{:noncursed}))]
                 (->Quaff slot)))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -233,7 +233,7 @@
   (if-let [[_ weapon] (wielding game)]
     (if-let [[slot scroll] (and (cursed? weapon)
                                 (have game "scroll of remove curse"
-                                      {:noncursed true :bagged true}))]
+                                      #{:noncursed :bagged}))]
       (with-reason "uncursing weapon" (:label weapon)
         (or (unbag game slot scroll)
             (->Read slot))))))
@@ -262,14 +262,14 @@
 (defn bless-gear [game]
   (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
                                         "luckstone" "bag of holding"}
-                                 {:nonblessed true :know-buc true})]
-        (if-let [[water-slot water] (have game holy-water? {:bagged true})]
+                                 #{:nonblessed :know-buc})]
+        (if-let [[water-slot water] (have game holy-water? #{:bagged})]
           (or (unbag game water-slot water)
               (with-reason "blessing" item
                 (->Dip slot water-slot)))))
       (if-let [[_ item] (have game (every-pred cursed? :in-use))]
         (if-let [[slot scroll] (have game "scroll of remove curse"
-                                     {:noncursed true :bagged true})]
+                                     #{:noncursed :bagged})]
           (with-reason "uncursing" (:label item)
             (or (unbag game slot scroll)
                 (->Read slot)))))))
@@ -438,7 +438,7 @@
     (choose-action [this {:keys [player] :as game}]
       (if-let [[scroll s] (and (= :water (branch-key game))
                                (have game "scroll of gold detection"
-                                     {:safe true :bagged true}))]
+                                     #{:safe :bagged}))]
         (with-reason "detecting portal"
           (or (unbag game scroll s)
               (when (confused? player)
@@ -449,7 +449,7 @@
                                                  (curlvl-monsters game))
                                        (have game #{"potion of confusion"
                                                     "potion of booze"}
-                                             {:nonblessed true :bagged true}))]
+                                             #{:nonblessed :bagged}))]
                 (with-reason "confusing self"
                   (or (unbag game potion p)
                       (->Quaff potion))))))))))

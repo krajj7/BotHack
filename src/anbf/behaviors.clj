@@ -23,7 +23,7 @@
       (->Apply slot))))
 
 (defn- handle-candelabrum [game]
-  {:pre [(have game candelabrum {:noncursed true})]}
+  {:pre [(have game candelabrum #{:noncursed})]}
   (if-let [[slot candelabrum] (have game candelabrum)]
     (if (or (and (:lit candelabrum) (invocation-complete? game))
             (and (not (:lit candelabrum)) (not (invocation-complete? game))))
@@ -31,7 +31,7 @@
         (->Apply slot)))))
 
 (defn- ring-bell [game]
-  {:pre [(have game bell {:noncursed true})]}
+  {:pre [(have game bell #{:noncursed})]}
   (if-not (or (invocation-complete? game)
               (.endsWith (:last-topline game)
                          " issues an unsettling shrill sound..."))
@@ -40,7 +40,7 @@
         (->Apply slot)))))
 
 (defn- read-book [game]
-  {:pre [(have game book {:noncursed true})]}
+  {:pre [(have game book #{:noncursed})]}
   (if-not (invocation-complete? game)
     (if-let [[slot _] (have game "Book of the Dead")]
       (with-reason "reading the book"

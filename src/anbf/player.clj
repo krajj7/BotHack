@@ -163,7 +163,10 @@
   ([game name-or-set-or-fn]
    (have-all game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]
-   (let [selector (have-selector game name-or-set-or-fn opts)]
+   {:pre [((some-fn ifn? string?) name-or-set-or-fn)
+          ((some-fn map? set?) opts)]}
+   (let [opts (if (set? opts) (zipmap opts (repeat true)) opts)
+         selector (have-selector game name-or-set-or-fn opts)]
      (concat (for [[slot item] (inventory game)
                    :when (and (selector item)
                               (not (and (:can-use opts)
@@ -195,7 +198,7 @@
      String (name of item)
      #{String} (set of strings - item name alternatives with no preference)
      fn - predicate function to filter items (gets the Item as arg, not the name)
-   Options map can contain:
+   Options map (or set if all map vals would be true) can contain:
      :noncursed - return only items not known to be cursed
      :nonblessed - return only items not known to be blessed
      :buc <:cursed/:uncursed/:blessed> - return only items known to have given buc
@@ -211,10 +214,10 @@
    (first (have-all game name-or-set-or-fn opts))))
 
 (defn have-usable [game smth]
-  (have game smth {:can-use true}))
+  (have game smth #{:can-use}))
 
 (defn have-unihorn [game]
-  (have game "unicorn horn" {:noncursed true}))
+  (have game "unicorn horn" #{:noncursed}))
 
 (defn have-pick [game]
   (have-usable game #(and (#{"pick-axe" "dwarvish mattock"} (item-name game %))
@@ -224,7 +227,7 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn have-levi-on [game]
-  (have game #{"boots of levitation" "ring of levitation"} {:in-use true}))
+  (have game #{"boots of levitation" "ring of levitation"} #{:in-use}))
 
 (defn have-levi [game]
   (have game #(and (#{"boots of levitation" "ring of levitation"}
@@ -233,10 +236,10 @@
 
 (defn reflection? [game]
   (have game #{"amulet of reflection" "shield of reflection"
-               "silver dragon scale mail"} {:in-use true}))
+               "silver dragon scale mail"} #{:in-use}))
 
 (defn free-action? [game]
-  (have game "ring of free action" {:in-use true}))
+  (have game "ring of free action" #{:in-use}))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)
@@ -331,12 +334,12 @@
   (reduce (fn [res [_ item]]
             ((fnil + 0) (:nutrition (item-id game item)) res))
           0
-          (have-all game food? {:bagged true :noncursed true})))
+          (have-all game food? #{:bagged :noncursed})))
 
 (defn nw-ratio-avg
   "Nutrition/weight ratio average for all carried food"
   [game]
-  (if-let [food (seq (have-all game food? {:bagged true :noncursed true}))]
+  (if-let [food (seq (have-all game food? #{:bagged :noncursed}))]
     (/ (nutrition-sum game)
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
                food))))
@@ -394,4 +397,4 @@
 (defn gold
   "Return the amount of gold the player has including bagged gold"
   [game]
-  (have-sum game gold? {:bagged true}))
+  (have-sum game gold? #{:bagged}))
