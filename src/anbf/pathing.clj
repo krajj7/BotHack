@@ -222,9 +222,13 @@
     (if-not (blocked? to-tile)
       [50 (with-reason "peaceful blocker" monster
             (fidget game level to-tile))]) ; hopefully will move
-    (if-not (:walking opts)
-      [6 (with-reason "pathing through" monster
-           (->Move dir))])))
+    (if (:friendly monster)
+      (if-not (:walking opts)
+        [8 (with-reason "displace friendly" monster
+              (->Move dir))])
+      (if-not (:no-fight opts)
+        [12 (with-reason "pathing through hostiles" monster
+              (->Move dir))]))))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
@@ -365,7 +369,8 @@
     :no-dig - don't use the pickaxe or mattock
     :no-levitation - when navigating deliberately into a hole/trapdoor
     :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)
-    :no-autonav - don't use _ autotravel (when fighting monsters)"
+    :no-autonav - don't use _ autotravel (when fighting monsters)
+    :no-fight - don't path through hostile monsters"
   ([game pos-or-goal-fn]
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
@@ -1000,7 +1005,7 @@
         player-tile (at-player game)]
     (or (search-dead-end game 20)
         (if-let [path (navigate game (partial explorable-tile? level)
-                                {:prefer-items true})]
+                                {:prefer-items true :no-fight true})]
           (with-reason "exploring" (at level (:target path))
             (:step path)))
         ; TODO search for shops if heard but not found
