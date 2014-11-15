@@ -422,7 +422,8 @@
               (if (seq more)
                 (recur more)))))
         (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
-          (->Drop slot (- (:qty item) 7))))))
+          (with-reason "dropping rock excess"
+            (->Drop slot (- (:qty item) 7)))))))
 
 (defn reequip [game]
   (let [level (curlvl game)

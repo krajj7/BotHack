@@ -770,7 +770,7 @@
     (update-tile anbf)
     (swap! (:game anbf) update :player dissoc :thick)
     (reify DropSingleHandler
-      (drop-single [_ _] (str (if (> qty 1) qty) slot)))))
+      (drop-single [_ _] (str (if (pos? qty) qty) slot)))))
 
 (defaction Quiver [slot]
   (trigger [_] "Q")
