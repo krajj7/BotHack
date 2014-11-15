@@ -6,6 +6,7 @@
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
             [anbf.player :refer :all]
+            [anbf.fov :refer :all]
             [anbf.monster :refer :all]
             [anbf.montype :refer :all]
             [anbf.dungeon :refer :all]
@@ -1145,8 +1146,21 @@
 
 (defaction Throw [slot dir]
   (trigger [_] "t")
-  (handler [_ anbf]
+  (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
+    (let [level (curlvl @game)
+          player (:player @game)
+          to-update (loop [prev-tile (at level player)
+                           tile (in-direction level player dir)]
+                      (if-not ((some-fn water? lava?) tile)
+                        (if (or (not tile)
+                                (monster-at level tile)
+                                (not (walkable? tile)))
+                          prev-tile
+                          (recur tile
+                                 (in-direction level tile dir)))))]
+      (if (and to-update (not (visible? game level to-update)))
+        (swap! game update-at to-update assoc :new-items true)))
     (reify
       ThrowWhatHandler
       (throw-what [_ _] slot)
