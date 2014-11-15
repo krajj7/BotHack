@@ -15,3 +15,5 @@ pom.xml.asc
 anbf.log*
 /jta26/jni/linux/libjtapty.so
 /*.ttyrec
+video
+notes

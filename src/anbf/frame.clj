@@ -1,6 +1,5 @@
 (ns anbf.frame
   (:require [clojure.tools.logging :as log]
-            [clojure.pprint :as pprint]
             [clojure.string :as string]))
 
 ; an immutable representation of a terminal window contents
@@ -13,7 +12,9 @@
 
 (defmethod print-method Frame [f w]
   (.write w "==== <Frame> ====\n")
-  (pprint/write (:lines f) :stream w)
+  (doseq [l (:lines f)]
+    (.write w l)
+    (.write w "\n"))
   (.write w (format "\nCursor: %s %s\n" (-> f :cursor :x) (-> f :cursor :y)))
   (.write w "=================\n"))
 
