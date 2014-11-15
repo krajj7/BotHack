@@ -969,6 +969,8 @@
           (switch-dlvl game (:dlvl new-level))
           (if (keyword? tag-or-dlvl)
             (or (switch-dlvl game (dlvl-candidate game new-branch tag-or-dlvl))
+                (if (subbranches tag-or-dlvl)
+                  (seek-branch game tag-or-dlvl))
                 (with-reason "exploring dlvl candidate"
                   (explore game))
                 (with-reason "searching dlvl candidate"
