@@ -68,6 +68,13 @@
 
 (def no-monster-re #"You .* (thin air|empty water)" )
 
+(defn update-peaceful-status [game monster-selector]
+  (->> (curlvl-monsters game)
+       (filter monster-selector)
+       (remove (comp #{\I \1 \2 \3 \4 \5} :glyph))
+       (reduce #(update-monster %1 %2 assoc :peaceful :update)
+               game)))
+
 (defaction Attack [dir]
   (trigger [_]
     (str \F (or (vi-directions (enum->kw dir))
@@ -75,10 +82,11 @@
                          (str "Invalid direction: " dir))))))
   (handler [_ {:keys [game] :as anbf}]
     (if (dizzy? (:player @game))
-      (swap! game update-around-player update-monster assoc :peaceful :update))
+      (swap! game update-peaceful-status (partial adjacent? (:player @game))))
     (when-let [target (and (not (dizzy? (:player @game)))
                            (in-direction (:player @game) dir))]
-      (swap! game update-monster target assoc :awake true :peaceful :update)
+      (swap! game update-peaceful-status #(= (position target) (position %)))
+      (swap! game update-monster target assoc :awake true)
       (reify ToplineMessageHandler
         (message [_ msg]
           (when (re-seq no-monster-re msg)

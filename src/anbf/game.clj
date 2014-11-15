@@ -205,12 +205,6 @@
                                          (assoc % :walked 1)
                                          %)))))
 
-(defn- update-peaceful-status [game monster-selector]
-  (->> (curlvl-monsters game)
-       (filter monster-selector)
-       (reduce #(update-monster %1 %2 assoc :peaceful :update)
-               game)))
-
 (defn- portal-handler [{:keys [game] :as anbf} level new-dlvl]
   (or (when (= "Astral Plane" new-dlvl)
         (log/debug "entering astral")
