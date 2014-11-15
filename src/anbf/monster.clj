@@ -36,6 +36,7 @@
                  :glyph (:glyph type)
                  :color (:color type)
                  :known 0
+                 :first-known 0
                  :type type
                  :awake false
                  :friendly false
@@ -49,6 +50,7 @@
     (map->Monster {:x x
                    :y y
                    :known known
+                   :first-known known
                    :glyph glyph
                    :color (non-inverse color)
                    :type type

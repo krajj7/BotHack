@@ -93,9 +93,11 @@
 (defn full-explore [game]
   (if-not (get-level game :main :sanctum)
     (or (explore game :mines :minetown)
+        (explore game :main :sokoban)
         (visit game :sokoban)
         (explore game :main :quest)
         (explore game :mines)
+        (explore game :main :medusa)
         (explore game :quest)
         (explore game :vlad)
         (explore game :main)
@@ -284,7 +286,7 @@
                       (and (desired (item-name game %))
                            (if-let [[_ o] (and (desired-singular (:name %))
                                                (have game (:name %)
-                                                     #{:bagged}))]
+                                                     #{:bagged :can-remove}))]
                              (> (utility %) (utility o))
                              true)
                            (not= "empty" (:specific %))
@@ -398,10 +400,14 @@
             (or (remove-use game slot)
                 (->Drop slot))))
         (loop [[cat & more] desired-items]
-          (let [cat-items (have-all game cat #{:bagged})]
-            (if (more-than? 1 cat-items)
+          (let [cat-items (have-all game cat #{:bagged})
+                stuck? (fn [[stuck-slot stuck-item]]
+                         (and (:in-use stuck-item)
+                              (not (can-remove? game stuck-slot))))]
+            (if (or (more-than? 2 cat-items)
+                    (and (more-than? 1 cat-items) (not-any? stuck? cat-items)))
               (if-let [[slot item] (min-by (comp (partial utility game) secondv)
-                                           cat-items)]
+                                           (remove stuck? cat-items))]
                 (with-reason "dropping less useful duplicate"
                   (or (remove-use game slot)
                       (unbag game slot item)
@@ -504,7 +510,10 @@
            (not (:just-moved monster)))
     (with-reason "kite"
       (:step (navigate game #(= 2 (distance monster %))
-                       {:max-steps 1 :no-traps true})))))
+                       {:max-steps 1 :no-traps true :no-fight true})))))
+
+(defn tame-pet [{:keys [player] :as game}]
+  ) ; TODO throw least nutritious food at targettable pacifiable if in danger, use in fight and retreat
 
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
@@ -549,7 +558,8 @@
                                               (have game blind-tool
                                                     #{:noncursed}))
     (#{"spotted jelly"
-       "ochre jelly"} (typename monster)) (have game corrodeproof-weapon)
+       "ochre jelly"} (typename monster)) (and (have game corrodeproof-weapon)
+                                               (> (:hp player) 60))
     :else true))
 
 (defn engrave-e [{:keys [player] :as game}]
@@ -570,6 +580,29 @@
   (->> (neighbors level pos)
        (filter (some-fn walkable? water?))
        (more-than? 2)))
+
+(defn- safe-hp? [{:keys [hp maxhp] :as player}]
+  (or (> (/ hp maxhp) 8/10)))
+
+(defn- recover
+  ([game]
+   (recover game false))
+  ([{:keys [player] :as game} safe?]
+   (if-not (safe-hp? player)
+     (or (if-let [[slot _] (and (free-finger? player)
+                                (have game "ring of regeneration"
+                                      #{:noncursed}))]
+           (with-reason "recover - regen"
+             (make-use game slot)))
+         (if safe?
+           (with-reason "recovering - exploring nearby items"
+             (:step (navigate game :new-items {:walking true :no-autonav true
+                                               :explored true :max-steps 10}))))
+         (with-reason "moving to safer position"
+           (:step (navigate game
+                            (complement (partial exposed? game (curlvl game)))
+                            {:max-steps 8 :no-traps true :explored true})))
+         (with-reason "recovering" (->Repeated (->Wait) 10))))))
 
 (defn retreat [{:keys [player] :as game}]
   (with-reason "retreating"
@@ -597,9 +630,8 @@
                                  (neighbors level tile))]
                   (with-reason "moving to neighbor tile to engrave"
                     (->Move (towards player t))))))
-            (if (and (empty? threats) (stairs-down? tile))
-              (with-reason "retreated on downstairs"
-                ->Search))
+            (if (empty? threats)
+              (recover game))
             (if-let [{:keys [step target]} (navigate game stairs-up?
                                                      #{:walking :explored
                                                        :no-autonav})]
@@ -620,25 +652,6 @@
                 (->Move (towards tile nbr))))
             (log/debug "retreat failed"))))))
 
-(defn- safe-hp? [{:keys [hp maxhp] :as player}]
-  (or (>= (/ hp maxhp) 9/10)))
-
-(defn- recover [{:keys [player] :as game}]
-  (if-not (safe-hp? player)
-    (or (if-let [[slot _] (and (free-finger? player)
-                               (have game "ring of regeneration"
-                                     #{:noncursed}))]
-          (with-reason "recover - regen"
-            (make-use game slot)))
-        (with-reason "recovering - exploring nearby items"
-          (:step (navigate game :new-items {:walking true :explored true
-                                            :max-steps 10 :no-autonav true})))
-        (with-reason "recover - moving to safer position"
-          (:step (navigate game
-                           (complement (partial exposed? game (curlvl game)))
-                           {:max-steps 8 :no-traps true :explored true})))
-        (with-reason "recovering" (->Repeated (->Wait) 10)))))
-
 (defn keep-away? [player m]
   (if-let [montype (typename m)]
     (or (some #(.contains montype %)
@@ -648,7 +661,7 @@
 (defn targettable
   "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there seems to be no risk of hitting non-hostiles or water/lava for non-rays."
   ([game] (targettable game 6 false))
-  ([game ray?] (targettable game 6))
+  ([game ray?] (targettable game 5))
   ([{:keys [player] :as game} max-dist ray?]
    (let [level (curlvl game)]
      (for [dir directions
@@ -671,7 +684,7 @@
   (and (not (mimic? monster))
        (not (sessile? monster))
        (or (:awake monster)
-           (> 3 (- (:turn game) (:known monster))))))
+           (> 3 (- (:turn game) (:first-known monster))))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
@@ -749,9 +762,10 @@
                                            (in-direction player (:dir step))))
                           (with-reason "staying in more favourable position"
                             ->Search))
-                        (if (some #(and (= 2 (distance player %))
-                                        (mobile? game %))
-                                  threats)
+                        (if (and (some #(and (= 2 (distance player %))
+                                             (mobile? game %))
+                                       threats)
+                                 (pos? (rand-int 10))) ; mobile? is not that reliable
                           (with-reason "baiting monsters" ->Search))
                         step))))))
         (let [leftovers (->> (hostile-threats game)
@@ -927,7 +941,7 @@
                               (feed game))))
       (register-handler 2 (reify ActionHandler
                              (choose-action [_ game]
-                               (recover game))))
+                               (recover game :safe))))
       (register-handler 4 (reify ActionHandler
                             (choose-action [_ game]
                               (consider-items game))))

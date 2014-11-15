@@ -18,7 +18,8 @@
   (log/debug "transfer:" \newline old-monster "to" \newline monster)
   (update-monster game monster
     #(as-> % monster
-       (into monster (select-some old-monster [:type :cancelled :awake]))
+       (into monster (select-some old-monster
+                                  [:type :cancelled :awake :first-known]))
        (if (not= :update (:peaceful monster))
          (assoc monster :peaceful (:peaceful old-monster))
          monster)
