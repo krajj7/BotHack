@@ -159,3 +159,6 @@
     (dissoc m k)))
 
 (defn last-word [s] (re-first-group #"([^ ]+$)" s))
+
+(defn removev [pred coll]
+  (filterv (complement pred) coll))

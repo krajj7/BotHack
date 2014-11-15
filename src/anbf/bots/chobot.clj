@@ -896,6 +896,57 @@
             (with-reason "robbing a poor peaceful dorf"
               (or step (->Attack (towards player target)))))))))
 
+(defn wander [game]
+  (or (explore game)
+      (search-level game 1)
+      (navigate game (->> (curlvl game) tile-seq
+                          (filter :walked)
+                          (min-by :walked)))))
+
+(defn- hunt-action [{:keys [player] :as game} robbed-of]
+  (if-let [[_ dlvl branch _] (first robbed-of)]
+    (let [level (curlvl game)
+          stealers (filter steals? (vals (:monsters level)))
+          recent (min-by :known stealers)]
+      (with-reason "seeking monsters that stole my items:" robbed-of
+        (or (seek-level game branch dlvl)
+            (if-let [[slot _] (and (or (not recent)
+                                       (> 10 (- (:turn game) (:known recent))))
+                                   (have-intrinsic? player :telepathy)
+                                   (have game blind-tool #{:noncursed}))]
+              (make-use game slot))
+            (if-let [step (:step (navigate game (nav-targets stealers)))]
+              step ; expect fight to take over when close enough
+              (wander game)))))))
+
+#_(defn hunt [anbf]
+  (let [robbed-of (atom [])] ; [turn dlvl branch item]
+    (reify
+      ActionHandler
+      (choose-action [_ game]
+        (hunt-action game @robbed-of))
+      AboutToChooseActionHandler
+      (about-to-choose [_ {:keys [player] :as game}]
+        (swap! robbed-of (partial removev #(< 1500 (- (:turn game) (first %)))))
+        (if (and (blind? player)
+                 (have-intrinsic? player :telepathy)
+                 (not-any? steals? (curlvl-monsters game)))
+          (swap! robbed-of (partial removev (fn same-level? [[_ dlvl branch _]]
+                                              (and (= dlvl (:dlvl game))
+                                                   (= (branch-key game branch)
+                                                      (branch-key game))))))))
+      FoundItemsHandler
+      (found-items [_ items]
+        (swap! robbed-of removev (fn [[_ _ _ item]]
+                                   (some #(and (= (:buc item) (:buc %))
+                                               (= (:name item) (:name %)))
+                                         items))))
+      ToplineMessageHandler
+      (message [_ msg]
+        ; ... TODO
+        ;(swap! robbed-of conj [(:turn game) (:dlvl game) (:branch-id game) item])
+        ))))
+
 (defn init [anbf]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -951,10 +1002,11 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      (register-handler 7 (excal-handler anbf))
-      (register-handler 8 (reify ActionHandler
+      #_(register-handler 7 (hunt anbf))
+      (register-handler 8 (excal-handler anbf))
+      (register-handler 9 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 9 (reify ActionHandler
-                            (choose-action [_ game]
-                              (progress game))))))
+      (register-handler 10 (reify ActionHandler
+                             (choose-action [_ game]
+                               (progress game))))))

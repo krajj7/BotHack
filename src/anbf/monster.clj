@@ -85,11 +85,19 @@
 
 (defn unicorn? [m] (some-> (typename m) (.contains " unicorn")))
 
-(defn mimic? [m] (some-> (typename m) (.contains "mimic")))
+(defn mimic? [m] (some-> (typename m) (.contains " mimic")))
 
 (defn werecreature? [m] (get-in m [:type :tags :were]))
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))
+
+(defn covetous? [m] (some #{:covetous :wants-arti :wants-amulet :wants-book}
+                          (:tags (:type m))))
+
+(defn steals? [m]
+  (or (covetous? m)
+      (some #(#{:steal-amulet :steal-items} (:damage-type %))
+            (:attacks (:type m)))))
 
 (defn ignores-e? [m] (get-in m [:type :resistances :elbereth]))
 

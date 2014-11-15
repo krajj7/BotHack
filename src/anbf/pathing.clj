@@ -1070,3 +1070,6 @@
   ([game branch tag-or-level]
    (if-not (visited? game branch tag-or-level)
      (seek-level game branch tag-or-level))))
+
+(defn nav-targets [coll]
+  (set (map position coll)))
