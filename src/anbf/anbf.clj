@@ -158,6 +158,8 @@
     (genocide-monster [_ _]
       (log/warn "default handler genociding none")
       "none")
+    VaultGuardHandler
+    (who-are-you [_ _] "Croesus")
     SellItHandler
     (sell-it [_ _ _] "")
     EatWhatHandler

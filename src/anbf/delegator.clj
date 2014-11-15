@@ -417,3 +417,6 @@
 (defprompthandler GenocideHandler
   (genocide-class [handler ^String prompt])
   (genocide-monster [handler ^String prompt]))
+
+(defprompthandler VaultGuardHandler
+  (who-are-you [handler ^String prompt]))

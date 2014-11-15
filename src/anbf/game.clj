@@ -221,12 +221,12 @@
       (when (= "Home" (subs new-dlvl 0 4))
         (log/debug "entering quest portal")
         (swap! game assoc :branch-id :quest))
-      (when (> (dlvl-number new-dlvl) 35)
-        (log/debug "entering wiztower portal")
-        (swap! game assoc :branch-id :wiztower))
       (when (= "Fort Ludios" new-dlvl)
         (log/debug "entering ludios")
-        (swap! game assoc :branch-id :ludios))))
+        (swap! game assoc :branch-id :ludios))
+      (when (> (dlvl-number new-dlvl) 35)
+        (log/debug "entering wiztower portal")
+        (swap! game assoc :branch-id :wiztower))))
 
 (defn update-fleeing [game desc]
   (->> (curlvl-monsters game)

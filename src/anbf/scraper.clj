@@ -151,10 +151,8 @@
     #"^For what do you wish\?" make-wish
     #"^What monster do you want to genocide\?" genocide-monster
     #"^What class of monsters do you wish to genocide\?" genocide-class
-    (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
-  ; TODO
-;    qr/^"Hello stranger, who are you\?"/ => 'vault_guard',
-  )
+    #"^\"Hello stranger, who are you\?\"" who-are-you
+    (throw (UnsupportedOperationException. (str "unknown prompt msg " msg)))))
 
 (defn- choice-fn [msg]
   (condp re-first-groups msg
