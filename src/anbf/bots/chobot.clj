@@ -960,6 +960,13 @@
     (not (have game "speed boots")) "blessed fixed +3 speed boots"
     :else "2 blessed scrolls of genocide"))
 
+(defn use-features [game]
+  ; TODO kick sinks
+  (if-let [{:keys [step]} (navigate game throne?)]
+    (or (with-reason "going to throne" step)
+        (if (throne? (at-player game))
+          (with-reason "sitting on throne" ->Sit)))))
+
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1022,11 +1029,14 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      #_(register-handler 7 (hunt anbf))
-      (register-handler 8 (excal-handler anbf))
-      (register-handler 9 (reify ActionHandler
+      (register-handler 7 (reify ActionHandler
+                            (choose-action [_ game]
+                              (use-features game))))
+      #_(register-handler 8 (hunt anbf))
+      (register-handler 9 (excal-handler anbf))
+      (register-handler 10 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 10 (reify ActionHandler
+      (register-handler 11 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))
