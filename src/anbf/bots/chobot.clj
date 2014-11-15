@@ -280,8 +280,10 @@
                 (> 2 (or (:erosion item) 0)))
            (take-cursed? game item))))
 
-(defn consider-items [game]
+(defn consider-items [{:keys [player] :as game}]
   (let [desired (currently-desired game)
+        level (curlvl game)
+        tile (at level player)
         to-take? #(or (real-amulet? %)
                       (and (desired (item-name game %))
                            (if-let [[_ o] (and (desired-singular (:name %))
@@ -292,20 +294,24 @@
                            (not= "empty" (:specific %))
                            (can-take? %)
                            (worthwhile? game %)))]
-    (or (if-let [to-get (and (not (shop? (at-player game)))
-                             (seq (for [item (lootable-items (at-player game))
+    (or (if-let [to-get (and (not (shop? tile))
+                             (seq (for [item (lootable-items tile)
                                         :when (to-take? item)]
                                     (:label item))))]
           (with-reason "looting desirable items"
             (without-levitation game
               (take-out \. (reduce #(assoc %1 %2 nil) {} to-get))))
           (log/debug "no desired lootable items"))
-        (if-let [to-get (seq (for [item (:items (at-player game))
+        (if-let [to-get (seq (for [item (:items tile)
                                    :when (to-take? item)]
                                (:label item)))]
           (with-reason "getting desirable items"
             (without-levitation game
-              (->PickUp (->> to-get set vec))))
+              (if (and (or (pit? tile) (spikepit? tile))
+                       (not (:trapped player)))
+                (with-reason "getting into a pit"
+                  (arbitrary-move game level))
+                (->PickUp (->> to-get set vec)))))
           (log/debug "no desired items here"))
         (when-let [{:keys [step target]}
                    (navigate game #(some to-take? (concat (:items %)

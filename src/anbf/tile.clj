@@ -120,11 +120,13 @@
 #_(pprint (macroexpand-1 '(def-feature-pred :wall)))
 
 (defmacro ^:private def-feature-preds []
-  `(do ~@(for [feature [:rock :floor :wall :stairs-up :stairs-down :corridor
-                        :altar :pool :door-open :door-closed :door-locked
-                        :door-secret :sink :fountain :grave :throne :bars :tree
-                        :drawbridge-raised :drawbridge-lowered :lava :ice
-                        :portal :trapdoor :hole :firetrap :cloud]]
+  `(do ~@(for [feature (concat traps
+                               [:rock :floor :wall :stairs-up :stairs-down
+                                :corridor :altar :pool :door-open :door-closed
+                                :door-locked :door-secret :sink :fountain
+                                :grave :throne :bars :tree :drawbridge-raised
+                                :drawbridge-lowered :lava :ice :portal
+                                :trapdoor :hole :firetrap :cloud])]
            `(def-feature-pred ~feature))))
 
 (def-feature-preds)
