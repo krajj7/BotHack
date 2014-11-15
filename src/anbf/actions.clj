@@ -409,7 +409,7 @@
                           new-tile)
                       %))))))))
 
-(def farlook-monster-re #"^.     *[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
+(def farlook-monster-re #"^(?:.     *)?[^(]*\(([^,)]*)(?:,[^)]*)?\)|a (mimic) or a strange object$")
 (def farlook-trap-re #"^\^ * a trap \(([^)]*)\)")
 
 (defaction FarLook [pos]

@@ -54,7 +54,8 @@
       (update-game-status status)))
 
 (defn- rogue-ghost? [game level tile]
-  (and (not (blind? (:player game)))
+  (and (:rogue (:tags level))
+       (not (blind? (:player game)))
        ;(blank? tile) - not yet updated
        (= \space (get-in game [:frame :lines (:y tile) (:x tile)]))
        (adjacent? (:player game) tile)
@@ -80,8 +81,7 @@
          :feature (cond (and (#{:water :air} (branch-key game))
                              (not (rock? tile)) (blank? tile)) :floor
                         (and (blank? tile) (unknown? tile)
-                             (or (not (:rogue (:tags level)))
-                                 (not (rogue-ghost? game level tile)))) :rock
+                             (not (rogue-ghost? game level tile))) :rock
                         :else (:feature tile))))
 
 (defn- update-explored [game]
