@@ -188,7 +188,8 @@
 (defn moved?
   "Returns true if the player moved during the last action turn"
   [game]
-  (not= (:last-position game) (position (:player game))))
+  (or (not (:last-position game))
+      (not= (:last-position game) (position (:player game)))))
 
 (defn- update-portal-range [{:keys [player] :as game} temp]
   (let [dist (case temp

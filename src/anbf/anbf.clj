@@ -186,7 +186,8 @@
   ([] (new-anbf "config/shell-config.edn"))
   ([fname]
    (let [delegator (agent (new-delegator nil)
-                          :error-handler #(log/error %2 "delegator error"))
+                          :error-handler
+                          #(log/error %2 "delegator caught error"))
          config (load-config fname)
          jta (init-jta config delegator)
          scraper-fn (ref nil)
