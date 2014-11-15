@@ -517,7 +517,8 @@
            (not (:just-moved monster)))
     (with-reason "kite"
       (:step (navigate game #(= 2 (distance monster %))
-                       {:max-steps 1 :no-traps true :no-fight true})))))
+                       {:max-steps 1 :no-traps true
+                        :no-fight true :walking true})))))
 
 (defn tame-pet [{:keys [player] :as game}]
   ) ; TODO throw least nutritious food at targettable pacifiable if in danger, use in fight and retreat
@@ -603,12 +604,14 @@
              (make-use game slot)))
          (if safe?
            (with-reason "recovering - exploring nearby items"
-             (:step (navigate game :new-items {:walking true :no-autonav true
-                                               :explored true :max-steps 10}))))
+             (:step (navigate game :new-items {:no-fight true :no-autonav true
+                                               :no-traps true :explored true
+                                               :max-steps 10}))))
          (with-reason "moving to safer position"
            (:step (navigate game
                             (complement (partial exposed? game (curlvl game)))
-                            {:max-steps 8 :no-traps true :explored true})))
+                            {:max-steps 8 :no-traps true :explored true
+                             :no-fight true})))
          (with-reason "recovering" (->Repeated (->Wait) 10))))))
 
 (defn retreat [{:keys [player] :as game}]
@@ -640,7 +643,7 @@
             (if (empty? threats)
               (recover game))
             (if-let [{:keys [step target]} (navigate game stairs-up?
-                                                     #{:walking :explored
+                                                     #{:no-fight :explored
                                                        :no-autonav})]
               (if (stairs-up? (at level player))
                 (if (and (seq threats) (not= 1 (dlvl game)))
@@ -728,7 +731,7 @@
                                                 (including-origin neighbors %)))
                                    ; TODO if faster than threats increase max-steps
                                    {:max-steps 2 :no-traps true
-                                    :walking true :explored true}))))
+                                    :no-fight true :explored true}))))
               (if-let [monster (or (if (some pool? (neighbors level player))
                                      (find-first drowner? adjacent))
                                    (find-first rider? adjacent)
