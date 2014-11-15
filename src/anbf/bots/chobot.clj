@@ -953,7 +953,14 @@
         ;(swap! robbed-of conj [(:turn game) (:dlvl game) (:branch-id game) item])
         ))))
 
-(defn init [anbf]
+(defn wish [game]
+  (cond
+    (not (have game "gray dragon scale mail"))
+    "blessed +3 gray dragon scale mail"
+    (not (have game "speed boots")) "blessed fixed +3 speed boots"
+    :else "2 blessed scrolls of genocide"))
+
+(defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
       (register-handler (reify ChooseCharacterHandler
@@ -966,6 +973,13 @@
                             (bribe-demon (:last-topline @(:game anbf))))
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
+      (register-handler (reify GenocideHandler
+                          ; TODO other choices
+                          (genocide-class [_ _] "L")
+                          (genocide-monster [_ _] "electric eel")))
+      (register-handler (reify MakeWishHandler
+                          (make-wish [_ _]
+                            (wish @game))))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
       (register-handler -99 (reify ActionHandler
                               (choose-action [_ game]

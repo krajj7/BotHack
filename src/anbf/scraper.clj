@@ -85,6 +85,8 @@
   "If there is a single-letter prompt active, return the prompt text, else nil."
   [frame]
   (if (and (status-drawn? frame)
+           (not (.startsWith (topline frame) "What monster "))
+           (not (.startsWith (topline frame) "What class of monsters "))
            (<= (-> frame :cursor :y) 1)
            (> (-> frame :cursor :x) ; no text after cursor
               (count (re-first-group #"^(.*[^ ]) *$" (cursor-line frame)))))
@@ -146,12 +148,12 @@
     #"^To what level do you want to teleport\?" leveltele
     #"^What do you want to (?:write|engrave|burn|scribble|scrawl|melt) (?:in|into|on) the (.*?) here\?" write-what
     #"^What do you want to add to the (?:writing|engraving|grafitti|scrawl|text) (?:in|on|melted into) the (.*?) here\?" write-what
+    #"^For what do you wish\?" make-wish
+    #"^What monster do you want to genocide\?" genocide-monster
+    #"^What class of monsters do you wish to genocide\?" genocide-class
     (throw (UnsupportedOperationException. (str "unknown prompt msg " msg))))
   ; TODO
-;    qr/^For what do you wish\?/         => 'wish',
 ;    qr/^"Hello stranger, who are you\?"/ => 'vault_guard',
-;    qr/^What monster do you want to genocide\?/ => 'genocide_species',
-;    qr/^What class of monsters do you wish to genocide\?/ => 'genocide_class',
   )
 
 (defn- choice-fn [msg]

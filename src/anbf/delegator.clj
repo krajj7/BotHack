@@ -410,3 +410,10 @@
 
 (defmenuhandler CurrentSkillsHandler
   (current-skills [handler ^clojure.lang.IPersistentMap options]))
+
+(defprompthandler MakeWishHandler
+  (make-wish [handler ^String prompt]))
+
+(defprompthandler GenocideHandler
+  (genocide-class [handler ^String prompt])
+  (genocide-monster [handler ^String prompt]))

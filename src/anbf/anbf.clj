@@ -147,6 +147,17 @@
     WizmodeEnhanceHandler
     (enhance-without-practice [_ _] false)
     ; escape the rest by default
+    MakeWishHandler
+    (make-wish [_ _]
+      (log/warn "default handler wishing for nothing")
+      "nothing")
+    GenocideHandler
+    (genocide-class [_ _]
+      (log/warn "default handler genociding class none")
+      "none")
+    (genocide-monster [_ _]
+      (log/warn "default handler genociding none")
+      "none")
     SellItHandler
     (sell-it [_ _ _] "")
     EatWhatHandler
