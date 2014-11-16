@@ -71,17 +71,9 @@
 
 (defn oracle? [m] (= "Oracle" (typename m)))
 
-(defn guard? [m] (get-in m [:type :tags :guard]))
-
 (defn unique? [m] (get-in m [:type :gen-flags :unique]))
 
-(defn human? [m] (get-in m [:type :tags :human]))
-
 (defn priest? [m] (some-> (typename m) (.contains "priest")))
-
-(defn nasty? [m] (get-in m [:type :tags :nasty]))
-
-(defn rider? [m] (get-in m [:type :tags :rider]))
 
 (defn unicorn? [m] (some-> (typename m) (.contains " unicorn")))
 
@@ -105,7 +97,20 @@
 
 (defn follower? [m] (get-in m [:type :tags :follows]))
 
-(defn undead? [m] (get-in m [:type :tags :undead]))
+(defmacro ^:private def-tag-pred [kw]
+  `(defn ~(symbol (str (subs (str kw) 1) \?)) [~'monster]
+     (get-in ~'monster [:type :tags ~kw])))
+
+#_(pprint (macroexpand-1 '(def-tag-pred :mindless)))
+
+(defmacro ^:private def-tag-preds
+  "defines item type predicates: food? armor? tool? etc."
+  []
+  `(do ~@(for [kw [:mindless :undead :sessile :guard :human :nasty :rider
+                   :strong :infravisible]]
+           `(def-tag-pred ~kw))))
+
+(def-tag-preds)
 
 (defn passive? [monster]
   (every? #(= :passive (:type %)) (:attacks (:type monster))))
@@ -116,5 +121,3 @@
   (some #(and (= :passive (:type %))
               (#{:corrode :acid} (:damage-type %)))
         (:attacks (:type monster))))
-
-(defn sessile? [m] (get-in m [:type :tags :sessile]))
