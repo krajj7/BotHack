@@ -105,7 +105,8 @@
 
 (defn- more-list-prompt? [frame]
   (let [ycursor (-> frame :cursor :y)]
-    (or (and (more-prompt? frame) (< 1 ycursor))
+    (or (and (more-prompt? frame) (< 1 ycursor)
+             (not (.startsWith (topline frame) "You read:")))
         (and (pos? ycursor) (= " --More--" (before-cursor frame))))))
 
 (defn- more-list [frame]
