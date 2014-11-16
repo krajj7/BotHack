@@ -296,9 +296,10 @@
            (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
        (not ((:race player) (:tags monster)))
-       (not (or (taboo-corpses (:name monster))
-                ((some-fn :were :teleport :domestic) (:tags monster))
-                (re-seq #" bat$" (:name monster))))))
+       (or (= "tengu" (:name monster))
+           (not (or (taboo-corpses (:name monster))
+                    ((some-fn :were :teleport :domestic) (:tags monster))
+                    (re-seq #"bat$" (:name monster)))))))
 
 (defn can-eat?
   "Only true for safe food or unknown tins"
@@ -317,8 +318,7 @@
   (and (can-eat? player corpse)
        (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
              strength (get-in player [:stats :str])]
-         (or (= "wraith" (:name monster))
-             (= "newt" (:name monster))
+         (or (= #{"newt" "tengu" "wraith"} (:name monster))
              (and (or (not= "18/**" strength)
                       (some-> (parse-int strength) (< 18)))
                   (:str (:tags monster)))
