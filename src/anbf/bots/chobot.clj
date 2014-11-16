@@ -143,6 +143,9 @@
 (def desired-suit
   (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail"))
 
+(def desired-shirt
+  (ordered-set "T-shirt" "Hawaiian shirt"))
+
 (def desired-boots
   (ordered-set "speed boots" "iron shoes"))
 
@@ -182,6 +185,7 @@
    desired-cloak
    desired-suit
    desired-shield
+   desired-shirt
    desired-boots
    desired-helmet
    desired-gloves
@@ -340,9 +344,9 @@
             (->Wield slot))))))
 
 (defn- wear-armor [{:keys [player] :as game}]
-  (first (for [category [desired-shield desired-boots
-                         desired-suit desired-cloak
-                         desired-helmet desired-gloves]
+  (first (for [category [desired-shield desired-boots desired-shirt
+                         desired-suit desired-cloak desired-helmet
+                         desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
                :when (and armor (not (:in-use armor)))]
            (with-reason "wearing better armor"
