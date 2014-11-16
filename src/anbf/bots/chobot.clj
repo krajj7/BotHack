@@ -102,7 +102,8 @@
                   (:seen (at minetown 48 5)))
             (explore game :mines)))
         (explore game :main :medusa)
-        (explore game :quest)
+        (if (<= 14 (:xplvl (:player game)))
+          (explore game :quest))
         (explore game :vlad)
         (explore game :main)
         (explore game :wiztower)
@@ -976,6 +977,7 @@
   ; TODO kick sinks
   (if-let [{:keys [step]} (navigate game throne?)]
     (or (with-reason "going to throne" step)
+        ; TODO drop gold
         (if (throne? (at-player game))
           (with-reason "sitting on throne" ->Sit)))))
 
