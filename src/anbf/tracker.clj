@@ -15,22 +15,27 @@
             [clojure.tools.logging :as log]))
 
 (defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
-  (log/debug "transfer:" \newline old-monster "to" \newline monster)
-  (update-monster game monster
-    #(as-> % monster
-       (into monster (select-some old-monster
-                                  [:type :cancelled :awake :first-known]))
-       (if (not= :update (:peaceful monster))
-         (assoc monster :peaceful (:peaceful old-monster))
-         monster)
-       (if (not= (position old-monster) (position monster))
-         (assoc monster :awake true :just-moved true)
-         monster)
-       (case (compare (distance-manhattan player old-monster)
-                      (distance-manhattan player monster))
-         -1 (assoc monster :fleeing true)
-         0 (assoc monster :fleeing (:fleeing old-monster))
-         1 (assoc monster :fleeing false)))))
+  (let [cur (monster-at game monster)]
+    (log/debug "transfer:" \newline old-monster \newline "cur" \newline cur
+               "to" \newline monster)
+    (reset-monster game
+      (as-> (or cur old-monster) monster
+        (into monster (select-some old-monster
+                                   [:type :cancelled :awake :first-known]))
+        (if (not= :update (:peaceful monster))
+          (assoc monster :peaceful (:peaceful old-monster))
+          monster)
+        (if (not= (position old-monster) (position monster))
+          (assoc monster :awake true :just-moved true)
+          monster)
+        (case (compare (distance-manhattan player old-monster)
+                       (distance-manhattan player monster))
+          -1 (assoc monster :fleeing true)
+          0 (assoc monster :fleeing (:fleeing old-monster))
+          1 (assoc monster :fleeing false))
+        (if (or (not cur) (= \I (:glyph cur)))
+          (assoc monster :remembered true)
+          monster)))))
 
 (defn filter-visible-uniques
   "If a unique monster was remembered and now is visible, remove all remembered instances"
@@ -43,11 +48,13 @@
                             monsters)]
               (position n)))))
 
-(defn- transfer-unpaired [game unpaired]
+(defn- transfer-unpaired [{:keys [player] :as game} unpaired]
   (log/debug "unpaired" unpaired)
-  ; TODO don't transfer if we would know monsters position with ESP
   (let [tile (at-curlvl game unpaired)]
     (if (and (not (monster? tile))
+             (not (and (blind? player)
+                       (have-intrinsic? player :telepathy)
+                       (not (mindless? unpaired))))
              (or (not (visible? game unpaired))
                  (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
                       ((some-fn stairs? boulder? :new-items) tile))))
@@ -61,8 +68,12 @@
           (hallu? (:player new-game)))
     new-game ; TODO track stair followers?
     (loop [pairs {}
-           new-monsters (:monsters (curlvl new-game))
            old-monsters (:monsters (curlvl old-game))
+           new-monsters (if (and (blind? (:player new-game))
+                                 (not (have-intrinsic? (:player new-game)
+                                                       :telepathy)))
+                          old-monsters
+                          (:monsters (curlvl new-game)))
            dist 0]
       (if (and (> 4 dist) (seq old-monsters))
         (if-let [[p m] (first new-monsters)]
@@ -75,17 +86,18 @@
                                                   (= dist (distance m n))))
                                            old-monsters))]
             (if more ; ignore ambiguous cases
-              (recur pairs (dissoc new-monsters p) old-monsters dist)
+              (recur pairs old-monsters (dissoc new-monsters p) dist)
               (recur (assoc pairs p [cm m])
-                     (dissoc new-monsters p)
                      (dissoc old-monsters cp)
+                     (dissoc new-monsters p)
                      dist))
-            (recur pairs (dissoc new-monsters p) old-monsters dist))
-          (recur pairs (apply dissoc (:monsters (curlvl new-game)) (keys pairs))
-                 old-monsters (inc dist)))
+            (recur pairs old-monsters (dissoc new-monsters p) dist))
+          (recur pairs old-monsters
+                 (apply dissoc (:monsters (curlvl new-game)) (keys pairs))
+                 (inc dist)))
         (as-> new-game res
-          (reduce transfer-unpaired res (vals (dissoc old-monsters
-                                                      (:player new-game))))
+          (reduce transfer-unpaired res (->> (position (:player new-game))
+                                             (dissoc old-monsters) vals))
           (reduce transfer-pair res (vals pairs)))))))
 
 (defn- mark-kill [game old-game]

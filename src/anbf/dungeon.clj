@@ -90,8 +90,10 @@
 
 (defn branch-key
   ([{:keys [branch-id] :as game}]
+   {:pre [branch-id]}
    (branch-key game branch-id))
   ([{:keys [dungeon] :as game} level-or-branch-id]
+   {:pre [dungeon]}
    (let [branch-id (if (keyword? level-or-branch-id)
                      level-or-branch-id
                      (:branch-id level-or-branch-id))]
@@ -108,6 +110,7 @@
 (defn update-curlvl
   "Update the current Level by applying update-fn to its current value and args"
   [game update-fn & args]
+  {:pre [(:dungeon game)]}
   (apply update-in game [:dungeon :levels (branch-key game) (:dlvl game)]
          update-fn args))
 
@@ -138,7 +141,8 @@
   [game pos update-fn & args]
   (if ((:monsters (curlvl game)) (position pos))
     (apply update-curlvl game update-in [:monsters (position pos)]
-           update-fn args)))
+           update-fn args)
+    game))
 
 (defn monster-at [game-or-level pos]
   (if (:monsters game-or-level)
