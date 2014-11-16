@@ -96,7 +96,11 @@
         (explore game :main :sokoban)
         (visit game :sokoban)
         (explore game :main :quest)
-        (explore game :mines)
+        (let [minetown (get-level game :mines :minetown)]
+          (if (or (some->> game have-key val key?)
+                  (not (:minetown-grotto (:tags minetown)))
+                  (:seen (at minetown 48 5)))
+            (explore game :mines)))
         (explore game :main :medusa)
         (explore game :quest)
         (explore game :vlad)

@@ -202,3 +202,6 @@
 
 (defn gold? [item]
   (= "gold piece" (:name item)))
+
+(defn key? [item]
+  (.contains (:name item) "key"))

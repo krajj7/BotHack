@@ -303,7 +303,7 @@
                                                   (can-unlock? game)
                                                   (have-key game))]
                              (if (or (dare-destroy? level to-tile)
-                                     (= "skeleton key" (item-name game i))
+                                     (key? i)
                                      (not (:minetown (:tags level))))
                                [4 (->Unlock slot dir)])
                              (if (kickable-door? level to-tile opts)
