@@ -352,10 +352,11 @@
       (swap! game #(if-not (blind? (:player %))
                      (update-at-player % assoc :seen true :new-items false)
                      %))
+      (send delegator #(if-let [items (seq (:items (at-player @game)))]
+                         (found-items % items)
+                         %))
       (update-on-known-position anbf
         (fn after-look [game]
-          (if @has-item
-            (send delegator found-items (:items (at-player game))))
           (as-> game res
             (update-at-player res assoc :examined (:turn game))
             (if (blind? (:player game))
@@ -477,7 +478,12 @@
 (defaction Inventory []
   (trigger [_] "i")
   (handler [_ {:keys [game] :as anbf}]
-    (reify InventoryHandler
+    (reify
+      ToplineMessageHandler
+      (message [_ text]
+        (if (= text "Not carrying anything.")
+          (swap! game assoc-in [:player :inventory] {})))
+      InventoryHandler
       (inventory-list [_ inventory]
         (swap! game update-in [:player :inventory]
                (partial reduce transfer-item
