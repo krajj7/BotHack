@@ -133,8 +133,9 @@
 (defn print-inventory
   "Print detailed info about all items in bot's inventory"
   [game]
-  (->> game :player :inventory vals
-       (map #(vector (type (item-id game %)) % (item-id game %)))
+  (->> game :player :inventory
+       (map #(vector (key %) (type (item-id game (val %)))
+                     (val %) (item-id game (val %))))
        pprint))
 
 (defn print-los [game]

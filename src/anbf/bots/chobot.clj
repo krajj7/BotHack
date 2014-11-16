@@ -916,21 +916,22 @@
               (or step (->Attack (towards player target)))))))))
 
 (defn wander [game]
-  (or (explore game)
-      (search-level game 1)
-      (navigate game (->> (curlvl game) tile-seq
-                          (filter :walked)
-                          (min-by :walked)))))
+  (with-reason "wandering"
+    (or (explore game)
+        (search-level game 1)
+        (navigate game (->> (curlvl game) tile-seq
+                            (filter :walked)
+                            (min-by :walked))))))
 
 (defn- hunt-action [{:keys [player] :as game} robbed-of]
   (if-let [[_ dlvl branch _] (first robbed-of)]
     (let [level (curlvl game)
           stealers (filter steals? (vals (:monsters level)))
-          recent (min-by :known stealers)]
+          recent (max-by :known stealers)]
       (with-reason "seeking monsters that stole my items:" robbed-of
         (or (seek-level game branch dlvl)
             (if-let [[slot _] (and (or (not recent)
-                                       (> 10 (- (:turn game) (:known recent))))
+                                       (< 11 (- (:turn game) (:known recent))))
                                    (have-intrinsic? player :telepathy)
                                    (have game blind-tool #{:noncursed}))]
               (make-use game slot))
@@ -938,7 +939,12 @@
               step ; expect fight to take over when close enough
               (wander game)))))))
 
-#_(defn hunt [anbf]
+(defn- found-item? [found [_ _ _ item]]
+  (some #(and (= (select-keys item [:specific :proof :name :enchantment])
+                 (select-keys % [:specific :proof :name :enchantment])))
+        found))
+
+(defn hunt [{:keys [game] :as anbf}]
   (let [robbed-of (atom [])] ; [turn dlvl branch item]
     (reify
       ActionHandler
@@ -946,7 +952,10 @@
         (hunt-action game @robbed-of))
       AboutToChooseActionHandler
       (about-to-choose [_ {:keys [player] :as game}]
-        (swap! robbed-of (partial removev #(< 1500 (- (:turn game) (first %)))))
+        (if (not= @robbed-of
+                  (swap! robbed-of (partial removev #(< 3000 (- (:turn game)
+                                                                (first %))))))
+          (log/debug "forgetting about stolen items, now missing" @robbed-of))
         (if (and (blind? player)
                  (have-intrinsic? player :telepathy)
                  (not-any? steals? (curlvl-monsters game)))
@@ -956,15 +965,18 @@
                                                       (branch-key game))))))))
       FoundItemsHandler
       (found-items [_ items]
-        (swap! robbed-of removev (fn [[_ _ _ item]]
-                                   (some #(and (= (:buc item) (:buc %))
-                                               (= (:name item) (:name %)))
-                                         items))))
+        (if (not= @robbed-of
+                  (swap! robbed-of (partial removev #(found-item? items %))))
+          (log/debug "found stolen items, now missing" @robbed-of)))
       ToplineMessageHandler
       (message [_ msg]
-        ; ... TODO
-        ;(swap! robbed-of conj [(:turn game) (:dlvl game) (:branch-id game) item])
-        ))))
+        (when-let [label (re-first-group #" (?:stole|snatches) ([^.!]*)\[.!]"
+                                         msg)]
+          (log/debug "robbed of" label)
+          (if-let [[_ item] (inventory-label @game label)]
+            (swap! robbed-of conj
+                   [(:turn @game) (:dlvl @game) (:branch-id @game) item])
+            (log/warn "stolen item" label "not in inventory?")))))))
 
 (defn wish [game]
   (cond
@@ -1063,10 +1075,10 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (examine-containers-here game))))
-      (register-handler 7 (reify ActionHandler
+      (register-handler 8 (hunt anbf))
+      (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
                               (use-features game))))
-      #_(register-handler 9 (hunt anbf))
       (register-handler 10 (excal-handler anbf))
       (register-handler 11 (reify ActionHandler
                             (choose-action [this game]

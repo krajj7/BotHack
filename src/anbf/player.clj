@@ -400,3 +400,10 @@
   "Return the amount of gold the player has including bagged gold"
   [game]
   (have-sum game gold? #{:bagged}))
+
+(defn inventory-label
+  "Returns the [slot item] of something in main inventory that matches the label or nil"
+  [game label]
+  (find-first #(or (.startsWith (:label (val %)) label)
+                   (= (:name (val %)) label))
+              (inventory game)))
