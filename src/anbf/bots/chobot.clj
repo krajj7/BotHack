@@ -981,6 +981,25 @@
         (if (throne? (at-player game))
           (with-reason "sitting on throne" ->Sit)))))
 
+(defn kill-medusa [anbf]
+  (reify ActionHandler
+    (choose-action [this {:keys [player] :as game}]
+      (with-reason "killing medusa"
+        (if-let [medusa (and (not (reflection? player))
+                             (get-level game :main :medusa))]
+          (if (or (and (:medusa-1 (curlvl-tags game))
+                       (:seen (at medusa {:x 38 :y 11})))
+                  (and (:medusa-2 (curlvl-tags game))
+                       (:seen (at medusa {:x 70 :y 12}))))
+            (deregister-handler anbf this)
+            (if-let [[slot item] (have game blind-tool #{:noncursed})]
+              (or (if (and (stairs-up? (at-player game))
+                           (= (prev-dlvl (:dlvl game)) (:dlvl medusa)))
+                    (or (make-use game slot) ->Ascend))
+                  (if (and (= (:dlvl game) (:dlvl medusa))
+                           (> 20 (distance player {:x 38 :y 11})))
+                    (go-down game medusa))))))))))
+
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1022,6 +1041,7 @@
       (register-handler -4 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))
+      (register-handler -3 (kill-medusa game))
       (register-handler -2 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
@@ -1046,11 +1066,11 @@
       (register-handler 7 (reify ActionHandler
                             (choose-action [_ game]
                               (use-features game))))
-      #_(register-handler 8 (hunt anbf))
-      (register-handler 9 (excal-handler anbf))
-      (register-handler 10 (reify ActionHandler
+      #_(register-handler 9 (hunt anbf))
+      (register-handler 10 (excal-handler anbf))
+      (register-handler 11 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 11 (reify ActionHandler
+      (register-handler 12 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))
