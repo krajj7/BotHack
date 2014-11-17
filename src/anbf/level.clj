@@ -402,7 +402,8 @@
     :tag :bottom
     :cutoff-rows (concat (range 1 5) (range 19 22))
     :cutoff-cols (concat (range 0 22) (range 52 80))
-    :undiggable-tiles (remove (set (rectangle (position 32 10) (position 38 16)))
+    :undiggable-tiles (remove (set (rectangle (position 32 10)
+                                              (position 38 16)))
                               wiztower-rect)
     :features {{:x 43 :y 17} :door-secret
                {:x 42 :y 11} :door-secret

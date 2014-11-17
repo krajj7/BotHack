@@ -27,7 +27,7 @@
        (defn ~(symbol (str \- action)) ~args
          (~(symbol (str action \.)) ~@args))))
 
-(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|staircase (?:up|down)|spider web|web|ice|opulent throne|pool of water|hole|trap door|fountain|sink|grave|molten lava|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
+(def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|ladder (?:up|down)|staircase (?:up|down)|spider web|web|ice|opulent throne|pool of water|hole|trap door|fountain|sink|grave|molten lava|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
 (def ^:private trap-disarm-re #"You tear through \w+ web!|You (?:burn|dissolve) \w+ spider web!|You hear a (?:loud|soft) click(?:!|\.)")
 
@@ -44,6 +44,8 @@
                                "doorway" (if rogue? :door-open :floor)
                                "open door" :door-open
                                "broken door" :floor
+                               "ladder up" :stairs-up
+                               "ladder down" :stairs-down
                                "staircase up" :stairs-up
                                "staircase down" :stairs-down
                                "fountain" :fountain
