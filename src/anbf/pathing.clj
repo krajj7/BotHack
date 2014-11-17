@@ -1020,7 +1020,7 @@
         player-tile (at-player game)]
     (or (search-dead-end game 20)
         (if-let [path (navigate game (partial explorable-tile? level)
-                                #{:prefer-items :no-fight})]
+                                #{:prefer-items})]
           (with-reason "exploring" (at level (:target path))
             (:step path)))
         ; TODO search for shops if heard but not found
