@@ -292,9 +292,9 @@
               #"You step onto a level teleport trap!"
               (reset! levelport true)
               #" appears before you\."
-              (swap! game update-peaceful-status demon-lord?)
+              (swap! game recheck-peaceful-status demon-lord?)
               #"Infidel, you have entered Moloch's Sanctum!"
-              (swap! game update-peaceful-status high-priest?)
+              (swap! game recheck-peaceful-status high-priest?)
               #"The Amulet of Yendor.* feels (hot|very warm|warm)"
               :>> (partial update-on-known-position anbf update-portal-range)
               #"You are slowing down|Your limbs are stiffening"
