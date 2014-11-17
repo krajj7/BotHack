@@ -131,8 +131,16 @@
                          :when fullname]
                      [fullname i]))))
 
+(def blind-plurals {"stones" "stone"
+                    "gems" "gem"
+                    "potions" "potion"
+                    "wands" "wand"
+                    "spellbooks" "spellbook"
+                    "scrolls" "scroll"})
+
 (def plural->singular "{plural => singular} for all stackable item appearances"
-  (merge generic-plurals
+  (merge blind-plurals
+         generic-plurals
          (into {}
                (for [{:keys [name plural] :as id} items
                      :when plural]

@@ -1201,7 +1201,9 @@
   [anbf]
   (reify ActionHandler
     (choose-action [_ game]
-      (if-let [[slot item] (have game (partial ambiguous-appearance? game))]
+      (if-let [[slot item] (and (not (blind? (:player game)))
+                                (have game
+                                      (partial ambiguous-appearance? game)))]
         (->Call slot (gensym (last-word (:name item))))))))
 
 ; factory functions for Java bots ; TODO the rest
