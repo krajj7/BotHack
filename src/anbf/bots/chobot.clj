@@ -910,7 +910,7 @@
         (make-excal game)))))
 
 (defn rob? [m]
-  (#{"dwarf" "dwarf lord"} (typename m)))
+  (#{"dwarf" "dwarf lord" "hobbit"} (typename m)))
 
 (defn rob-peacefuls [{:keys [player] :as game}]
   (let [level (curlvl game)]
