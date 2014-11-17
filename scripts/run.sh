@@ -28,5 +28,9 @@ mkdir -pv "$arch"
 mv *.log* *.ttyrec "$arch"
 # LD_LIBRARY_PATH is necessary for the local shell interface (not needed for
 # ssh/telnet), the JNI interface must be compiled manually beforehand
-lein compile && (echo "(-main \"$CONFIG\")"
-                 cat -) | LD_LIBRARY_PATH=jta26/jni/linux/ lein repl
+if [ "$1" = "repl" ]; then
+  lein compile && LD_LIBRARY_PATH=jta26/jni/linux/ lein repl
+else
+  lein compile && (echo "(-main \"$CONFIG\")"
+                   cat -) | LD_LIBRARY_PATH=jta26/jni/linux/ lein repl
+fi
