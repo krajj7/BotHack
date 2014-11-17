@@ -46,7 +46,7 @@
    engulfed
    trapped
    leg-hurt
-   state ; subset #{:stun :conf :hallu :blind :ill}
+   state ; subset #{:stun :conf :hallu :blind :ill :ext-blind}
    stat-drained
    polymorphed
    lycantrophy
@@ -66,6 +66,7 @@
 
 (defn update-player [player status]
   (cond-> (->> (keys player) (select-keys status) (into player))
+    (not (:blind status)) (update [:state] disj :ext-blind)
     (= "HD" (:xp-label status)) (assoc :polymorphed (some->> (:title status)
                                                              string/lower-case
                                                              name->monster))
@@ -246,6 +247,7 @@
   (or (:stat-drained player)
       (some (:state player) #{:conf :stun :hallu :ill})
       (and (:blind (:state player))
+           (not (:ext-blind (:state player)))
            (not (have game #(and (#{"towel" "blindfold"} (item-name game %))
                                  (:in-use %)))))))
 

@@ -1208,6 +1208,15 @@
                                       (partial ambiguous-appearance? game)))]
         (->Call slot (gensym (last-word (:name item))))))))
 
+(defaction Wipe []
+  (trigger [_] "#wipe\n")
+  (handler [_ {:keys [game] :as anbf}]
+    (reify ToplineMessageHandler
+      (message [_ msg]
+        (if (re-seq #"Your .* is already clean|You've got the glop off"
+                    msg)
+          (swap! game update-in [:player :state] disj :ext-blind))))))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

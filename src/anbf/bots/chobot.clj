@@ -269,6 +269,9 @@
   (or (if (:lycantrophy player)
         (if-not (in-gehennom? game)
           (with-reason "curing lycantrophy" ->Pray)))
+      (if (and (has-hands? player)
+               (:ext-blind (:state player)))
+        (with-reason "fixing external blindness" ->Wipe))
       (if-let [[slot _] (and (unihorn-recoverable? game)
                              (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))

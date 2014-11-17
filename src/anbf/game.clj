@@ -293,6 +293,8 @@
               (reset! levelport true)
               #" appears before you\."
               (swap! game recheck-peaceful-status demon-lord?)
+              #"The venom blinds you|You can't see through all the sticky goop"
+              (swap! game update-in [:player :state] conj :ext-blind)
               #"Infidel, you have entered Moloch's Sanctum!"
               (swap! game recheck-peaceful-status high-priest?)
               #"The Amulet of Yendor.* feels (hot|very warm|warm)"
