@@ -558,7 +558,7 @@
   (and (searchable-position? tile)
        (wall? tile)
        (< (:searched tile) howmuch)
-       (cond (= :wiztower (branch-key level)) (not (wiztower-inner-boundary
+       (cond (= :wiztower (:branch-id level)) (not (wiztower-inner-boundary
                                                      (position tile)))
              (:sanctum (:tags level)) (->> (straight-neighbors level tile)
                                            (filter firetrap?) count (= 1))

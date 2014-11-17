@@ -278,7 +278,7 @@
                #(let [new-branch (cond
                                    @entered-vlad :vlad
                                    (and (subbranches old-branch)
-                                        (= (branch-entry game old-branch)
+                                        (= (branch-entry % old-branch)
                                            new-dlvl)) :main
                                    :else (get old-stairs :branch-id
                                               (initial-branch-id % new-dlvl)))]

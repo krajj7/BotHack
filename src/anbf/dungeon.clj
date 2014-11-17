@@ -202,6 +202,7 @@
 (defn get-level
   "Return Level in the given branch with the given tag or dlvl, if such was visited already"
   [game branch dlvl-or-tag]
+  {:pre [(:dungeon game)]}
   (if-let [levels (get-branch game branch)]
     (if (keyword? dlvl-or-tag)
       (some #(and ((:tags %) dlvl-or-tag) %) (vals levels))
@@ -213,6 +214,7 @@
 (defn lit?
   "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
   [player level pos]
+  {:pre [(:hp player)]}
   (let [tile (at level pos)]
     (or (adjacent? pos player) ; TODO actual player light radius
         (= \. (:glyph tile))
@@ -229,6 +231,7 @@
   #{:door-closed :door-open :door-locked :door-secret :altar :sink :fountain :throne})
 
 (defn- has-features? [level]
+  {:pre [(:tiles level)]}
   "checks for features not occuring in the mines (except town/end)"
   (some (comp main-features :feature) (tile-seq level)))
 
@@ -264,6 +267,7 @@
 (defn branch-entry
   "Return Dlvl of :main containing entrance to branch, if static or already visited"
   [game branch]
+  {:pre [(:dungeon game)]}
   (if (planes branch)
     "Dlvl:1"
     (if-let [l (get-level game :main (branch-key game branch))]
@@ -272,6 +276,7 @@
 (defn merge-branch-id
   "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
   [{:keys [dungeon] :as game} branch-id branch]
+  {:pre [dungeon]}
   (log/debug "merging branch-id" branch-id "to branch" branch)
   ;(log/debug dungeon)
   (-> game
@@ -283,6 +288,7 @@
       (update-in [:dungeon :levels] dissoc branch-id)))
 
 (defn infer-branch [game]
+  {:pre [(:dungeon game)]}
   (if (branches (branch-key game))
     game ; branch already known
     (let [level (curlvl game)]
