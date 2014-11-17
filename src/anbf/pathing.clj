@@ -658,14 +658,16 @@
       (dlvl-changed [_ _ _]
         (reset! save true))
       ActionChosenHandler
-      (action-chosen [_ _]
-        (when-let [f (:explore-cache @(:game anbf))]
-          (if @save
-            (swap! (:game anbf)
-                   #(assoc-in % [:dungeon :levels (branch-key % (@loc 0))
-                                 (@loc 1) :explored] (exploration-index %))))
-          (swap! (:game anbf) assoc :explore-cache nil)
-          (future-cancel f)))
+      (action-chosen [_ action]
+        (if-not (#{:call :name :discoveries :inventory :look :farlook}
+                         (typekw action))
+          (when-let [f (:explore-cache @(:game anbf))]
+            (if @save
+              (swap! (:game anbf)
+                     #(assoc-in % [:dungeon :levels (branch-key % (@loc 0))
+                                   (@loc 1) :explored] (exploration-index %))))
+            (swap! (:game anbf) assoc :explore-cache nil)
+            (future-cancel f))))
       AboutToChooseActionHandler
       (about-to-choose [_ game]
         (reset! loc [(:branch-id game) (:dlvl game)])
