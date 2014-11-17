@@ -180,7 +180,7 @@
     DieHandler
     (die [_ _] (log/warn "died") "")
     KeepSaveHandler
-    (keep-save [_ _] "")
+    (keep-save [_ _] "y")
     CallWhatNameHandler
     (call-what-name [_ _] "")))
 
