@@ -250,8 +250,10 @@
                                  (:in-use %)))))))
 
 (defn can-remove? [game slot]
-  (or (not (:in-use (inventory-slot game slot)))
-      (empty? (cursed-blockers game slot))))
+  (let [item (inventory-slot game slot)]
+    (or (not (:in-use item))
+        (and (empty? (cursed-blockers game slot))
+             (noncursed? item)))))
 
 (defn wielding
   "Return the wielded [slot item] or nil"

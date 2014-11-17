@@ -809,8 +809,8 @@
     (update-inventory anbf)
     (update-tile anbf)
     (let [labels (if (string? label-or-list)
-              (multiset label-or-list)
-              (into (multiset) label-or-list))
+                   (multiset label-or-list)
+                   (into (multiset) label-or-list))
           remaining (atom labels)]
       (reify PickupHandler
         (pick-up-what [_ options]
@@ -967,8 +967,10 @@
 
 (defn remove-use [game slot]
   (let [item (inventory-slot game slot)]
-    (if (and (:in-use item))
-      (remove-blockers game slot))))
+    (if (:in-use item)
+      (or (remove-blockers game slot)
+          (if (can-remove? game slot)
+            ((remove-action item) slot))))))
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation
