@@ -78,3 +78,9 @@
    (if (container? (inventory-slot game maybe-bag-slot))
      (with-reason "preparing item -" (:name item)
        (take-out maybe-bag-slot (:label item) qty)))))
+
+(defn seek-high-altar [{:keys [player] :as game}]
+  (with-reason "seeking high altar"
+    (seek game #(and (altar? %)
+                     (or (= (:alignment player) (:alignment %))
+                         (not (:walked %)))))))

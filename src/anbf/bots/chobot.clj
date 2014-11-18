@@ -109,10 +109,6 @@
         (explore game :wiztower)
         (invocation game))))
 
-(defn seek-high-altar [game]
-  (with-reason "seeking unknown high altar"
-    (seek game (every-pred altar? (complement :walked)))))
-
 (defn endgame? [game]
   (get-level game :main :sanctum))
 
