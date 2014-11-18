@@ -382,7 +382,7 @@
         (message-lines [_ lines]
           (if (re-seq things-re (first lines))
             (let [items (mapv label->item (subvec lines 1))
-                  top-item (nth items 0)]
+                  top-item (firstv items)]
               (log/debug "Items here:" (log/spy items))
               (reset! has-item true)
               (swap! game #(update-at-player %
@@ -437,7 +437,7 @@
               (swap! game update-at pos assoc :feature
                      (or (trap-names trap)
                          (throw (IllegalArgumentException. (str "unknown farlook trap: " text " >>> " trap))))))
-            (when-let [desc (and (monster-glyph? (nth text 0))
+            (when-let [desc (and (monster-glyph? (firstv text))
                                  (re-any-group farlook-monster-re text))]
               (let [peaceful? (.contains ^String desc "peaceful ")
                     montype (by-description desc)]

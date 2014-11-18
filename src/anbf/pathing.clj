@@ -328,7 +328,7 @@
        (edge-passable-walking? game level from to)
        (or (safely-walkable? level to)
            (and ((some-fn pool? ice?) to)
-                (-> opts :levi (nth 1) :in-use)))))
+                (-> opts :levi secondv :in-use)))))
 
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))
@@ -348,7 +348,7 @@
         target))))
 
 (defn- path-step [game level from move-fn path opts]
-  (if-let [start (first path)]
+  (if-let [start (firstv path)]
     (some-> (or (if-let [target (and (not (:no-autonav opts))
                                      (not (weak? (:player game)))
                                      (autonav-target game from level path opts))]
@@ -356,7 +356,7 @@
                 (if (:trapped (:player game))
                   (with-reason "untrapping self"
                     (untrap-move game level)))
-                (nth (move-fn from start) 1))
+                (secondv (move-fn from start)))
             (assoc :path path))))
 
 (defn- get-a*-path [game level from to move-fn opts max-steps]

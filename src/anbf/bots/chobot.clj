@@ -97,7 +97,7 @@
         (visit game :sokoban)
         (explore game :main :quest)
         (let [minetown (get-level game :mines :minetown)]
-          (if (or (some->> game have-key val key?)
+          (if (or (some->> game have-key secondv key?)
                   (not (:minetown-grotto (:tags minetown)))
                   (:seen (at minetown 48 5)))
             (explore game :mines)))
@@ -202,7 +202,7 @@
 (def desired-singular (set (apply concat desired-items)))
 
 (defn entering-shop? [game]
-  (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
+  (some->> (:last-path game) firstv (at-curlvl game) shop?))
 
 (defn desired-food [game]
   (let [min-nw (if (< 2000 (nutrition-sum game))
@@ -848,7 +848,7 @@
   (let [tile (and (= :astral (:branch-id game))
                   (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (key (have game real-amulet?))))))
+      (->Offer (firstv (have game real-amulet?))))))
 
 (defn detect-portal [anbf]
   (reify ActionHandler

@@ -23,7 +23,7 @@
 (defn- menu-head
   "Return menu title"
   [frame]
-  (if (not-any? inverse? (nth (:colors frame) 0))
+  (if (not-any? inverse? (firstv (:colors frame)))
     (topline frame)))
 
 (defn- menu-page
@@ -35,7 +35,7 @@
                                           ((partial mapv parse-int)))
     nil))
 
-(defn- menu-curpage [frame] (nth (menu-page frame) 0))
+(defn- menu-curpage [frame] (firstv (menu-page frame)))
 
 (defn- menu-end?
   "Is this the last page of a menu?"
@@ -209,7 +209,7 @@
     #"What do you want to write with" write-with-what
     #"Do you want to add to the current engraving" append-engraving
     #".* offers ([0-9]+) gold pieces for your ([^.]+)\.  Sell it\?"
-    :>> #(list sell-it (parse-int (first %)) (second %))
+    :>> #(list sell-it (parse-int (firstv %)) (secondv %))
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
 
@@ -322,9 +322,9 @@
                        (ref-set items []))
                      (alter items into item-list)
                      ; message about a feature that would normally appear as topline message may become part of a list when there are items on the tile
-                     (when (and (empty? (nth @items 1))
-                                (not (.endsWith ^String (nth @items 0) ":")))
-                       (send delegator message (nth @items 0))
+                     (when (and (empty? (secondv @items))
+                                (not (.endsWith ^String (firstv @items) ":")))
+                       (send delegator message (firstv @items))
                        (alter items subvec 2))
                      (send delegator write " ")
                      initial)

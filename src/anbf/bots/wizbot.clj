@@ -184,7 +184,7 @@
    desired-weapons])
 
 (defn entering-shop? [game]
-  (some->> (nth (:last-path game) 0) (at-curlvl game) shop?))
+  (some->> (:last-path game) firstv (at-curlvl game) shop?))
 
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
@@ -431,7 +431,7 @@
   (let [tile (and (= :astral (:branch-id game))
                   (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (key (have game real-amulet?))))))
+      (->Offer (firstv (have game real-amulet?))))))
 
 (defn detect-portal [anbf]
   (reify ActionHandler

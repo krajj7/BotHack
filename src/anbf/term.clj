@@ -74,14 +74,14 @@
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
   [update]
-  (if-not (nth update 0)
+  (if-not (firstv update)
     (filter #(->> % inc (nth update) true?)
             (range 24))))
 
 (defn- update-frame
   "Returns an updated frame snapshot as modified by a redraw (only some rows may need to update, as specified by update[])."
   [f newbuf updated-rows]
-  (if (nth (.update ^vt320 newbuf) 0) ; if update[0] == true, all rows need to update
+  (if (firstv (.update ^vt320 newbuf)) ; if update[0] == true, all rows need to update
     (frame-from-buffer newbuf)
     (->Frame (reduce #(assoc %1 %2 (-> ^vt320 newbuf
                                        .charArray (nth %2) unpack-line))

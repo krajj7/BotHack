@@ -35,6 +35,12 @@
        (throw (IllegalStateException.
                 (str "Configuration missing key: " key))))))
 
+(defn firstv [v]
+  (nth v 0))
+
+(defn secondv [v]
+  (nth v 1))
+
 (defn re-first-groups
   "Return the capturing groups of the first match or whole first match if no groups"
   [re text]
@@ -48,7 +54,7 @@
   [re text]
   (if-let [m (first (re-seq re text))]
     (if (vector? m)
-      (nth m 1)
+      (secondv m)
       m)))
 
 (defn re-any-group
@@ -140,9 +146,6 @@
     `(let [~gpred ~pred
            ~gexpr ~expr]
        ~(emit gpred gexpr clauses))))
-
-(defn secondv [v]
-  (nth v 1))
 
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new
