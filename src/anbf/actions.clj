@@ -475,7 +475,9 @@
   "Keep some info about items on inventory update"
   [inventory [old-slot old-item]]
   (if (inventory old-slot)
-    (update inventory old-slot into (select-keys old-item [:items :locked]))
+    (update inventory old-slot
+            #(into % (select-keys old-item [:items :locked (if (nil? (:buc %))
+                                                             :buc)])))
     inventory)) ; item gone
 
 (defaction Inventory []
@@ -1142,9 +1144,14 @@
 
 (defaction Dip [item-slot potion-slot]
   (trigger [_] "#dip\n")
-  (handler [_ anbf]
+  (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (if (and (= msg "Interesting...")
+                 (holy-water? (inventory-slot @game potion-slot)))
+          (swap! game assoc-in [:player :inventory item-slot :buc] :blessed)))
       DipHandler
       (dip-what [_ _] item-slot)
       (dip-into-what [_ _]

@@ -153,10 +153,13 @@
 (defn- have-selector [game name-or-set-or-fn opts]
   (apply every-pred (base-selector game name-or-set-or-fn)
          (remove nil? [(if (:safe opts) safe?)
+                       (if (:unsafe opts) (complement safe?))
+                       (if (false? (:safe opts)) (complement safe?))
                        (if (:noncursed opts) noncursed?)
                        (if (:buc opts) (comp (partial = (:buc opts)) :buc))
                        (if (:nonblessed opts) (complement blessed?))
                        (if (:know-buc opts) (comp some? :buc))
+                       (if (false? (:know-buc opts)) (comp nil? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))
                        (if (:in-use opts) :in-use)])))
 
@@ -204,8 +207,9 @@
      :noncursed - return only items not known to be cursed
      :nonblessed - return only items not known to be blessed
      :buc <:cursed/:uncursed/:blessed> - return only items known to have given buc
-     :know-buc - items with any (known) buc
+     :know-buc - if true items with any (known) buc, if false items with unknown buc
      :safe - same as :know-buc + :noncursed
+     :unsafe - complement of :safe
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory
      :can-remove - returns only items that are unused or not blocked by anything cursed
