@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [anbf.itemtype :refer :all]
+            [anbf.delegator :refer :all]
             [anbf.itemid :refer :all]
             [anbf.util :refer :all]))
 
@@ -206,5 +207,23 @@
 (defn key? [item]
   (.contains (:name item) "key"))
 
-(defn price-id? [item]
-  ((some-fn tool? ring? scroll? wand? potion? armor?) item))
+(defn price-id?
+  ([game item]
+   (and (not (know-price? game item))
+        (price-id? item)))
+  ([item]
+   (and (= 1 (:qty item))
+        (not (artifact? item))
+        (knowable-appearance? (appearance-of item))
+        ((some-fn tool? ring? scroll? wand? potion? armor?) item))))
+
+(defn itemid-handler [{:keys [game] :as anbf}]
+  (reify FoundItemsHandler
+    ; TODO castle WoW, soko earth
+    (found-items [_ items]
+      (for [item items]
+        (if (and (:cost item) (price-id? item))
+          (swap! game add-observed-cost (appearance-of item)
+                 (:cost item) false))))))
+
+(defn know-engrave? [game item] (know-prop? game item :engrave))

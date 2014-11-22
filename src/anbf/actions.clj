@@ -613,7 +613,7 @@
     (update-inventory anbf)
     (update-tile anbf)
     (update-discoveries anbf)
-    (if names name
+    (if (names name)
       (swap! game update :used-names conj name))
     (reify
       NameMenuHandler
@@ -787,11 +787,17 @@
 
 (defaction DropSingle [slot qty]
   (trigger [_] "d")
-  (handler [_ anbf]
+  (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
     (update-tile anbf)
-    (swap! (:game anbf) update :player dissoc :thick)
-    (reify DropSingleHandler
+    (swap! game update :player dissoc :thick)
+    (reify
+      SellItHandler
+      (sell-it [_ bid _]
+        (let [item (inventory-slot @game slot)]
+          (if (price-id? game item)
+            (swap! game add-observed-cost (appearance-of item) bid :sell))))
+      DropSingleHandler
       (drop-single [_ _] (str (if (pos? qty) qty) slot)))))
 
 (defaction Quiver [slot]
@@ -880,6 +886,7 @@
   (trigger [_] "r")
   (handler [_ {:keys [game] :as anbf}]
     (update-inventory anbf)
+    (possible-autoid anbf slot)
     (reify
       ReadWhatHandler
       (read-what [_ _] slot)
@@ -933,6 +940,7 @@
 (defaction Quaff [slot]
   (trigger [_] "q")
   (handler [_ {:keys [game] :as anbf}]
+    (possible-autoid anbf slot)
     (reify
       DrinkHereHandler
       (drink-here [_ _]
@@ -1195,13 +1203,40 @@
       DirectionHandler
       (what-direction [_ _] dir))))
 
+(defn- engrave-effect [msg]
+  (condp re-seq msg
+    #"The engraving .*vanishes!"
+    :vanish
+    #"A few ice cubes drop"
+    :cold
+    #"The.* is riddled by bullet holes"
+    :bullet
+    #"The bugs on the.* stop moving!"
+    :stop
+    #"The bugs on the.* slow down"
+    :slow
+    #"The bugs on the.* speed up"
+    :speed
+    #"The engraving now reads"
+    :change
+    #"fights your attempt to write"
+    :fights
+    nil))
+
 (defaction Engrave [slot what append?]
   (trigger [_] "E")
-  (handler [_ anbf]
+  (handler [_ {:keys [game] :as anbf}]
     (update-tile anbf)
-    (if (not= \- slot)
+    (when (not= \- slot)
+      (possible-autoid anbf slot)
       (update-inventory anbf))
     (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (if-let [effect (engrave-effect msg)]
+          (swap! game add-prop-discovery
+                 (appearance-of (inventory-slot game slot))
+                 :engrave effect)))
       EngraveAppendHandler
       (append-engraving [_ _] (boolean append?))
       EngraveWithWhatHandler
@@ -1232,10 +1267,44 @@
                     msg)
           (swap! game update-in [:player :state] disj :ext-blind))))))
 
+(defaction ZapWand [slot]
+  (trigger [_] "z")
+  (handler [_ {:keys [game] :as anbf}]
+    (possible-autoid anbf slot)
+    (let [target (atom false)]
+      (reify
+        ZapWhatHandler
+        (zap-what [_ _] slot)
+        AboutToChooseActionHandler
+        (about-to-choose [_ _]
+          (if-not @target
+            (swap! game add-prop-discovery
+                   (appearance-of (inventory-slot game slot))
+                   :target false)))
+        DirectionHandler
+        (what-direction [_ _]
+          (reset! target true)
+          (swap! game add-prop-discovery
+                 (appearance-of (inventory-slot game slot))
+                 :target true)
+          nil)
+        ToplineMessageHandler
+        (message [_ msg]
+          (when (re-seq #"Nothing happens" msg)
+            (reset! target true)
+            (name-item anbf slot "empty")))))))
+
+(defn ->ZapWandAt [slot dir]
+  (with-handler (inc priority-bottom)
+    (reify DirectionHandler
+      (what-direction [_ _] dir))
+    (->ZapWand slot)))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions
   :methods [^:static [Move [anbf.bot.Direction] anbf.bot.IAction]
             ^:static [Pray [] anbf.bot.IAction]
             ^:static [withHandler [anbf.bot.IAction Object] anbf.bot.IAction]
-            ^:static [withHandler [anbf.bot.IAction int Object] anbf.bot.IAction]])
+            ^:static [withHandler [anbf.bot.IAction int Object]
+                      anbf.bot.IAction]])

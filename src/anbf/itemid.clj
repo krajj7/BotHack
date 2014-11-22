@@ -1,4 +1,5 @@
 (ns anbf.itemid
+  "identifying items using some logic programming"
   (:refer-clojure :exclude [==])
   (:require [clojure.tools.logging :as log]
             [clojure.core.logic :refer :all]
@@ -13,7 +14,7 @@
 (db-rel appearance-prop-val ^:index appearance ^:index propname ^:index propval)
 (db-rel base-cha-cost ^:index base ^:index cha ^:index cost)
 
-(def observable-props [:engrave :zaptype :hardness])
+(def observable-props [:engrave :target :hardness])
 
 (def item-names ; {lamp => [lamp1 lamp2], bag => [bag1 bag2 bag3 bag4], ...}
   (->> (for [{:keys [appearances]} items
@@ -80,15 +81,15 @@
   (or (and (item-names (:name item)) (:generic item))
       (:name item)))
 
-(defn propc [appearance id prop]
+(defn new-discoveries [] empty-db)
+
+(defn- propc [appearance id prop]
   (fresh [propval]
     (conda
       [(appearance-prop-val appearance prop propval)
        (project [id]
          (== propval (prop (name->item id))))]
       [succeed])))
-
-(defn new-discoveries [] empty-db)
 
 (defn- merge-records
   "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"
@@ -116,7 +117,7 @@
     19 18 ; cha 18
     25)) ; cha>18
 
-(defn pricec [appearance id]
+(defn- pricec [appearance id]
   (fresh [cha cost price]
     (conda
       [(appearance-cha-cost appearance cha cost)
@@ -184,7 +185,7 @@
   [game item]
   (some? (item-name game item)))
 
-(defn- knowable-appearance?
+(defn knowable-appearance?
   "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
   [appearance]
   {:pre [(string? appearance)]}
@@ -233,6 +234,17 @@
           discoveries))
 
 (defn ambiguous-appearance? [game item]
-  (not (or (:generic item)
-           (exclusive-appearances (:name item))
-           (know-id? game item))))
+  (and (not (:generic item))
+       (names (:name item))))
+
+(defn know-price? [game item]
+  (seq (query (:discoveries game)
+         (run 1 [q]
+           (fresh [cha cost]
+             (appearance-cha-cost (appearance-of item) cha cost))))))
+
+(defn know-prop? [game item prop]
+  (seq (query (:discoveries game)
+         (run 1 [q]
+           (fresh [_]
+             (appearance-prop-val (appearance-of item) prop _))))))

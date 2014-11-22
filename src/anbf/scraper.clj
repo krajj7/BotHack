@@ -508,6 +508,9 @@
                   (dosync (ref-set scraper (new-scraper delegator prompt))
                           (log/debug "no-mark scraper, prev =" prompt)))]
     (reify
+      ZapWhatHandler
+      (zap-what [_ prompt]
+        (no-mark prompt))
       ThrowWhatHandler
       (throw-what [_ prompt]
         (no-mark prompt))
