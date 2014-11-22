@@ -6,7 +6,8 @@
             [anbf.actions :refer :all]
             [anbf.delegator :refer :all]
             [anbf.dungeon :refer :all]
-            [anbf.itemtype :refer :all]
+            [anbf.item :refer :all]
+            [anbf.itemid :refer :all]
             [anbf.term :refer :all]
             [anbf.game :refer :all]
             [anbf.handlers :refer :all]
@@ -211,6 +212,7 @@
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-top (call-id-handler anbf))
          (register-handler priority-bottom prompt-escape)
+         (register-handler priority-top (itemid-handler anbf))
          (register-handler priority-top (reset-exploration anbf))
          (register-handler priority-top (death-tracker anbf))
          (register-handler priority-bottom

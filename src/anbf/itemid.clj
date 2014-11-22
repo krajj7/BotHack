@@ -7,30 +7,62 @@
             [anbf.itemdata :refer :all]
             [anbf.util :refer :all]))
 
-(db-rel itemid ^:index i)
-(db-rel itemid-appearance ^:index i ^:index a)
-(db-rel itemid-zaptype ^:index i z)
-(db-rel itemid-price ^:index i p)
-(db-rel appearance ^:index a)
-(db-rel appearance-price ^:index a ^:index p) ; for exclusive appearances, for non-exclusive only cost matters
-(db-rel appearance-zaptype ^:index a ^:index z)
+(db-rel discovery ^:index appearance ^:index itemid)
+(db-rel appearance-itemid ^:index appearance ^:index itemid)
+(db-rel appearance-cha-cost ^:index appearance ^:index cha ^:index cost)
+(db-rel appearance-prop-val ^:index appearance ^:index propname ^:index propval)
+(db-rel base-cha-cost ^:index base ^:index cha ^:index cost)
 
-(def initial-discoveries
-  (->> (for [{:keys [name appearances price zaptype] :as i} items]
-         (apply vector
-                [itemid name]
-                (if price
-                  [itemid-price name price])
-                (if zaptype
-                  [itemid-zaptype name zaptype])
-                (if-not (and (:artifact i) (:base i))
-                  (apply concat
-                         (for [a appearances]
-                           [[appearance a]
-                            [itemid-appearance name a]])))))
-       (apply concat)
-       (remove nil?)
-       (apply db)))
+(def observable-props [:engrave :zaptype :hardness])
+
+(def item-names ; {lamp => [lamp1 lamp2], bag => [bag1 bag2 bag3 bag4], ...}
+  (->> (for [{:keys [appearances]} items
+                a appearances
+                :when (not (exclusive-appearances a))
+                :when (not= "Amulet of Yendor" a)
+                :when (not= "egg" a)
+                :when (not= "tin" a)]
+            a)
+       (reduce (fn add-name [res a]
+                 (update res a #(->> % count inc (str a) (conj (or % [])))))
+               {})
+       (remove #(= 1 (count (val %))))
+       (into {})))
+
+(def names (into #{} (apply concat (vals item-names))))
+
+(def ^:private cost-data
+  (for [cost #_[60 300] (range 501)
+        [cha charge] [[6 #(* 2 %)]
+                      [7 #(+ % (quot % 2))]
+                      [8 #(+ % (quot % 3))]
+                      [15 identity]
+                      [17 #(- % (quot % 4))]
+                      [18 #(- % (quot % 3))]
+                      [25 #(quot % 2)]
+                      [0 identity]] ; sell price
+        id-charge (if (zero? cha)
+                    [#_#(quot % 3) ; ignore dunce cap case
+                     #(quot % 2)]
+                    [identity #(+ % (quot % 3))])
+        sucker-charge (if (zero? cha)
+                 [identity #(- % (quot % 4))]
+                 [identity #(+ % (quot % 3))])]
+    [cost cha (-> cost id-charge sucker-charge charge)]))
+
+(def ^:private initial
+  "DB that contains the initial possibilities for costs and appearances of items"
+  (apply db (concat (for [[base cha cost] cost-data]
+                      [base-cha-cost base cha cost])
+                    (for [{:keys [name appearances] :as i} items
+                          res (if-not (and (:artifact i) (:base i))
+                                (concat (for [a appearances]
+                                          [appearance-itemid a name])
+                                        (for [a appearances
+                                              n (item-names a)]
+                                          [appearance-itemid n name])))
+                          :when res]
+                      res))))
 
 (def blind-appearances
   (into {} (for [[generic-name typekw glyph] [["stone" :gem \*]
@@ -42,27 +74,21 @@
              [generic-name ((kw->itemtype typekw) {:glyph glyph})])))
 
 (defmacro query [discoveries qr]
-  `(with-db ~discoveries ~qr))
+  `(with-dbs [@#'initial ~discoveries] ~qr))
 
-(defn- possibilities ; TODO consider price/cost, zaptype, etc.
-  "Return all (or n if specified) possible ItemTypes for the given item"
-  ([discoveries item]
-   (possibilities discoveries item nil))
-  ([discoveries item n]
-   (or (if-let [unseen-item (blind-appearances (:name item))]
-         [unseen-item])
-       (if-let [named-arti (name->item (:specific item))]
-         [named-arti])
-       (if-let [known-item (name->item (:name item))] ; identified in-game
-         [known-item])
-       (->> (if n
-              (run n [q] (itemid-appearance q (:name item)))
-              (run* [q] (itemid-appearance q (:name item))))
-            (query discoveries)
-            (map name->item)
-            seq)
-       (log/error (IllegalArgumentException. "unknown itemtype for item")
-                  item))))
+(defn appearance-of [item]
+  (or (and (item-names (:name item)) (:generic item))
+      (:name item)))
+
+(defn propc [appearance id prop]
+  (fresh [propval]
+    (conda
+      [(appearance-prop-val appearance prop propval)
+       (project [id]
+         (== propval (prop (name->item id))))]
+      [succeed])))
+
+(defn new-discoveries [] empty-db)
 
 (defn- merge-records
   "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"
@@ -79,32 +105,76 @@
           (first recs)
           (rest recs)))
 
-; TODO memoized version?
-(defn item-id
-  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) taking current discoveries into consideration"
-  [game item]
-  {:pre [(:discoveries game) (:name item)]}
-  (merge-records (possibilities (:discoveries game) item)))
+(defn- cha-group [cha]
+  (condp > cha
+    3 0 ; sell price
+    6 6 ; cha<6
+    8 7 ; cha 6-7
+    11 10 ; cha 8-10
+    16 15 ; cha 11-15
+    18 17 ; cha 16-17
+    19 18 ; cha 18
+    25)) ; cha>18
 
-(defn initial-id
-  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) *without* taking current discoveries into consideration"
-  [item]
-  (merge-records (possibilities initial-discoveries item)))
+(defn pricec [appearance id]
+  (fresh [cha cost price]
+    (conda
+      [(appearance-cha-cost appearance cha cost)
+       (project [id cha cost]
+         (base-cha-cost price (cha-group cha) cost)
+         (== price (:price (name->item id))))]
+      [succeed])))
+
+(defn- possibleo [appearance id]
+  (fresh [x]
+    (appearance-itemid appearance id)
+    (conda
+      [(discovery x id) (== x appearance)]
+      [(discovery appearance x) (== x id)]
+      [succeed])
+    (pricec appearance id)
+    (everyg (partial propc appearance id) observable-props)))
 
 (defn possible-ids
-  "Return all possible ItemTypes for the given item"
-  [game item]
-  {:pre [(:discoveries game) (:name item)]}
-  (possibilities (:discoveries game) item))
+  "Return n or all possible ItemTypes for the given item, taking current discoveries into consideration"
+  ([game item]
+   (possible-ids game item false))
+  ([game item n]
+   {:pre [(:discoveries game) (:name item)]}
+   (or (if-let [unseen-item (blind-appearances (:name item))]
+         [unseen-item])
+       (if-let [named-arti (name->item (:specific item))]
+         [named-arti])
+       (if-let [known-item (name->item (:name item))] ; identified in-game
+         [known-item])
+       (->> (run n [q] (possibleo (appearance-of item) q))
+            (query (:discoveries game)) (map name->item) seq)
+       (log/error (IllegalArgumentException. "unknown itemtype for item")
+                  item))))
+
+(defn initial-ids
+  "Return n or all possible ItemTypes for the given item without taking discoveries into consideration"
+  ([item]
+   (initial-ids item false))
+  ([item n]
+   (possible-ids {:discoveries (new-discoveries)} item n)))
+
+(defn item-id
+  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) optionally taking current discoveries into consideration"
+  ([item]
+   (item-id {:discoveries (new-discoveries)} item))
+  ([game item]
+   {:pre [(:discoveries game) (:name item)]}
+   (merge-records (possible-ids game item))))
 
 (defn item-type [item]
-  (typekw (first (possibilities initial-discoveries item 1))))
+  (typekw (first (initial-ids item 1))))
 
 (defn item-subtype [item]
-  (:subtype (first (possibilities initial-discoveries item 1))))
+  (:subtype (first (initial-ids item 1))))
 
 (defn item-weight [item]
-  (:weight (first (possibilities initial-discoveries item 1))))
+  (:weight (first (initial-ids item 1))))
 
 (defn item-name [game item]
   (:name (item-id game item)))
@@ -114,28 +184,47 @@
   [game item]
   (some? (item-name game item)))
 
+(defn- knowable-appearance?
+  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
+  [appearance]
+  {:pre [(string? appearance)]}
+  (not (or (blind-appearances appearance)
+           (and (not (names appearance))
+                (not (exclusive-appearances appearance))))))
+
+; TODO elimination on change - if some exclusive appearance or name is left with only 1 possibility, add as a discovery - nothing else can have that appearance
+(defn add-prop-discovery [game appearance prop propval]
+  {:pre [(string? appearance) (keyword? propval) (observable-props prop)]}
+  (if (knowable-appearance? appearance)
+    (do (log/debug "for appearance" appearance
+                   "adding observed property" prop "with value" propval)
+        (update game :discoveries db-fact appearance-prop-val
+                appearance prop propval))
+    game))
+
+(defn add-observed-cost
+  ([game appearance cha cost sell?]
+   {:pre [(number? cha) (number? cost) (string? appearance)
+          (:discoveries game)]}
+   (if (knowable-appearance? appearance)
+     (do (log/debug "for appearance" appearance
+                    "adding observed cost" cost)
+         (update game :discoveries db-fact appearance-cha-cost
+                 appearance (if sell?
+                              0
+                              (cha-group cha)) cost))
+     game))
+  ([{:keys [player] :as game} appearance cost sell?]
+   (add-observed-cost game appearance (-> player :stats :cha) cost sell?)))
+
 (defn add-discovery [game appearance id]
-  (if (or (blind-appearances appearance) (= appearance id)
-          (not (exclusive-appearances appearance))) ; old gray stones will stay gray stones...
+  {:pre [(string? appearance) (string? id)]}
+  (if (or (not (knowable-appearance? appearance))
+          (= appearance id))
     game
     (let [id (get jap->eng id id)]
       (log/debug "adding discovery: >" appearance "< is >" id "<")
-      (update game :discoveries
-              (fn integrate-discovery [db]
-                (as-> db res
-                  (reduce #(db-retraction %1 itemid-appearance
-                                          %2 appearance)
-                          res
-                          (query res
-                                 (run* [q]
-                                       (itemid-appearance q appearance))))
-                  (reduce #(db-retraction %1 itemid-appearance
-                                          id %2)
-                          res
-                          (query res
-                                 (run* [q]
-                                       (itemid-appearance id q))))
-                  (db-fact res itemid-appearance id appearance)))))))
+      (update game :discoveries db-fact discovery appearance id))))
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]

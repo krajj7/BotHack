@@ -613,6 +613,8 @@
     (update-inventory anbf)
     (update-tile anbf)
     (update-discoveries anbf)
+    (if names name
+      (swap! game update :used-names conj name))
     (reify
       NameMenuHandler
       (name-menu [_ _] \c)
@@ -872,7 +874,7 @@
    (with-handler action priority handler)))
 
 (defn- identify-slot [game slot id]
-  (add-discovery game (:name (inventory-slot game slot)) id))
+  (add-discovery game (appearance-of (inventory-slot game slot)) id))
 
 (defaction Read [slot]
   (trigger [_] "r")
@@ -1207,15 +1209,19 @@
       EngraveWhatHandler
       (write-what [_ _] what))))
 
+(defn- name-for [game item]
+  (->> item :name item-names
+       (find-first #(not ((:used-names game) %)))))
+
 (defn call-id-handler
-  "Automatically disambiguate items like lamp, stone, harp etc. by calling them something random"
+  "Automatically disambiguate items like lamp, stone, harp etc. by calling them"
   [anbf]
   (reify ActionHandler
     (choose-action [_ game]
       (if-let [[slot item] (and (not (blind? (:player game)))
                                 (have game
                                       (partial ambiguous-appearance? game)))]
-        (->Call slot (gensym (last-word (:name item))))))))
+        (->Call slot (name-for game item))))))
 
 (defaction Wipe []
   (trigger [_] "#wipe\n")

@@ -142,7 +142,7 @@
       (some? (:items item))))
 
 (defn boh? [game item]
-  (= "bag of holding" (:name (item-id game item))))
+  (= "bag of holding" (item-name game item)))
 
 (defn water? [item]
   (= "potion of water" (:name item)))
@@ -195,7 +195,7 @@
 (defn nw-ratio
   "Nutrition/weight ratio of item"
   [item]
-  (let [id (initial-id item)]
+  (let [id (item-id item)]
     (if (not= :food (typekw id))
       0
       ((fnil / 0) (:nutrition id) (:weight id)))))
@@ -205,3 +205,6 @@
 
 (defn key? [item]
   (.contains (:name item) "key"))
+
+(defn price-id? [item]
+  ((some-fn tool? ring? scroll? wand? potion? armor?) item))

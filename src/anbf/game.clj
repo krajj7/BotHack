@@ -25,7 +25,8 @@
    dungeon
    branch-id ; current
    dlvl ; current
-   discoveries ; database of facts about item identities and appearances, TODO elimination on change - if some exclusive appearance is left with only 1 possibility, nothing else can have that appearance
+   discoveries ; database of facts about item identities and appearances
+   used-names
    fov
    turn
    score]
@@ -42,7 +43,8 @@
   (map->Game {:player (new-player)
               :dungeon (new-dungeon)
               :branch-id :main
-              :discoveries initial-discoveries}))
+              :used-names #{}
+              :discoveries (new-discoveries)}))
 
 (defn- update-game-status [game status]
   (->> (keys game) (select-keys status) (into game)))

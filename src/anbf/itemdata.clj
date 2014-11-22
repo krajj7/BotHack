@@ -1411,98 +1411,122 @@
   [{:name "wand of light"
     :price 100
     :max-charges 15
+    :engrave :id
     :zaptype :nodir}
    {:name "wand of nothing"
     :price 100
     :max-charges 15
+    :engrave :nothing
     :zaptype :beam}
    {:name "wand of digging"
     :price 150
     :max-charges 8
+    :engrave :id
     :zaptype :ray}
    {:name "wand of enlightenment"
     :price 150
     :max-charges 15
+    :engrave :id
     :zaptype :nodir}
    {:name "wand of locking"
     :price 150
     :max-charges 8
+    :engrave :nothing
     :zaptype :beam}
    {:name "wand of magic missile"
     :price 150
     :max-charges 8
+    :engrave :bullet
     :zaptype :ray}
    {:name "wand of make invisible"
     :price 150
     :max-charges 8
+    :engrave :vanish
     :zaptype :beam}
    {:name "wand of opening"
     :price 150
     :max-charges 8
+    :engrave :nothing
     :zaptype :beam}
    {:name "wand of probing"
     :price 150
     :max-charges 8
+    :engrave :nothing
     :zaptype :beam}
    {:name "wand of secret door detection"
     :price 150
     :max-charges 15
+    :engrave :nothing
     :zaptype :nodir}
    {:name "wand of slow monster"
     :price 150
     :max-charges 8
+    :engrave :slow
     :zaptype :beam}
    {:name "wand of speed monster"
     :price 150
     :max-charges 8
+    :engrave :speed
     :zaptype :beam}
    {:name "wand of striking"
     :price 150
     :max-charges 8
+    :engrave :fights
     :zaptype :beam}
    {:name "wand of undead turning"
     :price 150
     :max-charges 8
+    :engrave :nothing
     :zaptype :beam}
    {:name "wand of cold"
     :price 175
     :max-charges 8
+    :engrave :ice
     :zaptype :ray}
    {:name "wand of fire"
     :price 175
     :max-charges 8
+    :engrave :id
     :zaptype :ray}
    {:name "wand of lightning"
     :price 175
     :max-charges 8
+    :engrave :id
     :zaptype :ray}
    {:name "wand of sleep"
     :price 175
     :max-charges 8
+    :engrave :stop
     :zaptype :ray}
    {:name "wand of cancellation"
     :price 200
     :max-charges 8
+    :engrave :vanish
     :zaptype :beam}
    {:name "wand of create monster"
     :price 200
     :max-charges 15
+    :engrave :id
     :zaptype :nodir}
    {:name "wand of polymorph"
     :price 200
     :max-charges 8
+    :engrave :change
     :zaptype :beam}
    {:name "wand of teleportation"
     :price 200
     :max-charges 8
+    :engrave :vanish
     :zaptype :beam}
    {:name "wand of death"
     :price 500
     :max-charges 8
+    :engrave :stop
     :zaptype :ray}
    {:name "wand of wishing"
     :price 500
     :max-charges 3
+    :engrave :id
     :zaptype :nodir}])
 
 (def wands-appearances
