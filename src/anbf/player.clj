@@ -152,7 +152,9 @@
 
 (defn- have-selector [game name-or-set-or-fn opts]
   (apply every-pred (base-selector game name-or-set-or-fn)
-         (remove nil? [(if (:safe opts) safe?)
+         (remove nil? [(if (:nonempty opts) (comp (partial not= "empty")
+                                                  :specific))
+                       (if (:safe opts) safe?)
                        (if (:unsafe opts) (complement safe?))
                        (if (false? (:safe opts)) (complement safe?))
                        (if (:noncursed opts) noncursed?)
@@ -213,7 +215,8 @@
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory
      :can-remove - returns only items that are unused or not blocked by anything cursed
-     :can-use - returns only items that are already in use or not blocked by anything cursed"
+     :can-use - returns only items that are already in use or not blocked by anything cursed
+     :nonempty - items not named empty"
   ([game name-or-set-or-fn]
    (have game name-or-set-or-fn {}))
   ([game name-or-set-or-fn opts]

@@ -1019,6 +1019,17 @@
                            (> 20 (distance player {:x 38 :y 11})))
                     (go-down game medusa))))))))))
 
+(defn itemid [{:keys [player] :as game}]
+  (if (can-engrave? player)
+    (if-let [[slot wand] (have game #(and (wand? %)
+                                          (not (know-prop? game % :engrave)))
+                               #{:nonempty})]
+      (with-reason "engrave-id wand" wand
+        (or (:step (navigate game engravable?))
+            (if-not (:engraving (at-player game))
+              (engrave-e game))
+            (->Engrave slot "xxx" true))))))
+
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1089,10 +1100,13 @@
       (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
                               (use-features game))))
-      (register-handler 10 (excal-handler anbf))
-      (register-handler 11 (reify ActionHandler
+      (register-handler 10 (reify ActionHandler
+                            (choose-action [_ game]
+                              (itemid game))))
+      (register-handler 11 (excal-handler anbf))
+      (register-handler 12 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 12 (reify ActionHandler
+      (register-handler 13 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))

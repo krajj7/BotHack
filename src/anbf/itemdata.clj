@@ -54,6 +54,7 @@
     :artifact true
     :fullname "The Amulet of Yendor"
     :appearances ["Amulet of Yendor"]
+    :safe true
     :material :mithril}
    {:name "Eye of the Aethiopica"
     :price 4000
@@ -64,31 +65,41 @@
     :material :iron}
    {:name "cheap plastic imitation of the Amulet of Yendor"
     :price 0
+    :safe true
     :appearances ["Amulet of Yendor"]
     :material :plastic}
    {:name "amulet of change"
     :edible 1
+    :safe true
+    :auto-id true
     :material :iron}
    {:name "amulet of ESP"
     :edible 1
+    :safe true
     :material :iron}
    {:name "amulet of life saving"
+    :safe true
     :material :iron}
    {:name "amulet of magical breathing"
+    :safe true
     :edible 1
     :material :iron}
    {:name "amulet of reflection"
+    :safe true
     :material :iron}
    {:name "amulet of restful sleep"
     :edible 1
     :material :iron}
    {:name "amulet of strangulation"
     :edible 1
+    :auto-id true
     :material :iron}
    {:name "amulet of unchanging"
     :edible 1
+    :safe true
     :material :iron}
    {:name "amulet versus poison"
+    :safe true
     :edible 1
     :material :iron}])
 
@@ -1411,6 +1422,7 @@
   [{:name "wand of light"
     :price 100
     :max-charges 15
+    :autoid true
     :engrave :id
     :target false
     :zaptype :nodir}
@@ -1423,6 +1435,7 @@
    {:name "wand of digging"
     :price 150
     :max-charges 8
+    :autoid true
     :engrave :id
     :target true
     :zaptype :ray}
@@ -1496,23 +1509,27 @@
     :price 175
     :max-charges 8
     :engrave :ice
+    :autoid true
     :target true
     :zaptype :ray}
    {:name "wand of fire"
     :price 175
     :max-charges 8
     :target true
+    :autoid true
     :engrave :id
     :zaptype :ray}
    {:name "wand of lightning"
     :price 175
     :max-charges 8
+    :autoid true
     :target true
     :engrave :id
     :zaptype :ray}
    {:name "wand of sleep"
     :price 175
     :max-charges 8
+    :autoid true
     :target true
     :engrave :stop
     :zaptype :ray}
@@ -1520,12 +1537,14 @@
     :price 200
     :max-charges 8
     :engrave :vanish
+    :safe true
     :target true
     :zaptype :beam}
    {:name "wand of create monster"
     :price 200
     :max-charges 15
     :engrave :id
+    :autoid true
     :target false
     :zaptype :nodir}
    {:name "wand of polymorph"
@@ -1544,12 +1563,14 @@
     :price 500
     :max-charges 8
     :target true
+    :autoid true
     :engrave :stop
     :zaptype :ray}
    {:name "wand of wishing"
     :price 500
     :max-charges 3
     :target false
+    :autoid true
     :engrave :id
     :zaptype :nodir}])
 
@@ -3245,23 +3266,30 @@
         {:name "scroll of blank paper"
          :price 60
          :ink 0
+         :safe true
          :appearances ["unlabeled scroll"]}
         {:name "scroll of identify"
          :price 20
+         :safe true
          :ink 14}
         {:name "scroll of light"
          :price 50
+         :safe true
          :ink 8}
         {:name "scroll of enchant weapon"
+         :safe true
          :price 60
          :ink 16}
         {:name "scroll of enchant armor"
+         :safe true
          :price 80
          :ink 16}
         {:name "scroll of remove curse"
+         :safe true
          :price 80
          :ink 16}
         {:name "scroll of confuse monster"
+         :safe true
          :price 100
          :ink 12}
         {:name "scroll of destroy armor"
@@ -3272,15 +3300,19 @@
          :ink 8}
         {:name "scroll of food detection"
          :price 100
+         :safe true
          :ink 8}
         {:name "scroll of gold detection"
          :price 100
+         :safe true
          :ink 8}
         {:name "scroll of magic mapping"
          :price 100
+         :safe true
          :ink 8}
         {:name "scroll of scare monster"
          :price 100
+         :safe true
          :ink 20}
         {:name "scroll of teleportation"
          :price 100
@@ -3292,15 +3324,19 @@
          :price 200
          :ink 10}
         {:name "scroll of earth"
+         :safe true
          :price 200
          :ink 8}
         {:name "scroll of taming"
+         :safe true
          :price 200
          :ink 20}
         {:name "scroll of charging"
+         :safe true
          :price 300
          :ink 16}
         {:name "scroll of genocide"
+         :safe true
          :price 300
          :ink 30}
         {:name "scroll of punishment"
@@ -3319,73 +3355,100 @@
 
 (def ring-data
   [{:name "ring of adornment"
+    :safe true
     :price 100
+    :autoid true
     :chargeable true}
    {:name "ring of hunger"
     :price 100
     :chargeable false}
    {:name "ring of protection"
+    :safe true
     :price 100
+    :autoid true
     :chargeable true}
    {:name "ring of protection from shape changers"
+    :safe true
     :price 100
     :chargeable false}
    {:name "ring of stealth"
+    :safe true
     :price 100
     :chargeable false}
    {:name "ring of sustain ability"
+    :safe true
     :price 100
     :chargeable false}
    {:name "ring of warning"
     :price 100
+    :safe true
     :chargeable false}
    {:name "ring of aggravate monster"
     :price 150
     :chargeable false}
    {:name "ring of cold resistance"
     :price 150
+    :safe true
     :chargeable false}
    {:name "ring of gain constitution"
     :price 150
+    :autoid true
+    :safe true
     :chargeable true}
    {:name "ring of gain strength"
+    :safe true
+    :autoid true
     :price 150
     :chargeable true}
    {:name "ring of increase accuracy"
     :price 150
+    :safe true
     :chargeable true}
    {:name "ring of increase damage"
+    :safe true
     :price 150
     :chargeable true}
    {:name "ring of invisibility"
+    :safe true
+    :autoid true
     :price 150
     :chargeable false}
    {:name "ring of poison resistance"
+    :safe true
     :price 150
     :chargeable false}
    {:name "ring of see invisible"
+    :safe true
     :price 150
     :chargeable false}
    {:name "ring of shock resistance"
+    :safe true
     :price 150
     :chargeable false}
    {:name "ring of fire resistance"
     :price 200
+    :safe true
     :chargeable false}
    {:name "ring of free action"
     :price 200
+    :safe true
     :chargeable false}
    {:name "ring of levitation"
     :price 200
+    :safe true
+    :autoid true
     :chargeable false}
    {:name "ring of regeneration"
     :price 200
+    :safe true
     :chargeable false}
    {:name "ring of searching"
     :price 200
+    :safe true
     :chargeable false}
    {:name "ring of slow digestion"
     :price 200
+    :safe true
     :chargeable false}
    {:name "ring of teleportation"
     :price 200
@@ -3398,65 +3461,105 @@
     :chargeable false}
    {:name "ring of polymorph control"
     :price 300
+    :safe true
     :chargeable false}
    {:name "ring of teleport control"
+    :safe true
     :price 300
     :chargeable false}])
 
 (def potion-data
   (map #(assoc % :plural (string/replace (:name %) #"^potion" "potions"))
        [{:name "potion of booze"
+         :autoid true
          :price 50}
         {:name "potion of fruit juice"
+         :safe true
          :price 50}
         {:name "potion of see invisible"
+         :safe true
          :price 50}
         {:name "potion of sickness"
+         :attack true
          :price 50}
         {:name "potion of confusion"
+         :attack true
+         :autoid true
          :price 100}
         {:name "potion of extra healing"
+         :safe true
+         :autoid true
          :price 100}
         {:name "potion of hallucination"
+         :attack true
+         :autoid true
          :price 100}
         {:name "potion of healing"
+         :safe true
+         :autoid true
          :price 100}
         {:name "potion of restore ability"
+         :safe true
          :price 100}
         {:name "potion of sleeping"
+         :attack true
+         :autoid true
          :price 100}
         {:name "potion of water"
+         :safe true
          :price 100
          :appearances ["clear potion"]}
         {:name "potion of blindness"
+         :attack true
+         :autoid true
          :price 150}
         {:name "potion of gain energy"
+         :safe true
+         :autoid true
          :price 150}
         {:name "potion of invisibility"
+         :autoid true
          :price 150}
         {:name "potion of monster detection"
+         :safe true
          :price 150}
         {:name "potion of object detection"
+         :safe true
          :price 150}
         {:name "potion of enlightenment"
+         :safe true
+         :autoid true
          :price 200}
         {:name "potion of full healing"
+         :safe true
+         :autoid true
          :price 200}
         {:name "potion of levitation"
+         :autoid true
          :price 200}
         {:name "potion of polymorph"
+         :autoid true
          :price 200}
         {:name "potion of speed"
+         :safe true
          :price 200}
         {:name "potion of acid"
+         :autoid true
          :price 250}
         {:name "potion of oil"
+         :safe true
+         :autoid true
          :price 250}
         {:name "potion of gain ability"
+         :safe true
+         :autoid true
          :price 300}
         {:name "potion of gain level"
+         :safe true
+         :autoid true
          :price 300}
         {:name "potion of paralysis"
+         :autoid true
          :price 300}]))
 
 (def exclusive-appearances
