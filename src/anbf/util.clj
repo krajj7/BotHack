@@ -167,3 +167,9 @@
 
 (defn removev [pred coll]
   (filterv (complement pred) coll))
+
+(defn effective-str [s]
+  (cond (= 2 (.length s)) (parse-int s)
+        (.endsWith s "**") 21
+        (< 49 (parse-int (subs s 3))) 19
+        :else 20))

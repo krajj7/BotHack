@@ -51,7 +51,7 @@
    polymorphed
    lycantrophy
    stoning
-   stats ; :str :dex :con :int :wis :cha
+   stats ; :dex :con :int :wis :cha :str (effective integer str) :str* (string like "18/**")
    alignment ; :lawful :neutral :chaotic
    can-enhance]
   anbf.bot.IPlayer
@@ -328,7 +328,7 @@
 (defn want-to-eat? [player corpse]
   (and (can-eat? player corpse)
        (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
-             strength (get-in player [:stats :str])]
+             strength (get-in player [:stats :str*])]
          (or (= #{"newt" "tengu" "wraith"} (:name monster))
              (and (or (not= "18/**" strength)
                       (some-> (parse-int strength) (< 18)))
@@ -388,16 +388,10 @@
                   :when w]
               (* (:qty i) (if (= i item) w (q w))))))
 
-(defn effective-str [s]
-  (cond (= 2 (.length s)) (parse-int s)
-        (.endsWith s "**") 21
-        (< 49 (parse-int (subs s 3))) 19
-        :else 20))
-
 (defn capacity [{:keys [stats] :as player}]
   (min 1000
-       (+ 50 (* 25 (+ (parse-int (:con stats))
-                      (effective-str (:str stats)))))))
+       (+ 50 (* 25 (+ (:con stats)
+                      (:str stats))))))
 
 (defn weight-to-burden [game]
   (- (capacity (:player game)) (weight-sum game)))
