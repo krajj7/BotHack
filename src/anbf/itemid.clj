@@ -79,6 +79,7 @@
 
 (defn appearance-of [item]
   (or (and (item-names (:name item)) (:generic item))
+      (:name (name->item (:specific item)))
       (:name item)))
 
 (defn new-discoveries [] empty-db)
@@ -159,6 +160,22 @@
            (and (not (names appearance))
                 (not (exclusive-appearances appearance))))))
 
+(defn- possibilities-fn [game]
+  (memoize
+    (fn [appearance n]
+      (or (if-let [unseen-item (blind-appearances appearance)]
+            [unseen-item])
+          (if-let [known-item (name->item appearance)]
+            [known-item])
+          (->> (run n [q] (possibleo appearance q))
+               (query (:discoveries game)) (map name->item) seq)
+          (log/error (IllegalArgumentException. "unknown itemtype for item")
+                     appearance)))))
+
+(defn- reset-possibilities [game]
+  (log/debug "reset possibilities cache")
+  (assoc game :possibilities (possibilities-fn game)))
+
 (defn add-discovery [game appearance id]
   {:pre [(string? appearance) (string? id)]}
   (if (or (not (knowable-appearance? appearance))
@@ -166,7 +183,9 @@
     game
     (let [id (get jap->eng id id)]
       (log/debug "adding discovery: >" appearance "< is >" id "<")
-      (update game :discoveries db-fact discovery appearance id))))
+      (-> game
+          (update :discoveries db-fact discovery appearance id)
+          reset-possibilities))))
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]
@@ -183,18 +202,18 @@
     (log/debug "discovery by group elimination of" appearance)
     (add-discovery game a i)))
 
-(defn- eliminate-one [game]
-  (when-let [[[a i]] (seq (query (:discoveries game)
-                                 (run 1 [a i]
-                                      (eliminatedo a i))))]
-    (log/debug "discovery by elimination:")
-    (add-discovery game a i)))
-
 (defn add-eliminated
-  ([game]
-   (last (take-while some? (iterate eliminate-one game))))
-  ([game appearance]
-   (last (take-while some? (iterate #(eliminate-group % appearance) game)))))
+  [game old-discoveries appearance]
+  (if (= old-discoveries (:discoveries game))
+    game
+    (last (take-while some? (iterate #(eliminate-group % appearance) game)))))
+
+(def initial-possibilities
+  (possibilities-fn {:discoveries (new-discoveries)}))
+
+(defn- possibilities [game appearance n]
+  ((or (:possibilities game)
+       initial-possibilities) appearance n))
 
 (defn possible-ids
   "Return n or all possible ItemTypes for the given item, taking current discoveries into consideration"
@@ -202,23 +221,14 @@
    (possible-ids game item false))
   ([game item n]
    {:pre [(:discoveries game) (:name item)]}
-   (or (if-let [unseen-item (blind-appearances (:name item))]
-         [unseen-item])
-       (if-let [named-arti (name->item (:specific item))]
-         [named-arti])
-       (if-let [known-item (name->item (:name item))] ; identified in-game
-         [known-item])
-       (->> (run n [q] (possibleo (appearance-of item) q))
-            (query (:discoveries game)) (map name->item) seq)
-       (log/error (IllegalArgumentException. "unknown itemtype for item")
-                  item))))
+   (possibilities game (appearance-of item) n)))
 
 (defn initial-ids
   "Return n or all possible ItemTypes for the given item without taking discoveries into consideration"
   ([item]
    (initial-ids item false))
   ([item n]
-   (possible-ids {:discoveries (new-discoveries)} item n)))
+   (initial-possibilities (appearance-of item) n)))
 
 (defn item-id
   "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) optionally taking current discoveries into consideration"
@@ -256,7 +266,8 @@
         (-> game
             (update :discoveries db-fact appearance-prop-val
                     appearance prop propval)
-            (add-eliminated appearance)))
+            reset-possibilities
+            (add-eliminated (:discoveries game) appearance)))
     game))
 
 (defn add-observed-cost
@@ -271,7 +282,8 @@
                      appearance (if sell?
                                   0
                                   (cha-group cha)) cost)
-             (add-eliminated appearance)))
+             reset-possibilities
+             (add-eliminated (:discoveries game) appearance)))
      game))
   ([{:keys [player] :as game} appearance cost]
    (add-observed-cost game appearance (-> player :stats :cha) cost false))
@@ -280,7 +292,7 @@
 
 (defn ambiguous-appearance? [game item]
   (and (not (:generic item))
-       (names (:name item))))
+       (item-names (:name item))))
 
 (defn know-price? [game item]
   (seq (query (:discoveries game)
