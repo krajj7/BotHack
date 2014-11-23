@@ -774,6 +774,8 @@
     (reify WieldItemHandler
       (wield-what [_ _] slot))))
 
+(defn ->UnWield [] (->Wield \-))
+
 (defaction Wear [slot]
   (trigger [_] "W")
   (handler [_ {:keys [game] :as anbf}]
@@ -989,6 +991,7 @@
     :amulet ->PutOn
     :tool ->PutOn
     :armor ->Wear
+    :weapon ->Wield
     (if (= :accessory (item-subtype item))
       ->PutOn
       ->Apply)))
@@ -998,6 +1001,7 @@
     :ring ->Remove
     :amulet ->Remove
     :tool ->Remove
+    :weapon ->UnWield
     :armor ->TakeOff))
 
 (defn remove-blockers [game slot]
