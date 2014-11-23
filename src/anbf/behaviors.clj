@@ -65,7 +65,7 @@
 
 (defn uncurse-invocation-artifacts [game]
   (with-reason "making sure invocation artifacts are not cursed"
-    (if-let [[slot _] (have game #{bell candelabrum book} #{:unsafe})]
+    (if-let [[slot _] (have game #{bell candelabrum book} #{:unsafe-buc})]
       (bless game slot))))
 
 (defn invocation

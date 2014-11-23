@@ -1835,6 +1835,7 @@
     :mc 0
     :fullname "The Mitre of Holiness"
     :material :iron
+    :safe true
     :subtype :helmet}
    {:name "Hawaiian shirt"
     :price 3
@@ -1842,6 +1843,7 @@
     :ac 0
     :mc 0
     :material :cloth
+    :safe true
     :subtype :shirt}
    {:name "T-shirt"
     :price 2
@@ -1849,6 +1851,7 @@
     :ac 0
     :mc 0
     :material :cloth
+    :safe true
     :subtype :shirt}
    {:name "leather jacket"
     :price 10
@@ -1856,6 +1859,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :subtype :suit}
    {:name "leather armor"
     :price 5
@@ -1863,6 +1867,7 @@
     :ac 2
     :mc 0
     :material :leather
+    :safe true
     :subtype :suit}
    {:name "orcish ring mail"
     :price 80
@@ -1871,6 +1876,7 @@
     :material :iron
     :mc 1
     :appearances ["crude ring mail"]
+    :safe true
     :subtype :suit}
    {:name "studded leather armor"
     :price 15
@@ -1878,12 +1884,14 @@
     :ac 3
     :material :leather
     :mc 1
+    :safe true
     :subtype :suit}
    {:name "ring mail"
     :price 100
     :weight 250
     :ac 3
     :mc 0
+    :safe true
     :material :iron
     :subtype :suit}
    {:name "scale mail"
@@ -1892,12 +1900,14 @@
     :ac 4
     :mc 0
     :material :iron
+    :safe true
     :subtype :suit}
    {:name "orcish chain mail"
     :price 75
     :weight 300
     :ac 4
     :material :iron
+    :safe true
     :mc 1
     :appearances ["crude chain mail"]
     :subtype :suit}
@@ -1906,6 +1916,7 @@
     :weight 300
     :ac 5
     :material :iron
+    :safe true
     :mc 1
     :subtype :suit}
    {:name "elven mithril-coat"
@@ -1913,6 +1924,7 @@
     :weight 150
     :ac 5
     :material :mithril
+    :safe true
     :mc 3
     :subtype :suit}
    {:name "splint mail"
@@ -1920,6 +1932,7 @@
     :weight 400
     :ac 6
     :material :iron
+    :safe true
     :mc 1
     :subtype :suit}
    {:name "banded mail"
@@ -1928,12 +1941,14 @@
     :ac 6
     :mc 0
     :material :iron
+    :safe true
     :subtype :suit}
    {:name "dwarvish mithril-coat"
     :price 240
     :weight 150
     :ac 6
     :material :mithril
+    :safe true
     :mc 3
     :subtype :suit}
    {:name "bronze plate mail"
@@ -1942,12 +1957,14 @@
     :ac 6
     :mc 0
     :material :copper
+    :safe true
     :subtype :suit}
    {:name "plate mail"
     :price 600
     :weight 450
     :ac 7
     :material :iron
+    :safe true
     :mc 2
     :subtype :suit}
    {:name "crystal plate mail"
@@ -1956,6 +1973,7 @@
     :ac 7
     :material :glass
     :mc 2
+    :safe true
     :subtype :suit}
    {:name "red dragon scales"
     :price 500
@@ -1963,6 +1981,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "white dragon scales"
     :price 500
@@ -1970,6 +1989,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "orange dragon scales"
     :price 500
@@ -1977,6 +1997,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "blue dragon scales"
     :price 500
@@ -1984,6 +2005,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "green dragon scales"
     :price 500
@@ -1991,6 +2013,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "yellow dragon scales"
     :price 500
@@ -1998,6 +2021,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "black dragon scales"
     :price 700
@@ -2005,6 +2029,7 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "silver dragon scales"
     :price 700
@@ -2012,12 +2037,14 @@
     :ac 3
     :mc 0
     :material :dragon-hide
+    :safe true
     :subtype :suit}
    {:name "gray dragon scales"
     :price 700
     :weight 40
     :ac 3
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "red dragon scale mail"
@@ -2025,6 +2052,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "white dragon scale mail"
@@ -2032,6 +2060,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "orange dragon scale mail"
@@ -2039,6 +2068,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "blue dragon scale mail"
@@ -2046,6 +2076,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "green dragon scale mail"
@@ -2053,12 +2084,14 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "yellow dragon scale mail"
     :price 900
     :weight 40
     :ac 9
+    :safe true
     :mc 0
     :material :dragon-hide
     :subtype :suit}
@@ -2067,6 +2100,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "silver dragon scale mail"
@@ -2074,6 +2108,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "gray dragon scale mail"
@@ -2081,6 +2116,7 @@
     :weight 40
     :ac 9
     :mc 0
+    :safe true
     :material :dragon-hide
     :subtype :suit}
    {:name "mummy wrapping"
@@ -2088,12 +2124,14 @@
     :weight 3
     :ac 0
     :material :cloth
+    :safe true
     :mc 1
     :subtype :cloak}
    {:name "orcish cloak"
     :price 40
     :weight 10
     :ac 0
+    :safe true
     :material :cloth
     :mc 2
     :appearances ["coarse mantelet"]
@@ -2104,6 +2142,7 @@
     :ac 0
     :material :cloth
     :mc 2
+    :safe true
     :appearances ["hooded cloak"]
     :subtype :cloak}
    {:name "leather cloak"
@@ -2111,12 +2150,14 @@
     :weight 15
     :ac 1
     :material :leather
+    :safe true
     :mc 1
     :subtype :cloak}
    {:name "oilskin cloak"
     :price 50
     :weight 10
     :ac 1
+    :safe true
     :material :cloth
     :mc 3
     :appearances ["slippery cloak"]
@@ -2125,6 +2166,7 @@
     :price 50
     :weight 10
     :ac 1
+    :safe true
     :material :cloth
     :mc 1
     :appearances ["apron"]
@@ -2134,6 +2176,7 @@
     :weight 10
     :ac 1
     :material :cloth
+    :safe true
     :mc 3
     :appearances ["faded pall"]
     :subtype :cloak}
@@ -2142,6 +2185,7 @@
     :weight 15
     :ac 2
     :material :cloth
+    :safe true
     :mc 3
     :subtype :cloak}
    {:name "cloak of displacement"
@@ -2149,6 +2193,7 @@
     :weight 10
     :ac 1
     :material :cloth
+    :safe true
     :mc 2
     :appearances cloaks
     :subtype :cloak}
@@ -2157,6 +2202,7 @@
     :weight 10
     :ac 1
     :material :cloth
+    :safe true
     :mc 2
     :appearances cloaks
     :subtype :cloak}
@@ -2165,6 +2211,7 @@
     :weight 10
     :ac 1
     :material :cloth
+    :safe true
     :mc 3
     :appearances cloaks
     :subtype :cloak}
@@ -2173,6 +2220,7 @@
     :weight 10
     :ac 3
     :material :cloth
+    :safe true
     :mc 3
     :appearances cloaks
     :subtype :cloak}
@@ -2181,6 +2229,7 @@
     :weight 3
     :ac 0
     :mc 0
+    :safe true
     :material :cloth
     :subtype :helmet}
    {:name "dunce cap"
@@ -2196,6 +2245,7 @@
     :weight 4
     :ac 0
     :material :cloth
+    :safe true
     :mc 2
     :appearances ["conical hat"]
     :subtype :helmet}
@@ -2204,6 +2254,7 @@
     :weight 10
     :ac 1
     :mc 0
+    :safe true
     :material :iron
     :subtype :helmet}
    {:name "elven leather helm"
@@ -2212,6 +2263,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :appearances ["leather hat"]
     :subtype :helmet}
    {:name "orcish helm"
@@ -2220,6 +2272,7 @@
     :ac 1
     :mc 0
     :material :iron
+    :safe true
     :appearances ["iron skull cap"]
     :subtype :helmet}
    {:name "dwarvish iron helm"
@@ -2228,6 +2281,7 @@
     :ac 2
     :mc 0
     :material :iron
+    :safe true
     :appearances ["hard hat"]
     :subtype :helmet}
    {:name "helmet"
@@ -2235,6 +2289,7 @@
     :weight 30
     :ac 1
     :mc 0
+    :safe true
     :material :iron
     :appearances helmets
     :subtype :helmet}
@@ -2244,6 +2299,7 @@
     :ac 1
     :mc 0
     :material :iron
+    :safe true
     :appearances helmets
     :subtype :helmet}
    {:name "helm of opposite alignment"
@@ -2259,6 +2315,7 @@
     :weight 50
     :ac 1
     :mc 0
+    :safe true
     :material :iron
     :appearances helmets
     :subtype :helmet}
@@ -2268,6 +2325,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :appearances gloves
     :subtype :gloves}
    {:name "gauntlets of dexterity"
@@ -2276,6 +2334,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :appearances gloves
     :subtype :gloves}
    {:name "gauntlets of fumbling"
@@ -2292,6 +2351,7 @@
     :ac 1
     :mc 0
     :material :iron
+    :safe true
     :appearances gloves
     :subtype :gloves}
    {:name "small shield"
@@ -2299,6 +2359,7 @@
     :weight 30
     :ac 1
     :mc 0
+    :safe true
     :material :wood
     :subtype :shield}
    {:name "orcish shield"
@@ -2307,6 +2368,7 @@
     :ac 1
     :mc 0
     :material :iron
+    :safe true
     :appearances ["red-eyed shield"]
     :subtype :shield}
    {:name "Uruk-hai shield"
@@ -2314,6 +2376,7 @@
     :weight 50
     :ac 1
     :mc 0
+    :safe true
     :material :iron
     :appearances ["white-handed shield"]
     :subtype :shield}
@@ -2323,6 +2386,7 @@
     :ac 2
     :mc 0
     :material :wood
+    :safe true
     :appearances ["blue and green shield"]
     :subtype :shield}
    {:name "dwarvish roundshield"
@@ -2331,6 +2395,7 @@
     :ac 2
     :mc 0
     :material :iron
+    :safe true
     :appearances ["large round shield"]
     :subtype :shield}
    {:name "large shield"
@@ -2338,6 +2403,7 @@
     :weight 100
     :ac 2
     :mc 0
+    :safe true
     :material :iron
     :subtype :shield}
    {:name "shield of reflection"
@@ -2346,6 +2412,7 @@
     :ac 2
     :mc 0
     :material :silver
+    :safe true
     :appearances ["polished silver shield" "smooth shield"]
     :subtype :shield}
    {:name "low boots"
@@ -2354,6 +2421,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :appearances ["walking shoes"]
     :subtype :boots}
    {:name "high boots"
@@ -2362,6 +2430,7 @@
     :ac 2
     :mc 0
     :material :leather
+    :safe true
     :appearances ["jackboots"]
     :subtype :boots}
    {:name "iron shoes"
@@ -2370,6 +2439,7 @@
     :ac 2
     :mc 0
     :material :iron
+    :safe true
     :appearances ["hard shoes"]
     :subtype :boots}
    {:name "elven boots"
@@ -2378,6 +2448,7 @@
     :ac 1
     :mc 0
     :material :leather
+    :safe true
     :appearances boots
     :subtype :boots}
    {:name "kicking boots"
@@ -2386,6 +2457,7 @@
     :ac 1
     :mc 0
     :material :iron
+    :safe true
     :appearances boots
     :subtype :boots}
    {:name "fumble boots"
@@ -2401,6 +2473,7 @@
     :weight 15
     :ac 1
     :mc 0
+    :safe true
     :material :leather
     :appearances boots
     :subtype :boots}
@@ -2409,6 +2482,7 @@
     :weight 20
     :ac 1
     :mc 0
+    :safe true
     :material :leather
     :appearances boots
     :subtype :boots}
@@ -2417,6 +2491,7 @@
     :weight 20
     :ac 1
     :mc 0
+    :safe true
     :material :leather
     :appearances boots
     :subtype :boots}
@@ -2425,6 +2500,7 @@
     :weight 20
     :ac 1
     :mc 0
+    :safe true
     :material :leather
     :appearances boots
     :subtype :boots}])
@@ -2661,12 +2737,14 @@
       :price 12
       :weight 30
       :charge 1499
+      :safe true
       :subtype :light
       :material :copper}
      {:name "oil lamp"
       :price 10
       :weight 20
       :charge 1499
+      :safe true
       :appearances ["lamp"]
       :subtype :light
       :material :copper}
@@ -2674,6 +2752,7 @@
       :price 50
       :weight 20
       :charge 0
+      :safe true
       :appearances ["lamp"]
       :subtype :light
       :material :copper}
@@ -2681,6 +2760,7 @@
       :price 10
       :weight 3
       :charge 0
+      :safe true
       :appearances ["whistle"]
       :subtype :instrument
       :tonal 0
@@ -2689,6 +2769,7 @@
       :price 10
       :weight 3
       :charge 0
+      :safe true
       :appearances ["whistle"]
       :subtype :instrument
       :tonal 0
@@ -2853,18 +2934,21 @@
       :price 80
       :weight 3
       :charge 0
+      :safe true
       :subtype :accessory
       :material :glass}
      {:name "blindfold"
       :price 20
       :weight 2
       :charge 0
+      :safe true
       :subtype :accessory
       :material :cloth}
      {:name "towel"
       :price 50
       :weight 2
       :charge 0
+      :safe true
       :subtype :accessory
       :material :cloth}
      {:name "saddle"
@@ -3410,7 +3494,6 @@
     :chargeable true}
    {:name "ring of invisibility"
     :safe true
-    :autoid true
     :price 150
     :chargeable false}
    {:name "ring of poison resistance"

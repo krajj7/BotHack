@@ -27,6 +27,7 @@
    dlvl ; current
    discoveries ; database of facts about item identities and appearances
    used-names
+   tried ; set of tried armor/scrolls/potions/rings/amulets appearances
    fov
    turn
    score]
@@ -44,6 +45,7 @@
               :dungeon (new-dungeon)
               :branch-id :main
               :used-names #{}
+              :tried #{}
               :discoveries (new-discoveries)}))
 
 (defn- update-game-status [game status]

@@ -85,7 +85,7 @@
   ([chr label]
    [chr (label->item label)]))
 
-(defn safe?
+(defn safe-buc?
   "Known not to be cursed?"
   [item]
   (#{:uncursed :blessed} (:buc item)))
@@ -219,11 +219,13 @@
 
 (defn itemid-handler [{:keys [game] :as anbf}]
   (reify FoundItemsHandler
-    ; TODO castle WoW, soko earth
+    ; TODO castle WoW, soko earth, soko prize
     (found-items [_ items]
-      (for [item items]
-        (if (and (:cost item) (price-id? item))
-          (swap! game add-observed-cost (appearance-of item)
-                 (:cost item) false))))))
+      (doseq [item items :when ((every-pred :cost price-id?) item)]
+        (swap! game add-observed-cost (appearance-of item) (:cost item))))))
 
 (defn know-engrave? [game item] (know-prop? game item :engrave))
+
+(defn safe? [game item]
+  (and (safe-buc? item)
+       (:safe (item-id game item))))

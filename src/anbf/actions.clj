@@ -633,6 +633,9 @@
                         (deregister-handler anbf this)
                         (->Name slot name)))))
 
+(defn- identify-slot [game slot id]
+  (add-discovery game (slot-appearance game slot) id))
+
 (defaction Apply [slot]
   (trigger [_] "a")
   (handler [_ {:keys [game] :as anbf}]
@@ -644,7 +647,8 @@
       (message [_ msg]
         (condp re-seq msg
           #"has no oil|has run out of power"
-          (name-item anbf slot "empty")
+          (do (identify-slot game slot "oil lamp")
+              (name-item anbf slot "empty"))
           #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)
           #" seems to be locked"
@@ -749,6 +753,17 @@
   (if-not (or (= \- slot) (know-id? @game (inventory-slot @game slot)))
     (update-discoveries anbf)))
 
+(defn mark-tried [game item]
+  (if-not (impaired? (:player game))
+    (update game :tried conj (appearance-of item))
+    game))
+
+(defn tried? [game item]
+  ((:tried game) (appearance-of item)))
+
+(defn- mark-use [{:keys [game] :as anbf} slot]
+  (swap! game #(mark-tried % (inventory-slot % slot))))
+
 (defaction Wield [slot]
   (trigger [_] "w")
   (handler [_ {:keys [game] :as anbf}]
@@ -763,7 +778,9 @@
     (update-inventory anbf)
     (possible-autoid anbf slot)
     (reify WearItemHandler
-      (wear-what [_ _] slot))))
+      (wear-what [_ _]
+        (mark-use anbf slot)
+        slot))))
 
 (defaction PutOn [slot]
   (trigger [_] "P")
@@ -771,21 +788,27 @@
     (update-inventory anbf)
     (possible-autoid anbf slot)
     (reify PutOnItemHandler
-      (put-on-what [_ _] slot))))
+      (put-on-what [_ _]
+        (mark-use anbf slot)
+        slot))))
 
 (defaction Remove [slot]
   (trigger [_] "R")
   (handler [_ anbf]
     (update-inventory anbf)
     (reify RemoveItemHandler
-      (remove-what [_ _] slot))))
+      (remove-what [_ _]
+        (mark-use anbf slot)
+        slot))))
 
 (defaction TakeOff [slot]
   (trigger [_] "T")
   (handler [_ anbf]
     (update-inventory anbf)
     (reify TakeOffItemHandler
-      (take-off-what [_ _] slot))))
+      (take-off-what [_ _]
+        (mark-use anbf slot)
+        slot))))
 
 (defaction DropSingle [slot qty]
   (trigger [_] "d")
@@ -881,9 +904,6 @@
   ([action priority handler]
    (with-handler action priority handler)))
 
-(defn- identify-slot [game slot id]
-  (add-discovery game (slot-appearance game slot) id))
-
 (defaction Read [slot]
   (trigger [_] "r")
   (handler [_ {:keys [game] :as anbf}]
@@ -891,7 +911,9 @@
     (possible-autoid anbf slot)
     (reify
       ReadWhatHandler
-      (read-what [_ _] slot)
+      (read-what [_ _]
+        (mark-use anbf slot)
+        slot)
       ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
@@ -952,15 +974,22 @@
       DrinkWhatHandler
       (drink-what [_ _]
         (when (not= slot \.)
+          (mark-use anbf slot)
           (update-inventory anbf)
           slot)))))
 
 (defn use-action [item]
   (case (item-type item)
+    :scroll ->Read
+    :spellbook ->Read
+    :potion ->Quaff
     :ring ->PutOn
     :amulet ->PutOn
     :tool ->PutOn
-    :armor ->Wear))
+    :armor ->Wear
+    (if (= :accessory (item-subtype item))
+      ->PutOn
+      ->Apply)))
 
 (defn remove-action [item]
   (case (item-type item)

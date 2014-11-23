@@ -434,7 +434,7 @@
     (choose-action [this {:keys [player] :as game}]
       (if-let [[scroll s] (and (= :water (branch-key game))
                                (have game "scroll of gold detection"
-                                     #{:safe :bagged}))]
+                                     #{:safe-buc :bagged}))]
         (with-reason "detecting portal"
           (or (unbag game scroll s)
               (when (confused? player)

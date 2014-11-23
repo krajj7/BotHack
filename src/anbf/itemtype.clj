@@ -102,6 +102,7 @@
   [name plural glyph price weight material stackable]
   potion-data
   {:appearances potion-appearances
+   :weight 20
    :stackable true
    :glyph \!
    :material :glass})
