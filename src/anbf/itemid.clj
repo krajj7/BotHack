@@ -9,12 +9,12 @@
             [anbf.util :refer :all]))
 
 (db-rel discovery ^:index appearance ^:index itemid)
-(db-rel appearance-itemid ^:index appearance ^:index itemid)
+(db-rel appearance-name ^:index appearance ^:index itemid)
 (db-rel appearance-cha-cost ^:index appearance ^:index cha ^:index cost)
 (db-rel appearance-prop-val ^:index appearance ^:index propname ^:index propval)
 (db-rel base-cha-cost ^:index base ^:index cha ^:index cost)
 
-(def observable-props [:engrave :target :hardness])
+(def observable-props #{:engrave :target :hardness})
 
 (def item-names ; {lamp => [lamp1 lamp2], bag => [bag1 bag2 bag3 bag4], ...}
   (->> (for [{:keys [appearances]} items
@@ -58,10 +58,10 @@
                     (for [{:keys [name appearances] :as i} items
                           res (if-not (and (:artifact i) (:base i))
                                 (concat (for [a appearances]
-                                          [appearance-itemid a name])
+                                          [appearance-name a name])
                                         (for [a appearances
                                               n (item-names a)]
-                                          [appearance-itemid n name])))
+                                          [appearance-name n name])))
                           :when res]
                       res))))
 
@@ -128,13 +128,73 @@
 
 (defn- possibleo [appearance id]
   (fresh [x]
-    (appearance-itemid appearance id)
+    (appearance-name appearance id)
     (conda
       [(discovery x id) (== x appearance)]
       [(discovery appearance x) (== x id)]
       [succeed])
     (pricec appearance id)
     (everyg (partial propc appearance id) observable-props)))
+
+(defn- eliminatedo [appearance id]
+  (fresh [x]
+    (appearance-name appearance id)
+    (project [appearance]
+      (if (or (names appearance) (exclusive-appearances appearance))
+        succeed
+        fail))
+    (conda
+      [(discovery appearance id) fail]
+      [(possibleo appearance id)
+       (!= x id)
+       (conda
+         [(possibleo appearance x) fail]
+         [succeed])])))
+
+(defn knowable-appearance?
+  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
+  [appearance]
+  {:pre [(string? appearance)]}
+  (not (or (blind-appearances appearance)
+           (and (not (names appearance))
+                (not (exclusive-appearances appearance))))))
+
+(defn add-discovery [game appearance id]
+  {:pre [(string? appearance) (string? id)]}
+  (if (or (not (knowable-appearance? appearance))
+          (= appearance id))
+    game
+    (let [id (get jap->eng id id)]
+      (log/debug "adding discovery: >" appearance "< is >" id "<")
+      (update game :discoveries db-fact discovery appearance id))))
+
+(defn add-discoveries [game discoveries]
+  (reduce (fn [game [appearance id]]
+            (add-discovery game appearance id))
+          game
+          discoveries))
+
+(defn- eliminate-group [game appearance]
+  (log/debug "group elimination for" appearance)
+  (when-let [[[a i]] (seq (query (:discoveries game)
+                                 (run 1 [a i]
+                                      (appearance-name appearance i)
+                                      (eliminatedo a i))))]
+    (log/debug "discovery by group elimination of" appearance)
+    (add-discovery game a i)))
+
+(defn- eliminate-one [game]
+  (when-let [[[a i]] (seq (query (:discoveries game)
+                                 (run 1 [a i]
+                                      (eliminatedo a i))))]
+    (log/debug "discovery by elimination:")
+    (add-discovery game a i)))
+
+(defn add-eliminated
+  ([game]
+   (last (take-while some? (iterate eliminate-one game))))
+  ([game appearance]
+   (last (take-while some? (iterate #(eliminate-group % appearance) game)))))
 
 (defn possible-ids
   "Return n or all possible ItemTypes for the given item, taking current discoveries into consideration"
@@ -185,22 +245,18 @@
   [game item]
   (some? (item-name game item)))
 
-(defn knowable-appearance?
-  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
-  [appearance]
-  {:pre [(string? appearance)]}
-  (not (or (blind-appearances appearance)
-           (and (not (names appearance))
-                (not (exclusive-appearances appearance))))))
+(defn possible-names [game item]
+  (map :name (possible-ids game item)))
 
-; TODO elimination on change - if some exclusive appearance or name is left with only 1 possibility, add as a discovery - nothing else can have that appearance
 (defn add-prop-discovery [game appearance prop propval]
-  {:pre [(string? appearance) (keyword? propval) (observable-props prop)]}
+  {:pre [(string? appearance) (observable-props prop)]}
   (if (knowable-appearance? appearance)
     (do (log/debug "for appearance" appearance
                    "adding observed property" prop "with value" propval)
-        (update game :discoveries db-fact appearance-prop-val
-                appearance prop propval))
+        (-> game
+            (update :discoveries db-fact appearance-prop-val
+                    appearance prop propval)
+            (add-eliminated appearance)))
     game))
 
 (defn add-observed-cost
@@ -210,28 +266,17 @@
    (if (knowable-appearance? appearance)
      (do (log/debug "for appearance" appearance
                     "adding observed cost" cost)
-         (update game :discoveries db-fact appearance-cha-cost
-                 appearance (if sell?
-                              0
-                              (cha-group cha)) cost))
+         (-> game
+             (update :discoveries db-fact appearance-cha-cost
+                     appearance (if sell?
+                                  0
+                                  (cha-group cha)) cost)
+             (add-eliminated appearance)))
      game))
+  ([{:keys [player] :as game} appearance cost]
+   (add-observed-cost game appearance (-> player :stats :cha) cost false))
   ([{:keys [player] :as game} appearance cost sell?]
    (add-observed-cost game appearance (-> player :stats :cha) cost sell?)))
-
-(defn add-discovery [game appearance id]
-  {:pre [(string? appearance) (string? id)]}
-  (if (or (not (knowable-appearance? appearance))
-          (= appearance id))
-    game
-    (let [id (get jap->eng id id)]
-      (log/debug "adding discovery: >" appearance "< is >" id "<")
-      (update game :discoveries db-fact discovery appearance id))))
-
-(defn add-discoveries [game discoveries]
-  (reduce (fn [game [appearance id]]
-            (add-discovery game appearance id))
-          game
-          discoveries))
 
 (defn ambiguous-appearance? [game item]
   (and (not (:generic item))
@@ -248,3 +293,20 @@
          (run 1 [q]
            (fresh [_]
              (appearance-prop-val (appearance-of item) prop _))))))
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 13)
+      (add-observed-cost "lamp1" 10) ; lamp called lamp1 costs 10
+      (item-name {:name "lamp" :generic "lamp2"})) ;=> lamp2 is magic
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 15)
+      (add-prop-discovery "silver wand" :engrave :stop) ; engrave-id silver wand
+      (add-observed-cost "silver wand" 500) ; silver wand costs 500 (is WoDeath)
+      (add-observed-cost "aluminum wand" 500) ; aluminum wand costs 500
+      (item-name {:name "aluminum wand"})) ;=> aluminum is wand of wishing
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 14)
+      (add-observed-cost "scroll labeled NR 9" 8 :sell) ; sell price 8
+      (item-name {:name "scroll labeled NR 9"})) ;=> is identify

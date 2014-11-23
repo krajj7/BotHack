@@ -36,10 +36,12 @@
                 (str "Configuration missing key: " key))))))
 
 (defn firstv [v]
-  (nth v 0))
+  (if (pos? (count v))
+    (nth v 0)))
 
 (defn secondv [v]
-  (nth v 1))
+  (if (< 1 (count v))
+    (nth v 1)))
 
 (defn re-first-groups
   "Return the capturing groups of the first match or whole first match if no groups"

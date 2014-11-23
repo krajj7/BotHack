@@ -415,3 +415,6 @@
   (find-first #(or (.startsWith (:label (val %)) label)
                    (= (:name (val %)) label))
               (inventory game)))
+
+(defn slot-appearance [game slot]
+  (appearance-of (inventory-slot game slot)))

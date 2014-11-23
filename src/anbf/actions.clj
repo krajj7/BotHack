@@ -880,7 +880,7 @@
    (with-handler action priority handler)))
 
 (defn- identify-slot [game slot id]
-  (add-discovery game (appearance-of (inventory-slot game slot)) id))
+  (add-discovery game (slot-appearance game slot) id))
 
 (defaction Read [slot]
   (trigger [_] "r")
@@ -1235,7 +1235,7 @@
       (message [_ msg]
         (if-let [effect (engrave-effect msg)]
           (swap! game add-prop-discovery
-                 (appearance-of (inventory-slot game slot))
+                 (slot-appearance game slot)
                  :engrave effect)))
       EngraveAppendHandler
       (append-engraving [_ _] (boolean append?))
@@ -1279,13 +1279,13 @@
         (about-to-choose [_ _]
           (if-not @target
             (swap! game add-prop-discovery
-                   (appearance-of (inventory-slot game slot))
+                   (slot-appearance game slot)
                    :target false)))
         DirectionHandler
         (what-direction [_ _]
           (reset! target true)
           (swap! game add-prop-discovery
-                 (appearance-of (inventory-slot game slot))
+                 (slot-appearance game slot)
                  :target true)
           nil)
         ToplineMessageHandler
