@@ -578,10 +578,12 @@
                        (recur group (rest lines) discoveries)
                        (if (= section "Unique Items")
                          (recur section (rest lines) discoveries)
-                         (recur section (rest lines)
+                         (if appearance
+                           (recur section (rest lines)
                                 (conj discoveries
                                       [(discovery-demangle
-                                         section appearance) id])))))
+                                         section appearance) id]))
+                           (recur section (rest lines) discoveries)))))
                    discoveries)))))))
 
 (defn- discoveries-handler [anbf]
