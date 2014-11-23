@@ -36,7 +36,7 @@
   (for [cost #_[60 300] (range 501)
         [cha charge] [[6 #(* 2 %)]
                       [7 #(+ % (quot % 2))]
-                      [8 #(+ % (quot % 3))]
+                      [10 #(+ % (quot % 3))]
                       [15 identity]
                       [17 #(- % (quot % 4))]
                       [18 #(- % (quot % 3))]
@@ -306,6 +306,12 @@
          (run 1 [q]
            (fresh [cha cost]
              (appearance-cha-cost (appearance-of item) cha cost))))))
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 9)
+      ;(add-observed-cost "scroll labeled PRATYAVAYAH" 26)
+      (add-observed-cost "scroll labeled PRATYAVAYAH" 34)
+      (possible-ids {:name "scroll labeled PRATYAVAYAH"}))
 
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 13)
