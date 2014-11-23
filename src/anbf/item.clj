@@ -224,8 +224,6 @@
       (doseq [item items :when ((every-pred :cost price-id?) item)]
         (swap! game add-observed-cost (appearance-of item) (:cost item))))))
 
-(defn know-engrave? [game item] (know-prop? game item :engrave))
-
 (defn safe? [game item]
   (and (safe-buc? item)
        (:safe (item-id game item))))

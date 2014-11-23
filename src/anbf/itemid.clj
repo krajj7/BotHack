@@ -92,20 +92,24 @@
          (== propval (prop (name->item id))))]
       [succeed])))
 
-(defn- merge-records
+(defn- merge-records-fn
   "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"
-  [recs]
-  (reduce (fn merge-item [r s]
-            (reduce (fn merge-entry [r k]
-                      (if (and (contains? r k) (contains? s k))
-                        (if (= (get r k) (get s k))
-                          r
-                          (assoc r k nil))
-                        (dissoc r k)))
-                    r
-                    (concat (keys s) (keys r))))
-          (first recs)
-          (rest recs)))
+  []
+  (memoize
+    (fn [recs]
+      (reduce (fn merge-item [r s]
+                (reduce (fn merge-entry [r k]
+                          (if (and (contains? r k) (contains? s k))
+                            (if (= (get r k) (get s k))
+                              r
+                              (assoc r k nil))
+                            (dissoc r k)))
+                        r
+                        (concat (keys s) (keys r))))
+              (first recs)
+              (rest recs)))))
+
+(def ^:private initial-merge (merge-records-fn))
 
 (defn- cha-group [cha]
   (condp > cha
@@ -174,7 +178,9 @@
 
 (defn- reset-possibilities [game]
   (log/debug "reset possibilities cache")
-  (assoc game :possibilities (possibilities-fn game)))
+  (assoc game
+         :merged (merge-records-fn)
+         :possibilities (possibilities-fn game)))
 
 (defn add-discovery [game appearance id]
   {:pre [(string? appearance) (string? id)]}
@@ -208,7 +214,7 @@
     game
     (last (take-while some? (iterate #(eliminate-group % appearance) game)))))
 
-(def initial-possibilities
+(def ^:private initial-possibilities
   (possibilities-fn {:discoveries (new-discoveries)}))
 
 (defn- possibilities [game appearance n]
@@ -236,7 +242,8 @@
    (item-id {:discoveries (new-discoveries)} item))
   ([game item]
    {:pre [(:discoveries game) (:name item)]}
-   (merge-records (possible-ids game item))))
+   ((or (:merged game)
+        initial-merge) (possible-ids game item))))
 
 (defn item-type [item]
   (typekw (first (initial-ids item 1))))
@@ -299,12 +306,6 @@
          (run 1 [q]
            (fresh [cha cost]
              (appearance-cha-cost (appearance-of item) cha cost))))))
-
-(defn know-prop? [game item prop]
-  (seq (query (:discoveries game)
-         (run 1 [q]
-           (fresh [_]
-             (appearance-prop-val (appearance-of item) prop _))))))
 
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 13)
