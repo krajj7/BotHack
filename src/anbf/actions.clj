@@ -355,9 +355,6 @@
       (swap! game #(if-not (blind? (:player %))
                      (update-at-player % assoc :seen true :new-items false)
                      %))
-      (send delegator #(if-let [items (seq (:items (at-player @game)))]
-                         (found-items % items)
-                         %))
       (update-on-known-position anbf
         (fn after-look [game]
           (as-> game res
@@ -378,6 +375,11 @@
               res))))
       ; XXX note: items on tile HAVE to be determined via this command only, topline messages on Move are not reliable due to teletraps
       (reify
+        FullFrameHandler
+        (full-frame [_ _]
+          (send delegator #(if-let [items (seq (:items (at-player @game)))]
+                             (found-items % items)
+                             %)))
         MultilineMessageHandler
         (message-lines [_ lines]
           (if (re-seq things-re (first lines))
