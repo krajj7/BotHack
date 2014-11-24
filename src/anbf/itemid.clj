@@ -47,8 +47,8 @@
                      #(quot % 2)]
                     [identity #(+ % (quot % 3))])
         sucker-charge (if (zero? cha)
-                 [identity #(- % (quot % 4))]
-                 [identity #(+ % (quot % 3))])]
+                        [identity #(- % (quot % 4))]
+                        [identity #(+ % (quot % 3))])]
     [cost cha (-> cost id-charge sucker-charge charge)]))
 
 (def ^:private initial
@@ -137,9 +137,8 @@
     (conda
       [(discovery x id) (== x appearance)]
       [(discovery appearance x) (== x id)]
-      [succeed])
-    (pricec appearance id)
-    (everyg (partial propc appearance id) observable-props)))
+      [(pricec appearance id)
+       (everyg (partial propc appearance id) observable-props)])))
 
 (defn- eliminatedo [appearance id]
   (fresh [x]
@@ -309,7 +308,7 @@
 
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 9)
-      ;(add-observed-cost "scroll labeled PRATYAVAYAH" 26)
+      (add-observed-cost "scroll labeled PRATYAVAYAH" 26)
       (add-observed-cost "scroll labeled PRATYAVAYAH" 34)
       (possible-ids {:name "scroll labeled PRATYAVAYAH"}))
 
