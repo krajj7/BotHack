@@ -356,15 +356,16 @@
                          desired-suit desired-cloak desired-helmet
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
-               :when (and armor (not (:in-use armor)))]
+               :when (and armor (not (:in-use armor))
+                          (or (not= :takeoff (typekw (:last-action game)))
+                              (not= slot (:slot (:last-action game)))))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
 
 (defn light? [game item]
-  (let [id (item-id game item)]
-    (and (not= "empty" (:specific item))
-         (= :light (:subtype id))
-         (= :copper (:material id)))))
+  (and (not= "empty" (:specific item))
+       (= :light (item-subtype item))
+       (= :copper (item-id item))))
 
 (defn bless-gear [game]
   (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
@@ -410,16 +411,17 @@
         (with-reason "don't need invis"
           (remove-use game slot)))
       (if-let [[slot _] (and (= (:hp player) (:maxhp player))
-                            (have game "ring of regeneration" #{:in-use}))]
+                             (have game "ring of regeneration" #{:in-use}))]
         (with-reason "don't need regen"
           (remove-use game slot)))))
 
 (defn drop-junk [game]
   (if-not (shop? (at-player game))
-    (or (if-let [[slot _] (have game (complement (partial worthwhile? game))
-                                #{:can-remove})]
+    (or (if-let [[slot item] (have game (complement (partial worthwhile? game))
+                                   #{:can-remove :bagged})]
           (with-reason "dropping junk"
             (or (remove-use game slot)
+                (unbag game slot item)
                 (->Drop slot))))
         (loop [[cat & more] desired-items]
           (let [cat-items (have-all game cat #{:bagged})
@@ -441,6 +443,11 @@
           (with-reason "dropping rock excess"
             (->Drop slot (- (:qty item) 7)))))))
 
+(defn- remove-unsafe [game]
+  (if-let [[slot _] (have game #(not (safe? game %)) #{:can-remove})]
+    (with-reason "removing potentially unsafe item"
+      (remove-use game slot))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
@@ -449,6 +456,7 @@
     (or (bless-gear game)
         (drop-junk game)
         (wear-armor game)
+        (remove-unsafe game)
         (remove-rings game)
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
@@ -851,7 +859,7 @@
     (choose-action [this {:keys [player] :as game}]
       (if-let [[scroll s] (and (= :water (branch-key game))
                                (have game "scroll of gold detection"
-                                     #{:safe :bagged}))]
+                                     #{:safe-buc :bagged}))]
         (with-reason "detecting portal"
           (or (unbag game scroll s)
               (when (confused? player)
@@ -1019,16 +1027,33 @@
                            (> 20 (distance player {:x 38 :y 11})))
                     (go-down game medusa))))))))))
 
+(defn safe-zap? [game dir]
+  (let [level (curlvl game)]
+    (every? #(and ((some-fn corridor? floor? water? door-open?) %)
+                  (not (monster-at level %)))
+            (->> (in-direction level (:player game) dir)
+                 (iterate #(in-direction level % dir))
+                 (take 7)))))
+
 (defn itemid [{:keys [player] :as game}]
-  (if (can-engrave? player)
-    (if-let [[slot wand] (have game #(and (wand? %)
-                                          (not (know-prop? game % :engrave)))
-                               #{:nonempty})]
-      (with-reason "engrave-id wand" wand
-        (or (:step (navigate game engravable?))
-            (if-not (:engraving (at-player game))
-              (engrave-e game))
-            (->Engrave slot "xxx" true))))))
+  (if-not (impaired? player)
+    (or (if (can-engrave? game)
+          (if-let [[slot w] (have game #(and (not (:engrave (item-id game %)))
+                                                (wand? %)) #{:nonempty})]
+            (with-reason "engrave-id wand" w
+              (or (:step (navigate game engravable?))
+                  (if-not (:engraving (at-player game))
+                    (engrave-e game))
+                  (->Engrave slot "Elbereth" true)))))
+        (if-let [[slot wand] (have game #(and (not (:target (item-id game %)))
+                                              (wand? %)) #{:nonempty})]
+          (if-let [dir (find-first (partial safe-zap? game) directions)]
+            (with-reason "zap-id wand" wand
+              (->ZapWandAt slot dir))))
+        (if-let [[slot item] (have game (partial should-try? game)
+                                   #{:safe-buc :bagged})]
+          (or (unbag game slot item)
+              (make-use game slot))))))
 
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
