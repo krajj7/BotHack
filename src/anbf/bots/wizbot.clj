@@ -493,12 +493,6 @@
       (register-handler 2 (reify ActionHandler
                             (choose-action [_ game]
                               (consider-items game))))
-      (register-handler 3 (reify ActionHandler
-                            (choose-action [_ game]
-                              (examine-containers game))))
-      (register-handler 4 (reify ActionHandler
-                            (choose-action [_ game]
-                              (examine-containers-here game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
                               (progress game))))))

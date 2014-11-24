@@ -1050,7 +1050,9 @@
   ([game]
    (if-not (pos? (exploration-index game))
      (with-reason "using cached exploration step"
-       @(:explore-cache game))))
+       (if (:explore-cache game)
+         @(:explore-cache game)
+         (explore-step game)))))
   ([game branch]
    (explore game branch :end))
   ([game branch tag-or-dlvl]

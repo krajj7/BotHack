@@ -1,8 +1,8 @@
 {
- :bot "anbf.bots.wizbot"
+ :bot "anbf.bots.chobot"
  :ttyrec true
  :interface :shell
- ;:start-paused true
+ :start-paused true
  :nh-command "/nh343/wizmode" ; runs NH with -D
  :no-exit true
 }

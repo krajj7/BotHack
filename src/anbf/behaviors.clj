@@ -81,19 +81,6 @@
         (read-book game)
         (descend game))))
 
-(defn examine-containers [game]
-  ; TODO navigate
-  ; TODO explorable or can unlock
-  (if-let [[slot item] (have game explorable-container?)]
-    (with-reason "learning contents of" item
-      (->Apply slot))))
-
-(defn examine-containers-here [game]
-  ; TODO unlock
-  (if (some explorable-container? (:items (at-player game)))
-    (with-reason "learning contents of containers on ground"
-      (->Loot))))
-
 (defn seek-high-altar [{:keys [player] :as game}]
   (with-reason "seeking high altar"
     (seek game #(and (altar? %)

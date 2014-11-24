@@ -91,33 +91,35 @@
           (seek game stairs-up?)))))
 
 (defn full-explore [game]
-  (if-not (get-level game :main :sanctum)
-    (or (explore game :mines :minetown)
-        (explore game :main :sokoban)
-        (visit game :sokoban)
-        (explore game :main :quest)
-        (let [minetown (get-level game :mines :minetown)]
-          (if (or (some->> game have-key secondv key?)
-                  (not (:minetown-grotto (:tags minetown)))
-                  (:seen (at minetown 48 5)))
-            (explore game :mines)))
-        (explore game :main :medusa)
-        (if (<= 14 (:xplvl (:player game)))
-          (explore game :quest))
-        (explore game :vlad)
-        (explore game :main)
-        (explore game :wiztower)
-        (invocation game))))
+  (with-reason "full-explore"
+    (if-not (get-level game :main :sanctum)
+      (or (explore game :mines :minetown)
+          (explore game :main :sokoban)
+          (visit game :sokoban)
+          (explore game :main :quest)
+          (let [minetown (get-level game :mines :minetown)]
+            (if (or (some->> game have-key secondv key?)
+                    (not (:minetown-grotto (:tags minetown)))
+                    (:seen (at minetown 48 5)))
+              (explore game :mines)))
+          (explore game :main :medusa)
+          (if (<= 14 (:xplvl (:player game)))
+            (explore game :quest))
+          (explore game :vlad)
+          (explore game :main)
+          (explore game :wiztower)
+          (invocation game)))))
 
 (defn endgame? [game]
   (get-level game :main :sanctum))
 
 (defn progress [game]
-  (if-not (endgame? game)
-    (full-explore game)
-    (or (get-amulet game)
-        (visit game :astral)
-        (seek-high-altar game))))
+  (with-reason "progress"
+    (if-not (endgame? game)
+      (full-explore game)
+      (or (get-amulet game)
+          (visit game :astral)
+          (seek-high-altar game)))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
@@ -178,7 +180,7 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
-   #{"bag of holding"}
+   ;#{"bag of holding"}
    desired-cloak
    desired-suit
    desired-shield
@@ -283,23 +285,61 @@
 
 (defn- worthwhile? [game item]
   (and (not (and (:enchantment item) (> -1 (:enchantment item))))
-       (not= "empty" (:specific item))
+       (or (not= "empty" (:specific item))
+           (= "wand of wishing" (item-name game item)))
        (or (and (not= :cursed (:buc item))
                 (> 2 (or (:erosion item) 0)))
            (take-cursed? game item))))
 
+(defn- should-try?
+  ([game item]
+   (and (not (:cost item))
+        (not (know-id? game item))
+        (or (and (wand? item)
+                 ((some-fn (complement :engrave)
+                           (complement :target)) (item-id game item)))
+            (and ((some-fn scroll? potion? ring? amulet? armor?) item)
+                 (not (tried? game item))
+                 (safe? game item))))))
+
 (defn take-selector [{:keys [player] :as game}]
   (let [desired (currently-desired game)] ; expensive (~3 ms)
     #(or (real-amulet? %)
-         (and (desired (item-name game %))
-              (if-let [[_ o] (and (desired-singular (:name %))
-                                  (have game (:name %)
-                                        #{:bagged :can-remove}))]
-                (> (utility %) (utility o))
-                true)
-              (not= "empty" (:specific %))
-              (can-take? %)
-              (worthwhile? game %)))))
+         (and (can-take? %)
+              (worthwhile? game %)
+              (let [id (item-name game %)]
+                (and (or (desired id)
+                         (should-try? game %)
+                         (some desired (map :name (possible-ids game %))))
+                     (if-let [[_ o] (and (desired-singular id)
+                                         (have game id #{:bagged :can-remove}))]
+                       (> (utility %) (utility o))
+                       true)))))))
+
+(defn examine-containers [game]
+  (if-let [[slot item] (have game explorable-container?)]
+    (with-reason "learning contents of" item
+      (->Apply slot))))
+
+(defn- unlockable-chest? [game tile]
+  (and (not (shop? tile))
+       (some :locked (:items tile))
+       (or (have-key game)
+           (have game dagger? #{:noncursed}))))
+
+(defn examine-containers-here [game]
+  (or (if (some explorable-container? (:items (at-player game)))
+        (with-reason "learning contents of containers on ground"
+          ->Loot))
+      (if (unlockable-chest? game (at-player game))
+        (without-levitation game
+          (with-reason "unlock chest"
+            (or (if-let [[slot _] (have-key game)]
+                  (->Unlock slot \.))
+                (if-let [[slot _] (or (have game dagger? #{:safe})
+                                      (have game dagger? #{:noncursed}))]
+                  (or (make-use game slot)
+                      ->ForceLock))))))))
 
 (defn consider-items-here [{:keys [player] :as game}]
   (if (seq (:items (at-player game)))
@@ -330,6 +370,8 @@
   (let [to-take? (take-selector game)]
     (if-let [{:keys [step target]}
              (navigate game #(or (:new-items %)
+                                 (some explorable-container? (:items %))
+                                 (unlockable-chest? game %)
                                  (some to-take? (concat (:items %)
                                                         (lootable-items %)))))]
       (with-reason "new or desired item at" target step)
@@ -1114,13 +1156,13 @@
                                (recover game :safe))))
       (register-handler 4 (reify ActionHandler
                             (choose-action [_ game]
-                              (consider-items game))))
+                              (examine-containers game))))
       (register-handler 5 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers game))))
+                              (examine-containers-here game))))
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
-                              (examine-containers-here game))))
+                              (consider-items game))))
       (register-handler 8 (hunt anbf))
       (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
@@ -1132,6 +1174,6 @@
       (register-handler 12 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 13 (reify ActionHandler
+      (register-handler 15 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))
