@@ -115,7 +115,7 @@
                           (add-curlvl-tag game :shop-closed)))))
     #"You crawl to the edge of the pit\.|You disentangle yourself\."
     (swap! game assoc-in [:player :trapped] false)
-    #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board"
+    #"You fall into \w+ pit!|bear trap closes on your|You stumble into \w+ spider web!|You are stuck to the web\.|You are still in a pit|notice a loose board|You are caught in a bear trap"
     (do (swap! game assoc-in [:player :trapped] true)
         (mark-trap-here anbf))
     #"trap door opens|trap door in the .*and a rock falls on you|trigger a rolling boulder|\(little dart|arrow\) shoots out at you|gush of water hits|tower of flame erupts|cloud of gas"
