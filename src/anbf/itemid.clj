@@ -181,6 +181,23 @@
          :merged (merge-records-fn)
          :possibilities (possibilities-fn game)))
 
+(declare add-discovery)
+
+(defn- eliminate-group [game appearance]
+  (log/debug "group elimination for" appearance)
+  (if-let [[[a i]] (seq (query (:discoveries game)
+                               (run 1 [a i]
+                                    (appearance-name appearance i)
+                                    (eliminatedo a i))))]
+    (add-discovery game a i)
+    game))
+
+(defn add-eliminated
+  [game old-discoveries appearance]
+  (if (= old-discoveries (:discoveries game))
+    game
+    (eliminate-group game appearance)))
+
 (defn add-discovery [game appearance id]
   {:pre [(string? appearance) (string? id)]}
   (if (or (not (knowable-appearance? appearance))
@@ -190,28 +207,14 @@
       (log/debug "adding discovery: >" appearance "< is >" id "<")
       (-> game
           (update :discoveries db-fact discovery appearance id)
-          reset-possibilities))))
+          reset-possibilities
+          (add-eliminated (:discoveries game) appearance)))))
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]
             (add-discovery game appearance id))
           game
           discoveries))
-
-(defn- eliminate-group [game appearance]
-  (log/debug "group elimination for" appearance)
-  (when-let [[[a i]] (seq (query (:discoveries game)
-                                 (run 1 [a i]
-                                      (appearance-name appearance i)
-                                      (eliminatedo a i))))]
-    (log/debug "discovery by group elimination of" appearance)
-    (add-discovery game a i)))
-
-(defn add-eliminated
-  [game old-discoveries appearance]
-  (if (= old-discoveries (:discoveries game))
-    game
-    (last (take-while some? (iterate #(eliminate-group % appearance) game)))))
 
 (def ^:private initial-possibilities
   (possibilities-fn {:discoveries (new-discoveries)}))

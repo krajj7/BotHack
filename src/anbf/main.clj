@@ -109,6 +109,8 @@
                 (log/debug "making initial game state")
                 (new-game)))
 
+(defn- q [] (w (str esc esc esc "#quit\nyq")))
+
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
   ([level]
