@@ -17,15 +17,12 @@ if [ $(basename `pwd`) = "scripts" ]; then
     cd ..
 fi
 
-rm "$NH_VAR"/bon*
-rm "$NH_VAR"/save/*
-
+arch="$ARCH_DIR/$(date +%Y-%m-%d.%H-%M-%S)"
+mkdir -pv "$arch"
+mv *.log* *.ttyrec "$NH_VAR"/save/* "$NH_VAR"/bon* "$arch"
 if [ -n "$SAVE" ]; then
     cp -v "$SAVE" "$NH_VAR"/save/1000wizard.gz
 fi
-arch="$ARCH_DIR/$(date +%Y-%m-%d.%H-%M-%S)"
-mkdir -pv "$arch"
-mv *.log* *.ttyrec "$arch"
 # LD_LIBRARY_PATH is necessary for the local shell interface (not needed for
 # ssh/telnet), the JNI interface must be compiled manually beforehand
 if [ "$1" = "repl" ]; then

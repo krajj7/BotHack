@@ -397,7 +397,7 @@
               (swap! game add-intrinsic :search)
               #"You thought you saw something|You tawt you taw a puttie tat"
               (swap! game remove-intrinsic :see-invis)
-              #"You feel quick!|grant thee the gift of Speed"
+              #"You feel quick!|grant thee the gift of Speed|You speed up|Your quickness feels more natural"
               (swap! game add-intrinsic :speed)
               #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
               (swap! game remove-intrinsic :speed)

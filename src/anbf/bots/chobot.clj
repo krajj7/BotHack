@@ -243,7 +243,7 @@
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
-  [game]
+  [{:keys [player] :as game}]
   (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
               (rest desired-items) ; don't pick that pickaxe back up
               desired-items)
@@ -256,6 +256,9 @@
         (recur (rest cs) (into res c)))
       (as-> res res
         (into res (desired-food game))
+        (if-not (have-intrinsic? player :speed)
+          (conj res "wand of speed monster")
+          res)
         (into res (desired-throwables game))
         (if-let [sanctum (get-level game :main :sanctum)]
           (if (and (not (have game real-amulet?))
@@ -285,6 +288,8 @@
 
 (defn- worthwhile? [game item]
   (and (not (and (:enchantment item) (> -1 (:enchantment item))))
+       (not (and (have-intrinsic? (:player game) :speed)
+                 (= "wand of speed monster" (item-name game item))))
        (or (not= "empty" (:specific item))
            (= "wand of wishing" (item-name game item)))
        (or (and (not= :cursed (:buc item))
@@ -501,6 +506,10 @@
         (wear-armor game)
         (remove-unsafe game)
         (remove-rings game)
+        (if-let [[slot i] (and (not (have-intrinsic? game :speed))
+                               (have game "wand of speed monster" #{:bagged}))]
+          (with-reason "zapping self with /oSpeed"
+            (or (unbag game slot i) (->ZapWandAt slot \.))))
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (every? walkable? tile-path))
