@@ -241,6 +241,9 @@
           (* 15 (- (count cat-vec) (.indexOf cat-vec iname)))
           0)))))
 
+(defn- want-gold? [game]
+  true)
+
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
@@ -257,15 +260,16 @@
         (recur (rest cs) (into res c)))
       (as-> res res
         (into res (desired-food game))
-        (if-not (have-intrinsic? player :speed)
-          (conj res "wand of speed monster")
-          res)
         (into res (desired-throwables game))
         (if-let [sanctum (get-level game :main :sanctum)]
           (if (and (not (have game real-amulet?))
                    (:seen (at sanctum 20 11)))
             (conj res "Amulet of Yendor"))
-          res)))))
+          res)
+        (cond-> res
+          (not (have-intrinsic?
+                 player :speed)) (conj "wand of speed monster")
+          (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (:lycantrophy player)
