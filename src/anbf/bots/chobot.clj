@@ -650,13 +650,21 @@
                                                (> (:hp player) 60))
     :else true))
 
-(defn engrave-e [{:keys [player] :as game}]
-  (let [tile (at-player game)
-        append? (e? tile)]
-    (if-not (or (not (can-engrave? game))
-                (perma-e? tile)
-                (not (engravable? tile)))
-      (->Engrave \- "Elbereth" append?))))
+(defn- engrave-slot [game perma?]
+  (or (if perma?
+        (firstv (have game #{"wand of fire"
+                             "wand of lightning"})))
+      \-))
+
+(defn engrave-e
+  ([game] (engrave-e game false))
+  ([{:keys [player] :as game} perma?]
+   (let [tile (at-player game)
+         append? (e? tile)]
+     (if-not (or (not (can-engrave? game))
+                 (perma-e? tile)
+                 (not (engravable? tile)))
+       (->Engrave (engrave-slot game perma?) "Elbereth" append?)))))
 
 (defn pray-for-hp [{:keys [player] :as game}]
   (if (and (can-pray? game)
@@ -711,7 +719,8 @@
                      (not-any? ignores-e? adjacent)
                      (can-engrave? game))
               (if (engravable? tile)
-                (with-reason "retreat engrave" (engrave-e game))
+                (with-reason "retreat engrave"
+                  (engrave-e game (not-any? ignores-e? (vals threats))))
                 (if-let [t (some #(and (engravable? %)
                                        (not (monster-at level %))
                                        (less-than? (count adjacent)
@@ -720,7 +729,9 @@
                                  (neighbors level tile))]
                   (with-reason "moving to neighbor tile to engrave"
                     (->Move (towards player t))))))
-            (if (empty? threats)
+            (if (or (empty? threats)
+                    (and (perma-e? tile)
+                         (not-any? ignores-e? (vals threats))))
               (recover game))
             (if-let [{:keys [step target]} (navigate game stairs-up?
                                                      #{:no-fight :explored
