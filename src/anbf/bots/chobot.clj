@@ -208,6 +208,7 @@
                  24)]
     (for [food (:food item-kinds)
           :when (and (not (egg? food))
+                     (not (tin? food))
                      (not (corpse? food))
                      (> (nw-ratio food) min-nw))]
       (:name food))))
@@ -288,6 +289,7 @@
 
 (defn- worthwhile? [game item]
   (and (not (and (:enchantment item) (> -1 (:enchantment item))))
+       (not (tin? item))
        (not (and (have-intrinsic? (:player game) :speed)
                  (= "wand of speed monster" (item-name game item))))
        (or (not= "empty" (:specific item))

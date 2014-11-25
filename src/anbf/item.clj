@@ -225,5 +225,6 @@
         (swap! game add-observed-cost (appearance-of item) (:cost item))))))
 
 (defn safe? [game item]
-  (and (safe-buc? item)
-       (:safe (item-id game item))))
+  (or (weapon? item)
+      (and (safe-buc? item)
+           (:safe (item-id game item)))))
