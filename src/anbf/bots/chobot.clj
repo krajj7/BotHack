@@ -312,17 +312,19 @@
 
 (defn take-selector [{:keys [player] :as game}]
   (let [desired (currently-desired game)] ; expensive (~3 ms)
-    #(or (real-amulet? %)
-         (and (can-take? %)
-              (worthwhile? game %)
-              (let [id (item-name game %)]
-                (and (or (desired id)
-                         (should-try? game %)
-                         (some desired (map :name (possible-ids game %))))
-                     (if-let [[_ o] (and (desired-singular id)
-                                         (have game id #{:bagged :can-remove}))]
-                       (> (utility %) (utility o))
-                       true)))))))
+    (fn [item]
+      (or (real-amulet? item)
+          (and (can-take? item)
+               (worthwhile? game item)
+               (let [id (item-name game item)]
+                 (and (or (desired id)
+                          (should-try? game item)
+                          (some desired (map :name (possible-ids game item))))
+                      (if-let [[_ o] (and (desired-singular id)
+                                          (have game id
+                                                #{:bagged :can-remove}))]
+                        (> (utility item) (utility o))
+                        true))))))))
 
 (defn examine-containers [game]
   (if-let [[slot item] (have game explorable-container?)]

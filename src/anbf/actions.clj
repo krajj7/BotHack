@@ -590,7 +590,7 @@
   (reify ActionHandler
     (choose-action [this game]
       (deregister-handler anbf this)
-      (if (not= :discoveries (:typekw (:last-action* game)))
+      (if (not= :discoveries (typekw (:last-action* game)))
         (with-reason "discoveries update"
           (->Discoveries))))))
 
@@ -750,10 +750,21 @@
                true))))))
 
 (defn- possible-autoid
-  "Check if the item at slot auto-identified on use"
-  [{:keys [game] :as anbf} slot]
-  (if-not (or (= \- slot) (know-id? @game (inventory-slot @game slot)))
-    (update-discoveries anbf)))
+  "Check if the item at slot auto-identified on use.  If no-mark? is true the result is not used for item-id purposes"
+  ([game slot] (possible-autoid game slot false))
+  ([{:keys [game] :as anbf} slot no-mark?]
+   (if-let [item (inventory-slot @game slot)]
+     (when-not (know-id? @game item)
+       (update-discoveries anbf)
+       (if (not no-mark?)
+         (register-handler anbf
+           (reify AboutToChooseActionHandler
+             (about-to-choose [this game]
+               (when (= :discoveries (typekw (:last-action* game)))
+                 (deregister-handler anbf this)
+                 (if (not (know-id? game item))
+                   (swap! (:game anbf) add-prop-discovery (appearance-of item)
+                          :autoid false)))))))))))
 
 (defn mark-tried [game item]
   (if-not (impaired? (:player game))
@@ -761,7 +772,7 @@
     game))
 
 (defn tried?
-  "Wands are tried when engraved with, other items when worn/quaffed/read/..."
+  "Wands are tried when engraved with, other items when worn/quaffed/read/...  Zapping wands doesn't count as use - you can check (:target (item-id game wand))"
   [game item]
   ((:tried game) (appearance-of item)))
 
@@ -1269,9 +1280,9 @@
   (handler [_ {:keys [game] :as anbf}]
     (update-tile anbf)
     (when (not= \- slot)
-      (possible-autoid anbf slot)
+      (possible-autoid anbf slot :no-mark)
       (update-inventory anbf)
-      (mark-use game slot))
+      (mark-use anbf slot))
     (reify
       ToplineMessageHandler
       (message [_ msg]
@@ -1311,26 +1322,25 @@
 (defaction ZapWand [slot]
   (trigger [_] "z")
   (handler [_ {:keys [game] :as anbf}]
-    (possible-autoid anbf slot)
-    (let [target (atom false)]
+    (let [target (atom false)
+          charged (atom true)]
       (reify
         ZapWhatHandler
         (zap-what [_ _] slot)
         AboutToChooseActionHandler
         (about-to-choose [_ _]
-          (if-not @target
+          (when @charged
+            (possible-autoid anbf slot)
             (swap! game add-prop-discovery (slot-appearance @game slot)
-                   :target false)))
+                   :target @target)))
         DirectionHandler
         (what-direction [_ _]
           (reset! target true)
-          (swap! game add-prop-discovery (slot-appearance @game slot)
-                 :target true)
           nil)
         ToplineMessageHandler
         (message [_ msg]
           (when (re-seq #"Nothing happens" msg)
-            (reset! target true)
+            (reset! charged false)
             (name-item anbf slot "empty")))))))
 
 (defn ->ZapWandAt [slot dir]

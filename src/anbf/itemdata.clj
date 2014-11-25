@@ -1443,6 +1443,7 @@
     :price 150
     :max-charges 15
     :engrave :id
+    :autoid true
     :target false
     :zaptype :nodir}
    {:name "wand of locking"
@@ -1456,6 +1457,7 @@
     :max-charges 8
     :target true
     :engrave :bullet
+    :autoid true
     :zaptype :ray}
    {:name "wand of make invisible"
     :price 150
@@ -1544,7 +1546,7 @@
     :price 200
     :max-charges 15
     :engrave :id
-    :autoid true
+    :autoid false
     :target false
     :zaptype :nodir}
    {:name "wand of polymorph"

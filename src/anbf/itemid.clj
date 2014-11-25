@@ -14,7 +14,7 @@
 (db-rel appearance-prop-val ^:index appearance ^:index propname ^:index propval)
 (db-rel base-cha-cost ^:index base ^:index cha ^:index cost)
 
-(def observable-props #{:engrave :target :hardness})
+(def observable-props #{:engrave :target :hardness :autoid})
 
 (def item-names ; {lamp => [lamp1 lamp2], bag => [bag1 bag2 bag3 bag4], ...}
   (->> (for [{:keys [appearances]} items
@@ -89,7 +89,9 @@
     (conda
       [(appearance-prop-val appearance prop propval)
        (project [id]
-         (== propval (prop (name->item id))))]
+         (if (nil? (prop (name->item id)))
+           (== propval false)
+           (== propval (prop (name->item id)))))]
       [succeed])))
 
 (defn- merge-records-fn
@@ -304,10 +306,19 @@
        (item-names (:name item))))
 
 (defn know-price? [game item]
-  (seq (query (:discoveries game)
-         (run 1 [q]
-           (fresh [cha cost]
-             (appearance-cha-cost (appearance-of item) cha cost))))))
+  (or (:price (item-id game item))
+      (seq (query (:discoveries game)
+             (run 1 [q]
+               (fresh [cha cost]
+                 (appearance-cha-cost (appearance-of item) cha cost)))))))
+
+(defn know-appearance? [game id]
+  {:pre [(string? id) (:discoveries game)]}
+  (= 1 (count (query (:discoveries game)
+                (run 2 [q]
+                  (conda
+                    [(discovery q id)]
+                    [(possibleo q id)]))))))
 
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 9)
@@ -331,3 +342,11 @@
       (assoc-in [:player :stats :cha] 14)
       (add-observed-cost "scroll labeled NR 9" 8 :sell) ; sell price 8
       (item-name {:name "scroll labeled NR 9"})) ;=> is identify
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 14)
+      (add-prop-discovery "silver wand" :target true)
+      (add-prop-discovery "silver wand" :autoid false)
+      ;(add-discovery "silver wand" "wand of polymorph")
+      (possible-ids {:name "silver wand"})
+      ((partial map :name)))
