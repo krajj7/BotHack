@@ -1067,13 +1067,28 @@
     (not (have game "speed boots")) "blessed fixed +3 speed boots"
     :else "2 blessed scrolls of genocide"))
 
+(defn- want-buc? [game item]
+  (and (nil? (:buc item))
+       ((not-any-fn? food? gem? statue? wand?) item)
+       (or (know-id? game item)
+           (:safe (item-id game item)))))
+
 (defn use-features [game]
-  ; TODO kick sinks
-  (if-let [{:keys [step]} (navigate game throne?)]
-    (or (with-reason "going to throne" step)
-        ; TODO drop gold
-        (if (throne? (at-player game))
-          (with-reason "sitting on throne" ->Sit)))))
+  ; TODO kick sinks, drop rings into them
+  (or (if (altar? (at-player game))
+        (if-let [[slot item] (have game {:can-remove true
+                                         :bagged true :know-buc false})]
+          (with-reason "dropping things on altar"
+            (or (unbag game slot item)
+                (remove-use game slot)
+                (->Drop slot)))))
+      ; TODO altars not on current level
+      (if (have game (partial want-buc? game) #{:can-remove :bagged})
+        (with-reason "going to altar" (:step (navigate game altar?))))
+      (if-let [{:keys [step]} (navigate game throne?)]
+        (or (with-reason "going to throne" step)
+            ; TODO drop gold
+            (with-reason "sitting on throne" ->Sit)))))
 
 (defn kill-medusa [anbf]
   (reify ActionHandler
@@ -1122,6 +1137,10 @@
                                    #{:safe-buc :bagged})]
           (or (unbag game slot item)
               (make-use game slot))))))
+
+(defn bag-items [game]
+  ; TODO
+  )
 
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
@@ -1196,8 +1215,11 @@
       (register-handler 10 (reify ActionHandler
                             (choose-action [_ game]
                               (itemid game))))
-      (register-handler 11 (excal-handler anbf))
-      (register-handler 12 (reify ActionHandler
+      (register-handler 11 (reify ActionHandler
+                             (choose-action [_ game]
+                               (bag-items game))))
+      (register-handler 12 (excal-handler anbf))
+      (register-handler 13 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
       (register-handler 15 (reify ActionHandler
