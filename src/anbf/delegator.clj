@@ -264,6 +264,12 @@
 (defyesnohandler DieHandler ; wizmode
   (die [handler ^String text]))
 
+(defchoicehandler DumpCoreHandler ; wizmode
+  (dump-core [handler ^String text]))
+
+(defchoicehandler CreateWhatMonsterHandler ; wizmode
+  (create-what-monster [handler ^String text]))
+
 (defyesnohandler KeepSaveHandler ; wizmode
   (keep-save [handler ^String text]))
 

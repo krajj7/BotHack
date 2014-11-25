@@ -168,7 +168,9 @@
     #"^What do you want to remove" remove-what
     #"^What do you want to ready" ready-what
     #"^What do you want to drop" drop-single
+    #"^Create what kind of monster\?" create-what-monster
     #"^Die\?" die
+    #"^Dump core\?" dump-core
     #"^Advance skills without practice\?" enhance-without-practice
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what

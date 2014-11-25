@@ -147,6 +147,10 @@
     (stop-eating [_ _] true)
     WizmodeEnhanceHandler
     (enhance-without-practice [_ _] false)
+    DumpCoreHandler
+    (dump-core [_ _] "q")
+    CreateWhatMonsterHandler
+    (create-what-monster [_ _] esc)
     ; escape the rest by default
     MakeWishHandler
     (make-wish [_ _]
