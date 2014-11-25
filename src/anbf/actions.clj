@@ -760,7 +760,9 @@
     (update game :tried conj (appearance-of item))
     game))
 
-(defn tried? [game item]
+(defn tried?
+  "Wands are tried when engraved with, other items when worn/quaffed/read/..."
+  [game item]
   ((:tried game) (appearance-of item)))
 
 (defn- mark-use [{:keys [game] :as anbf} slot]
@@ -774,7 +776,9 @@
     (reify WieldItemHandler
       (wield-what [_ _] slot))))
 
-(defn ->UnWield [] (->Wield \-))
+(defn ->UnWield
+  ([] (->Wield \-))
+  ([_] (->UnWield)))
 
 (defaction Wear [slot]
   (trigger [_] "W")
@@ -1245,7 +1249,7 @@
     #"The engraving .*vanishes!"
     :vanish
     #"A few ice cubes drop"
-    :cold
+    :ice
     #"The.* is riddled by bullet holes"
     :bullet
     #"The bugs on the.* stop moving!"
@@ -1266,13 +1270,13 @@
     (update-tile anbf)
     (when (not= \- slot)
       (possible-autoid anbf slot)
-      (update-inventory anbf))
+      (update-inventory anbf)
+      (mark-use game slot))
     (reify
       ToplineMessageHandler
       (message [_ msg]
         (if-let [effect (engrave-effect msg)]
-          (swap! game add-prop-discovery
-                 (slot-appearance game slot)
+          (swap! game add-prop-discovery (slot-appearance @game slot)
                  :engrave effect)))
       EngraveAppendHandler
       (append-engraving [_ _] (boolean append?))
@@ -1315,14 +1319,12 @@
         AboutToChooseActionHandler
         (about-to-choose [_ _]
           (if-not @target
-            (swap! game add-prop-discovery
-                   (slot-appearance game slot)
+            (swap! game add-prop-discovery (slot-appearance @game slot)
                    :target false)))
         DirectionHandler
         (what-direction [_ _]
           (reset! target true)
-          (swap! game add-prop-discovery
-                 (slot-appearance game slot)
+          (swap! game add-prop-discovery (slot-appearance @game slot)
                  :target true)
           nil)
         ToplineMessageHandler

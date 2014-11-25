@@ -296,7 +296,8 @@
    (and (not (:cost item))
         (not (know-id? game item))
         (or (and (wand? item)
-                 ((some-fn (complement :engrave)
+                 ((some-fn (every-pred (complement :engrave)
+                                       (complement (partial tried? game)))
                            (complement :target)) (item-id game item)))
             (and ((some-fn scroll? potion? ring? amulet? armor?) item)
                  (not (tried? game item))
@@ -1081,7 +1082,8 @@
   (if-not (impaired? player)
     (or (if (can-engrave? game)
           (if-let [[slot w] (have game #(and (not (:engrave (item-id game %)))
-                                                (wand? %)) #{:nonempty})]
+                                             (not (tried? game %))
+                                             (wand? %)) #{:nonempty})]
             (with-reason "engrave-id wand" w
               (or (:step (navigate game engravable?))
                   (if-not (:engraving (at-player game))
