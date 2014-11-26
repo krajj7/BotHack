@@ -1144,13 +1144,18 @@
               (make-use game slot)))
         (if-let [[slot item]
                  (and (shop? (at-player game))
-                      (have game #(and (not (know-price? game %))
+                      (have game #(and (price-id? game %)
                                        ((shops-taking %)
                                         (:room (at-player game))))
                             #{:bagged}))]
           (with-reason "price id (sell)"
             (or (unbag game slot item)
-                (->Drop slot)))))))
+                (->Drop slot))))
+        (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
+                               (mapcat (comp (partial shops-taking) secondv))
+                               (some (curlvl-tags game)))]
+          (with-reason "visit shop" shoptype "to price id items"
+            (:step (navigate game #(= shoptype (:room %)))))))))
 
 (defn bag-items [game]
   ; TODO
@@ -1223,7 +1228,8 @@
       (register-handler (reify AboutToChooseActionHandler
                           (about-to-choose [_ game]
                             (if (or (= :inventory (typekw (:last-action* game)))
-                                    (empty? @desired))
+                                    (empty? @desired)
+                                    (shop? (at-player game)))
                               ; expensive (~3 ms)
                               (reset! desired (currently-desired game))))))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made

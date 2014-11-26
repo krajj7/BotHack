@@ -839,8 +839,9 @@
       SellItHandler
       (sell-it [_ bid _]
         (let [item (inventory-slot @game slot)]
-          (if (price-id? game item)
-            (swap! game add-observed-cost (appearance-of item) bid :sell))))
+          (when (price-id? @game item)
+            (swap! game add-observed-cost (appearance-of item) bid :sell)
+            nil)))
       DropSingleHandler
       (drop-single [_ _] (str (if (pos? qty) qty) slot)))))
 

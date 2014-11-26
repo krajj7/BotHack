@@ -212,17 +212,17 @@
    (and (not (know-price? game item))
         (price-id? item)))
   ([item]
-   (and (= 1 (:qty item))
-        (not (artifact? item))
+   (and (not (artifact? item))
         (knowable-appearance? (appearance-of item))
         ((some-fn tool? ring? scroll? wand? potion? armor?) item))))
 
 (defn itemid-handler [{:keys [game] :as anbf}]
   (reify FoundItemsHandler
-    ; TODO castle WoW, soko earth, soko prize
+    ; TODO autoid castle WoW, soko ?oEarth, soko prize
     (found-items [_ items]
       (doseq [item items :when ((every-pred :cost price-id?) item)]
-        (swap! game add-observed-cost (appearance-of item) (:cost item))))))
+        (swap! game add-observed-cost (appearance-of item) (/ (:cost item)
+                                                              (:qty item)))))))
 
 (defn safe? [game item]
   (or (weapon? item)
