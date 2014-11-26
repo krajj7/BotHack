@@ -165,6 +165,9 @@
 
 (defn can-pray? [game]
   (and (not (in-gehennom? game))
+       (let [tile (at-player game)]
+         (not (and (altar? tile) (not= (:alignment (:player game))
+                                       (:alignment tile)))))
        (< (prayer-timeout game)
           (- (:turn game) (or (:last-prayer game) -1000)))))
 
@@ -341,7 +344,7 @@
               (update-at-player-when-known anbf assoc :feature :lava)
               #"You turn into a"
               (-> anbf update-inventory update-tile)
-              #"You are almost hit"
+              #"You are almost hit|The altar glows |power of .*increase"
               (update-tile anbf)
               #" activated a magic portal!"
               (do (reset! portal true)

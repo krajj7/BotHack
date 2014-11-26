@@ -74,6 +74,7 @@
     #"Loot which containers\?" loot-what
     #"Pick a skill to advance" enhance-what
     #"Current skills" current-skills
+    #"What would you like to identify first\?" identify-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?

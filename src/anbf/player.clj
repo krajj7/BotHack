@@ -104,8 +104,20 @@
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil
 
-(defn inventory [game]
-  (-> game :player :inventory))
+(declare inventory)
+
+(defn bagged-items [game]
+  (for [[slot bag] (inventory game)
+        :when (container? bag)
+        item (:items bag)]
+    [slot item]))
+
+(defn inventory
+  ([game bagged?]
+   (concat (-> game :player :inventory)
+           (if bagged? (bagged-items game))))
+  ([game]
+   (inventory game false)))
 
 (defn- base-selector [game name-or-set-or-fn]
   (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
@@ -186,7 +198,7 @@
                                         (cursed-blockers game slot))))]
                [slot item])
              (if (:bagged opts)
-               (for [[slot bag :as entry] (inventory game)
+               (for [[slot bag] (inventory game)
                      :when (container? bag)
                      :let [matches (filter selector (:items bag))]
                      match matches]

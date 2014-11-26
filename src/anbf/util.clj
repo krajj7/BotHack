@@ -86,6 +86,8 @@
 
 (defn find-first [p s] (first (filter p s)))
 
+(defn keep-first [p s] (first (keep p s)))
+
 (defn parse-int [x]
   (if x
     (Integer/parseInt x)))

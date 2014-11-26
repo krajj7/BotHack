@@ -162,7 +162,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "magic marker" "wand of wishing" "wand of death"})
+(def always-desired #{"magic lamp" "magic marker" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -314,21 +314,22 @@
                  (not (tried? game item))
                  (safe? game item))))))
 
+(def desired (atom #{}))
+
 (defn take-selector [{:keys [player] :as game}]
-  (let [desired (currently-desired game)] ; expensive (~3 ms)
-    (fn [item]
-      (or (real-amulet? item)
-          (and (can-take? item)
-               (worthwhile? game item)
-               (let [id (item-name game item)]
-                 (and (or (desired id)
-                          (should-try? game item)
-                          (some desired (map :name (possible-ids game item))))
-                      (if-let [[_ o] (and (desired-singular id)
-                                          (have game id
-                                                #{:bagged :can-remove}))]
-                        (> (utility item) (utility o))
-                        true))))))))
+  (fn [item]
+    (or (real-amulet? item)
+        (and (can-take? item)
+             (worthwhile? game item)
+             (let [id (item-name game item)]
+               (and (or (@desired id)
+                        (should-try? game item)
+                        (some @desired (map :name (possible-ids game item))))
+                    (if-let [[_ o] (and (desired-singular id)
+                                        (have game id
+                                              #{:bagged :can-remove}))]
+                      (> (utility item) (utility o))
+                      true)))))))
 
 (defn examine-containers [game]
   (if-let [[slot item] (have game explorable-container?)]
@@ -1146,6 +1147,47 @@
   ; TODO
   )
 
+(defn- id-priority [game item]
+  (cond-> 0
+    (not (know-id? game item)) (+ 2)
+    (and (not (know-id? game item))
+         (scroll? item)) (+ 10)
+    (nil? (:buc item)) inc
+    (some @desired (map :name (possible-ids game item))) (+ 5)
+    ((some-fn ring? wand? amulet?) item) (+ 5)))
+
+(defn- want-id
+  ([game] (want-id game false))
+  ([game bagged?]
+   (->> (inventory game bagged?)
+        (remove (every-pred (comp some? :buc) (comp some? :enchantment)))
+        (sort-by (complement (comp (partial id-priority game) secondv))))))
+
+(defn use-items [game]
+  (if-let [[excal i] (have game "Excalibur" #{:can-use})]
+    (if-let [[scroll _] (and (> 7 (:enchantment i))
+                             (have game "scroll of enchant weapon"
+                                   #{:bagged :noncursed}))]
+      (or (with-reason "enchant excal"
+            (or (make-use game excal)
+                (->Read scroll))))))
+  (if-let [[slot item] (have game "scroll of identify" #{:bagged :noncursed})]
+    (when-let [want (seq (want-id game :bagged))]
+      #_(log/debug "want identified\n" (map (comp #(str % \newline)
+                                                (juxt (partial id-priority game)
+                                                      :label) secondv) want))
+      (if (< 6 (id-priority game (secondv (first want))))
+        (or (keep-first (fn [[slot item]]
+                          (unbag game slot item)) want)
+            (with-reason "identify" (first want)
+              (or (unbag game slot item)
+                  (->Read slot))))))))
+
+(defn choose-identify [game options]
+  (let [want (want-id game)]
+    (log/debug "identify order:" want)
+    (find-first options (map firstv want))))
+
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1154,6 +1196,9 @@
                             (deregister-handler anbf this)
                             "nvd"))) ; choose a dwarven valk
       (register-handler (reify
+                          IdentifyWhatHandler
+                          (identify-what [_ options]
+                            (choose-identify @game options))
                           OfferHandler
                           (offer-how-much [_ _]
                             (bribe-demon (:last-topline @(:game anbf))))
@@ -1166,6 +1211,12 @@
       (register-handler (reify MakeWishHandler
                           (make-wish [_ _]
                             (wish @game))))
+      (register-handler (reify AboutToChooseActionHandler
+                          (about-to-choose [_ game]
+                            (if (or (= :inventory (typekw (:last-action* game)))
+                                    (empty? @desired))
+                              ; expensive (~3 ms)
+                              (reset! desired (currently-desired game))))))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
       (register-handler -99 (reify ActionHandler
                               (choose-action [_ game]
@@ -1212,6 +1263,9 @@
       (register-handler 6 (reify ActionHandler
                             (choose-action [_ game]
                               (consider-items game))))
+      (register-handler 7 (reify ActionHandler
+                            (choose-action [_ game]
+                              (use-items game))))
       (register-handler 8 (hunt anbf))
       (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]

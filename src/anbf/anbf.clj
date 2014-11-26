@@ -151,6 +151,10 @@
     (dump-core [_ _] "q")
     CreateWhatMonsterHandler
     (create-what-monster [_ _] esc)
+    IdentifyWhatHandler
+    (identify-what [_ _]
+      (log/warn "default handler identifying anything")
+      #{","})
     ; escape the rest by default
     MakeWishHandler
     (make-wish [_ _]

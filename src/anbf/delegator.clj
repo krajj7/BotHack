@@ -426,3 +426,6 @@
 
 (defprompthandler VaultGuardHandler
   (who-are-you [handler ^String prompt]))
+
+(defmenuhandler IdentifyWhatHandler
+  (identify-what [handler ^clojure.lang.IPersistentMap options]))
