@@ -314,7 +314,7 @@
 (defn have-candles? [game]
   (= 7 (count-candles game)))
 
-(def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant" "violet fungus" "yellow mold"})
+(def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant" "violet fungus" "yellow mold" "chameleon"})
 
 (defn safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
   (and (or (tin? corpse)
