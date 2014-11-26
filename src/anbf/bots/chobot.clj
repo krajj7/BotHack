@@ -1142,12 +1142,11 @@
                                    #{:safe-buc :bagged})]
           (or (unbag game slot item)
               (make-use game slot)))
-        (if-let [[slot item]
-                 (and (shop? (at-player game))
-                      (have game #(and (price-id? game %)
-                                       ((shops-taking %)
-                                        (:room (at-player game))))
-                            #{:bagged}))]
+        (if-let [[slot item] (and (shop? (at-player game))
+                                  (have game #(and (price-id? game %)
+                                                   ((shops-taking %)
+                                                    (:room (at-player game))))
+                                        #{:bagged}))]
           (with-reason "price id (sell)"
             (or (unbag game slot item)
                 (->Drop slot))))

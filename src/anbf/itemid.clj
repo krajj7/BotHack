@@ -124,13 +124,19 @@
     19 18 ; cha 18
     25)) ; cha>18
 
+(declare item-type)
+
 (defn- pricec [appearance id]
-  (fresh [cha cost price]
+  (fresh [cha cost price enchant]
     (conda
       [(appearance-cha-cost appearance cha cost)
-       (project [id cha cost]
+       (project [id cha]
          (base-cha-cost price (cha-group cha) cost)
-         (== price (:price (name->item id))))]
+         (membero enchant (if (= :armor (item-type (name->item id)))
+                            [0 1 2 3]
+                            [0]))
+         (project [enchant]
+           (== price (+ (* enchant 10) (:price (name->item id))))))]
       [succeed])))
 
 (defn- possibleo [appearance id]
@@ -349,4 +355,10 @@
       (add-prop-discovery "silver wand" :autoid false)
       ;(add-discovery "silver wand" "wand of polymorph")
       (possible-ids {:name "silver wand"})
+      ((partial map :name)))
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 10)
+      (add-observed-cost "old gloves" 93)
+      (possible-ids {:name "old gloves"})
       ((partial map :name)))
