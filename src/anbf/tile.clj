@@ -299,6 +299,11 @@
 (defn shop? [tile]
   (shops (:room tile)))
 
+(defn temple?
+  "Only true near the altar"
+  [tile]
+  (= :temple (:room tile)))
+
 (defn mark-death [tile monster turn]
   (-> tile
       (update :deaths conj [turn monster])

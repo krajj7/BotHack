@@ -232,6 +232,18 @@
                      (= desc (typename %))))
        (reduce #(update-monster %1 %2 assoc :fleeing true) game)))
 
+(defn- mark-temple [{:keys [player] :as game}]
+  (let [level (curlvl game)
+        tile (at level player)
+        align (:alignment tile)]
+    ; temple will only be marked around the altar (boundary is harder to detect than for shops, should be sufficient anyway)
+    (if (and align (altar? tile) (some (every-pred priest? :peaceful)
+                                       (vals (:monsters level))))
+      (reduce #(update-at %1 %2 assoc :room :temple :alignment align)
+              game
+              (including-origin neighbors level player))
+      game)))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
@@ -241,7 +253,9 @@
       (about-to-choose [_ _]
         (reset! portal nil)
         (reset! levelport nil)
-        (swap! game filter-visible-uniques))
+        (swap! game filter-visible-uniques)
+        (if (altar? (at-player @game))
+          (swap! game mark-temple)))
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
         (swap! game assoc :gremlins-peaceful nil)
