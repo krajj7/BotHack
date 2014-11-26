@@ -228,3 +228,14 @@
   (or (weapon? item)
       (and (safe-buc? item)
            (:safe (item-id game item)))))
+
+(defn shops-taking [item]
+  (-> (case (item-type item)
+        :armor #{:armor :weapon}
+        :weapon #{:armor :weapon}
+        :scroll #{:book}
+        :spellbook #{:book}
+        :amulet #{:gem}
+        :ring #{:gem}
+        #{(item-type item)})
+      (conj :general)))

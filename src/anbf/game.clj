@@ -342,7 +342,7 @@
               (swap! game assoc-in [:player :trapped] false)
               #"You sink into the lava"
               (update-at-player-when-known anbf assoc :feature :lava)
-              #"You turn into a"
+              #"You turn into a| slips from your"
               (-> anbf update-inventory update-tile)
               #"You are almost hit|The altar glows |power of .*increase"
               (update-tile anbf)

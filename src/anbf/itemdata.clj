@@ -3557,9 +3557,11 @@
   (map #(assoc % :plural (string/replace (:name %) #"^potion" "potions"))
        [{:name "potion of booze"
          :autoid true
+         :food true
          :price 50}
         {:name "potion of fruit juice"
          :safe true
+         :food true
          :price 50}
         {:name "potion of see invisible"
          :safe true
@@ -3592,6 +3594,7 @@
          :price 100}
         {:name "potion of water"
          :safe true
+         :food true
          :price 100
          :appearances ["clear potion"]}
         {:name "potion of blindness"

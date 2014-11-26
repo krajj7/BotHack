@@ -14,7 +14,7 @@
 (db-rel appearance-prop-val ^:index appearance ^:index propname ^:index propval)
 (db-rel base-cha-cost ^:index base ^:index cha ^:index cost)
 
-(def observable-props #{:engrave :target :hardness :autoid})
+(def observable-props #{:engrave :target :hardness :autoid :food})
 
 (def item-names ; {lamp => [lamp1 lamp2], bag => [bag1 bag2 bag3 bag4], ...}
   (->> (for [{:keys [appearances]} items

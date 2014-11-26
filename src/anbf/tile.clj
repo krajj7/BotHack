@@ -286,7 +286,7 @@
    "used armor dealership" :armor
    "second-hand bookstore" :book
    "liquor emporium" :potion
-   "antique weapons outlet" :weapons
+   "antique weapons outlet" :weapon
    "delicatessen" :food
    "jewelers" :gem
    "quality apparel and accessories" :wand
