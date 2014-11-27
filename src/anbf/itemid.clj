@@ -328,6 +328,10 @@
                     [(discovery q id)]
                     [(possibleo q id)]))))))
 
+(defn could-be? [game id item]
+  {:pre [(string? id) (:name item)]}
+  (some #(= id (:name %)) (possible-ids game item)))
+
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 9)
       (add-observed-cost "scroll labeled PRATYAVAYAH" 26)
@@ -364,3 +368,6 @@
       (add-observed-cost "old gloves" 93)
       (possible-ids {:name "old gloves"})
       ((partial map :name)))
+
+#_(-> (#'anbf.game/new-game)
+      (could-be? "magic lamp" {:name "lamp" :generic "lamp1"}))

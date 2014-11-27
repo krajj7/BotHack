@@ -1355,6 +1355,18 @@
       (what-direction [_ _] dir))
     (->ZapWand slot)))
 
+(defaction Rub [slot]
+  (trigger [_] "#rub\n")
+  (handler [_ {:keys [game] :as anbf}]
+    (possible-autoid anbf slot)
+    (reify
+      RubWhatHandler
+      (rub-what [_ _] slot)
+      ToplineMessageHandler
+      (message [_ msg]
+        (when (re-seq #"puff of smoke" msg)
+          (swap! game identify-slot slot "magic lamp"))))))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

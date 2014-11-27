@@ -58,7 +58,9 @@
   "Take holy water out of a bag (if bagged) and dip item at slot into it"
   [game slot]
   {:pre [(:dungeon game) (char? slot)]}
-  (if-let [[water-slot water] (have game holy-water? #{:bagged})]
+  (if-let [[water-slot water] (and (-> (inventory-slot game slot)
+                                       :buc blessed? not)
+                                   (have game holy-water? #{:bagged}))]
     (with-reason "blessing" (inventory-slot game slot)
       (or (unbag game water-slot water)
           (->Dip slot water-slot)))))

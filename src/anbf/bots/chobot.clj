@@ -428,10 +428,7 @@
   (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
                                         "luckstone" "bag of holding"}
                                  #{:nonblessed :know-buc})]
-        (if-let [[water-slot water] (have game holy-water? #{:bagged})]
-          (or (unbag game water-slot water)
-              (with-reason "blessing" item
-                (->Dip slot water-slot)))))
+        (bless game slot))
       (if-let [[_ item] (have game (every-pred cursed? :in-use))]
         (if-let [[slot scroll] (have game "scroll of remove curse"
                                      #{:noncursed :bagged})]
@@ -453,15 +450,16 @@
            (lit-mines? game level))))
 
 (defn use-light [game level]
-  (if-let [[slot item] (have game (every-pred :lit (partial light? game)))]
-    (if (and (not= "magic lamp" (item-name game item))
-             (not (want-light? game level)))
-      (with-reason "saving energy" (->Apply slot)))
-    (if (want-light? game level)
-      (or (if-let [[slot lamp] (have game "magic lamp")]
-            (with-reason "using magic lamp" (->Apply slot)))
-          (if-let [[slot lamp] (have game (partial light? game))]
-            (with-reason "using any light source" (->Apply slot)))))))
+  (or (if-let [[slot item] (have game (every-pred :lit (partial light? game)))]
+        (if (and (not (could-be? game "magic lamp" item))
+                 (not (want-light? game level)))
+          (with-reason "saving energy" (->Apply slot))))
+      (if-let [[slot _] (have game #(and (could-be? game "magic lamp" %)
+                                         (not (:lit %))))]
+        (with-reason "using magic lamp" (->Apply slot)))
+      (if (and (want-light? game level) (not (have game :lit)))
+        (if-let [[slot _] (have game (partial light? game))]
+          (with-reason "using any light source" (->Apply slot))))))
 
 (defn remove-rings [{:keys [player] :as game}]
   (or (if-let [[slot _] (have game "ring of invisibility" #{:in-use})]
@@ -1184,6 +1182,11 @@
       (or (with-reason "enchant excal"
             (or (make-use game excal)
                 (->Read scroll))))))
+  (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
+    (with-reason "rubbing lamp"
+      (or (unbag game slot item)
+          (bless game slot)
+          (->Rub slot))))
   (if-let [[slot item] (have game "scroll of identify" #{:bagged :noncursed})]
     (when-let [want (seq (want-id game :bagged))]
       #_(log/debug "want identified\n" (map (comp #(str % \newline)
@@ -1200,6 +1203,18 @@
   (let [want (want-id game)]
     (log/debug "identify order:" want)
     (find-first options (map firstv want))))
+
+#_(defn rub-id [{:keys [game] :as anbf}]
+  (let [torub (atom 8)]
+    (reify ActionHandler
+      (choose-action [this game]
+        (if (know-appearance? game "magic lamp")
+          (deregister-handler anbf this))
+        (when-let [[slot item] (have game (partial could-be? game "magic lamp")
+                                     #{:noncursed})]
+          (if (zero? (swap! torub dec))
+            (swap! game identify-slot slot "oil lamp"))
+          (with-reason "rub-id" (->Rub slot)))))))
 
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
