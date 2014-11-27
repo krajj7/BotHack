@@ -22,6 +22,7 @@
 (defn update-before-action
   "Before the next action is chosen call (apply swap! game f args).  This happens when game state is updated and player position is known."
   [anbf f & args]
+  {:pre [(:game anbf)]}
   (register-handler anbf priority-top
     (reify AboutToChooseActionHandler
       (about-to-choose [this _]
@@ -31,6 +32,7 @@
 (defn update-on-known-position
   "When player position on map is known call (apply swap! game f args).  Game state may not be fully updated yet for the turn."
   [anbf f & args]
+  {:pre [(:game anbf)]}
   (register-handler anbf priority-top
     (reify
       AboutToChooseActionHandler ; handler might have been registered too late to receive know-position this turn

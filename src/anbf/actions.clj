@@ -540,11 +540,13 @@
 (defn update-inventory
   "Re-check inventory on the next action"
   [anbf]
+  {:pre [(:game anbf)]}
   (register-handler anbf (dec priority-top) (inventory-handler anbf)))
 
 (defn update-tile
   "Re-check current tile for items/engravings/feature on the next action"
   [anbf]
+  {:pre [(:game anbf)]}
   (update-at-player-when-known anbf assoc :new-items true))
 
 (def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*)( called [^(]+)? \(([^\)]*)\)$|^([^(]+)$")
@@ -597,6 +599,7 @@
 (defn update-discoveries
   "Re-check discoveries on the next action"
   [anbf]
+  {:pre [(:game anbf)]}
   (register-handler anbf (dec priority-top) (discoveries-handler anbf)))
 
 (defaction Name [slot name]
@@ -628,6 +631,7 @@
       (call-what-name [_ _] name))))
 
 (defn name-item [anbf slot name]
+  {:pre [(:game anbf) (char? slot) (string? name)]}
   "Name an item on the next action"
   (register-handler anbf priority-top
                     (reify ActionHandler
@@ -636,6 +640,7 @@
                         (->Name slot name)))))
 
 (defn- identify-slot [game slot id]
+  {:pre [(:discoveries game) (char? slot) (string? id)]}
   (add-discovery game (slot-appearance game slot) id))
 
 (defaction Apply [slot]
@@ -649,7 +654,7 @@
       (message [_ msg]
         (condp re-seq msg
           #"has no oil|has run out of power"
-          (do (identify-slot game slot "oil lamp")
+          (do (swap! game identify-slot game slot "oil lamp")
               (name-item anbf slot "empty"))
           #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)
@@ -751,7 +756,7 @@
 
 (defn- possible-autoid
   "Check if the item at slot auto-identified on use.  If no-mark? is true the result is not used for item-id purposes"
-  ([game slot] (possible-autoid game slot false))
+  ([anbf slot] (possible-autoid anbf slot false))
   ([{:keys [game] :as anbf} slot no-mark?]
    (if-let [item (inventory-slot @game slot)]
      (when-not (know-id? @game item)

@@ -207,7 +207,7 @@
     (eliminate-group game appearance)))
 
 (defn add-discovery [game appearance id]
-  {:pre [(string? appearance) (string? id)]}
+  {:pre [(string? appearance) (string? id) (:discoveries game)]}
   (if (or (not (knowable-appearance? appearance))
           (= appearance id))
     game
@@ -244,6 +244,7 @@
   ([item]
    (initial-ids item false))
   ([item n]
+   {:pre [(:name item)]}
    (initial-possibilities (appearance-of item) n)))
 
 (defn item-id
@@ -276,7 +277,7 @@
   (map :name (possible-ids game item)))
 
 (defn add-prop-discovery [game appearance prop propval]
-  {:pre [(string? appearance) (observable-props prop)]}
+  {:pre [(string? appearance) (observable-props prop) (:discoveries game)]}
   (if (knowable-appearance? appearance)
     (do (log/debug "for appearance" appearance
                    "adding observed property" prop "with value" propval)
@@ -308,6 +309,7 @@
    (add-observed-cost game appearance (-> player :stats :cha) cost sell?)))
 
 (defn ambiguous-appearance? [game item]
+  {:pre [(:discoveries game) (:name item)]}
   (and (not (:generic item))
        (item-names (:name item))))
 

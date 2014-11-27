@@ -155,6 +155,7 @@
 (defn prayer-timeout
   ">95% confidence"
   [game]
+  {:pre [(:player game)]}
   ; TODO wishes
   ; TODO crowning
   (if (or (planes (branch-key game))
@@ -164,6 +165,7 @@
     1300))
 
 (defn can-pray? [game]
+  {:pre [(:player game)]}
   (and (not (in-gehennom? game))
        (let [tile (at-player game)]
          (not (and (altar? tile) (not= (:alignment (:player game))
@@ -195,6 +197,7 @@
 (defn moved?
   "Returns true if the player moved during the last action turn"
   [game]
+  {:pre [(:player game)]}
   (or (not (:last-position game))
       (not= (:last-position game) (position (:player game)))))
 

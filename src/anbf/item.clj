@@ -209,8 +209,8 @@
 
 (defn price-id?
   ([game item]
-   (and (not (know-price? game item))
-        (price-id? item)))
+   (and (price-id? item)
+        (not (know-price? game item))))
   ([item]
    (and (not (artifact? item))
         (knowable-appearance? (appearance-of item))
