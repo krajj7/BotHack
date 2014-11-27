@@ -139,10 +139,20 @@
            (== price (+ (* enchant 10) (:price (name->item id))))))]
       [succeed])))
 
+(defn knowable-appearance?
+  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
+  [appearance]
+  {:pre [(string? appearance)]}
+  (not (or (blind-appearances appearance)
+           (and (not (names appearance))
+                (not (exclusive-appearances appearance))))))
+
 (defn- possibleo [appearance id]
   (fresh [x]
     (appearance-name appearance id)
     (conda
+      [(project [appearance]
+         (== false (knowable-appearance? appearance)))]
       [(discovery x id) (== x appearance)]
       [(discovery appearance x) (== x id)]
       [(pricec appearance id)
@@ -162,14 +172,6 @@
        (conda
          [(possibleo appearance x) fail]
          [succeed])])))
-
-(defn knowable-appearance?
-  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
-  [appearance]
-  {:pre [(string? appearance)]}
-  (not (or (blind-appearances appearance)
-           (and (not (names appearance))
-                (not (exclusive-appearances appearance))))))
 
 (defn- possibilities-fn [game]
   (memoize
@@ -191,7 +193,7 @@
 
 (declare add-discovery)
 
-(defn- eliminate-group [game appearance]
+(defn- add-eliminated [game appearance]
   (log/debug "group elimination for" appearance)
   (if-let [[[a i]] (seq (query (:discoveries game)
                                (run 1 [a i]
@@ -200,23 +202,22 @@
     (add-discovery game a i)
     game))
 
-(defn add-eliminated
-  [game old-discoveries appearance]
-  (if (= old-discoveries (:discoveries game))
-    game
-    (eliminate-group game appearance)))
+(defn- add-fact [game relname appearance & args]
+  (as-> game res
+    (apply update res :discoveries db-fact relname appearance args)
+    (if (not= (:discoveries game) (:discoveries res))
+      (-> res
+          reset-possibilities
+          (add-eliminated appearance))
+      game)))
 
 (defn add-discovery [game appearance id]
   {:pre [(string? appearance) (string? id) (:discoveries game)]}
-  (if (or (not (knowable-appearance? appearance))
-          (= appearance id))
+  (if (or (= appearance id) (not (knowable-appearance? appearance)))
     game
     (let [id (get jap->eng id id)]
       (log/debug "adding discovery: >" appearance "< is >" id "<")
-      (-> game
-          (update :discoveries db-fact discovery appearance id)
-          reset-possibilities
-          (add-eliminated (:discoveries game) appearance)))))
+      (add-fact game discovery appearance id))))
 
 (defn add-discoveries [game discoveries]
   (reduce (fn [game [appearance id]]
@@ -281,11 +282,7 @@
   (if (knowable-appearance? appearance)
     (do (log/debug "for appearance" appearance
                    "adding observed property" prop "with value" propval)
-        (-> game
-            (update :discoveries db-fact appearance-prop-val
-                    appearance prop propval)
-            reset-possibilities
-            (add-eliminated (:discoveries game) appearance)))
+        (add-fact game appearance-prop-val appearance prop propval))
     game))
 
 (defn add-observed-cost
@@ -295,13 +292,9 @@
    (if (knowable-appearance? appearance)
      (do (log/debug "for appearance" appearance
                     "adding observed cost" cost)
-         (-> game
-             (update :discoveries db-fact appearance-cha-cost
-                     appearance (if sell?
-                                  0
-                                  (cha-group cha)) cost)
-             reset-possibilities
-             (add-eliminated (:discoveries game) appearance)))
+         (add-fact game appearance-cha-cost appearance (if sell?
+                                                         0
+                                                         (cha-group cha)) cost))
      game))
   ([{:keys [player] :as game} appearance cost]
    (add-observed-cost game appearance (-> player :stats :cha) cost false))
