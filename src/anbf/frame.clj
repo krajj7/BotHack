@@ -52,15 +52,23 @@
 (defn botls [frame]
   (subvec (:lines frame) 22))
 
+(defn wrapped-cursor? [frame]
+  (and (zero? (-> frame :cursor :x))
+       (pos? (-> frame :cursor :y))))
+
 (defn cursor-line
-  "Returns the line of text where the cursor is on the frame."
+  "Returns the line of text where the cursor is on the frame, or the previous one if it is on the start of the next line."
   [frame]
-  (nth-line frame (-> frame :cursor :y)))
+  (nth-line frame (if (wrapped-cursor? frame)
+                    (dec (-> frame :cursor :y))
+                    (-> frame :cursor :y))))
 
 (defn before-cursor
   "Returns the part of the line to the left of the cursor."
   [frame]
-  (subs (cursor-line frame) 0 (-> frame :cursor :x)))
+  (if (wrapped-cursor? frame)
+    (cursor-line frame)
+    (subs (cursor-line frame) 0 (-> frame :cursor :x))))
 
 (defn before-cursor?
   "Returns true if the given text appears just before the cursor."
@@ -80,7 +88,7 @@
   "Returns the top line with possible overflow on the second line appended."
   [frame]
   (if (topline-cursor? frame)
-    (apply str (topline frame) " "
+    (apply str (topline frame) (if-not (wrapped-cursor? frame) " ")
            (map (comp string/trim (partial nth-line frame))
                 (range 1 (inc (-> frame :cursor :y)))))
     (topline frame)))

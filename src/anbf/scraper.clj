@@ -89,8 +89,11 @@
            (not (.startsWith (topline frame) "What monster "))
            (not (.startsWith (topline frame) "What class of monsters "))
            (<= (-> frame :cursor :y) 1)
-           (> (-> frame :cursor :x) ; no text after cursor
-              (count (re-first-group #"^(.*[^ ]) *$" (cursor-line frame)))))
+           (let [x (-> frame :cursor :x)]
+             (if (pos? x) ; no text after cursor
+               (less-than? x (re-first-group #"^(.*[^ ]) *$"
+                                             (cursor-line frame)))
+               true)))
     (some->> (topline+ frame)
              (re-seq #".*\?\"?  ?\[[^\]]+\]( \(.\))?$")
              ffirst)))
