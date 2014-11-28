@@ -1312,8 +1312,7 @@
   (reify ActionHandler
     (choose-action [_ game]
       (if-let [[slot item] (and (not (blind? (:player game)))
-                                (have game
-                                      (partial ambiguous-appearance? game)))]
+                                (have game ambiguous-appearance?))]
         (->Call slot (name-for game item))))))
 
 (defaction Wipe []

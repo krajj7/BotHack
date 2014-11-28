@@ -291,6 +291,9 @@
   (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn"} (item-name game item))
       ((some-fn ring? amulet? scroll? potion? tool? artifact?) item)))
 
+(defn want-buy? [game item]
+  false) ; TODO
+
 (defn- worthwhile? [game item]
   (and (not (and (:enchantment item) (> -1 (:enchantment item))))
        (not (tin? item))
@@ -300,7 +303,10 @@
            (= "wand of wishing" (item-name game item)))
        (or (and (not= :cursed (:buc item))
                 (> 2 (or (:erosion item) 0)))
-           (take-cursed? game item))))
+           (take-cursed? game item))
+       (if (:cost item)
+         (want-buy? game item)
+         true)))
 
 (defn- should-try?
   ([game item]
@@ -419,8 +425,9 @@
            (with-reason "wearing better armor"
              (make-use game slot)))))
 
-(defn light? [game item]
+(defn light? [item]
   (and (not= "empty" (:specific item))
+       (not (:cost item))
        (= :light (item-subtype item))
        (= :copper (item-id item))))
 
@@ -450,15 +457,15 @@
            (lit-mines? game level))))
 
 (defn use-light [game level]
-  (or (if-let [[slot item] (have game (every-pred :lit (partial light? game)))]
+  (or (if-let [[slot item] (have game (every-pred :lit light? game))]
         (if (and (not (could-be? game "magic lamp" item))
                  (not (want-light? game level)))
           (with-reason "saving energy" (->Apply slot))))
       (if-let [[slot _] (have game #(and (could-be? game "magic lamp" %)
-                                         (not (:lit %))))]
+                                         (not (or (:cost %) (:lit %)))))]
         (with-reason "using magic lamp" (->Apply slot)))
       (if (and (want-light? game level) (not (have game :lit)))
-        (if-let [[slot _] (have game (partial light? game))]
+        (if-let [[slot _] (have game light?)]
           (with-reason "using any light source" (->Apply slot))))))
 
 (defn remove-rings [{:keys [player] :as game}]
@@ -471,32 +478,31 @@
           (remove-use game slot)))))
 
 (defn drop-junk [game]
-  (if-not (shop? (at-player game))
-    (or (if-let [[slot item] (have game (complement (partial worthwhile? game))
-                                   #{:can-remove :bagged})]
-          (with-reason "dropping junk"
-            (or (remove-use game slot)
-                (unbag game slot item)
-                (->Drop slot))))
-        (loop [[cat & more] desired-items]
-          (let [cat-items (have-all game cat #{:bagged})
-                stuck? (fn [[stuck-slot stuck-item]]
-                         (and (:in-use stuck-item)
-                              (not (can-remove? game stuck-slot))))]
-            (if (or (more-than? 2 cat-items)
-                    (and (more-than? 1 cat-items) (not-any? stuck? cat-items)))
-              (if-let [[slot item] (min-by (comp (partial utility game) secondv)
-                                           (remove stuck? cat-items))]
-                (with-reason "dropping less useful duplicate"
-                  (or (remove-use game slot)
-                      (unbag game slot item)
-                      (if-not (:in-use item)
-                        (->Drop slot)))))
-              (if (seq more)
-                (recur more)))))
-        (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
-          (with-reason "dropping rock excess"
-            (->Drop slot (- (:qty item) 7)))))))
+  (or (if-let [[slot item] (have game (complement (partial worthwhile? game))
+                                 #{:can-remove :bagged})]
+        (with-reason "dropping junk"
+          (or (remove-use game slot)
+              (unbag game slot item)
+              (->Drop slot))))
+      (loop [[cat & more] desired-items]
+        (let [cat-items (have-all game cat #{:bagged})
+              stuck? (fn [[stuck-slot stuck-item]]
+                       (and (:in-use stuck-item)
+                            (not (can-remove? game stuck-slot))))]
+          (if (or (more-than? 2 cat-items)
+                  (and (more-than? 1 cat-items) (not-any? stuck? cat-items)))
+            (if-let [[slot item] (min-by (comp (partial utility game) secondv)
+                                         (remove stuck? cat-items))]
+              (with-reason "dropping less useful duplicate"
+                (or (remove-use game slot)
+                    (unbag game slot item)
+                    (if-not (:in-use item)
+                      (->Drop slot)))))
+            (if (seq more)
+              (recur more)))))
+      (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
+        (with-reason "dropping rock excess"
+          (->Drop slot (- (:qty item) 7))))))
 
 (defn- remove-unsafe [game]
   (if-let [[slot _] (have game #(not (safe? game %)) #{:can-remove})]
@@ -1121,38 +1127,50 @@
                  (take 7)))))
 
 (defn itemid [{:keys [player] :as game}]
-  (if-not (impaired? player)
-    (or (if (can-engrave? game)
-          (if-let [[slot w] (have game #(and (not (:engrave (item-id game %)))
-                                             (not (tried? game %))
-                                             (wand? %)) #{:nonempty})]
-            (with-reason "engrave-id wand" w
-              (or (:step (navigate game engravable?))
-                  (if-not (:engraving (at-player game))
-                    (engrave-e game))
-                  (->Engrave slot "Elbereth" true)))))
-        (if-let [[slot wand] (have game #(and (not (:target (item-id game %)))
-                                              (wand? %)) #{:nonempty})]
-          (if-let [dir (find-first (partial safe-zap? game) directions)]
-            (with-reason "zap-id wand" wand
-              (->ZapWandAt slot dir))))
-        (if-let [[slot item] (have game (partial should-try? game)
-                                   #{:safe-buc :bagged})]
+  (or (if (can-engrave? game)
+        (if-let [[slot w] (have game #(and (not (:engrave (item-id game %)))
+                                           (not (tried? game %))
+                                           (wand? %)) #{:nonempty})]
+          (with-reason "engrave-id wand" w
+            (or (:step (navigate game engravable?))
+                (if-not (:engraving (at-player game))
+                  (engrave-e game))
+                (->Engrave slot "Elbereth" true)))))
+      (if-let [[slot wand] (have game #(and (not (:target (item-id game %)))
+                                            (wand? %)) #{:nonempty})]
+        (if-let [dir (find-first (partial safe-zap? game) directions)]
+          (with-reason "zap-id wand" wand
+            (->ZapWandAt slot dir))))
+      (if-let [[slot item] (have game (partial should-try? game)
+                                 #{:safe-buc :bagged})]
+        (or (unbag game slot item)
+            (make-use game slot)))
+      (if-let [[slot item] (and (shop? (at-player game))
+                                (have game #(and (price-id? game %)
+                                                 (not (:cost %))
+                                                 ((shops-taking %)
+                                                  (:room (at-player game))))
+                                      #{:bagged}))]
+        (with-reason "price id (sell)"
           (or (unbag game slot item)
-              (make-use game slot)))
-        (if-let [[slot item] (and (shop? (at-player game))
-                                  (have game #(and (price-id? game %)
-                                                   ((shops-taking %)
-                                                    (:room (at-player game))))
-                                        #{:bagged}))]
-          (with-reason "price id (sell)"
-            (or (unbag game slot item)
-                (->Drop slot))))
-        (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
-                               (mapcat (comp (partial shops-taking) secondv))
-                               (some (curlvl-tags game)))]
-          (with-reason "visit shop" shoptype "to price id items"
-            (:step (navigate game #(= shoptype (:room %)))))))))
+              (->Drop slot))))
+      (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
+                             (mapcat (comp (partial shops-taking) secondv))
+                             (some (curlvl-tags game)))]
+        (with-reason "visit shop" shoptype "to price id items"
+          (:step (navigate game #(= shoptype (:room %))))))))
+
+(defn- want-name? [item]
+  (and (ambiguous-appearance? item) (not (gem? item))))
+
+(defn shop [{:keys [player] :as game}]
+  (let [want? #(and (:cost %) (or (want-buy? game %)
+                                  (want-name? %)))]
+    (or (if-let [item (find-first want? (:items (at-player game)))]
+          (with-reason "want to call item"
+            (->PickUp (:label item))))
+        (with-reason "visit shop for items"
+          (:step (navigate game #(some want? (:items %))))))))
 
 (defn bag-items [game]
   ; TODO
@@ -1175,31 +1193,32 @@
         (sort-by (complement (comp (partial id-priority game) secondv))))))
 
 (defn use-items [game]
-  (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
-        (if-let [[scroll _] (and (> 7 (:enchantment i))
-                                 (have game "scroll of enchant weapon"
-                                       #{:bagged :noncursed}))]
-          (or (with-reason "enchant excal"
-                (or (make-use game excal)
-                    (->Read scroll))))))
-      (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
-        (with-reason "rubbing lamp"
-          (or (unbag game slot item)
-              (bless game slot)
-              (->Rub slot))))
-      (if-let [[slot item] (have game "scroll of identify"
-                                 #{:bagged :noncursed})]
-        (when-let [want (seq (want-id game :bagged))]
-          #_(log/debug "want identified\n"
-                       (map (comp #(str % \newline)
-                                  (juxt (partial id-priority game)
-                                        :label) secondv) want))
-          (if (< 6 (id-priority game (secondv (first want))))
-            (or (keep-first (fn [[slot item]]
-                              (unbag game slot item)) want)
-                (with-reason "identify" (first want)
-                  (or (unbag game slot item)
-                      (->Read slot)))))))))
+  (if-not (shop? (at-player game))
+    (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
+          (if-let [[scroll _] (and (> 7 (:enchantment i))
+                                   (have game "scroll of enchant weapon"
+                                         #{:bagged :noncursed}))]
+            (or (with-reason "enchant excal"
+                  (or (make-use game excal)
+                      (->Read scroll))))))
+        (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
+          (with-reason "rubbing lamp"
+            (or (unbag game slot item)
+                (bless game slot)
+                (->Rub slot))))
+        (if-let [[slot item] (have game "scroll of identify"
+                                   #{:bagged :noncursed})]
+          (when-let [want (seq (want-id game :bagged))]
+            #_(log/debug "want identified\n"
+                         (map (comp #(str % \newline)
+                                    (juxt (partial id-priority game)
+                                          :label) secondv) want))
+            (if (< 6 (id-priority game (secondv (first want))))
+              (or (keep-first (fn [[slot item]]
+                                (unbag game slot item)) want)
+                  (with-reason "identify" (first want)
+                    (or (unbag game slot item)
+                        (->Read slot))))))))))
 
 (defn choose-identify [game options]
   (let [want (want-id game)]
@@ -1305,12 +1324,15 @@
                             (choose-action [_ game]
                               (itemid game))))
       (register-handler 11 (reify ActionHandler
+                            (choose-action [_ game]
+                              (shop game))))
+      (register-handler 12 (reify ActionHandler
                              (choose-action [_ game]
                                (bag-items game))))
-      (register-handler 12 (excal-handler anbf))
-      (register-handler 13 (reify ActionHandler
+      (register-handler 13 (excal-handler anbf))
+      (register-handler 14 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 15 (reify ActionHandler
+      (register-handler 16 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))

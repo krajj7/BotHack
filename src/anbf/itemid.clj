@@ -301,8 +301,8 @@
   ([{:keys [player] :as game} appearance cost sell?]
    (add-observed-cost game appearance (-> player :stats :cha) cost sell?)))
 
-(defn ambiguous-appearance? [game item]
-  {:pre [(:discoveries game) (:name item)]}
+(defn ambiguous-appearance? [item]
+  {:pre [(:name item)]}
   (and (not (:generic item))
        (item-names (:name item))))
 
