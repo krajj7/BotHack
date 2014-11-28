@@ -296,7 +296,7 @@
   false) ; TODO
 
 (defn- worthwhile? [game item]
-  (and (not (and (:enchantment item) (> -1 (:enchantment item))))
+  (and (not (> -1 (enchantment item)))
        (not (tin? item))
        (not (and (have-intrinsic? (:player game) :speed)
                  (= "wand of speed monster" (item-name game item))))
@@ -421,8 +421,7 @@
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
                :when (and armor (not (:in-use armor))
-                          (or (not= :takeoff (typekw (:last-action game)))
-                              (not= slot (:slot (:last-action game)))))]
+                          (not= :takeoff (typekw (:last-action game))))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
 
@@ -1212,15 +1211,33 @@
                          (juxt (partial id-priority game)
                                :label) secondv) (want-id game :bagged)))
 
+(defn- safe-enchant? [item]
+  (case (item-type item)
+    :weapon (> 6 (enchantment item))
+    :armor (> 5 (enchantment item))
+    nil))
+
 (defn use-items [game]
   (if-not (shop? (at-player game))
     (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
-          (if-let [[scroll _] (and (> 7 (:enchantment i))
+          (if-let [[scroll _] (and (> (enchantment i) 7)
                                    (have game "scroll of enchant weapon"
                                          #{:bagged :noncursed}))]
             (or (with-reason "enchant excal"
                   (or (make-use game excal)
                       (->Read scroll))))))
+        (if-let [[scroll si] (have game "scroll of enchant armor"
+                             #{:bagged :noncursed})]
+          (with-reason "enchant armor"
+            (if (have game (every-pred safe-enchant? armor? :in-use))
+              (if-let [slots (->> (have-all game (every-pred
+                                                   (complement safe-enchant?)
+                                                   armor? :in-use))
+                                  (map firstv) seq)]
+                (if (every? #(can-remove? game %) slots)
+                  (remove-use game (first slots)))
+                (or (unbag game scroll si)
+                    (->Read scroll))))))
         (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
           (with-reason "rubbing lamp"
             (or (unbag game slot item)

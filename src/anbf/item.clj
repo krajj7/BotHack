@@ -240,3 +240,6 @@
         :ring #{:gem}
         #{(item-type item)})
       (conj :general)))
+
+(defn enchantment [item]
+  (or (:enchantment item) 0))
