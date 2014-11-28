@@ -960,24 +960,22 @@
 
 (defn- seek-fountain [game]
   (with-reason "seeking a fountain to make Excal"
-    (let [oracle (get-level game :main :oracle)
-          minetown (get-level game :mines :minetown)]
+    (let [oracle (get-level game :main :oracle)]
       (or (if (or (nil? oracle)
                   (not-any? :seen (neighbors oracle oracle-position)))
             (or (seek-level game :main :oracle)
                 (seek game oracle-position {:adjacent true})))
           (if (some fountain? (tile-seq oracle))
             (seek-level game :main :oracle))
-          (if-let [{:keys [step]} (navigate game fountain?)]
+          (if-let [{:keys [step]} (and (not (:minetown (curlvl-tags game)))
+                                       (navigate game fountain?))]
             step
             (or (some->> (:dlvl oracle) (iterate prev-dlvl) rest
                          (take-while (partial not= "Dlvl:0"))
                          (find-first (comp (partial some fountain?) tile-seq
                                            (partial get-level game :main)))
                          (seek-level game :main))
-                (if (or (not minetown) (some fountain? (tile-seq minetown)))
-                  (seek-level game :mines :minetown))
-                (log/warn "all fountains spent, no excal")))))))
+                (seek-feature game :fountain)))))))
 
 (defn make-excal
   "When we have appropriate armor and xp, dip for Excalibur"

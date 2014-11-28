@@ -125,13 +125,19 @@
   `(do ~@(for [feature (concat traps
                                [:rock :floor :wall :stairs-up :stairs-down
                                 :corridor :altar :pool :door-open :door-closed
-                                :door-locked :door-secret :sink :fountain
-                                :grave :throne :bars :tree :drawbridge-raised
-                                :drawbridge-lowered :lava :ice :portal
-                                :trapdoor :hole :firetrap :cloud])]
+                                :door-locked :door-secret :sink :grave :throne
+                                :bars :drawbridge-raised :drawbridge-lowered
+                                :lava :ice :portal :tree :trapdoor :hole
+                                :firetrap :cloud])]
            `(def-feature-pred ~feature))))
 
 (def-feature-preds)
+
+(defn fountain?
+  "Dangerously overused minetown fountains not considered fountains"
+  [tile]
+  (and (has-feature? tile :fountain)
+       (not (:trickle (:tags tile)))))
 
 (defn trap?
   "Clouds on the plane of air are considered a trap (unavoidable lightning)"
