@@ -839,11 +839,11 @@
         slot))))
 
 (defn- ring-msg [msg]
-  (condp re-seq
+  (condp re-seq msg
     #"got lost in the sink, but there it is!" "ring of searching"
     #"The ring is regurgitated!" "ring of slow digestion"
     #"The sink quivers upward for a moment" "ring of levitation"
-    #"You smell rotten fruit." "ring of poison resistance"
+    #"You smell rotten fruit" "ring of poison resistance"
     #"Static electricity surrounds the sink" "ring of shock resistance"
     #"You hear loud noises coming from the drain" "ring of conflict"
     #"The water flow seems fixed" "ring of sustain ability"

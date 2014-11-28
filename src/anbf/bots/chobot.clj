@@ -1090,12 +1090,20 @@
            (:safe (item-id game item)))))
 
 (defn use-features [game]
-  ; TODO kick sinks, drop rings into them
   (or (if-let [[slot ring] (have game #(and (ring? %)
                                             (not (know-id? game %))))]
         (with-reason "drop ring in sink"
           (if-let [{:keys [step]} (navigate game sink?)]
             (or step (->Drop slot)))))
+      (if (have game "Excalibur" #{:can-use})
+        ; TODO remove items from tile
+        (if-let [{:keys [step target]} (navigate game
+                                                 #(and (sink? %)
+                                                       (not (:ring (:tags %)))
+                                                       (empty? (:items %)))
+                                                 #{:adjacent})]
+          (with-reason "kick sink"
+            (or step (->Kick (towards (:player game) target))))))
       (if (altar? (at-player game))
         (if-let [[slot item] (have game {:can-remove true
                                          :bagged true :know-buc false})]
@@ -1108,6 +1116,7 @@
         (with-reason "going to altar" (:step (navigate game altar?))))
       (if-let [{:keys [step]} (navigate game (every-pred throne?
                                                          (comp empty? :items)))]
+        ; TODO remove items from tile
         (or (with-reason "going to throne" step)
             ; TODO drop gold
             (with-reason "sitting on throne" ->Sit)))))

@@ -359,7 +359,7 @@
                     (update-at-player-when-known anbf assoc :feature :portal)))
               #"The walls around you begin to bend and crumble!"
               (swap! game update-at-player assoc :feature :stairs-down)
-              #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode|rot|smoulder)| snatches "
+              #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode|rot|smoulder)| snatches |Take off your|let me run my fingers"
               (update-inventory anbf)
               #"shop appears to be deserted"
               (if (< 33 (dlvl @game))
