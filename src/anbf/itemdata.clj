@@ -2891,6 +2891,7 @@
       :price 50
       :weight 100
       :charge nil
+      :safe true
       :subtype :weapon
       :material :iron}
      {:name "grappling hook"

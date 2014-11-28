@@ -112,7 +112,7 @@
   (:monster (name->item (:name item))))
 
 (defn tin? [item]
-  (re-seq #" tins?\b" (:name item)))
+  (re-seq #"\btins?\b" (:name item)))
 
 (defn can-take? [item]
   (not (:cost item)))
@@ -226,6 +226,7 @@
 
 (defn safe? [game item]
   (or (weapon? item)
+      (tool? item)
       (and (safe-buc? item)
            (:safe (item-id game item)))))
 

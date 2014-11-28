@@ -217,9 +217,11 @@
   (or (if-let [[slot _] (have game #{"pick-axe" "dwarvish mattock"}
                               #{:can-remove})]
         [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
-      (if-let [[slot _] (have game "ring of invisibility" #{:can-remove})]
+      (if-let [[slot _] (have game "ring of invisibility" #{:can-remove
+                                                            :in-use})]
         [2 (with-reason "removing invis to enter shop" (->Remove slot))])
-      (if-let [[slot _] (have game "cloak of invisibility" #{:can-remove})]
+      (if-let [[slot _] (have game "cloak of invisibility" #{:can-remove
+                                                             :in-use})]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn blocked?

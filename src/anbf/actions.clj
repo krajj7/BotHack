@@ -1010,20 +1010,21 @@
     :potion ->Quaff
     :ring ->PutOn
     :amulet ->PutOn
-    :tool ->PutOn
     :armor ->Wear
     :weapon ->Wield
-    (if (= :accessory (item-subtype item))
-      ->PutOn
-      ->Apply)))
+    :tool (if (= :accessory (item-subtype item))
+            ->PutOn
+            ->Apply)))
 
 (defn remove-action [item]
-  (case (item-type item)
-    :ring ->Remove
-    :amulet ->Remove
-    :tool ->Remove
-    :weapon ->UnWield
-    :armor ->TakeOff))
+  (if (:wielded item)
+    ->UnWield
+    (case (item-type item)
+      :ring ->Remove
+      :amulet ->Remove
+      :tool ->Remove
+      :weapon ->UnWield
+      :armor ->TakeOff)))
 
 (defn remove-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]

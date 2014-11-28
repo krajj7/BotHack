@@ -122,7 +122,7 @@
    :ring rings
    :potion potions})
 
-(def items "all possible item identities" ; TODO custom fruits (bones)
+(def items "all possible item identities"
   (apply concat (vals item-kinds)))
 
 (def name->item "{name => ItemType, fullname => ItemType} for all items"

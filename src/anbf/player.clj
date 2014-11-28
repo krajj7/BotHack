@@ -146,15 +146,22 @@
     (have game (every-pred :worn
                            (comp (partial = slot) item-subtype)))))
 
+(defn wielding
+  "Return the wielded [slot item] or nil"
+  [game]
+  (have game :wielded))
+
 (defn blockers ; TODO extend to weapons, consider cursed two-hander...
   "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
-  [game armor]
-  (if-let [subtype (item-subtype armor)]
+  [game item]
+  (if-let [subtype (item-subtype item)]
     (for [btype (blocker-slots subtype)
           :let [blocker (have game (every-pred :worn (comp (partial = btype)
                                                            item-subtype)))]
           :when blocker]
-      blocker)))
+      blocker)
+    (if (weapon? item)
+      [(wielding game)])))
 
 (defn cursed-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]
@@ -277,11 +284,6 @@
     (or (not (:in-use item))
         (and (empty? (cursed-blockers game slot))
              (noncursed? item)))))
-
-(defn wielding
-  "Return the wielded [slot item] or nil"
-  [game]
-  (have game :wielded))
 
 (defn initial-intrinsics [race-or-role]
   (case race-or-role

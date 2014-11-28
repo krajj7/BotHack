@@ -168,8 +168,8 @@
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
-   #{"ring of slow digestion"}
-   #{"ring of conflict"}
+   ;#{"ring of slow digestion"}
+   ;#{"ring of conflict"}
    #{"ring of regeneration"}
    #{"ring of invisibility"}
    #{"Orb of Fate"}
@@ -226,6 +226,7 @@
 (defn utility
   ([item]
    (cond-> 0
+     (:artifact (item-id item)) (+ 50)
      (:erosion item) (- (:erosion item))
      (:enchantment item) (+ (:enchantment item))
      (:charges item) (+ (:charges item))
@@ -469,8 +470,9 @@
           (with-reason "using any light source" (->Apply slot))))))
 
 (defn remove-rings [{:keys [player] :as game}]
-  (or (if-let [[slot _] (have game "ring of invisibility" #{:in-use})]
-        (with-reason "don't need invis"
+  (or (if-let [[slot _] (have game #{"ring of invisibility" "ring of conflict"}
+                              #{:in-use})]
+        (with-reason "don't need ring"
           (remove-use game slot)))
       (if-let [[slot _] (and (= (:hp player) (:maxhp player))
                              (have game "ring of regeneration" #{:in-use}))]
@@ -592,11 +594,12 @@
 (defn hit-corrosive [game monster]
   (with-reason "hitting corrosive monster" monster
     (if (corrosive? monster)
-      (or (if-let [[slot item] (have game corrodeproof-weapon)]
+      (or (if-let [[slot item] (have game corrodeproof-weapon #{:can-use})]
             (if-not (:in-use item)
               (->Wield slot))
-            (if (wielding game)
-              (->Wield \-)))
+            (if-let [[_ w] (wielding game)]
+              (if (not (cursed? w))
+                (->Wield \-))))
           (->Move (towards (:player game) monster))))))
 
 (defn kite [{:keys [player] :as game} monster]
@@ -842,7 +845,12 @@
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
               (if-let [[slot _] (and (free-finger? player)
-                                     (not-any? sees-invisible? threats)
+                                     (or (and (not-any? sees-invisible? threats)
+                                              (more-than? 1 threats))
+                                         (some (every-pred sees-invisible?
+                                                           (partial keep-away?
+                                                                    player))
+                                               threats))
                                      (have game "ring of invisibility"
                                            #{:noncursed}))]
                 (with-reason "invis for combat"
@@ -1094,7 +1102,8 @@
       ; TODO altars not on current level
       (if (have game (partial want-buc? game) #{:can-remove :bagged})
         (with-reason "going to altar" (:step (navigate game altar?))))
-      (if-let [{:keys [step]} (navigate game throne?)]
+      (if-let [{:keys [step]} (navigate game (every-pred throne?
+                                                         (comp empty? :items)))]
         (or (with-reason "going to throne" step)
             ; TODO drop gold
             (with-reason "sitting on throne" ->Sit)))))
@@ -1161,7 +1170,7 @@
           (:step (navigate game #(= shoptype (:room %))))))))
 
 (defn- want-name? [item]
-  (and (ambiguous-appearance? item) (not (gem? item))))
+  (and (ambiguous-appearance? item) (not (gem? item)) (not (candle? item))))
 
 (defn shop [{:keys [player] :as game}]
   (let [want? #(and (:cost %) (or (want-buy? game %)
@@ -1178,9 +1187,13 @@
 
 (defn- id-priority [game item]
   (cond-> 0
+    (food? item) (- 10)
+    (rocks? item) (- 10)
     (not (know-id? game item)) (+ 2)
     (and (not (know-id? game item))
          (scroll? item)) (+ 10)
+    (and (not (know-id? game item))
+         (could-be? game "scroll of remove curse" item)) (+ 10)
     (nil? (:buc item)) inc
     (some @desired (map :name (possible-ids game item))) (+ 5)
     ((some-fn ring? wand? amulet?) item) (+ 5)))
@@ -1190,7 +1203,14 @@
   ([game bagged?]
    (->> (inventory game bagged?)
         (remove (every-pred (comp some? :buc) (comp some? :enchantment)))
-        (sort-by (complement (comp (partial id-priority game) secondv))))))
+        (sort-by (comp (partial id-priority game) secondv))
+        reverse)))
+
+#_(def game @(:game anbf.main/a))
+#_(log/debug "want identified\n"
+              (map (comp #(str % \newline)
+                         (juxt (partial id-priority game)
+                               :label) secondv) (want-id game :bagged)))
 
 (defn use-items [game]
   (if-not (shop? (at-player game))
@@ -1209,10 +1229,6 @@
         (if-let [[slot item] (have game "scroll of identify"
                                    #{:bagged :noncursed})]
           (when-let [want (seq (want-id game :bagged))]
-            #_(log/debug "want identified\n"
-                         (map (comp #(str % \newline)
-                                    (juxt (partial id-priority game)
-                                          :label) secondv) want))
             (if (< 6 (id-priority game (secondv (first want))))
               (or (keep-first (fn [[slot item]]
                                 (unbag game slot item)) want)
@@ -1222,7 +1238,6 @@
 
 (defn choose-identify [game options]
   (let [want (want-id game)]
-    (log/debug "identify order:" want)
     (find-first options (map firstv want))))
 
 #_(defn rub-id [{:keys [game] :as anbf}]
@@ -1264,6 +1279,7 @@
                           (about-to-choose [_ game]
                             (if (or (= :inventory (typekw (:last-action* game)))
                                     (empty? @desired)
+                                    (some-> game :last-state at-player shop?)
                                     (shop? (at-player game)))
                               ; expensive (~3 ms)
                               (reset! desired (currently-desired game))))))
