@@ -168,7 +168,7 @@
       (log/warn "default handler genociding none")
       "none")
     VaultGuardHandler
-    (who-are-you [_ _] "Croesus")
+    (who-are-you [_ _] "")
     SellItHandler
     (sell-it [_ _ _] "")
     EatWhatHandler

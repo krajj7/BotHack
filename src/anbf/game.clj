@@ -315,6 +315,8 @@
               :>> (partial swap! game update-fleeing)
               #"You step onto a level teleport trap!"
               (reset! levelport true)
+              #"You've been warned"
+              (swap! game recheck-peaceful-status guard?)
               #" appears before you\."
               (swap! game recheck-peaceful-status demon-lord?)
               #"The venom blinds you|You can't see through all the sticky goop"

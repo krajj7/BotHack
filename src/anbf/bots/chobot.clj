@@ -1285,6 +1285,8 @@
                             (bribe-demon (:last-topline @(:game anbf))))
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
+      (register-handler (reify VaultGuardHandler
+                          (who-are-you [_ _] "Croesus")))
       (register-handler (reify GenocideHandler
                           ; TODO other choices
                           (genocide-class [_ _] "L")
