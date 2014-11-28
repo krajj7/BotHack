@@ -226,7 +226,7 @@
 (defn utility
   ([item]
    (cond-> 0
-     (:artifact (item-id item)) (+ 50)
+     (artifact? item) (+ 50)
      (:erosion item) (- (:erosion item))
      (:enchantment item) (+ (:enchantment item))
      (:charges item) (+ (:charges item))
@@ -587,13 +587,16 @@
             (->PutOn slot))
           (ranged game monster)))))
 
-(defn corrodeproof-weapon [game]
-  (have game (every-pred weapon? (some-fn artifact? :proof)) #{:noncursed}))
+(defn corrodeproof-weapon? [item]
+  (and (weapon? item)
+       (or (artifact? item)
+           (:proof item))))
 
 (defn hit-corrosive [game monster]
   (with-reason "hitting corrosive monster" monster
     (if (corrosive? monster)
-      (or (if-let [[slot item] (have game corrodeproof-weapon #{:can-use})]
+      (or (if-let [[slot item] (have game corrodeproof-weapon?
+                                     #{:can-use :noncursed})]
             (if-not (:in-use item)
               (->Wield slot))
             (if-let [[_ w] (wielding game)]
@@ -624,9 +627,9 @@
           (with-reason "levitation for :air"
             (make-use game slot)))
         (if (adjacent? player monster)
-          (or (hit-corrosive game monster)
-              (hit-floating-eye game monster)
+          (or (hit-floating-eye game monster)
               (kite game monster)
+              (hit-corrosive game monster)
               (wield-weapon game)
               (if (or (not (monster? (at level monster)))
                       (#{\I \1 \2 \3 \4 \5} (:glyph monster)))
@@ -657,7 +660,7 @@
                                               (have game blind-tool
                                                     #{:noncursed}))
     (#{"spotted jelly"
-       "ochre jelly"} (typename monster)) (and (have game corrodeproof-weapon)
+       "ochre jelly"} (typename monster)) (and (have game corrodeproof-weapon?)
                                                (> (:hp player) 60))
     :else true))
 
