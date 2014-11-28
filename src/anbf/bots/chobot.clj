@@ -310,16 +310,16 @@
          true)))
 
 (defn- should-try?
-  ([game item]
-   (and (not (:cost item))
-        (not (know-id? game item))
-        (or (and (wand? item)
-                 ((some-fn (every-pred (complement :engrave)
-                                       (complement (partial tried? game)))
-                           (complement :target)) (item-id game item)))
-            (and ((some-fn scroll? potion? ring? amulet? armor?) item)
-                 (not (tried? game item))
-                 (safe? game item))))))
+  [game item]
+  (and (not (:cost item))
+       (not (know-id? game item))
+       (or (and (wand? item)
+                ((some-fn (every-pred (complement :engrave)
+                                      (complement (partial tried? game)))
+                          (complement :target)) (item-id game item)))
+           (and ((some-fn scroll? potion? ring? amulet? armor?) item)
+                (not (tried? game item))
+                (safe? game item)))))
 
 (def desired (atom #{}))
 
@@ -1091,7 +1091,12 @@
 
 (defn use-features [game]
   ; TODO kick sinks, drop rings into them
-  (or (if (altar? (at-player game))
+  (or (if-let [[slot ring] (have game #(and (ring? %)
+                                            (not (know-id? game %))))]
+        (with-reason "drop ring in sink"
+          (if-let [{:keys [step]} (navigate game sink?)]
+            (or step (->Drop slot)))))
+      (if (altar? (at-player game))
         (if-let [[slot item] (have game {:can-remove true
                                          :bagged true :know-buc false})]
           (with-reason "dropping things on altar"

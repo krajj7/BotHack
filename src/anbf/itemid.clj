@@ -212,7 +212,7 @@
       game)))
 
 (defn add-discovery [game appearance id]
-  {:pre [(string? appearance) (string? id) (:discoveries game)]}
+  {:pre [(string? appearance) (:discoveries game) (name->item id)]}
   (if (or (= appearance id) (not (knowable-appearance? appearance)))
     game
     (let [id (get jap->eng id id)]

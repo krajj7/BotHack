@@ -311,6 +311,12 @@
           (swap! game assoc-in [:player :leg-hurt] true)
           #"You can't move your leg!|There's not enough room to kick down here."
           (swap! game assoc-in [:player :trapped] true)
+          #"A black ooze gushes up from the drain!"
+          (swap! game update-from-player dir update :tags conj :pudding)
+          #"The dishwasher returns!"
+          (swap! game update-from-player dir update :tags conj :foocubus)
+          #"You see a ring shining in its midst"
+          (swap! game update-from-player dir update :tags conj :ring)
           nil)))))
 
 (defaction Close [dir]
@@ -702,17 +708,15 @@
                  (swap! game assoc-in [:player :trapped] true)
                  #"This wall (seems|is) too hard to dig into\."
                  (if-not (:orcus (:tags (curlvl @game)))
-                   (swap! game #(update-at % (in-direction (:player %) dir)
-                                           assoc :undiggable true)))
+                   (swap! game update-from-player dir assoc :undiggable true))
                  #"You make an opening"
-                 (swap! game #(update-at % (in-direction (:player %) dir)
-                                         assoc :dug true :feature :floor))
+                 (swap! game update-from-player dir
+                        assoc :dug true :feature :floor)
                  #"You succeed in cutting away some rock"
-                 (swap! game #(update-at % (in-direction (:player %) dir)
-                                         assoc :dug true :feature :corridor))
+                 (swap! game update-from-player dir
+                        assoc :dug true :feature :corridor)
                  #"^You swing your pick"
-                 (swap! game #(update-at % (in-direction (:player %) dir)
-                                         assoc :feature nil))
+                 (swap! game update-from-player dir assoc :feature nil)
                  #"here is too hard to"
                  (swap! game add-curlvl-tag :undiggable-floor)
                  #"You dig a pit"
@@ -745,13 +749,13 @@
              LockHandler
              (lock-it [_ _]
                (if (dirmap dir)
-                 (swap! game #(update-at % (in-direction (:player %) dir)
-                                         assoc :feature :door-closed)))
+                 (swap! game update-from-player dir
+                        assoc :feature :door-closed))
                false)
              (unlock-it [_ _]
                (if (dirmap dir)
-                 (swap! game #(update-at % (in-direction (:player %) dir)
-                                         assoc :feature :door-locked)))
+                 (swap! game update-from-player dir
+                        assoc :feature :door-locked))
                true))))))
 
 (defn- possible-autoid
@@ -834,6 +838,38 @@
         (mark-use anbf slot)
         slot))))
 
+(defn- ring-msg [msg]
+  (condp re-seq
+    #"got lost in the sink, but there it is!" "ring of searching"
+    #"The ring is regurgitated!" "ring of slow digestion"
+    #"The sink quivers upward for a moment" "ring of levitation"
+    #"You smell rotten fruit." "ring of poison resistance"
+    #"Static electricity surrounds the sink" "ring of shock resistance"
+    #"You hear loud noises coming from the drain" "ring of conflict"
+    #"The water flow seems fixed" "ring of sustain ability"
+    #"The water flow seems (stronger|weaker) now" "ring of gain strength"
+    #"The water flow seems (greater|lesser) now" "ring of gain constitution"
+    #"The water flow (hits|misses) the drain" "ring of increase accuracy"
+    #"The water's force seems (greater|smaller) now" "ring of increase damage"
+    #"Several flies buzz angrily around the sink" "ring of aggravate monster"
+    #"Suddenly, .*from the sink!" "ring of hunger"
+    #"The faucets flash brightly for a moment" "ring of adornment"
+    #"The sink looks as good as new" "ring of regeneration"
+    #"You don't see anything happen to the sink" "ring of invisibility"
+    #"You see the ring slide right down the drain!" "ring of free action"
+    #"You see some air in the sink" "ring of see invisible"
+    #"The sink seems to blend into the floor for a moment" "ring of stealth"
+    #"The hot water faucet flashes brightly" "ring of fire resistance"
+    #"The cold water faucet flashes brightly" "ring of cold resistance"
+    #"The sink looks nothing like" "ring of protection from shape changers"
+    #"The sink glows (silver|black) for a moment" "ring of protection"
+    #"The sink glows white for a moment" "ring of warning"
+    #"The sink momentarily vanishes" "ring of teleportation"
+    #"The sink looks like it is being beamed" "ring of teleport control"
+    #"The sink momentarily looks like a fountain" "ring of polymorph"
+    #"The sink momentarily looks like a regularly" "ring of polymorph control"
+    nil))
+
 (defaction DropSingle [slot qty]
   (trigger [_] "d")
   (handler [_ {:keys [game] :as anbf}]
@@ -841,6 +877,10 @@
     (update-tile anbf)
     (swap! game update :player dissoc :thick)
     (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (if-let [id (ring-msg msg)]
+          (swap! game identify-slot slot id)))
       SellItHandler
       (sell-it [_ bid _]
         (let [item (inventory-slot @game slot)]
@@ -986,11 +1026,17 @@
           (update-inventory anbf)
           slot-or-label)))))
 
+(def fountain-re #"The flow reduces to a trickle|, stop using that fountain!")
+
 (defaction Quaff [slot]
   (trigger [_] "q")
   (handler [_ {:keys [game] :as anbf}]
     (possible-autoid anbf slot)
     (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (if (re-seq fountain-re msg)
+          (swap! game update-at-player update :tags conj :trickle)))
       DrinkHereHandler
       (drink-here [_ _]
         (if (= slot \.)

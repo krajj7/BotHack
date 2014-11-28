@@ -22,6 +22,7 @@
    engraving
    engraving-type ; :dust :semi :permanent
    deaths ; [ turn Monster ], deaths that left no corpse are ignored
+   tags
    room]
   anbf.bot.ITile)
 
@@ -34,7 +35,8 @@
               :searched 0
               :items []
               :deaths []
-              :new-items false}))
+              :new-items false
+              :tags #{}}))
 
 (defn digit? [tile]
   (Character/isDigit ^Character (:glyph tile)))
