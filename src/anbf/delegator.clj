@@ -430,5 +430,5 @@
 (defmenuhandler IdentifyWhatHandler
   (identify-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defprompthandler RubWhatHandler
+(defchoicehandler RubWhatHandler
   (rub-what [handler ^String prompt]))

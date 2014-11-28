@@ -403,7 +403,7 @@
 
 (defn- wield-weapon [{:keys [player] :as game}]
   (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
-    (if-not (:wielded weapon)
+    (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
       (or (uncurse-weapon game)
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
@@ -1175,29 +1175,31 @@
         (sort-by (complement (comp (partial id-priority game) secondv))))))
 
 (defn use-items [game]
-  (if-let [[excal i] (have game "Excalibur" #{:can-use})]
-    (if-let [[scroll _] (and (> 7 (:enchantment i))
-                             (have game "scroll of enchant weapon"
-                                   #{:bagged :noncursed}))]
-      (or (with-reason "enchant excal"
-            (or (make-use game excal)
-                (->Read scroll))))))
-  (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
-    (with-reason "rubbing lamp"
-      (or (unbag game slot item)
-          (bless game slot)
-          (->Rub slot))))
-  (if-let [[slot item] (have game "scroll of identify" #{:bagged :noncursed})]
-    (when-let [want (seq (want-id game :bagged))]
-      #_(log/debug "want identified\n" (map (comp #(str % \newline)
-                                                (juxt (partial id-priority game)
-                                                      :label) secondv) want))
-      (if (< 6 (id-priority game (secondv (first want))))
-        (or (keep-first (fn [[slot item]]
-                          (unbag game slot item)) want)
-            (with-reason "identify" (first want)
-              (or (unbag game slot item)
-                  (->Read slot))))))))
+  (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
+        (if-let [[scroll _] (and (> 7 (:enchantment i))
+                                 (have game "scroll of enchant weapon"
+                                       #{:bagged :noncursed}))]
+          (or (with-reason "enchant excal"
+                (or (make-use game excal)
+                    (->Read scroll))))))
+      (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
+        (with-reason "rubbing lamp"
+          (or (unbag game slot item)
+              (bless game slot)
+              (->Rub slot))))
+      (if-let [[slot item] (have game "scroll of identify"
+                                 #{:bagged :noncursed})]
+        (when-let [want (seq (want-id game :bagged))]
+          #_(log/debug "want identified\n"
+                       (map (comp #(str % \newline)
+                                  (juxt (partial id-priority game)
+                                        :label) secondv) want))
+          (if (< 6 (id-priority game (secondv (first want))))
+            (or (keep-first (fn [[slot item]]
+                              (unbag game slot item)) want)
+                (with-reason "identify" (first want)
+                  (or (unbag game slot item)
+                      (->Read slot)))))))))
 
 (defn choose-identify [game options]
   (let [want (want-id game)]
