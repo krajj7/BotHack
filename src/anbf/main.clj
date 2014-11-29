@@ -135,7 +135,7 @@
 (defn print-inventory
   "Simple inventory display"
   [game]
-  (pprint (map (juxt key (comp :label val)) (inventory game))))
+  (pprint (map (juxt key (comp :label val) (comp (fnil identity \\) seq (partial map :label) :items val)) (inventory game))))
 
 (defn print-inventory*
   "Print detailed info about all items in bot's inventory"
