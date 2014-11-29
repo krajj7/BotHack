@@ -738,14 +738,15 @@
   (->> (->ApplyAt slot dir)
        (with-handler priority-top
          (fn [{:keys [game] :as anbf}]
-           (if (= \. slot)
+           (if (= \. dir)
              (doseq [[idx item] (indexed (:items (at-player @game)))
                      :when (:locked item)]
                (swap! game update-item-at-player idx assoc :locked false)))
            (reify
              ToplineMessageHandler
              (message [_ msg]
-               (handle-door-message game dir msg))
+               (if (not= \. dir)
+                 (handle-door-message game dir msg)))
              LockHandler
              (lock-it [_ _]
                (if (dirmap dir)
