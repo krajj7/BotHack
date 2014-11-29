@@ -248,7 +248,7 @@
       (reduce #(update-at %1 %2 assoc :room :temple :alignment align)
               game
               (including-origin neighbors level player))
-      game)))
+      (add-curlvl-tag game :temple))))
 
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
@@ -260,7 +260,8 @@
         (reset! portal nil)
         (reset! levelport nil)
         (swap! game filter-visible-uniques)
-        (if (altar? (at-player @game))
+        (when (altar? (at-player @game))
+          (swap! game add-curlvl-tag :altar)
           (swap! game mark-temple)))
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
