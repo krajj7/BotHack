@@ -1082,3 +1082,67 @@
 
 (defn nav-targets [coll]
   (set (map position coll)))
+
+(defn branch-map
+  "{ dlvl of entrance in :main => :branch } for 'standard' branches"
+  [game]
+  (->> (for [branch [:mines :sokoban :quest :wiztower :vlad]
+             :let [entry (branch-entry game branch)]
+             :when entry]
+         [entry branch])
+       (into {})))
+
+(defn- neighbor-levels [game level bmap opts]
+  (let [branch (branch-key game level)
+        dlvl (:dlvl level)
+        nbr-branch (or (bmap dlvl) :main)]
+      (for [nbr [(get-level game branch (prev-dlvl branch dlvl)) ; go upstairs
+                 (if (and (not= :main branch) ; escape branch
+                          (= dlvl (ffirst (get-branch game branch))))
+                   (get-level game :main (branch-entry game branch)))
+                 (if-let [b (and (= :main branch) (not (:up opts))
+                                 (bmap dlvl))] ; enter branch
+                   (some->> b (get-branch game) first val))
+                 (if-not (:up opts) ; go downstairs
+                   (get-level game branch (next-dlvl branch dlvl)))]
+            :when nbr]
+        nbr)))
+
+(defn level-seq
+  "Lazy seq of levels by unit distance from current (doesn't consider level layouts)"
+  ([game] (level-seq game {}))
+  ([game opts]
+   (let [bmap (branch-map game)
+         levid (juxt :dlvl :branch-id)]
+     ((fn explore [open closed]
+        (lazy-seq
+          (if-let [nbr (peek open)]
+            (let [nbrs (neighbor-levels game nbr bmap opts)]
+              (cons nbr
+                    (explore (into (pop open) (remove (comp closed levid) nbrs))
+                             (into closed (map levid nbrs))))))))
+      (into (clojure.lang.PersistentQueue/EMPTY)
+            (neighbor-levels game (curlvl game) bmap opts))
+      (->> (neighbor-levels game (curlvl game) bmap opts)
+           (map levid) (into #{(levid game)}))))))
+
+(defn seek-tile
+  "Options:
+  :up - only go up, never to subbranches
+  :max-delta - limit search depth"
+  ([game goal?]
+   (seek-tile game goal? {}))
+  ([game goal? opts]
+   (log/debug "seek tile" goal?)
+   (with-reason "seeking tile" goal?
+     (or (:step (navigate game goal? opts))
+         (as-> (level-seq game opts) res
+           (if (:max-delta opts)
+             (take (:max-delta opts) res)
+             res)
+           (find-first (comp (partial some goal?) tile-seq) res)
+           (if res (seek-level game (:branch-id res) (:dlvl res))))))))
+
+(defn seek-feature [game feature]
+  (with-reason "seeking feature" feature
+    (seek-tile game #(has-feature? % feature))))
