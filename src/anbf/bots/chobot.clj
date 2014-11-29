@@ -1200,17 +1200,28 @@
   )
 
 (defn- id-priority [game item]
-  (cond-> 0
-    (food? item) (- 10)
-    (rocks? item) (- 10)
-    (not (know-id? game item)) (+ 2)
-    (and (not (know-id? game item))
-         (scroll? item)) (+ 10)
-    (and (not (know-id? game item))
-         (could-be? game "scroll of remove curse" item)) (+ 10)
-    (nil? (:buc item)) inc
-    (some @desired (map :name (possible-ids game item))) (+ 5)
-    ((some-fn ring? wand? amulet?) item) (+ 5)))
+  (let [know? (know-id? game item)
+        price (:price (item-id game item))]
+    (cond-> 0
+      (food? item) (- 10)
+      (rocks? item) (- 10)
+      (not know?) (+ 2)
+      (nil? (:buc item)) inc
+      (some @desired (map :name (possible-ids game item))) (+ 5)
+      (and (not know?)
+           (not (#{100 200} price))
+           (scroll? item)) (+ 10)
+      (and (not know?)
+           (could-be? game "scroll of remove curse" item)) (+ 10)
+      (and (not know?)
+           (could-be? game "scroll of genocide" item)) (+ 8)
+      (and (not know?)
+           (= 200 price)
+           (or (could-be? game "ring of levitation" item)
+               (could-be? game "ring of regeneration" item))) (+ 8)
+      (and (wand? item) (not= 150 price)) (+ 5)
+      (and (not know?)
+           ((some-fn ring? amulet?) item)) (+ 5))))
 
 (defn- want-id
   ([game] (want-id game false))
