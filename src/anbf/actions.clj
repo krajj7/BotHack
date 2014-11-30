@@ -78,11 +78,14 @@
        (reduce #(update-monster %1 %2 assoc :peaceful :update)
                game)))
 
+(defn- direction-trigger [dir]
+  (str (or (vi-directions (enum->kw dir))
+           (throw (IllegalArgumentException.
+                    (str "Invalid direction: " dir))))))
+
 (defaction Attack [dir]
   (trigger [_]
-    (str \F (or (vi-directions (enum->kw dir))
-                (throw (IllegalArgumentException.
-                         (str "Invalid direction: " dir))))))
+    (str \F (direction-trigger dir)))
   (handler [_ {:keys [game] :as anbf}]
     (if (dizzy? (:player @game))
       (swap! game recheck-peaceful-status (partial adjacent? (:player @game))))
@@ -140,11 +143,6 @@
        (do (if (:trapped (:player %))
              (log/debug "player moved => not :trapped anymore"))
            (assoc-in % [:player :trapped] false)))))
-
-(defn- direction-trigger [dir]
-  (str (or (vi-directions (enum->kw dir))
-           (throw (IllegalArgumentException.
-                    (str "Invalid direction: " dir))))))
 
 (defn- update-narrow [game target]
   (as-> game res
@@ -302,7 +300,7 @@
     (stairs-handler anbf)))
 
 (defaction Kick [dir]
-  (trigger [_] (str (ctrl \d) (vi-directions (enum->kw dir))))
+  (trigger [_] (str (ctrl \d) (direction-trigger dir)))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ msg]
@@ -320,7 +318,7 @@
           nil)))))
 
 (defaction Close [dir]
-  (trigger [this] (str \c (vi-directions (enum->kw dir))))
+  (trigger [this] (str \c (direction-trigger dir)))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
@@ -473,7 +471,7 @@
       (swap! game update-at door assoc :feature new-feature))))
 
 (defaction Open [dir]
-  (trigger [_] (str \o (vi-directions (enum->kw dir))))
+  (trigger [_] (str \o (direction-trigger dir)))
   (handler [_ {:keys [game] :as anbf}]
     (reify ToplineMessageHandler
       (message [_ text]
@@ -1413,6 +1411,21 @@
       (message [_ msg]
         (when (re-seq #"puff of smoke" msg)
           (swap! game identify-slot slot "magic lamp"))))))
+
+(defaction Chat [dir]
+  (trigger [_] (str "#chat\n" (direction-trigger dir)))
+  (handler [_ {:keys [game] :as anbf}]
+    (swap! game recheck-peaceful-status priest?)
+    (reify ToplineMessageHandler
+      (message [_ msg]
+        (if (.contains msg "Thy devotion has been rewarded")
+          (swap! game update-in [:player :protection] inc))))))
+
+(defn ->Contribute [dir amt]
+  (with-handler
+    (reify OfferHandler
+      (offer-how-much [_ _] amt))
+    (->Chat dir)))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

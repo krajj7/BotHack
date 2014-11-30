@@ -243,7 +243,7 @@
           0)))))
 
 (defn- want-gold? [game]
-  true)
+  (< (:protection (:player game)) 4))
 
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
@@ -1305,6 +1305,22 @@
   (if-let [[slot _] (and (zero? (rand-int 200)) (have-unihorn game))]
     (with-reason "randomly use unihorn" (->Apply slot))))
 
+(defn get-protection [{:keys [player] :as game}]
+  (if (and (want-gold? game) (> (gold game) (* 400 (:xplvl player))))
+    (with-reason "get protection"
+      (or (if-let [priest (find-first (every-pred priest? :peaceful
+                                                  (partial adjacent? player))
+                                      (curlvl-monsters game))]
+            (->Contribute (towards player priest) (* 400 (:xplvl player))))
+          (if (:temple (:tags (curlvl game)))
+            (or (some->> (curlvl-monsters game)
+                         (find-first (every-pred priest? :peaceful))
+                         (navigate game) :step)
+                (:step (navigate game (every-pred altar? temple?)))))
+          (seek-level game :mines :minetown) ; XXX XXX XXX
+          (if-let [target (find-first (comp :temple :tags) (level-seq game))]
+            (seek-level game (:branch-id target) (:dlvl target)))))))
+
 #_(defn rub-id [{:keys [game] :as anbf}]
   (let [torub (atom 8)]
     (reify ActionHandler
@@ -1412,10 +1428,13 @@
       (register-handler 12 (reify ActionHandler
                              (choose-action [_ game]
                                (bag-items game))))
-      (register-handler 13 (excal-handler anbf))
       (register-handler 14 (reify ActionHandler
+                            (choose-action [_ game]
+                              (get-protection game))))
+      (register-handler 15 (excal-handler anbf))
+      (register-handler 16 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 16 (reify ActionHandler
+      (register-handler 17 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))

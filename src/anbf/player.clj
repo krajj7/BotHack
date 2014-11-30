@@ -53,6 +53,7 @@
    stoning
    stats ; :dex :con :int :wis :cha :str (effective integer str) :str* (string like "18/**")
    alignment ; :lawful :neutral :chaotic
+   protection
    can-enhance]
   anbf.bot.IPlayer
   ; TODO expose stats etc.
@@ -62,7 +63,7 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (map->Player {}))
+  (map->Player {:protection 0}))
 
 (defn update-player [player status]
   (cond-> (->> (keys player) (select-keys status) (into player))

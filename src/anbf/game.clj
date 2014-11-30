@@ -245,10 +245,12 @@
     ; temple will only be marked around the altar (boundary is harder to detect than for shops, should be sufficient anyway)
     (if (and align (altar? tile) (some (every-pred priest? :peaceful)
                                        (vals (:monsters level))))
-      (reduce #(update-at %1 %2 assoc :room :temple :alignment align)
-              game
-              (including-origin neighbors level player))
-      (add-curlvl-tag game :temple))))
+      (as-> game res
+        (reduce #(update-at %1 %2 assoc :room :temple :alignment align)
+                res
+                (including-origin neighbors level player))
+        (add-curlvl-tag res :temple))
+      game)))
 
 (defn itemid-handler [{:keys [game] :as anbf}]
   (reify FoundItemsHandler
@@ -380,6 +382,7 @@
                 (swap! game add-curlvl-tag :orcus))
               #"You hear the rumble of distant thunder|You hear the studio audience applaud!|You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
               (do (log/warn "god angered:" text)
+                  (swap! game assoc-in [:player :protection] 0)
                   (swap! game assoc :god-angry true)) ; might as well #quit
               #"You feel a strange mental acuity|You feel in touch with the cosmos"
               (swap! game add-intrinsic :telepathy)

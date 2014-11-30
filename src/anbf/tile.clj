@@ -334,3 +334,6 @@
   "Considers water/air plane tiles engravable (can-engrave? catches this case)"
   [tile]
   ((not-any-fn? pool? lava? fountain? altar? grave?) tile))
+
+(defn temple? [tile]
+  (= :temple (:room tile)))
