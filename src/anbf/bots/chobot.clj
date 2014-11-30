@@ -1301,6 +1301,10 @@
       (genocide-class [_ _] (next! geno-classes))
       (genocide-monster [_ _] (next! geno-types)))))
 
+(defn random-unihorn [game]
+  (if-let [[slot _] (and (zero? (rand-int 200)) (have-unihorn game))]
+    (with-reason "randomly use unihorn" (->Apply slot))))
+
 #_(defn rub-id [{:keys [game] :as anbf}]
   (let [torub (atom 8)]
     (reify ActionHandler
@@ -1396,6 +1400,9 @@
       (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
                               (use-features game))))
+      (register-handler 9 (reify ActionHandler
+                            (choose-action [_ game]
+                              (random-unihorn game))))
       (register-handler 10 (reify ActionHandler
                             (choose-action [_ game]
                               (itemid game))))
