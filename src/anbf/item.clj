@@ -2,6 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [anbf.itemtype :refer :all]
+            [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.itemid :refer :all]
             [anbf.util :refer :all]))
@@ -220,9 +221,12 @@
   (reify FoundItemsHandler
     ; TODO autoid castle WoW, soko ?oEarth, soko prize
     (found-items [_ items]
-      (doseq [item items :when ((every-pred :cost price-id?) item)]
-        (swap! game add-observed-cost (appearance-of item) (/ (:cost item)
-                                                              (:qty item)))))))
+      (doseq [item items :when (:cost item)]
+        (if (and (potion? item) (= :food (:room (at-player game))))
+          (swap! game add-prop-discovery (appearance-of item) :food true))
+        (if (price-id? item)
+          (swap! game add-observed-cost (appearance-of item)
+                 (/ (:cost item) (:qty item))))))))
 
 (defn safe? [game item]
   (or (weapon? item)
