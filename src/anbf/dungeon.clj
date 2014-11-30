@@ -445,11 +445,12 @@
       (and (<= 10 curdlvl 13) (= :mines branch)
            (not-any? tags #{:minesend-1 :minesend-2 :minesend-3})
            (and (stairs-up? (at level 38 8))
-                (every? floor? (for [x (range 35 42)]
-                                 (at level (position x 7))))
-                (every? wall? (for [x (range 35 42)]
-                                (at level (position x 6)))))) (add-curlvl-tag
-                                                                :minesend-1)
+                (or (and (every? floor? (for [x (range 35 42)]
+                                     (at level (position x 7))))
+                         (every? wall? (for [x (range 35 42)]
+                                         (at level (position x 6)))))
+                    (->> (tile-seq level) (filter :undiggable)
+                         (more-than? 2))))) (add-curlvl-tag :minesend-1)
       (and (<= 10 curdlvl 13) (= :mines branch) (not (tags :end))
            has-features?) (add-curlvl-tag :end))))
 
