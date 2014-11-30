@@ -1283,6 +1283,18 @@
   (let [want (want-id game)]
     (find-first options (map firstv want))))
 
+(defn- respond-geno []
+  (let [geno-classes (atom (list "L" "R" ";" "c" "m" "n"))
+        geno-types (atom (list "electric eel" "master mind flayer" "mind flayer"
+                               "disenchanter"))
+        next! (fn [g]
+                (when-let [res (peek @g)]
+                  (swap! res pop)
+                  res))]
+    (reify GenocideHandler
+      (genocide-class [_ _] (next! geno-classes))
+      (genocide-monster [_ _] (next! geno-types)))))
+
 #_(defn rub-id [{:keys [game] :as anbf}]
   (let [torub (atom 8)]
     (reify ActionHandler
@@ -1313,10 +1325,7 @@
                           (really-attack [_ _] false)))
       (register-handler (reify VaultGuardHandler
                           (who-are-you [_ _] "Croesus")))
-      (register-handler (reify GenocideHandler
-                          ; TODO other choices
-                          (genocide-class [_ _] "L")
-                          (genocide-monster [_ _] "electric eel")))
+      (register-handler (respond-geno))
       (register-handler (reify MakeWishHandler
                           (make-wish [_ _]
                             (wish @game))))
