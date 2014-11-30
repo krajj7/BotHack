@@ -361,7 +361,7 @@
   "Sum of nutrition of carried food"
   [game]
   (reduce (fn [res [_ item]]
-            ((fnil + 0) (:nutrition (item-id game item)) res))
+            (+ res ((fnil * 0) (:nutrition (item-id game item)) (:qty item))))
           0
           (have-all game food? #{:bagged :noncursed})))
 
@@ -431,3 +431,7 @@
 
 (defn slot-appearance [game slot]
   (appearance-of (inventory-slot game slot)))
+
+(defn have-mr? [game]
+  (have game #{"gray dragon scale mail" "cloak of magic resistance"
+               "Magicbane" "gray dragon scales"} #{:in-use}))

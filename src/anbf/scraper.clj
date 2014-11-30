@@ -74,13 +74,18 @@
     #"Loot which containers\?" loot-what
     #"Pick a skill to advance" enhance-what
     #"Current skills" current-skills
-    #"What would you like to identify first\?" identify-what
+    #"What would you like to identify " identify-what
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
   "Do we need to confirm menu selections (=> true), or does single selection close the menu? (=> false)"
   [head]
   (re-seq #"What do you wish to do\?" head))
+
+(defn- merge-menu?
+  "Present all options as on one page?"
+  [head]
+  (re-seq #"What would you like to identify" head))
 
 (defn- choice-prompt
   "If there is a single-letter prompt active, return the prompt text, else nil."
@@ -215,7 +220,7 @@
     #"What do you want to write with" write-with-what
     #"What do you want to rub\?" rub-what
     #"Do you want to add to the current engraving" append-engraving
-    #".* offers ([0-9]+) gold pieces for your ([^.]+)\.  Sell it\?"
+    #".* offers ([0-9]+) gold pieces for your ([^.]+)\.  ?Sell it\?"
     :>> #(list sell-it (parse-int (firstv %)) (secondv %))
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
@@ -366,8 +371,11 @@
                    (when (and (menu? frame)
                               (= @menu-nextpage (menu-curpage frame)))
                      (log/debug "responding to menu page" @menu-nextpage
-                                "options" (menu-options frame))
-                     (send delegator (menu-fn @head) (menu-options frame))
+                                "options" @items)
+                     (let [options (if (merge-menu? @head)
+                                      @items
+                                      (menu-options frame))]
+                       (send delegator (menu-fn @head) options))
                      (when-not (multi-menu? @head)
                        (send delegator write \space))
                      (alter menu-nextpage inc)

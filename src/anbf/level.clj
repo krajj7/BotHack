@@ -36,6 +36,9 @@
   (for [y (range 1 22)]
     (at level x y)))
 
+(defn shop-inside? [level tile]
+  (not-any? door? (including-origin neighbors level tile)))
+
 (def oracle-position {:x 39 :y 12})
 
 (def wiztower-boundary

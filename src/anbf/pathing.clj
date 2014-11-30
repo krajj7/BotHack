@@ -265,6 +265,8 @@
                      (or (and (shop? to-tile) (not (shop? from-tile))
                               (enter-shop game))
                          (if-not (or (and (:levi opts) need-levi?)
+                                     (and (polytrap? to-tile)
+                                          (not (have-mr? game)))
                                      (and (:no-traps opts) (trap? to-tile)))
                            [0 (->Move dir)])))) ; trapdoors/holes are escapable
                  (if (kickable-door? level from-tile opts)

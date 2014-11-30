@@ -128,7 +128,7 @@
                                 :door-locked :door-secret :sink :grave :throne
                                 :bars :drawbridge-raised :drawbridge-lowered
                                 :lava :ice :portal :tree :trapdoor :hole
-                                :firetrap :cloud])]
+                                :firetrap :cloud :polytrap])]
            `(def-feature-pred ~feature))))
 
 (def-feature-preds)

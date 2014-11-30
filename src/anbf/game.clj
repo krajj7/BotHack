@@ -250,6 +250,17 @@
               (including-origin neighbors level player))
       (add-curlvl-tag game :temple))))
 
+(defn itemid-handler [{:keys [game] :as anbf}]
+  (reify FoundItemsHandler
+    ; TODO autoid castle WoW, soko ?oEarth, soko prize
+    (found-items [_ items]
+      (doseq [item items :when (:cost item)]
+        (if (and (potion? item) (= :food (:room (at-player @game))))
+          (swap! game add-prop-discovery (appearance-of item) :food true))
+        (if (price-id? item)
+          (swap! game add-observed-cost (appearance-of item)
+                 (/ (:cost item) (:qty item))))))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
@@ -362,6 +373,8 @@
               (swap! game update-at-player assoc :feature :stairs-down)
               #"You now wield|Your.*turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode|rot|smoulder)| snatches |Take off your|let me run my fingers"
               (update-inventory anbf)
+              #" reads a scroll labelled | drinks a .*potion"
+              (update-discoveries anbf)
               #"shop appears to be deserted"
               (if (< 33 (dlvl @game))
                 (swap! game add-curlvl-tag :orcus))

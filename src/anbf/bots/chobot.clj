@@ -316,7 +316,7 @@
        (or (and (wand? item)
                 ((some-fn (every-pred (complement :engrave)
                                       (complement (partial tried? game)))
-                          (complement :target)) (item-id game item)))
+                          (comp nil? :target)) (item-id game item)))
            (and ((some-fn scroll? potion? ring? amulet? armor?) item)
                 (not (tried? game item))
                 (safe? game item)))))
@@ -799,7 +799,7 @@
   (and (not (mimic? monster))
        (not (sessile? monster))
        (or (:awake monster)
-           (> 3 (- (:turn game) (:first-known monster))))))
+           (> 6 (- (:turn game) (:first-known monster))))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
@@ -1086,7 +1086,7 @@
 
 (defn- want-buc? [game item]
   (and (nil? (:buc item))
-       ((not-any-fn? food? gem? statue? wand?) item)
+       ((not-any-fn? food? gem? statue? wand? ammo? dagger?) item)
        (or (know-id? game item)
            (:safe (item-id game item)))))
 
@@ -1104,7 +1104,10 @@
                                                        (empty? (:items %)))
                                                  #{:adjacent})]
           (with-reason "kick sink"
-            (or step (->Kick (towards (:player game) target))))))
+            (or step
+                (if (:leg-hurt (:player game))
+                  (->Wait))
+                (->Kick (towards (:player game) target))))))
       (if (altar? (at-player game))
         (if-let [[slot item] (have game {:can-remove true
                                          :bagged true :know-buc false})]
@@ -1151,7 +1154,7 @@
 
 (defn itemid [{:keys [player] :as game}]
   (or (if (can-engrave? game)
-        (if-let [[slot w] (have game #(and (not (:engrave (item-id game %)))
+        (if-let [[slot w] (have game #(and (nil? (:engrave (item-id game %)))
                                            (not (tried? game %))
                                            (wand? %)) #{:nonempty})]
           (with-reason "engrave-id wand" w
@@ -1159,16 +1162,18 @@
                 (if-not (:engraving (at-player game))
                   (engrave-e game))
                 (->Engrave slot "Elbereth" true)))))
-      (if-let [[slot wand] (have game #(and (not (:target (item-id game %)))
+      (if-let [[slot wand] (have game #(and (nil? (:target (item-id game %)))
                                             (wand? %)) #{:nonempty})]
         (if-let [dir (find-first (partial safe-zap? game) directions)]
           (with-reason "zap-id wand" wand
             (->ZapWandAt slot dir))))
-      (if-let [[slot item] (have game (partial should-try? game)
+      (if-let [[slot item] (have game (every-pred (partial should-try? game)
+                                                  (complement wand?))
                                  #{:safe-buc :bagged})]
         (or (unbag game slot item)
             (make-use game slot)))
-      (if-let [[slot item] (and (shop? (at-player game))
+      (if-let [[slot item] (and (:room (at-player game))
+                                (shop-inside? (curlvl game) (:player game))
                                 (have game #(and (price-id? game %)
                                                  (not (:cost %))
                                                  ((shops-taking %)
@@ -1181,7 +1186,8 @@
                              (mapcat (comp (partial shops-taking) secondv))
                              (some (curlvl-tags game)))]
         (with-reason "visit shop" shoptype "to price id items"
-          (:step (navigate game #(= shoptype (:room %))))))))
+          (:step (navigate game #(and (= shoptype (:room %))
+                                      (shop-inside? (curlvl game) %))))))))
 
 (defn- want-name? [item]
   (and (ambiguous-appearance? item) (not (gem? item)) (not (candle? item))))
