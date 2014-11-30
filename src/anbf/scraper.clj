@@ -186,7 +186,7 @@
     #"^What do you want to name\?" name-what
     #"^What do you want to call\?" call-what
     #"There is .*force its lock\?" force-lock
-    #"[Uu]nlock it\? " unlock-it
+    #"[Uu]nlock it\? |pick its lock\?" unlock-it
     #"[Ll]ock it\? " lock-it
     #"^What do you want to read\?" read-what
     #"^What do you want to drink\?" drink-what
