@@ -205,9 +205,7 @@
 (defn- kick-door [{:keys [player] :as game} level tile dir]
   (if (door-open? tile)
     [8 (with-reason "closing door to kick it" (->Close dir))]
-    (if (:leg-hurt player)
-      [30 (with-reason "waiting out :leg-hurt" (search 10))]
-      [6 (without-levitation game (->Kick dir))])))
+    [(if (:leg-hurt player) 30 6) (kick game dir)]))
 
 (defn can-unlock? [game]
   true) ; not poly'd...

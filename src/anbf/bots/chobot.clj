@@ -1104,10 +1104,7 @@
                                                        (empty? (:items %)))
                                                  #{:adjacent})]
           (with-reason "kick sink"
-            (or step
-                (if (:leg-hurt (:player game))
-                  (->Wait))
-                (->Kick (towards (:player game) target))))))
+            (or step (kick game target)))))
       (if (altar? (at-player game))
         (if-let [[slot item] (have game {:can-remove true
                                          :bagged true :know-buc false})]

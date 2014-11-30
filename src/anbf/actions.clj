@@ -1098,6 +1098,24 @@
       (remove-use game slot))
     action))
 
+(defaction Repeated [action n]
+  (trigger [_] (str n (trigger action)))
+  (handler [_ anbf] (handler action anbf)))
+
+(defn search
+  "Search once or n times"
+  ([] (search 1))
+  ([n] (->Repeated (->Search) n)))
+
+(defn kick [game target-or-dir]
+  (with-reason "kick"
+    (if (:leg-hurt (:player game))
+      (with-reason "wait out leg hurt" (search 10))
+      (without-levitation game
+        (->Kick (if (keyword? target-or-dir)
+                  target-or-dir
+                  (towards (:player game) target-or-dir)))))))
+
 (defn dig [[slot item] dir]
   (if (:in-use item)
     (->ApplyAt slot dir)
@@ -1131,15 +1149,6 @@
         (when (char? slot-or-label)
           (update-inventory anbf)
           slot-or-label)))))
-
-(defaction Repeated [action n]
-  (trigger [_] (str n (trigger action)))
-  (handler [_ anbf] (handler action anbf)))
-
-(defn search
-  "Search once or n times"
-  ([] (search 1))
-  ([n] (->Repeated (->Search) n)))
 
 (defn- nth-container-index [game n]
   (loop [items (:items (at-player game))
