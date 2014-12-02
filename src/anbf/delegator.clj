@@ -273,6 +273,9 @@
 (defyesnohandler KeepSaveHandler ; wizmode
   (keep-save [handler ^String text]))
 
+(defyesnohandler DryFountainHandler ; wizmode
+  (dry-fountain [handler ^String text]))
+
 (defyesnohandler LockHandler
   (lock-it [handler ^String text])
   (unlock-it [handler ^String text]))

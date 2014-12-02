@@ -186,6 +186,8 @@
     (teleport-where [_] "")
     LevelTeleportHandler
     (leveltele [_ _] "")
+    DryFountainHandler
+    (dry-fountain [_ _] "")
     DieHandler
     (die [_ _] (log/warn "died") "")
     KeepSaveHandler

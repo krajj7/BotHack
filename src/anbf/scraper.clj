@@ -179,6 +179,7 @@
     #"^What do you want to drop" drop-single
     #"^Create what kind of monster\?" create-what-monster
     #"^Die\?" die
+    #"^Dry up fountain\?" dry-fountain
     #"^Dump core\?" dump-core
     #"^Advance skills without practice\?" enhance-without-practice
     #"^Do you want to keep the save file\?" keep-save
