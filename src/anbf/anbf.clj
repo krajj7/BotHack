@@ -14,6 +14,7 @@
             [anbf.pathing :refer :all]
             [anbf.position :refer :all]
             [anbf.scraper :refer :all]
+            [anbf.sokoban :refer :all]
             [anbf.tracker :refer :all]))
 
 (defrecord ANBF [config delegator jta scraper game]
@@ -222,6 +223,7 @@
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-top (call-id-handler anbf))
          (register-handler priority-bottom prompt-escape)
+         (register-handler priority-top (mark-soko-fills anbf))
          (register-handler priority-top (itemid-handler anbf))
          (register-handler priority-top (reset-exploration anbf))
          (register-handler priority-top (death-tracker anbf))

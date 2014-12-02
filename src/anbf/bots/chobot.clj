@@ -11,6 +11,7 @@
             [anbf.monster :refer :all]
             [anbf.position :refer :all]
             [anbf.game :refer :all]
+            [anbf.sokoban :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
             [anbf.tile :refer :all]
@@ -20,7 +21,11 @@
             [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
-(def hostile-dist-thresh 5)
+(defn- hostile-dist-thresh [game]
+  (cond
+    (planes (branch-key game)) 1
+    (= :sokoban (branch-key game)) 50
+    :else 5))
 
 (defn- hostile-threats [{:keys [player] :as game}]
   (->> (curlvl-monsters game)
@@ -28,7 +33,7 @@
                      (or (adjacent? player %)
                          (and (not (and (blind? player) (:remembered %)))
                               (> 10 (- (:turn game) (:known %)))
-                              (> hostile-dist-thresh (distance player %))
+                              (> (hostile-dist-thresh game) (distance player %))
                               (not (blind? player))
                               (not (hallu? player))
                               (not (digit? %))))))
@@ -116,14 +121,20 @@
 (defn progress [game]
   (with-reason "progress"
     (if-not (endgame? game)
-      (full-explore game)
-      (or (get-amulet game)
-          (visit game :astral)
-          (seek-high-altar game)))))
+      (or (seek-branch game :sokoban) ; XXX DEBUG
+          (seek-level game :sokoban :end) ; XXX DEBUG
+          (full-explore game)
+        (or (get-amulet game)
+            (visit game :astral)
+            (seek-high-altar game))))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
   [game]
+  #_(< 3205 (:turn game))
+  #_(= {:x 33 :y 14} (position (:player game)))
+  #_(= :sokoban (branch-key game))
+  #_(:oracle (curlvl-tags game))
   #_(= :astral (branch-key game))
   #_(= "Dlvl:46" (:dlvl game))
   #_(explored? game :main :end)
@@ -807,9 +818,7 @@
                   :no-traps true
                   :no-autonav true
                   :walking true
-                  :max-steps (if (planes (branch-key game))
-                               1
-                               hostile-dist-thresh)}]
+                  :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
         ; TODO special handling of uniques
         (let [threats (->> (hostile-threats game)
@@ -1144,6 +1153,7 @@
 (defn safe-zap? [game dir]
   (let [level (curlvl game)]
     (every? #(and ((some-fn corridor? floor? water? door-open?) %)
+                  (not (and (= :sokoban (:branch-id game)) (boulder? %)))
                   (not (monster-at level %)))
             (->> (in-direction level (:player game) dir)
                  (iterate #(in-direction level % dir))
@@ -1433,5 +1443,8 @@
                             (choose-action [this game]
                               (rob-peacefuls game))))
       (register-handler 17 (reify ActionHandler
+                             (choose-action [_ game]
+                               (do-soko game))))
+      (register-handler 18 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))

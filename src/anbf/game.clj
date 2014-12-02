@@ -254,7 +254,7 @@
 
 (defn itemid-handler [{:keys [game] :as anbf}]
   (reify FoundItemsHandler
-    ; TODO autoid castle WoW, soko ?oEarth, soko prize
+    ; TODO autoid castle WoW
     (found-items [_ items]
       (doseq [item items :when (:cost item)]
         (if (and (potion? item) (= :food (:room (at-player @game))))
