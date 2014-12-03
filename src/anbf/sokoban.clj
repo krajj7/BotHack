@@ -78,7 +78,7 @@
              {:x 34 :y 15} "scroll of earth"}})
 
 ; TODO mimics
-; TODO stuck I's
+; TODO kick items on holes
 (defn do-soko [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
                           (some (partial find solutions) (curlvl-tags game)))]
@@ -101,9 +101,16 @@
                                   first)]
             (log/debug ">>>" (map position moves))
             (if (= (position msrc) (position player))
-              (with-reason "push" (->Move (towards msrc mdest)))
-              (with-reason "boulder start" (:step (navigate game msrc
-                                                            #{:no-autonav})))))
+              (or (if-let [monster (->> (towards msrc mdest)
+                                        (in-direction mdest)
+                                        (monster-at game))]
+                    (if (or (not= \I (:glyph monster))
+                            (= :move (typekw (:last-action game))))
+                      (with-reason "soko blocked by monster"
+                        ->Search)))
+                  (with-reason "push" (->Move (towards msrc mdest))))
+              (with-reason "boulder start"
+                (:step (navigate game msrc #{:no-autonav})))))
           (log/debug "soko no more moves"))))))
 
 (defn soko-handler [{:keys [game] :as anbf}]
@@ -112,7 +119,7 @@
     (found-items [_ found]
       (let [tile (at-player @game)]
         (if-let [items (and (= (:turn @game) (:first-walked tile))
-                            (some soko-items (curlvl-tags game)))]
+                            (some soko-items (curlvl-tags @game)))]
           (if-let [id (items (position (:player @game)))]
             (if-let [matching (->> (:items tile)
                                    (filter #(= (item-type (name->item id))

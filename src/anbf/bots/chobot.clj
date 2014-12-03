@@ -121,8 +121,7 @@
 (defn progress [game]
   (with-reason "progress"
     (if-not (endgame? game)
-      (or (seek-branch game :sokoban) ; XXX DEBUG
-          (seek-level game :sokoban :end) ; XXX DEBUG
+      (or  ; XXX DEBUG
           (full-explore game)
         (or (get-amulet game)
             (visit game :astral)
@@ -905,7 +904,17 @@
             (let [monster (monster-at level target)]
               (with-reason "targetting leftover enemy" monster
                 (or (hit game level monster)
-                    step))))))))
+                    step)))))
+        (if-let [dir (and (= :sokoban (branch-key game))
+                          (= :move (typekw (:last-action game)))
+                          (:dir (:last-action game)))]
+          (if (and (boulder? (in-direction level player dir))
+                   (= (position player) (:last-position game)))
+            (if-let [monster (->> (in-direction (in-direction player dir) dir)
+                                  (monster-at game))]
+              (if (< (+ (:known monster) 30) (:turn game))
+                (with-reason "ranged attack soko blocker"
+                  (ranged game monster)))))))))
 
 (defn- bribe-demon [prompt]
   (->> prompt ; TODO parse amount and pass as arg in the scraper, not in bot logic
@@ -1324,7 +1333,6 @@
                          (find-first (every-pred priest? :peaceful))
                          (navigate game) :step)
                 (:step (navigate game (every-pred altar? temple?)))))
-          (seek-level game :mines :minetown) ; XXX XXX XXX
           (if-let [target (find-first (comp :temple :tags) (level-seq game))]
             (seek-level game (:branch-id target) (:dlvl target)))))))
 
@@ -1339,6 +1347,13 @@
           (if (zero? (swap! torub dec))
             (swap! game identify-slot slot "oil lamp"))
           (with-reason "rub-id" (->Rub slot)))))))
+
+(defn sokoban [game]
+  (if (and (have game "Excalibur") (have-throwable game))
+    ; TODO soko done condition
+    (or (seek-branch game :sokoban)
+        (do-soko game)
+        (seek-level game :sokoban :end))))
 
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
@@ -1444,7 +1459,7 @@
                               (rob-peacefuls game))))
       (register-handler 17 (reify ActionHandler
                              (choose-action [_ game]
-                               (do-soko game))))
+                               (sokoban game))))
       (register-handler 18 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))
