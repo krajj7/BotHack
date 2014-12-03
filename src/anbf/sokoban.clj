@@ -3,14 +3,13 @@
             [anbf.actions :refer :all]
             [anbf.delegator :refer :all]
             [anbf.dungeon :refer :all]
+            [anbf.itemid :refer :all]
+            [anbf.itemtype :refer :all]
             [anbf.level :refer :all]
             [anbf.pathing :refer :all]
             [anbf.position :refer :all]
             [anbf.tile :refer :all]
             [anbf.util :refer :all]))
-
-(def soko-1a-earth [{:x 34 :y 17} {:x 35 :y 17}])
-(def soko-1b-earth [])
 
 ; XXX paths must not overlap during one boulder
 (def ^:private solutions
@@ -71,9 +70,15 @@
 (defn- walked-in-order? [lst & tiles]
   (apply (fnil <= 0 -1 -2) lst (map :walked tiles)))
 
+(def ^:private soko-items
+  ; TODO autoid soko prize
+  {:soko-1a {{:x 34 :y 17} "scroll of earth"
+             {:x 35 :y 17} "scroll of earth"}
+   :soko-1b {{:x 33 :y 15} "scroll of earth"
+             {:x 34 :y 15} "scroll of earth"}})
+
 ; TODO mimics
 ; TODO stuck I's
-; TODO autoid soko prize, earth
 (defn do-soko [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
                           (some (partial find solutions) (curlvl-tags game)))]
@@ -101,8 +106,21 @@
                                                             #{:no-autonav})))))
           (log/debug "soko no more moves"))))))
 
-(defn mark-soko-fills [anbf]
-  (reify ToplineMessageHandler
+(defn soko-handler [{:keys [game] :as anbf}]
+  (reify
+    FoundItemsHandler
+    (found-items [_ found]
+      (let [tile (at-player @game)]
+        (if-let [items (and (= (:turn @game) (:first-walked tile))
+                            (some soko-items (curlvl-tags game)))]
+          (if-let [id (items (position (:player @game)))]
+            (if-let [matching (->> (:items tile)
+                                   (filter #(= (item-type (name->item id))
+                                               (item-type %)))
+                                   (map :name) set seq)]
+              (if (less-than? 2 matching)
+                (swap! game add-discovery (first matching) id)))))))
+    ToplineMessageHandler
     (message [_ msg]
       (if (re-seq #"The boulder fills a pit|You hear the boulder fall" msg)
-        (swap! (:game anbf) #(assoc % :last-fill (inc (:turn %))))))))
+        (swap! game #(assoc % :last-fill (inc (:turn %))))))))
