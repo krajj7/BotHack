@@ -127,7 +127,7 @@
 
 (defn untrap-move [{:keys [player] :as game} level]
   (with-reason "untrap move"
-    (or (if-let [wall (find-first (some-fn wall? rock? door-closed?)
+    (or (if-let [wall (find-first (some-fn wall? rock?)
                                   (diagonal-neighbors level player))]
           (->Move (towards player wall)))
         (arbitrary-move game level :diagonal)
