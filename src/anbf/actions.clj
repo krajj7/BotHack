@@ -154,6 +154,8 @@
               (intersection (set (straight-neighbors (:player game)))
                             (set (straight-neighbors target)))))))
 
+(def boulder-plug-re #"The boulder triggers and plugs|You no longer feel the boulder|The boulder fills a pit|The boulder falls into and plugs a hole|You hear the boulder fall")
+
 (defaction Move [dir]
   (trigger [_] (direction-trigger dir))
   (handler [_ {:keys [game] :as anbf}]
@@ -196,6 +198,10 @@
                              assoc :feature :door-open)
                       (swap! game update-at boulder-target
                              assoc :feature :rock)))
+                  boulder-plug-re
+                  (swap! game update-at
+                         (-> old-pos (in-direction dir) (in-direction dir))
+                         assoc :feature :floor)
                   #"It's a wall\."
                   (swap! game update-at target
                          #(assoc % :feature (if (blank? %) :rock :wall)))

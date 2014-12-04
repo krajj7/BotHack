@@ -265,6 +265,8 @@
                          (if-not (or (and (:levi opts) need-levi?)
                                      (and (polytrap? to-tile)
                                           (not (have-mr? game)))
+                                     (and (= :sokoban (branch-key game))
+                                          (hole? to-tile))
                                      (and (:no-traps opts) (trap? to-tile)))
                            [0 (->Move dir)])))) ; trapdoors/holes are escapable
                  (if (kickable-door? level from-tile opts)
@@ -400,6 +402,7 @@
                        (have-levi game)))
          pick (and (not walking)
                    (not no-dig)
+                   (not= :sokoban (branch-key game))
                    (have-pick game))
          opts (cond-> opts
                 (set? opts) (zipmap (repeat true))

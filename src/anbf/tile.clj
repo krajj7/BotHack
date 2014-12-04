@@ -13,8 +13,8 @@
    item-color
    feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :pool :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
    seen
-   first-walked
-   walked
+   first-walked ; turn no.
+   walked ; turn no.
    dug
    searched ; no. of times searched
    items ; [Item]

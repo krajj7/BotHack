@@ -912,7 +912,7 @@
                    (= (position player) (:last-position game)))
             (if-let [monster (->> (in-direction (in-direction player dir) dir)
                                   (monster-at game))]
-              (if (< (+ (:known monster) 30) (:turn game))
+              (if (< (+ (:first-known monster) 15) (:turn game))
                 (with-reason "ranged attack soko blocker"
                   (ranged game monster)))))))))
 

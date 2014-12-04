@@ -30,6 +30,7 @@
    tried ; set of tried armor/scrolls/potions/rings/amulets appearances
    fov
    turn
+   turn* ; internal clock - increments per each action (unlike game turns)
    score]
   anbf.bot.IGame
   (frame [this] (:frame this))
@@ -46,6 +47,7 @@
               :branch-id :main
               :used-names #{}
               :tried #{}
+              :turn* 0
               :discoveries (new-discoveries)}))
 
 (defn- update-game-status [game status]
@@ -121,7 +123,7 @@
                      (rest (:lines frame))
                      (rest (:colors frame)))))
 
-(defn- update-dungeon [{:keys [turn] :as game} {:keys [cursor] :as frame}]
+(defn- update-dungeon [{:keys [turn turn*] :as game} {:keys [cursor] :as frame}]
   (-> game
       (parse-map frame)
       infer-branch
@@ -270,6 +272,7 @@
     (reify
       AboutToChooseActionHandler
       (about-to-choose [_ _]
+        (swap! game update :turn* inc)
         (reset! portal nil)
         (reset! levelport nil)
         (swap! game filter-visible-uniques)

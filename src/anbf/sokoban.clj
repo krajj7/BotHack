@@ -8,6 +8,7 @@
             [anbf.level :refer :all]
             [anbf.pathing :refer :all]
             [anbf.position :refer :all]
+            [anbf.player :refer :all]
             [anbf.tile :refer :all]
             [anbf.util :refer :all]))
 
@@ -54,7 +55,88 @@
                 [42 14] [36 14] [41 14] [34 14] [33 15] [33 9]]
              3 [[37 10] [37 9] [36 8] [41 8] [42 7] [42 9] [43 10] [42 10]
                 [41 9] [41 13] [42 14] [36 14] [41 14] [34 14]
-                [33 15] [33 9]]}})
+                [33 15] [33 9]]}
+   :soko-2a {16 [[34 8] [34 10] [34 8] [34 10]
+                 [36 10] [35 10] [28 17] [31 17] [32 18] [32 17]
+                 [35 16] [37 16]]
+             15 [[33 15] [33 16] [34 17] [29 17]
+                 [37 15] [36 15] [35 12] [35 11]
+                 [35 11] [33 11] [33 13] [33 14]
+                 [34 15] [35 15]
+                 [36 14] [36 15] [35 16] [38 16]]
+             14 [[31 14] [31 17] [33 14] [33 16]
+                 [32 17] [34 17] [35 18] [35 16] [34 15] [35 15]
+                 [36 14] [36 15] [35 16] [39 16]]
+             13 [[27 17] [34 17]
+                 [35 18] [35 16] [34 15] [35 15]
+                 [31 16] [32 16]
+                 [36 14] [36 15] [35 16] [40 16]]
+             12 [[33 15] [33 16] [32 17] [34 17]
+                 [35 18] [35 16] [34 15] [35 15]
+                 [36 14] [36 15] [35 16] [41 16]]
+             11 [[32 12] [32 13] [31 14] [32 14]
+                 [33 13] [33 16] [32 17] [34 17]
+                 [35 18] [35 16] [33 15] [35 15]
+                 [36 14] [36 15] [35 16] [42 16]]
+             10 [[28 14] [32 14] [33 13] [33 16] [32 17] [34 17]
+                 [35 18] [35 16] [33 15] [35 15]
+                 [36 14] [36 15] [35 16] [43 16]]
+             ;11 [[27 17] [34 17] [35 18] [35 16] [34 15] [35 15]
+             ;    [36 14] [36 15] [35 16] [42 16]]
+             ;10 [[28 14] [32 14] [33 13] [33 16] [32 17] [34 17]
+             ;    [35 18] [35 16] [34 15] [35 15] [36 14] [36 15]
+             ;    [35 16] [43 16]]
+             ;9 [[32 12] [32 13] [31 14] [32 14]
+             ;   [33 13] [33 16] [32 17] [34 17]
+             ;   [35 18] [35 16] [34 15] [35 15] [36 14] [36 15]
+             ;   [35 16] [44 16]]
+             }
+   :soko-2b {20 [[31 9] [28 9]
+                 [26 14] [26 9] [25 9] [26 9]
+                 [26 14] [31 14] [32 15] [33 15] [33 16] [35 16]]
+             19 [[26 9] [30 9] [26 16] [26 10]
+                 [33 15] [33 14] [34 14] [34 15] [33 16] [36 16]]
+             18 [[31 16] [37 16]]
+             17 [[34 12] [34 15] [33 16] [38 16]]
+             16 [[33 12] [33 15] [32 16] [39 16]]
+             15 [[31 14] [32 14] [33 13] [33 15] [32 16] [40 16]]
+             14 [[32 12] [32 15] [31 16] [41 16]]
+             13 [[28 16] [28 15] [27 14] [31 14] [32 13] [32 15]
+                 [31 16] [42 16]]
+             12 [[27 16] [27 15] [26 14] [31 14]
+                 [32 13] [32 15] [31 16] [43 16]]
+             11 [[28 13] [27 13] [26 12] [26 13]
+                 [25 14] [31 14] [32 13] [32 15] [31 16] [44 16]]
+             10 [[25 9] [26 9] [26 7] [26 13]
+                 [25 14] [31 14] [32 13] [32 15] [31 16] [45 16]]
+             9 [[28 9] [27 9] [26 8] [26 13]
+                [25 14] [31 14] [32 13] [32 15] [31 16] [46 16]]
+             8 [[27 7] [27 8]
+                [28 9] [27 9] [26 8] [26 13]
+                [25 14] [31 14] [32 13] [32 15] [31 16] [47 16]]
+             7 [[32 9] [27 9] [26 8] [26 13]
+                [25 14] [31 14] [32 13] [32 15] [31 16] [48 16]]
+             6 [[30 16] [30 15] [30 14] [30 13]
+                [25 14] [31 14] [32 13] [32 15] [31 16] [49 16]]}
+   :soko-3a {16 [[36 16] [34 16] [34 17] [36 17]]
+             15 [[36 14] [36 16] [35 17] [37 17]]
+             14 [[34 12] [34 15] [33 17] [33 16] [33 16] [35 16]
+                 [36 15] [36 16] [35 17] [38 17]]
+             13 [[32 13] [33 13] [34 12] [34 16]
+                 [32 15] [33 15] [33 17] [39 17]]
+             12 [[36 13] [38 13] [34 14] [34 16] [33 17] [40 17]]
+             11 [[40 13] [35 13] [34 12] [34 16]
+                 [32 15] [33 15] [33 17] [41 17]]
+             10 [[39 13] [39 11] [36 11] [36 16] [35 17] [41 17]]
+             9 [[34 11] [35 11] [36 10] [36 16] [35 17] [42 17]]
+             8 [[33 9] [33 12] [32 13] [33 13] [34 12] [34 16] [33 17] [43 17]]
+             7 [[31 10] [32 10]
+                [33 9] [33 12] [32 13] [33 13] [34 12] [34 16] [33 17] [44 17]]
+             6 [[33 8] [35 8] [35 8] [35 10] [34 11] [35 11]
+                [36 10] [36 16] [35 17] [45 17]]}
+   :soko-3b {}
+   :soko-4a {}
+   :soko-4b {}})
 
 (defn- moves-for [src dest]
   {:pre [(not (and (not= (firstv src) (firstv dest))
@@ -68,7 +150,7 @@
       (position x y))))
 
 (defn- walked-in-order? [lst & tiles]
-  (apply (fnil <= 0 -1 -2) lst (map :walked tiles)))
+  (apply (fnil <= 0 -1 -2) lst (map :pushed* tiles)))
 
 (def ^:private soko-items
   ; TODO autoid soko prize
@@ -87,34 +169,58 @@
                                   (tile-seq level)))]
       (with-reason "solving soko" tag
         (if-let [[[src dest] & _] (->> (s boulders) (partition 2)
-                                       (drop-while (fn [[[sx sy] [dx dy]]]
-                                                     (walked-in-order?
-                                                       last-fill
-                                                       (at level sx sy)
-                                                       (at level dx dy)))) seq)]
+                                       (drop-while
+                                         (fn [[[sx sy] [dx dy]]]
+                                           (or (->> (position dx dy)
+                                                    (towards (position sx sy))
+                                                    (in-direction
+                                                      level (position dx dy))
+                                                    boulder?)
+                                               (walked-in-order?
+                                                 last-fill
+                                                 (at level sx sy)
+                                                 (at level dx dy))))) seq)]
           (let [moves (map (partial at level) (moves-for src dest))
                 [msrc mdest] (->> (interleave moves (drop 1 moves))
                                   (partition 2)
                                   (drop-while (fn [[src dest]]
-                                                (walked-in-order? last-fill
-                                                                  src dest)))
+                                                (and (not (boulder? dest))
+                                                     (walked-in-order?
+                                                       last-fill src dest))))
                                   first)]
             (log/debug ">>>" (map position moves))
             (if (= (position msrc) (position player))
               (or (if-let [monster (->> (towards msrc mdest)
                                         (in-direction mdest)
                                         (monster-at game))]
-                    (if (or (not= \I (:glyph monster))
-                            (= :move (typekw (:last-action game))))
+                    (if (and (or (= \I (:glyph monster))
+                                 (not (:remembered monster)))
+                             (or (not= \I (:glyph monster))
+                                 (= :move (typekw (:last-action game)))))
                       (with-reason "soko blocked by monster"
                         ->Search)))
                   (with-reason "push" (->Move (towards msrc mdest))))
               (with-reason "boulder start"
                 (:step (navigate game msrc #{:no-autonav})))))
-          (log/debug "soko no more moves"))))))
+          (do ;(@#'anbf.main/p)  ; XXX DEBUG
+              (log/debug "soko no more moves")))))))
 
 (defn soko-handler [{:keys [game] :as anbf}]
   (reify
+    AboutToChooseActionHandler
+    (about-to-choose [_ {:keys [player last-state last-action turn*] :as game}]
+      (if-let [dir (and (= :move (typekw last-action)) (:dir last-action))]
+        (let [old-tile (at-curlvl last-state player)
+              old-player (:player last-state)]
+          (when (and (not (dizzy? old-player))
+                     (boulder? old-tile)
+                     (boulder? (in-direction (curlvl game) player dir))
+                     (not (boulder? (at-curlvl last-state
+                                               (in-direction old-tile dir)))))
+            (swap! (:game anbf) update-at-player assoc :pushed* turn*)
+            (swap! (:game anbf) update-at old-player assoc :pushed* turn*)
+            (swap! (:game anbf) update-at (in-direction player dir)
+                   assoc :pushed true)))))
     FoundItemsHandler
     (found-items [_ found]
       (let [tile (at-player @game)]
@@ -129,5 +235,5 @@
                 (swap! game add-discovery (first matching) id)))))))
     ToplineMessageHandler
     (message [_ msg]
-      (if (re-seq #"The boulder fills a pit|You hear the boulder fall" msg)
-        (swap! game #(assoc % :last-fill (inc (:turn %))))))))
+      (if (re-seq boulder-plug-re msg)
+        (swap! game #(assoc % :last-fill (inc (:turn* %))))))))
