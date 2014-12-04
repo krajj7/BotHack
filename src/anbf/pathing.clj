@@ -465,6 +465,8 @@
        (not (:dug tile))
        ; isolated diagonal corridors - probably dug:
        (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
+                                 (and (seq (:items %))
+                                      (every? rocks? (:items %)))
                                  (corridor? %) (boulder? %))
                              (not-any? (partial likely-walkable? level)
                                        (straight-neighbors level %)))
