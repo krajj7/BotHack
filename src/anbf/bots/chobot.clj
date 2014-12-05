@@ -912,7 +912,7 @@
                    (= (position player) (:last-position game)))
             (if-let [monster (->> (in-direction (in-direction player dir) dir)
                                   (monster-at game))]
-              (if (< (+ (:first-known monster) 15) (:turn game))
+              (if (< (+ (:first-known monster) 10) (:turn game))
                 (with-reason "ranged attack soko blocker"
                   (ranged game monster)))))))))
 
@@ -1348,10 +1348,16 @@
             (swap! game identify-slot slot "oil lamp"))
           (with-reason "rub-id" (->Rub slot)))))))
 
-(defn sokoban [game]
+(defn sokoban [{:keys [player] :as game}]
   (if (and (have game "Excalibur") (have-throwable game))
     ; TODO soko done condition
     (or (seek-branch game :sokoban)
+        (if-let [{:keys [step target]}
+                 (navigate game #(and (hole? %) (:new-items %)
+                                      (empty? (:deaths %)))
+                           {:max-steps 3 :adjacent true})]
+          (with-reason "free items from hole"
+            (or step (->Kick (towards player target)))))
         (do-soko game)
         (seek-level game :sokoban :end))))
 
