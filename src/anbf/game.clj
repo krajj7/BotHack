@@ -103,7 +103,7 @@
 (defn- soko-mimic? [game level tile]
   (if-let [sokotag (or (:soko-4a (:tags level))
                        (:soko-4b (:tags level)))]
-    (and (= \0 (:glyph tile))
+    (and (= \8 (:glyph tile))
          (not (:pushed tile))
          (not ((initial-boulders sokotag) (position tile))))))
 
@@ -121,9 +121,11 @@
                         (if-some [p (and (#{"gremlin"} (typename monster))
                                          (:gremlins-peaceful game))]
                           (vector (position tile) (assoc monster :peaceful p))
-                          (if (and soko? (= \0 glyph))
-                            (assoc monster :type (name->monster "giant mimic"))
-                            (vector (position tile) monster))))))
+                          (vector (position tile)
+                                  (if (and soko? (= \8 glyph))
+                                    (assoc monster :peaceful false
+                                           :type (name->monster "giant mimic"))
+                                    monster))))))
                   (tile-seq level)
                   (->> (:lines frame) rest (apply concat))
                   (->> (:colors frame) rest (apply concat))))))
@@ -135,7 +137,7 @@
                      (rest (:lines frame))
                      (rest (:colors frame)))))
 
-(defn- update-dungeon [{:keys [turn turn*] :as game} {:keys [cursor] :as frame}]
+(defn- update-dungeon [{:keys [turn] :as game} {:keys [cursor] :as frame}]
   (-> game
       (parse-map frame)
       infer-branch

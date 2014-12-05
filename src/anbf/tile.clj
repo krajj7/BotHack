@@ -237,7 +237,7 @@
     (assoc tile :feature nil)
     tile))
 
-(defn- reset-item [tile]
+(defn reset-item [tile]
   ;(log/debug "reset item" tile)
   (assoc tile
          :item-color nil
@@ -260,12 +260,11 @@
              :item-color new-color))))
 
 (defn- update-items [tile new-glyph new-color]
-  (cond
-    (item? new-glyph new-color) (-> tile
-                                    update-feature-with-item
-                                    (mark-item new-glyph new-color))
-    (or (monster? new-glyph new-color) (= \space new-glyph)) tile
-    :else (reset-item tile)))
+  (cond (item? new-glyph new-color) (-> tile
+                                        update-feature-with-item
+                                        (mark-item new-glyph new-color))
+        (or (monster? new-glyph new-color) (= \space new-glyph)) tile
+        :else (reset-item tile)))
 
 (defn- update-feature [tile new-glyph new-color]
   (cond (monster? new-glyph new-color) (walkable-by tile new-glyph)

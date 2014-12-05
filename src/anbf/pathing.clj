@@ -1025,6 +1025,7 @@
 
 (defn- explore-step [{:keys [player] :as game}]
   (let [level (curlvl game)
+        branch (branch-key game level)
         player-tile (at-player game)]
     (or (search-dead-end game 20)
         (if-let [path (navigate game (partial explorable-tile? level)
@@ -1047,7 +1048,7 @@
                  (not (:walked (at-curlvl game 20 10))))
           (with-reason "searching sanctum"
             (seek game {:x 20 :y 10} {:no-explore true})))
-        (if (and (= :wiztower (branch-key game))
+        (if (and (= :wiztower branch)
                  (:end (curlvl-tags game))
                  (unknown? (at-curlvl game 40 11)))
           (with-reason "searching wiztower top"

@@ -68,7 +68,7 @@
                  action)]
       (update a :reason (fnil conj []) reason))))
 
-(def no-monster-re #"You .* (thin air|empty water)" )
+(def no-monster-re #"You .*(?:thin air|empty water|empty space)")
 
 (defn recheck-peaceful-status [game monster-selector]
   (->> (curlvl-monsters game)
@@ -311,6 +311,8 @@
     (reify ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
+          no-monster-re
+          (swap! game update-from-player dir reset-item)
           #"Your .* is in no shape for kicking."
           (swap! game assoc-in [:player :leg-hurt] true)
           #"You can't move your leg!|There's not enough room to kick down here."
@@ -936,7 +938,7 @@
   (trigger [_] "_")
   (handler [this {:keys [game] :as anbf}]
     (let [pos (position pos)
-          path (set (rest (:path this)))]
+          path (set (rest (pop (:path this))))]
       (swap! game assoc :last-autonav pos :autonav-stuck false)
       (reify
         KnowPositionHandler

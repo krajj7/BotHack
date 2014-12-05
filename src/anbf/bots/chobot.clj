@@ -11,13 +11,13 @@
             [anbf.monster :refer :all]
             [anbf.position :refer :all]
             [anbf.game :refer :all]
-            [anbf.sokoban :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.level :refer :all]
             [anbf.tile :refer :all]
             [anbf.delegator :refer :all]
             [anbf.util :refer :all]
             [anbf.behaviors :refer :all]
+            [anbf.sokoban :refer :all]
             [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
@@ -35,8 +35,7 @@
                               (> 10 (- (:turn game) (:known %)))
                               (> (hostile-dist-thresh game) (distance player %))
                               (not (blind? player))
-                              (not (hallu? player))
-                              (not (digit? %))))))
+                              (not (hallu? player))))))
        set))
 
 (defn- threat-map [game]
@@ -95,12 +94,18 @@
           (search-level game 1) ; if Rodney leaves the level with it we're screwed
           (seek game stairs-up?)))))
 
+(defn have-throwable [game]
+  (or (have game (some-fn dagger? short-sword?))
+      (have game (some-fn dart? ammo?))
+      (have game rocks?)))
+
 (defn full-explore [game]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
-      (or (explore game :mines :minetown)
-          (explore game :main :sokoban)
-          (visit game :sokoban)
+      (or ;(explore game :mines :minetown)
+          ;(explore game :main :sokoban)
+          (if (and (have game "Excalibur") (have-throwable game))
+            (do-soko game))
           (explore game :main :quest)
           (let [minetown (get-level game :mines :minetown)]
             (if (or (some->> game have-key secondv key?)
@@ -121,11 +126,10 @@
 (defn progress [game]
   (with-reason "progress"
     (if-not (endgame? game)
-      (or  ; XXX DEBUG
-          (full-explore game)
-        (or (get-amulet game)
-            (visit game :astral)
-            (seek-high-altar game))))))
+      (full-explore game)
+      (or (get-amulet game)
+          (visit game :astral)
+          (seek-high-altar game)))))
 
 (defn- pause-condition?
   "For debugging - pause the game when something occurs"
@@ -572,11 +576,6 @@
       (or (:step (navigate game #{(position 26 12)
                                   (position 16 12)}))
           (->Wait)))))
-
-(defn have-throwable [game]
-  (or (have game (some-fn dagger? short-sword?))
-      (have game (some-fn dart? ammo?))
-      (have game rocks?)))
 
 (defn- ranged [game monster]
   ; TODO wands
@@ -1348,19 +1347,6 @@
             (swap! game identify-slot slot "oil lamp"))
           (with-reason "rub-id" (->Rub slot)))))))
 
-(defn sokoban [{:keys [player] :as game}]
-  (if (and (have game "Excalibur") (have-throwable game))
-    ; TODO soko done condition
-    (or (seek-branch game :sokoban)
-        (if-let [{:keys [step target]}
-                 (navigate game #(and (hole? %) (:new-items %)
-                                      (empty? (:deaths %)))
-                           {:max-steps 3 :adjacent true})]
-          (with-reason "free items from hole"
-            (or step (->Kick (towards player target)))))
-        (do-soko game)
-        (seek-level game :sokoban :end))))
-
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1463,9 +1449,6 @@
       (register-handler 16 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 17 (reify ActionHandler
-                             (choose-action [_ game]
-                               (sokoban game))))
       (register-handler 18 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))
