@@ -8,6 +8,7 @@
             [anbf.fov :refer :all]
             [anbf.frame :refer :all]
             [anbf.monster :refer :all]
+            [anbf.montype :refer :all]
             [anbf.actions :refer :all]
             [anbf.tile :refer :all]
             [anbf.item :refer :all]
@@ -15,6 +16,7 @@
             [anbf.position :refer :all]
             [anbf.handlers :refer :all]
             [anbf.tracker :refer :all]
+            [anbf.sokoban :refer :all]
             [anbf.util :refer :all]
             [anbf.pathing :refer :all]
             [anbf.delegator :refer :all]))
@@ -98,20 +100,30 @@
                                           (update-visible-tile game level tile)
                                           tile))))))
 
+(defn- soko-mimic? [game level tile]
+  (if-let [sokotag (or (:soko-4a (:tags level))
+                       (:soko-4b (:tags level)))]
+    (and (= \0 (:glyph tile))
+         (not (:pushed tile))
+         (not ((initial-boulders sokotag) (position tile))))))
+
 (defn- gather-monsters [game frame]
   (let [level (curlvl game)
-        rogue? (:rogue (:tags level))]
+        rogue? (:rogue (:tags level))
+        soko? (= :sokoban (branch-key game))]
     (into {} (map (fn monster-entry [tile glyph color]
-                    (if (and (not= (position tile)
-                                   (position (:player game)))
+                    (if (and (not= (position tile) (position (:player game)))
                              (or (and rogue? (rogue-ghost? game level tile))
+                                 (and soko? (soko-mimic? game level tile))
                                  (monster? glyph color)))
                       (let [monster (new-monster (:x tile) (:y tile)
                                                  (:turn game) glyph color)]
                         (if-some [p (and (#{"gremlin"} (typename monster))
                                          (:gremlins-peaceful game))]
                           (vector (position tile) (assoc monster :peaceful p))
-                          (vector (position tile) monster)))))
+                          (if (and soko? (= \0 glyph))
+                            (assoc monster :type (name->monster "giant mimic"))
+                            (vector (position tile) monster))))))
                   (tile-seq level)
                   (->> (:lines frame) rest (apply concat))
                   (->> (:colors frame) rest (apply concat))))))
