@@ -346,6 +346,7 @@
                      initial)
                    (when-let [text (more-prompt frame)]
                      (log/debug "Handling --More-- prompt")
+                     (ref-set menu-nextpage nil)
                      (let [res (condp re-seq text
                                  #"^You don't have that object\."
                                  handle-choice-prompt
