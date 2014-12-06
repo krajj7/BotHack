@@ -204,6 +204,7 @@
    desired-gloves
    #{"amulet of reflection"}
    #{"amulet of life saving"}
+   #{"amulet of ESP"}
    #{"wand of fire"}
    #{"wand of lightning"}
    #{"wand of teleportation"}
@@ -429,6 +430,18 @@
           (with-reason "wielding better weapon -" (:label weapon)
             (->Wield slot))))))
 
+(defn- choose-amulet [{:keys [player] :as game}]
+  (or (and (not (reflection? game))
+           (have game "amulet of reflection" #{:can-use :bagged}))
+      (have game "amulet of life saving" #{:can-use :bagged})
+      (have game "amulet of ESP" #{:can-use :bagged})))
+
+(defn- wear-amulet [game]
+  (with-reason "wear amulet"
+    (if-let [[slot item] (choose-amulet game)]
+      (or (unbag game slot item)
+          (make-use game slot)))))
+
 (defn- wear-armor [{:keys [player] :as game}]
   (first (for [category [desired-shield desired-boots desired-shirt
                          desired-suit desired-cloak desired-helmet
@@ -529,7 +542,8 @@
         tile-path (mapv (partial at level) (:last-path game))
         step (first tile-path)
         branch (branch-key game)]
-    (or (bless-gear game)
+    (or (wear-amulet game)
+        (bless-gear game)
         (drop-junk game)
         (wear-armor game)
         (remove-unsafe game)
@@ -1185,8 +1199,9 @@
       (if-let [[slot item] (have game (every-pred (partial should-try? game)
                                                   (complement wand?))
                                  #{:safe-buc :bagged})]
-        (or (unbag game slot item)
-            (make-use game slot)))
+        (with-reason "trying out safe item"
+          (or (unbag game slot item)
+              (make-use game slot))))
       (if-let [[slot item] (and (:room (at-player game))
                                 (shop-inside? (curlvl game) (:player game))
                                 (have game #(and (price-id? game %)

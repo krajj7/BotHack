@@ -390,7 +390,7 @@
            (have-levi-on game))))
 
 (defn weight-mod [game item]
-  (if (and (:items item) (boh? item))
+  (if (and (:items item) (boh? game item))
     (case (:buc item)
       :blessed (comp inc (partial * 0.25))
       :cursed (partial * 2)
