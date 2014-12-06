@@ -588,8 +588,10 @@
                       lines lines-all
                       discoveries []]
                  (if-let [line (first lines)]
-                   (let [[group id _ appearance _] (re-first-groups
-                                                     discoveries-re line)]
+                   (let [[group id _ appearance _]
+                         (->> (string/replace line
+                                #"^(.*) called ([^(]+) \([^)]*\)" "$1 ($2)")
+                              (re-first-groups discoveries-re))]
                      (if group
                        (recur group (rest lines) discoveries)
                        (if (= section "Unique Items")
