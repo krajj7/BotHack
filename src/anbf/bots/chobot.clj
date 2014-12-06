@@ -260,15 +260,15 @@
   (< (:protection (:player game)) 4))
 
 (defn currently-desired
-  "Returns the set of item names that the bot currently wants.
-  Assumes the bot has at most 1 item of each category."
+  "Returns the set of item names that the bot currently wants."
   [{:keys [player] :as game}]
   (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
               (rest desired-items) ; don't pick that pickaxe back up
               desired-items)
          res always-desired]
     (if-let [c (first cs)]
-      (if-let [[slot i] (have game c #{:bagged})]
+      (if-let [[slot i] (max-by (comp utility secondv)
+                                (have-all game c #{:bagged}))]
         (recur (rest cs)
                (into (conj res (:name i))
                      (take-while (partial not= (item-name game i)) c)))
@@ -623,9 +623,6 @@
                        {:max-steps 1 :no-traps true
                         :no-fight true :walking true})))))
 
-(defn tame-pet [{:keys [player] :as game}]
-  ) ; TODO throw least nutritious food at targettable pacifiable if in danger, use in fight and retreat
-
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
     (or (bait-wizard game level monster)
@@ -796,6 +793,7 @@
                             (take max-dist))]
            ; TODO bounce rays
            :when (or ray? (not-any? (some-fn pool? lava?) tiles))
+           :when (not-any? :room tiles)
            :let [monsters (->> tiles
                                (take-while (some-fn walkable? boulder?))
                                (keep (partial monster-at level)))]
@@ -809,6 +807,17 @@
        (not (sessile? monster))
        (or (:awake monster)
            (> 6 (- (:turn game) (:first-known monster))))))
+
+(defn- use-invis [{:keys [player] :as game} threats]
+  (if-let [[slot _] (and (free-finger? player)
+                         (or (and (not-any? sees-invisible? threats)
+                                  (more-than? 1 threats))
+                             (some (every-pred (complement sees-invisible?)
+                                               (partial keep-away? player))
+                                   threats))
+                         (have game "ring of invisibility" #{:noncursed}))]
+    (with-reason "invis for combat"
+      (make-use game slot))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
@@ -853,17 +862,6 @@
                                    (find-first ignores-e? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
-              (if-let [[slot _] (and (free-finger? player)
-                                     (or (and (not-any? sees-invisible? threats)
-                                              (more-than? 1 threats))
-                                         (some (every-pred sees-invisible?
-                                                           (partial keep-away?
-                                                                    player))
-                                               threats))
-                                     (have game "ring of invisibility"
-                                           #{:noncursed}))]
-                (with-reason "invis for combat"
-                  (make-use game slot)))
               (if-let [m (min-by (partial distance player)
                                  (filter (every-pred (partial keep-away? player)
                                                      (complement :fleeing)
@@ -881,7 +879,8 @@
               (when-let [{:keys [step target]} (navigate game threats nav-opts)]
                 (let [monster (monster-at level target)]
                   (with-reason "targetting enemy" monster
-                    (or (hit game level monster)
+                    (or (use-invis game threats)
+                        (hit game level monster)
                         (if (and (more-than? 2 (filter (partial mobile? game)
                                                        threats))
                                  (not (exposed? game level player))
