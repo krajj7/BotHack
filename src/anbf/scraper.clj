@@ -461,7 +461,8 @@
              (no-mark [frame]
                (log/debug "no-mark maybe direction/location prompt, prev ="
                           @prev)
-               (or (= @prev (topline frame)) (ref-set prev nil)
+               (or (and (= @prev (topline frame))
+                        (zero? (-> frame :cursor :y))) (ref-set prev nil)
                    (log/debug "no-mark - new topline:" (topline frame))
                    (handle-direction frame)
                    (undrawn? frame "In what direction")
