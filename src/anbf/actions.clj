@@ -323,6 +323,8 @@
           (swap! game update-from-player dir update :tags conj :foocubus)
           #"You see a ring shining in its midst"
           (swap! game update-from-player dir update :tags conj :ring)
+          #"Thump!"
+          (swap! game update-from-player dir assoc :thump true)
           nil)))))
 
 (defaction Close [dir]
@@ -1116,14 +1118,16 @@
   ([] (search 1))
   ([n] (->Repeated (->Search) n)))
 
-(defn kick [game target-or-dir]
-  (with-reason "kick"
-    (if (:leg-hurt (:player game))
-      (with-reason "wait out leg hurt" (search 10))
-      (without-levitation game
-        (->Kick (if (keyword? target-or-dir)
-                  target-or-dir
-                  (towards (:player game) target-or-dir)))))))
+(defn kick [{:keys [player] :as game} target-or-dir]
+  (let [dir (if (keyword? target-or-dir)
+              target-or-dir
+              (towards player target-or-dir))]
+    (if-not (:thump (in-direction (curlvl game) player dir))
+      (with-reason "kick"
+        (if (:leg-hurt player)
+          (with-reason "wait out leg hurt" (search 10))
+          (without-levitation game
+            (->Kick dir)))))))
 
 (defn dig [[slot item] dir]
   (if (:in-use item)

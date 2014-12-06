@@ -336,7 +336,7 @@
       (or (seek-branch game :sokoban)
           (if-let [{:keys [step target]}
                    (navigate game #(and (hole? %) (:new-items %)
-                                        (empty? (:deaths %)))
+                                        (not (:thump %)))
                              {:max-steps 3 :adjacent true})]
             (with-reason "free items from hole"
               (or step (kick game (towards (:player game) target)))))
