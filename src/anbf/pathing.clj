@@ -225,7 +225,7 @@
 (defn blocked?
   "Stubborn peacefuls"
   [tile]
-  (> (or (:blocked tile) 0) 20))
+  (> (or (:blocked tile) 0) 12))
 
 (defn pass-monster [game level to-tile dir monster opts]
   (if (or (:peaceful monster)
@@ -757,7 +757,8 @@
      (let [level (curlvl game)]
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
-             (if (= 1 mul) (push-boulders game level))
+             (if (and (= 1 mul) (not= :sokoban (branch-key game)))
+               (push-boulders game level))
              (if (= :water (branch-key game)) (seek-portal game))
              (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))
                (with-reason "no stairs, possibly :main :end"
@@ -1036,8 +1037,10 @@
         (if (unexplored-column game level)
           (with-reason "level not explored enough, searching"
             (search-level game (search-limit game level))))
-        (if-let [bldrs (filter #(and (boulder? %) (explorable-tile? level %))
-                               (tile-seq level))]
+        (if-let [bldrs (and (not= :sokoban branch)
+                            (filter #(and (boulder? %)
+                                          (explorable-tile? level %))
+                               (tile-seq level)))]
           (if-let [path (navigate game #(and (some (partial adjacent? %) bldrs)
                                              (pushable-from game level %)))]
             (with-reason "going to push an explorable boulder"

@@ -116,8 +116,9 @@
                 [25 14] [31 14] [32 13] [32 15] [31 16] [47 16]]
              7 [[32 9] [27 9] [26 8] [26 13]
                 [25 14] [31 14] [32 13] [32 15] [31 16] [48 16]]
-             6 [[30 16] [30 15] [30 14] [30 13]
-                [26 14] [31 14] [32 13] [32 15] [31 16] [49 16]]}
+             6 [[30 14] [30 15] [30 14] [30 13]
+                [31 7] [31 8] [32 9] [27 9] [26 8] [26 13]
+                [25 14] [31 14] [32 13] [32 15] [31 16] [49 16]]}
    :soko-3a {16 [[36 16] [34 16] [34 17] [36 17]]
              15 [[36 14] [36 16] [35 17] [37 17]]
              14 [[34 12] [34 15] [33 17] [33 16] [33 16] [35 16]
@@ -143,7 +144,7 @@
              8 [[34 8] [33 8] [32 7] [32 14] [31 15] [42 15]]
              7 [[34 10] [34 9] [35 7] [35 8] [35 8] [33 8]
                 [32 7] [32 14] [31 15] [43 15]]
-             6 [[40 10] [40 9] [40 9] [41 9]
+             6 [[40 8] [40 10] [42 9] [41 9]
                 [36 9] [35 9]
                 [34 10] [34 9] [35 8] [33 8] [32 7] [32 14] [31 15] [44 15]]
              5 [[35 12] [35 14] [34 15] [45 15]]
@@ -156,22 +157,56 @@
                  [34 9] [35 9] [30 9] [29 9] [32 9] [31 9]
                  [34 9] [33 9] [36 11] [35 11] [34 12] [34 9]
                  [35 8] [34 8] [33 9] [33 6] [32 5] [33 5]]
-             17 [[31 11] [33 11]
+             17 [[28 18] [29 18] [28 16] [32 16] [33 15] [33 18]
+                 [34 19] [29 19] [28 20] [28 19]
+                 [31 11] [33 11]
                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [34 5]]
-             16 [[38 11] [35 11]
-                 [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [35 5]]
-             15 [[27 11] [33 11]
-                 [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [36 5]]
-             14 [[31 16] [31 12] [30 11] [33 11]
+             16 [[31 16] [31 12]
+                 [37 15] [33 15]
+                 [36 16] [34 16] [33 15] [33 18] [34 19] [29 19]
+                 [30 11] [33 11]
                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [37 5]]
-             13 [[33 14] [32 14] [31 15] [31 12]
+             15 [[33 14] [32 14] [31 15] [31 12]
                  [30 11] [33 11]
                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [38 5]]
-             12 [[28 14] [30 14]
+             14 [[28 14] [30 14]
                  [31 15] [31 12] [30 11] [33 11]
                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [39 5]]
-             11 [[28 14] [30 14]] ;cykl
-             }
+             13 [[35 14] [32 14] [31 15] [31 12] [30 11] [33 11]
+                 [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [40 5]]
+             12 [[31 18] [32 18] [33 19] [33 15]
+                 [34 14] [32 14] [31 15] [31 12] [30 11] [33 11]
+                 [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [41 5]]
+             11 [[33 15] [32 15] [31 16] [31 12] [30 11] [33 11]
+                 [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [42 5]]
+             10 [[37 9] [35 9] [34 8] [34 11] [35 12] [32 12]
+                 [31 11] [31 14] [32 15] [31 15]]
+             110 [[38 11] [35 11]
+                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [43 5]]
+             109 [[29 15] [30 15]]
+             9 [[31 16] [31 12] [30 11] [33 11]
+                [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [44 5]]
+             8 [[31 9] [33 9] [34 8] [34 11] [35 12] [32 12] [31 11] [31 14]
+                [32 15] [31 15]]
+             108 [[29 18] [32 18] [33 19] [33 16] [34 15] [32 15]
+                  [31 16] [31 12] [30 11] [33 11]
+                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [45 5]]
+             107 [[29 15] [30 15]]
+             7 [[31 16] [31 12] [30 11] [33 11]
+                [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [46 5]]
+             6 [[29 9] [33 9] [34 8] [34 11] [35 12] [32 12] [31 11] [31 14]
+                [32 15] [31 15]]
+             106 [[27 18] [32 18] [33 19] [33 16] [34 15] [32 15]
+                  [31 16] [31 12] [30 11] [33 11]
+                  [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [47 5]]
+             105 [[29 15] [30 15]]
+             5 [[31 16] [31 12] [30 11] [33 11]
+                [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [48 5]]
+             4 [[28 20] [28 19] [27 18] [32 18] [33 19] [33 16] [34 15] [32 15]
+                [31 16] [31 12] [30 11] [33 11]
+                [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [49 5]]
+             3 [[27 11] [33 11]
+                [34 12] [34 9] [35 8] [34 8] [33 9] [33 6] [32 5] [50 5]]}
    :soko-4b {20 [[32 18] [35 18] [36 19] [36 15] [37 15] [37 14]
                  [38 14] [38 12] [37 12] [37 11] [37 11] [34 11]
                  [32 12] [30 12] [30 12] [30 13] [31 12] [31 11]
@@ -188,7 +223,7 @@
                  [30 10] [30 6] [29 5] [37 5]]
              12 [[28 13] [28 10] [27 9] [29 9]
                  [30 10] [30 6] [29 5] [38 5]]
-             11 [[31 15] [31 13] [32 12] [31 12]
+             11 [[31 15] [31 13] [32 12] [31 12] [31 16] [32 16]
                  [30 13] [30 6] [29 5] [39 5]]
              10 [[33 17] [33 16] [34 15] [32 15]
                  [31 16] [31 13] [32 12] [31 12]
@@ -198,7 +233,7 @@
              8 [[37 12] [37 13] [36 13] [36 12]
                 [37 11] [34 11] [33 10] [33 11] [34 12] [31 12]
                 [30 13] [30 6] [29 5] [42 5]]
-             7 [[36 15] [36 11]
+             7 [[36 15] [36 12]
                 [37 11] [34 11] [33 10] [33 11] [34 12] [31 12]
                 [30 13] [30 6] [29 5] [43 5]]
              6 [[38 14] [37 14] [36 15] [36 12]
@@ -238,27 +273,33 @@
    :soko-1b {{:x 33 :y 15} "scroll of earth"
              {:x 34 :y 15} "scroll of earth"}
    :soko-4a {{:x 42 :y 15} "bag of holding"
-             {:x 42 :y 16} "bag of holding"
-             {:x 42 :y 17} "bag of holding"}
+             {:x 42 :y 17} "bag of holding"
+             {:x 42 :y 19} "bag of holding"}
    :soko-4b {{:x 42 :y 14} "amulet of reflection"
              {:x 42 :y 16} "amulet of reflection"
              {:x 42 :y 18} "amulet of reflection"}})
+
+(def ^:private bswitch (position 30 15)) ; ugly hack to handle the one layout where paths have to cross
 
 (defn- soko-move [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
                           (some (partial find solutions) (curlvl-tags game)))]
     (let [level (curlvl game)
-          boulders (count (filter #(and (boulder? %) (not (monster-at level %)))
-                                  (tile-seq level)))]
+          boulders (count (filter (partial real-boulder? level)
+                                  (tile-seq level)))
+          x (if (and (:soko-4a (curlvl-tags game))
+                     (real-boulder? level bswitch))
+              (+ 100 boulders)
+              boulders)]
       (with-reason "solving soko" tag
-        (if-let [[[src dest] & _] (->> (s boulders) (partition 2)
+        (if-let [[[src dest] & _] (->> (s x) (partition 2)
                                        (drop-while
                                          (fn [[[sx sy] [dx dy]]]
                                            (or (->> (position dx dy)
                                                     (towards (position sx sy))
                                                     (in-direction
                                                       level (position dx dy))
-                                                    boulder?)
+                                                    (real-boulder? level))
                                                (walked-in-order?
                                                  last-fill
                                                  (at level sx sy)
@@ -279,7 +320,7 @@
                     (if (and (or (= \I (:glyph monster))
                                  (not (:remembered monster)))
                              (or (not= \I (:glyph monster))
-                                 (= :move (typekw (:last-action game)))))
+                                 (= :move (typekw (:last-action* game)))))
                       (with-reason "soko blocked by monster"
                         ->Search)))
                   (with-reason "push" (->Move (towards msrc mdest))))
@@ -287,8 +328,7 @@
                 (:step (navigate game msrc)))))
           (log/debug "soko no more moves"))))))
 
-(defn soko-done? [game]
-  (:done (:tags (get-level game :sokoban :end))))
+(defn soko-done? [game] (:soko-done game))
 
 (defn do-soko [game]
   (if (not (soko-done? game))
@@ -307,21 +347,32 @@
 (defn soko-handler [{:keys [game] :as anbf}]
   (reify
     AboutToChooseActionHandler
-    (about-to-choose [this {:keys [player last-state last-action turn*]
+    (about-to-choose [this {:keys [player last-state last-action* turn*]
                             :as game}]
       (when (= :sokoban (branch-key game))
+        (let [level (curlvl game)]
+          (if (and (:soko-4a (:tags level))
+                   (= :move (typekw last-action*))
+                   (or (and (real-boulder? (curlvl last-state) bswitch)
+                            (not (real-boulder? level bswitch)))
+                       (and (real-boulder? level bswitch)
+                            (not (real-boulder? (curlvl last-state) bswitch)))))
+            (swap! (:game anbf) #(assoc % :last-fill (inc (:turn* %))))))
         (if-let [prize (and (:end (curlvl-tags game))
+                            (#{:autotravel :move} (typekw last-action*))
                             (keys (some soko-items (curlvl-tags game))))]
-          (when (some #(perma-e? (at-curlvl game %)) prize)
-            (swap! (:game anbf) add-curlvl-tag :done)
-            (log/debug "soko done!")
+          (when (some #(perma-e? (at-curlvl last-state %)) prize)
+            (swap! (:game anbf) assoc :soko-done true)
+            (log/warn "soko done!")
             (deregister-handler anbf this)))
-        (if-let [dir (and (= :move (typekw last-action)) (:dir last-action))]
+        (if-let [dir (and (= :move (typekw last-action*)) (:dir last-action*))]
           (let [old-tile (at-curlvl last-state player)
-                old-player (:player last-state)]
+                old-player (:player last-state)
+                target (in-direction (curlvl game) player dir)]
             (when (and (not (dizzy? old-player))
                        (boulder? old-tile)
-                       (boulder? (in-direction (curlvl game) player dir))
+                       (or (boulder? target)
+                           (and (hallu? player) (item? target)))
                        (not (boulder? (->> (in-direction old-tile dir)
                                            (at-curlvl last-state)))))
               (swap! (:game anbf) update-at-player assoc :pushed* turn*)
@@ -333,7 +384,7 @@
     (action-chosen [_ action]
       (if-let [bohname (and (:soko-4a (curlvl-tags @game))
                             (= :call (typekw action))
-                            ((:soko-4a soko-items) (position (:player game)))
+                            ((:soko-4a soko-items) (position (:player @game)))
                             (:name action))]
         (swap! game add-discovery bohname "bag of holding")))
     FoundItemsHandler
@@ -356,5 +407,5 @@
           (swap! game #(assoc % :last-fill (inc (:turn* %))))
           #"The ceiling rumbles "
           (do (log/warn "?oEarth used on soko")
-              (swap! game add-curlvl-tag :end :done)) ; abandon all hope
+              (swap! game assoc :soko-done true)) ; abandon all hope
           nil)))))

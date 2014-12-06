@@ -102,8 +102,8 @@
 (defn full-explore [game]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
-      (or ;(explore game :mines :minetown)
-          ;(explore game :main :sokoban)
+      (or (explore game :mines :minetown)
+          (explore game :main :sokoban)
           (if (and (have game "Excalibur") (have-throwable game))
             (do-soko game))
           (explore game :main :quest)
@@ -194,7 +194,7 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
-   ;#{"bag of holding"}
+   #{"bag of holding"}
    desired-cloak
    desired-suit
    desired-shield
@@ -885,8 +885,9 @@
                         (if (and (more-than? 2 (filter (partial mobile? game)
                                                        threats))
                                  (not (exposed? game level player))
-                                 (exposed? game level
-                                           (in-direction player (:dir step))))
+                                 (some->> (:dir step)
+                                          (in-direction player)
+                                          (exposed? game level)))
                           (with-reason "staying in more favourable position"
                             ->Search))
                         (if (and (some #(and (= 2 (distance player %))
@@ -1025,8 +1026,8 @@
     (or (if (and (safe-from-guards? level)
                  (not (shop? (at level player))))
           (if-let [{:keys [step target]}
-                   (navigate game #(or (blocked? %)
-                                       (rob? (monster-at level %)))
+                   (navigate game #(if-let [monster (monster-at level %)]
+                                     (or (blocked? %) (rob? monster)))
                              #{:adjacent})]
             (with-reason "robbing a poor peaceful dorf"
               (or step (->Attack (towards player target)))))))))

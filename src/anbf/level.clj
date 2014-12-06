@@ -222,8 +222,27 @@
 (def geh-maze {:cutoff-cols [0 1 77 78 79]
                :cutoff-rows [1 2 3 21]})
 
+(def soko-2a-holes [{:y 16 :x 38} {:y 16 :x 39} {:y 16 :x 40} {:y 16 :x 41} {:y 16 :x 42} {:y 16 :x 43} {:y 16 :x 44} {:y 16 :x 45} {:y 16 :x 46} {:y 16 :x 47} {:y 16 :x 48} {:y 16 :x 49}])
+; 2b not necessary, holes initially out of LOS
+(def soko-3a-holes [{:y 17 :x 37} {:y 17 :x 38} {:y 17 :x 39} {:y 17 :x 40} {:y 17 :x 41} {:y 17 :x 42} {:y 17 :x 43} {:y 17 :x 44} {:y 17 :x 45} {:y 17 :x 46} {:y 17 :x 47}])
+(def soko-3b-holes [{:y 15 :x 38} {:y 15 :x 39} {:y 15 :x 40} {:y 15 :x 41} {:y 15 :x 42} {:y 15 :x 43} {:y 15 :x 44} {:y 15 :x 45} {:y 15 :x 46} {:y 15 :x 47}])
+(def soko-4a-holes [{:y 5 :x 34} {:y 5 :x 35} {:y 5 :x 36} {:y 5 :x 37} {:y 5 :x 38} {:y 5 :x 39} {:y 5 :x 40} {:y 5 :x 41} {:y 5 :x 42} {:y 5 :x 43} {:y 5 :x 44} {:y 5 :x 45} {:y 5 :x 46} {:y 5 :x 47} {:y 5 :x 48} {:y 5 :x 49}])
+; 4b not necessary, holes initially out of LOS
+
 (def blueprints
-  [{:branch :astral
+  [{:branch :sokoban
+    :tag :soko-2a
+    :features (zipmap soko-2a-holes (repeat :hole))}
+   {:branch :sokoban
+    :tag :soko-3a
+    :features (zipmap soko-3a-holes (repeat :hole))}
+   {:branch :sokoban
+    :tag :soko-3b
+    :features (zipmap soko-3b-holes (repeat :hole))}
+   {:branch :sokoban
+    :tag :soko-4a
+    :features (zipmap soko-4a-holes (repeat :hole))}
+   {:branch :astral
     :features (merge (zipmap astral-walls (repeat :wall))
                      (zipmap [{:x 39 :y 7} {:x 9 :y 11} {:x 69 :y 11}]
                              (repeat :altar))

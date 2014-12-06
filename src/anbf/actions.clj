@@ -944,8 +944,9 @@
         KnowPositionHandler
         (know-position [this {:keys [cursor]}]
           (when (and (seq path) (not= pos cursor)
-                     (not-any? path (neighbors cursor)))
-            ; when autonav diverges from the intended path, this should prevent a cycle
+                     (or (some boulder? (neighbors (curlvl @game) cursor))
+                         (not-any? path (neighbors cursor))))
+     ; when autonav diverges from the intended path, this should prevent a cycle
             (log/debug "autonav stuck")
             (swap! game assoc :autonav-stuck true)))
         ToplineMessageHandler
