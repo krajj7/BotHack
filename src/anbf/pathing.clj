@@ -22,6 +22,8 @@
     (and (:prefer-items opts) (:pick opts) (boulder? tile)
          (:new-items tile)) (- 5) ; partially negate digging penalization
     (trap? tile) (+ 15) ; TODO trap types
+    (and (some #{:castle :medusa} (:tags level))
+         (some pool? (including-origin neighbors level tile))) (+ 5)
     (diagonal dir) (+ 0.1)
     (and (unknown? tile) (not (:seen tile))) (+ 3)
     (not (stairs? tile)) (+ 0.1)

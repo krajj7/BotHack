@@ -339,6 +339,10 @@
             (if-let [room (room-type text)]
               (update-before-action anbf mark-room room))
             (condp-all re-first-group text
+              #"(?:grabs|swings itself around) you!"
+              (swap! game assoc-in [:player :grabbed] true)
+              #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)"
+              (swap! game assoc-in [:player :grabbed] false)
               thing-re
               (if (moved? @game)
                 (update-tile anbf))

@@ -112,9 +112,10 @@
                     (not (:minetown-grotto (:tags minetown)))
                     (:seen (at minetown 48 5)))
               (explore game :mines)))
-          (explore game :main :medusa)
+          (explore game :main "Dlvl:20")
           (if (<= 14 (:xplvl (:player game)))
             (explore game :quest))
+          (explore game :main :medusa)
           (explore game :vlad)
           (explore game :main)
           (explore game :wiztower)
@@ -206,6 +207,7 @@
    #{"amulet of life saving"}
    #{"amulet of ESP"}
    #{"wand of fire"}
+   #{"wand of cold"}
    #{"wand of lightning"}
    #{"wand of teleportation"}
    #{"wand of striking"}
@@ -313,6 +315,7 @@
 (defn- worthwhile? [game item]
   (and (not (> -1 (enchantment item)))
        (not (tin? item))
+       (not= "bag of tricks" (item-name game item))
        (not (and (have-intrinsic? (:player game) :speed)
                  (= "wand of speed monster" (item-name game item))))
        (or (not= "empty" (:specific item))
@@ -637,6 +640,12 @@
                        {:max-steps 1 :no-traps true
                         :no-fight true :walking true})))))
 
+(defn hit-eel [game monster]
+  (if (and (pool? (at-curlvl game monster)) (not (flies? monster)))
+    (if (pool? (at-player game))
+      (with-reason "away from water"
+        (:step (navigate game floor? {:no-fight true :max-steps 6}))))))
+
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
     (or (bait-wizard game level monster)
@@ -647,7 +656,8 @@
           (with-reason "levitation for :air"
             (make-use game slot)))
         (if (adjacent? player monster)
-          (or (hit-floating-eye game monster)
+          (or (hit-eel game monster)
+              (hit-floating-eye game monster)
               (kite game monster)
               (hit-corrosive game monster)
               (wield-weapon game)
@@ -665,14 +675,17 @@
   (or (< hp 10)
       (<= (/ hp maxhp) 1/3)))
 
-(defn can-ignore? [game monster]
+(defn can-ignore? [{:keys [player] :as game} monster]
   (or (passive? monster)
       (unicorn? monster)
+      (and (pool? (at-curlvl game monster)) (not (flies? monster))
+           (not-any? pool? (neighbors (curlvl game) player)))
       (#{"grid bug" "newt" "leprechaun"} (typename monster))
-      (and (mimic? monster) (not (adjacent? (:player game) monster)))))
+      (and (mimic? monster) (not (adjacent? player monster)))))
 
 (defn can-handle? [{:keys [player] :as game} monster]
   (cond
+    (and (drowner? monster) (pool? (at-curlvl game monster))) false
     (= "floating eye" (typename monster)) (or (blind? player)
                                               (reflection? game)
                                               (free-action? game)
@@ -787,11 +800,15 @@
                 (->Move (towards tile nbr))))
             (log/debug "retreat failed"))))))
 
-(defn keep-away? [player m]
-  (if-let [montype (typename m)]
-    (or (some #(.contains montype %)
-              ["nymph" "rust monster" "disenchanter" "mind flayer"])
-        (and (= "homunculus" montype) (not (have-intrinsic? player :sleep))))))
+(defn keep-away? [{:keys [player] :as game} m]
+  (if (and (pool? (at-curlvl game m))
+           (not (have game "oilskin cloak" #{:in-use})))
+    true
+    (if-let [montype (typename m)]
+      (or (some #(.contains montype %)
+                ["nymph" "rust monster" "disenchanter" "mind flayer"])
+          (and (= "homunculus" montype)
+               (not (have-intrinsic? player :sleep)))))))
 
 (defn targettable
   "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there seems to be no risk of hitting non-hostiles or water/lava for non-rays."
@@ -827,7 +844,7 @@
                          (or (and (not-any? sees-invisible? threats)
                                   (more-than? 1 threats))
                              (some (every-pred (complement sees-invisible?)
-                                               (partial keep-away? player))
+                                               (partial keep-away? game))
                                    threats))
                          (have game "ring of invisibility" #{:noncursed}))]
     (with-reason "invis for combat"
@@ -852,7 +869,7 @@
           (or (if (and (not (e? (at-player game)))
                        (or (more-than? 1 (remove (some-fn :fleeing
                                                           ignores-e?) adjacent))
-                           (some (every-pred (partial keep-away? player)
+                           (some (every-pred (partial keep-away? game)
                                              (complement :fleeing))
                                  adjacent)))
                 (with-reason "fight engrave"
@@ -867,9 +884,7 @@
                                    ; TODO if faster than threats increase max-steps
                                    {:max-steps 2 :no-traps true
                                     :no-fight true :explored true}))))
-              (if-let [monster (or (if (some pool? (neighbors level player))
-                                     (find-first drowner? adjacent))
-                                   (find-first rider? adjacent)
+              (if-let [monster (or (find-first rider? adjacent)
                                    (find-first unique? adjacent)
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
@@ -877,7 +892,7 @@
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
               (if-let [m (min-by (partial distance player)
-                                 (filter (every-pred (partial keep-away? player)
+                                 (filter (every-pred (partial keep-away? game)
                                                      (complement :fleeing)
                                                      (complement :remembered)
                                                      (partial mobile? game))
@@ -885,7 +900,7 @@
                 (if (> 3 (distance player m))
                   (with-reason "trying to keep away from" m
                     (engrave-e game))))
-              (if-let [m (find-first #(and (keep-away? player %)
+              (if-let [m (find-first #(and (keep-away? game %)
                                            (not (adjacent? player %)))
                                      (targettable game))]
                 (with-reason "keep-away monster" m
@@ -1163,12 +1178,12 @@
   (reify ActionHandler
     (choose-action [this {:keys [player] :as game}]
       (with-reason "killing medusa"
-        (if-let [medusa (and (not (reflection? player))
+        (if-let [medusa (and (not (reflection? game))
                              (get-level game :main :medusa))]
           (if (or (and (:medusa-1 (curlvl-tags game))
                        (:seen (at medusa {:x 38 :y 11})))
                   (and (:medusa-2 (curlvl-tags game))
-                       (:seen (at medusa {:x 70 :y 12}))))
+                       (:seen (at medusa {:x 70 :y 11}))))
             (deregister-handler anbf this)
             (if-let [[slot item] (have game blind-tool #{:noncursed})]
               (or (if (and (stairs-up? (at-player game))
@@ -1326,7 +1341,7 @@
     (find-first options (map firstv want))))
 
 (defn- respond-geno []
-  (let [geno-classes (atom (list "L" "R" ";" "c" "m" "n"))
+  (let [geno-classes (atom (list ";" "L" "R" "c" "m" "n"))
         geno-types (atom (list "electric eel" "master mind flayer" "mind flayer"
                                "disenchanter"))
         next! (fn [g]
@@ -1368,6 +1383,23 @@
             (swap! game identify-slot slot "oil lamp"))
           (with-reason "rub-id" (->Rub slot)))))))
 
+(defn handle-drowning [{:keys [player] :as game}]
+  (if (and (:grabbed player) (some pool? (neighbors game player)))
+    (let [level (curlvl game)
+          [drowner & _ :as drowners] (filter #(and (pool? %)
+                                                   (monster-at level %))
+                                             (neighbors level player))]
+      (if drowner
+        (or (if-let [[slot ring] (have-levi-on game)]
+              (if (walkable? (at-player game))
+                (remove-use game slot)))
+            (engrave-e game :perma)
+            (if-let [[slot wand] (and (less-than? 2 drowners)
+                                      (or (have game "wand of teleportation")
+                                          (have game "wand of cold")))]
+              (->ZapWandAt slot (towards player drowner)))
+            (engrave-e game))))))
+
 (defn init [{:keys [game] :as anbf}]
   (-> anbf
       (register-handler priority-bottom (pause-handler anbf))
@@ -1406,6 +1438,9 @@
                               (choose-action [_ game]
                                 (enhance game))))
       (register-handler -14 (name-first-amulet anbf))
+      (register-handler -12 (reify ActionHandler
+                              (choose-action [_ game]
+                                (handle-drowning game))))
       (register-handler -10 (reify ActionHandler
                               (choose-action [_ game]
                                 (handle-starvation game))))
@@ -1419,7 +1454,7 @@
       (register-handler -4 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))
-      (register-handler -3 (kill-medusa game))
+      (register-handler -3 (kill-medusa anbf))
       (register-handler -2 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))

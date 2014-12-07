@@ -83,6 +83,8 @@
 
 (defn drowner? [m] (some #(= :wrap (:damage-type %)) (:attacks (:type m))))
 
+(defn flies? [m] (get-in m [:type :tags :fly]))
+
 (defn covetous? [m] (some #{:covetous :wants-arti :wants-amulet :wants-book}
                           (:tags (:type m))))
 
@@ -96,6 +98,8 @@
 (defn sees-invisible? [m] (get-in m [:type :tags :see-invis]))
 
 (defn follower? [m] (get-in m [:type :tags :follows]))
+
+(defn amphibious? [m] (get-in m [:type :tags :amphibious]))
 
 (defmacro ^:private def-tag-pred [kw]
   `(defn ~(symbol (str (subs (str kw) 1) \?)) [~'monster]
