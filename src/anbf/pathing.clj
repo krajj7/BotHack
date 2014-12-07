@@ -1109,14 +1109,18 @@
   (let [branch (branch-key game level)
         dlvl (:dlvl level)
         nbr-branch (or (bmap dlvl) :main)]
-      (for [nbr [(get-level game branch (prev-dlvl branch dlvl)) ; go upstairs
+      (for [nbr [(if-not (and (:medusa (:tags level))
+                              (not (have-levi game))
+                              (or (not= (:dlvl game) (:dlvl level))
+                                  (< 20 (:x (:player game)))))
+                   (get-level game branch (prev-dlvl branch dlvl))) ; upstairs
                  (if (and (not= :main branch) ; escape branch
                           (= dlvl (ffirst (get-branch game branch))))
                    (get-level game :main (branch-entry game branch)))
                  (if-let [b (and (= :main branch) (not (:up opts))
                                  (bmap dlvl))] ; enter branch
                    (some->> b (get-branch game) first val))
-                 (if-not (:up opts) ; go downstairs
+                 (if-not (:up opts) ; downstairs
                    (get-level game branch (next-dlvl branch dlvl)))]
             :when nbr]
         nbr)))
