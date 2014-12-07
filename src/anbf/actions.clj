@@ -662,6 +662,7 @@
 (defaction Apply [slot]
   (trigger [_] "a")
   (handler [_ {:keys [game] :as anbf}]
+    (possible-autoid anbf slot)
     (reify
       AttachCandlesHandler
       (attach-candelabrum-candles [_ _]
