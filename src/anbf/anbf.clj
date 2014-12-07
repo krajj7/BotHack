@@ -224,6 +224,7 @@
          (register-handler priority-top (call-id-handler anbf))
          (register-handler priority-bottom prompt-escape)
          (register-handler priority-top (soko-handler anbf))
+         (register-handler priority-top (wish-id-handler anbf))
          (register-handler priority-top (itemid-handler anbf))
          (register-handler priority-top (reset-exploration anbf))
          (register-handler priority-top (death-tracker anbf))

@@ -659,6 +659,8 @@
   {:pre [(:discoveries game) (char? slot) (string? id)]}
   (add-discovery game (slot-appearance game slot) id))
 
+(declare possible-autoid)
+
 (defaction Apply [slot]
   (trigger [_] "a")
   (handler [_ {:keys [game] :as anbf}]
@@ -1385,6 +1387,33 @@
       (if-let [[slot item] (and (not (blind? (:player game)))
                                 (have game ambiguous-appearance?))]
         (->Call slot (name-for game item))))))
+
+(defn wish-id-handler
+  "ID wished-for item"
+  [{:keys [game] :as anbf}]
+  (let [active (atom false)
+        wish (atom nil)
+        slot (atom nil)]
+    (reify
+      CommandResponseHandler
+      (response-chosen [_ res]
+        (reset! wish res))
+      AboutToChooseActionHandler
+      (about-to-choose [_ _]
+        (if-let [id (and @active @slot @wish
+                         (:name (label->item @wish)))]
+          (swap! game identify-slot @slot id))
+        (reset! active false))
+      ToplineMessageHandler
+      (message [_ _]
+        (if (and @active (nil? @slot))
+          (if-let [s (and (some? @wish) (nil? @slot)
+                          (first (re-first-group #"^([a-zA-Z]) - ")))]
+            (reset! slot s))))
+      MakeWishHandler
+      (make-wish [_ _]
+        (reset! active true)
+        nil))))
 
 (defaction Wipe []
   (trigger [_] "#wipe\n")

@@ -85,12 +85,15 @@
   (let [t (str s)]
     (if (.endsWith t "\n") t (str t \newline))))
 
+(declare response-chosen)
+
 (defn- respond-escapable [res-transform protocol method delegator & args]
   (if-not (:inhibited delegator)
     (let [res (apply invoke-command protocol method delegator args)]
       (log/debug "command response:" res)
       (if-not (and (string? res) (empty? res)) ; can return "\n" to send empty response
-        (write delegator (res-transform res))
+        (do (response-chosen delegator res)
+            (write delegator (res-transform res)))
         (do (log/info "Escaping prompt")
             (write delegator esc))))))
 
@@ -184,6 +187,9 @@
 
 (defeventhandler ActionChosenHandler
   (action-chosen [handler ^anbf.bot.IAction action]))
+
+(defeventhandler CommandResponseHandler
+  (response-chosen [handler response]))
 
 (defeventhandler InventoryHandler
   (inventory-list [handler ^clojure.lang.IPersistentMap inventory]))
