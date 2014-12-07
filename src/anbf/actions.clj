@@ -1391,29 +1391,34 @@
 (defn wish-id-handler
   "ID wished-for item"
   [{:keys [game] :as anbf}]
-  (let [active (atom false)
-        wish (atom nil)
+  (let [wish (atom nil)
         slot (atom nil)]
     (reify
       CommandResponseHandler
-      (response-chosen [_ res]
-        (reset! wish res))
+      (response-chosen [_ method res]
+        (when (and (= make-wish method) (not= "nothing" res))
+          (update-inventory anbf)
+          (reset! wish res)))
       AboutToChooseActionHandler
       (about-to-choose [_ _]
-        (if-let [id (and @active @slot @wish
-                         (:name (label->item @wish)))]
-          (swap! game identify-slot @slot id))
-        (reset! active false))
+        (when-let [id (and @wish
+                           (= :inventory (typekw (:last-action* @game)))
+                           (:name (label->item @wish)))]
+          (swap! game identify-slot @slot id)
+          (reset! slot nil)
+          (reset! wish nil)))
       ToplineMessageHandler
-      (message [_ _]
-        (if (and @active (nil? @slot))
+      (message [_ msg]
+        (if (and @wish (nil? @slot))
           (if-let [s (and (some? @wish) (nil? @slot)
-                          (first (re-first-group #"^([a-zA-Z]) - ")))]
-            (reset! slot s))))
-      MakeWishHandler
-      (make-wish [_ _]
-        (reset! active true)
-        nil))))
+                          (first (re-first-group #"^([a-zA-Z]) - " msg)))]
+            (reset! slot s)))))))
+
+(defn mark-recharge-handler [{:keys [game] :as anbf}]
+  (reify CommandResponseHandler
+    (response-chosen [_ method res]
+      (when (= charge-what method)
+        (name-item anbf (if (string? res) (first res) res) "recharged")))))
 
 (defaction Wipe []
   (trigger [_] "#wipe\n")
@@ -1446,7 +1451,8 @@
         (message [_ msg]
           (when (re-seq #"Nothing happens" msg)
             (reset! charged false)
-            (name-item anbf slot "empty")))))))
+            (if (not= "recharged" (:specific (inventory-slot @game slot)))
+              (name-item anbf slot "empty"))))))))
 
 (defn ->ZapWandAt [slot dir]
   (with-handler (inc priority-bottom)

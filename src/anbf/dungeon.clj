@@ -664,6 +664,14 @@
        (some->> (get-dlvl game :main :castle)
                 (dlvl-compare (:dlvl game)) pos?)))
 
+(defn below-medusa?
+  "Being on the right side of medusa's island is also considered below"
+  [game]
+  (if-let [medusa (get-dlvl game :main :medusa)]
+    (or (pos? (dlvl-compare (:dlvl game) medusa))
+        (and (= (:dlvl game) (:dlvl medusa))
+             (< 22 (:x (:player game)))))))
+
 (defn apply-default-blueprint [game]
   (if (and (in-gehennom? game) (not (:votd (curlvl-tags game)))
            (some wall? (neighbors (curlvl game) (:player game))))

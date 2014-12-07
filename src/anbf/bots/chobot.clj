@@ -199,7 +199,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "magic marker" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -452,7 +452,11 @@
                                 (have game "scroll of remove curse"
                                       #{:noncursed :bagged}))]
       (with-reason "uncursing weapon" (:label weapon)
-        (or (unbag game slot scroll)
+        (or (if (not (cursed? (secondv (wielding game))))
+              (if-let [[slot item] (have game cursed? {:in-use false})]
+                (with-reason "wield for extra uncurse"
+                  (->Wield slot))))
+            (unbag game slot scroll)
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
@@ -868,16 +872,23 @@
        (or (:awake monster)
            (> 6 (- (:turn game) (:first-known monster))))))
 
-(defn- use-invis [{:keys [player] :as game} threats]
-  (if-let [[slot _] (and (free-finger? player)
-                         (or (and (not-any? sees-invisible? threats)
-                                  (more-than? 1 threats))
-                             (some (every-pred (complement sees-invisible?)
-                                               (partial keep-away? game))
-                                   threats))
-                         (have game "ring of invisibility" #{:noncursed}))]
-    (with-reason "invis for combat"
-      (make-use game slot))))
+(defn- use-rings [{:keys [player] :as game} threats]
+  (or (if-let [[slot _] (and (free-finger? player)
+                             (not (:minetown (:tags (curlvl game))))
+                             (not-any? :room (neighbors (curlvl game) player))
+                             (more-than? 3 threats)
+                             (have game "ring of conflict" #{:noncursed}))]
+        (with-reason "conflict for combat"
+          (make-use game slot)))
+      (if-let [[slot _] (and (free-finger? player)
+                             (or (and (not-any? sees-invisible? threats)
+                                      (more-than? 1 threats))
+                                 (some (every-pred (complement sees-invisible?)
+                                                   (partial keep-away? game))
+                                       threats))
+                             (have game "ring of invisibility" #{:noncursed}))]
+        (with-reason "invis for combat"
+          (make-use game slot)))))
 
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
@@ -937,7 +948,7 @@
               (when-let [{:keys [step target]} (navigate game threats nav-opts)]
                 (let [monster (monster-at level target)]
                   (with-reason "targetting enemy" monster
-                    (or (use-invis game threats)
+                    (or (use-rings game threats)
                         (hit game level monster)
                         (if (and (more-than? 2 (filter (partial mobile? game)
                                                        threats))
@@ -1158,11 +1169,40 @@
                    [(:turn @game) (:dlvl @game) (:branch-id @game) item])
             (log/warn "stolen item" label "not in inventory?")))))))
 
+(defn- have-dsm [game]
+  (have game #{"silver dragon scale mail" "gray dragon scale mail"}))
+
 (defn wish [game]
   (cond
-    (not (have game "gray dragon scale mail"))
+    (and (#{:engrave :zapwand} (typekw (:last-action game)))
+         (not (have game "scroll of charging" #{:blessed :bagged}))
+         (not= "recharged"
+               (:specific (inventory-slot game (:slot (:last-action game))))))
+    "2 blessed scrolls of charging"
+    (and (below-medusa? game) (not (have-levi game)))
+    "blessed ring of levitation"
+    (and (below-medusa? game)
+         (not (some (:genocided game) #{";" "electric eel"})))
+    "2 blessed scrolls of genocide"
+    (and (not (have-dsm game))
+         (not (have game "cloak of magic resistance")))
     "blessed +3 gray dragon scale mail"
-    (not (have game "speed boots")) "blessed fixed +3 speed boots"
+    (not (have-dsm game))
+    "blessed +3 silver dragon scale mail"
+    (and (have-dsm game) (not (have game #{"amulet of reflection"
+                                           "shield of reflection"})))
+    "blessed fixed +3 shield of reflection"
+    (not (every? (:genocided game) #{"L" ";"}))
+    "2 blessed scrolls of genocide"
+    (not (have game "speed boots"))
+    "blessed fixed +3 speed boots"
+    (not (every? (:genocided game)
+                 #{"mind flayer" "master mind flayer"}))
+    "2 uncursed scrolls of genocide"
+    (not (have game "helm of telepathy"))
+    "blessed fixed +3 helm of telepathy"
+    (not (have game "gauntlets of power"))
+    "blessed fixed +3 gauntlets of power"
     :else "2 blessed scrolls of genocide"))
 
 (defn- want-buc? [game item]
@@ -1336,6 +1376,16 @@
     :armor (> 5 (enchantment item))
     nil))
 
+(defn- recharge [game slot]
+  (if (= "empty" (:specific (inventory-slot game slot)))
+    (if-let [[s scroll] (have game "scroll of charging" #{:blessed :bagged})]
+      (with-reason "recharge"
+        (or (unbag game s scroll)
+            (with-handler
+              (reify ChargeWhatHandler
+                (charge-what [_ _] slot))
+              (->Read s)))))))
+
 (defn use-items [game]
   (if-not (shop? (at-player game))
     (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
@@ -1362,6 +1412,18 @@
             (or (unbag game slot item)
                 (bless game slot)
                 (->Rub slot))))
+        (if-let [[slot geno] (have game "scroll of genocide"
+                                #{:bagged :noncursed})]
+          (with-reason "geno"
+            (or (unbag game slot geno)
+                (bless game slot)
+                (->Read slot))))
+        (if-let [[slot wow] (have game "wand of wishing" #{:bagged})]
+          (with-reason "wish"
+            (or (unbag game slot wow)
+                (recharge game slot)
+                (if (not= "empty" (:specific wow))
+                  (->ZapWand slot)))))
         (if-let [[slot item] (have game "scroll of identify"
                                    #{:bagged :noncursed})]
           (when-let [want (seq (want-id game :bagged))]
@@ -1377,12 +1439,13 @@
     (find-first options (map firstv want))))
 
 (defn- respond-geno []
-  (let [geno-classes (atom (list ";" "L" "R" "c" "m" "n"))
+  (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))
         geno-types (atom (list "electric eel" "master mind flayer" "mind flayer"
-                               "disenchanter"))
+                               "disenchanter" "green slime" "golden naga"
+                               "gremlin"))
         next! (fn [g]
                 (when-let [res (peek @g)]
-                  (swap! res pop)
+                  (swap! g pop)
                   res))]
     (reify GenocideHandler
       (genocide-class [_ _] (next! geno-classes))
@@ -1425,16 +1488,19 @@
           [drowner & _ :as drowners] (filter #(and (pool? %)
                                                    (monster-at level %))
                                              (neighbors level player))]
-      (if drowner
-        (or (if-let [[slot ring] (have-levi-on game)]
-              (if (and (ring? ring) (walkable? (at-player game)))
-                (remove-use game slot)))
-            (engrave-e game :perma)
-            (if-let [[slot wand] (and (less-than? 2 drowners)
-                                      (or (have game "wand of teleportation")
-                                          (have game "wand of cold")))]
-              (->ZapWandAt slot (towards player drowner)))
-            (engrave-e game))))))
+      (with-reason "grabbed - avoid drowning"
+        (if drowner
+          (or (if (can-pray? game)
+                (->Pray))
+              (if-let [[slot ring] (have-levi-on game)]
+                (if (and (ring? ring) (walkable? (at-player game)))
+                  (remove-use game slot)))
+              (engrave-e game :perma)
+              (if-let [[slot wand] (and (less-than? 2 drowners)
+                                        (or (have game "wand of teleportation")
+                                            (have game "wand of cold")))]
+                (->ZapWandAt slot (towards player drowner)))
+              (engrave-e game)))))))
 
 (defn init [{:keys [game] :as anbf}]
   (-> anbf

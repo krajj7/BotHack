@@ -1111,8 +1111,7 @@
         nbr-branch (or (bmap dlvl) :main)]
       (for [nbr [(if-not (and (:medusa (:tags level))
                               (not (have-levi game))
-                              (or (not= (:dlvl game) (:dlvl level))
-                                  (< 20 (:x (:player game)))))
+                              (below-medusa? game))
                    (get-level game branch (prev-dlvl branch dlvl))) ; upstairs
                  (if (and (not= :main branch) ; escape branch
                           (= dlvl (ffirst (get-branch game branch))))

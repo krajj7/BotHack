@@ -31,6 +31,8 @@
    used-names
    tried ; set of tried armor/scrolls/potions/rings/amulets appearances
    fov
+   genocided
+   wishes
    turn
    turn* ; internal clock - increments per each action (unlike game turns)
    score]
@@ -50,6 +52,8 @@
               :used-names #{}
               :tried #{}
               :turn* 0
+              :wishes 0
+              :genocided #{}
               :discoveries (new-discoveries)}))
 
 (defn- update-game-status [game status]
@@ -325,6 +329,13 @@
       FullFrameHandler
       (full-frame [_ frame]
         (swap! game update-map frame))
+      CommandResponseHandler
+      (response-chosen [_ method res]
+        (when (or (= genocide-class method)
+                  (= genocide-monster method))
+          (swap! game update :genocided conj res))
+        (when (and (= make-wish method) (not= "nothing" res))
+          (swap! game update :wishes inc)))
       MultilineMessageHandler
       (message-lines [_ lines]
         (or (if (and (re-seq things-re (first lines)) (moved? @game))

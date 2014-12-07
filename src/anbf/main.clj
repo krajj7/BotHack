@@ -78,6 +78,13 @@
         (log/info "Connection status: online"))
       (offline [_]
         (log/info "Connection status: offline"))
+      CommandResponseHandler
+      (response-chosen [_ method res]
+        (when (or (= genocide-class method)
+                  (= genocide-monster method))
+          (log/warn "genocided" res))
+        (when (= make-wish method)
+          (log/warn "wished for" res)))
       RedrawHandler
       (redraw [_ frame]
         (println frame)))))

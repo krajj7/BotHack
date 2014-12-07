@@ -156,7 +156,6 @@
     (identify-what [_ _]
       (log/warn "default handler identifying anything")
       #{","})
-    ; escape the rest by default
     MakeWishHandler
     (make-wish [_ _]
       (log/warn "default handler wishing for nothing")
@@ -168,6 +167,9 @@
     (genocide-monster [_ _]
       (log/warn "default handler genociding none")
       "none")
+    ; escape the rest by default
+    ChargeWhatHandler
+    (charge-what [_ _] "")
     VaultGuardHandler
     (who-are-you [_ _] "")
     SellItHandler
@@ -222,6 +224,7 @@
          (register-handler priority-bottom (actions-handler anbf))
          (register-handler priority-top (examine-handler anbf))
          (register-handler priority-top (call-id-handler anbf))
+         (register-handler priority-top (mark-recharge-handler anbf))
          (register-handler priority-bottom prompt-escape)
          (register-handler priority-top (soko-handler anbf))
          (register-handler priority-top (wish-id-handler anbf))

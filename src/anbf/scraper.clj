@@ -166,6 +166,7 @@
 
 (defn- choice-fn [msg]
   (condp re-first-groups msg
+    #"^What do you want to charge" charge-what
     #"^\"Shall I remove|^\"Take off your |let me run my fingers" seduced-remove
     #"^Force the gods to be pleased\?" force-god
     #"^Really attack (.*)\?" :>> (partial apply list really-attack)

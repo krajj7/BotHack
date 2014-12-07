@@ -92,7 +92,7 @@
     (let [res (apply invoke-command protocol method delegator args)]
       (log/debug "command response:" res)
       (if-not (and (string? res) (empty? res)) ; can return "\n" to send empty response
-        (do (response-chosen delegator res)
+        (do (response-chosen delegator method res)
             (write delegator (res-transform res)))
         (do (log/info "Escaping prompt")
             (write delegator esc))))))
@@ -189,7 +189,7 @@
   (action-chosen [handler ^anbf.bot.IAction action]))
 
 (defeventhandler CommandResponseHandler
-  (response-chosen [handler response]))
+  (response-chosen [handler method response]))
 
 (defeventhandler InventoryHandler
   (inventory-list [handler ^clojure.lang.IPersistentMap inventory]))
@@ -441,3 +441,6 @@
 
 (defchoicehandler RubWhatHandler
   (rub-what [handler ^String prompt]))
+
+(defchoicehandler ChargeWhatHandler
+  (charge-what [handler ^String prompt]))
