@@ -335,20 +335,28 @@
 (defn want-buy? [game item]
   false) ; TODO
 
+;(if-not (resolve 'desired))
+(def desired (atom #{}))
+
 (defn- worthwhile? [game item]
-  (and (not (> -1 (enchantment item)))
-       (not (tin? item))
-       (not= "bag of tricks" (item-name game item))
-       (not (and (have-intrinsic? (:player game) :speed)
-                 (= "wand of speed monster" (item-name game item))))
-       (or (not= "empty" (:specific item))
-           (= "wand of wishing" (item-name game item)))
-       (or (and (not= :cursed (:buc item))
-                (> 2 (or (:erosion item) 0)))
-           (take-cursed? game item))
-       (if (:cost item)
-         (want-buy? game item)
-         true)))
+  (let [id (item-name game item)]
+    (and (not (> -1 (enchantment item)))
+         (not (tin? item))
+         (not (and ((some-fn potion? scroll? wand? ring? amulet?) item)
+                   (know-id? game item)
+                   (not (desired-singular id))
+                   (not (@desired id))))
+         (not= "bag of tricks" id)
+         (not (and (have-intrinsic? (:player game) :speed)
+                   (= "wand of speed monster" id)))
+         (or (not= "empty" (:specific item))
+             (= "wand of wishing" id))
+         (or (and (not= :cursed (:buc item))
+                  (> 2 (or (:erosion item) 0)))
+             (take-cursed? game item))
+         (if (:cost item)
+           (want-buy? game item)
+           true))))
 
 (defn- should-try?
   [game item]
@@ -361,8 +369,6 @@
            (and ((some-fn scroll? potion? ring? amulet? armor?) item)
                 (not (tried? game item))
                 (safe? game item)))))
-
-(def desired (atom #{}))
 
 (defn take-selector [{:keys [player] :as game}]
   (fn [item]
@@ -1421,7 +1427,7 @@
                                              (neighbors level player))]
       (if drowner
         (or (if-let [[slot ring] (have-levi-on game)]
-              (if (walkable? (at-player game))
+              (if (and (ring? ring) (walkable? (at-player game)))
                 (remove-use game slot)))
             (engrave-e game :perma)
             (if-let [[slot wand] (and (less-than? 2 drowners)
