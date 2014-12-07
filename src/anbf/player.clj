@@ -141,7 +141,7 @@
 (defn inventory-slot
   "Return item for the inventory slot (letter or slot keyword)"
   [game slot]
-  {:pre [(or (char? slot) (slots slot))]}
+  {:pre [(or (char? slot) (slots slot)) (:player game)]}
   (if (char? slot)
     (get-in game [:player :inventory slot])
     (have game (every-pred :worn
@@ -294,20 +294,24 @@
     #{}))
 
 (defn add-intrinsic [game intrinsic]
+  {:pre [(:player game)]}
   (log/debug "adding intrinsic:" intrinsic)
   (update-in game [:player :intrinsics] conj intrinsic))
 
 (defn remove-intrinsic [game intrinsic]
+  {:pre [(:player game)]}
   (log/debug "removing intrinsic:" intrinsic)
   (update-in game [:player :intrinsics] disj intrinsic))
 
-(defn have-intrinsic? [player resist]
-  (resist (:intrinsics player)))
+(defn have-intrinsic? [{:keys [player] :as game} resist]
+  (resist (:intrinsics (or player (:player game)))))
 
 (defn fast? [player]
+  {:pre [(:intrinsics player)]}
   (have-intrinsic? player :speed))
 
 (defn count-candles [game]
+  {:pre [(:player game)]}
   (reduce +
           (if-let [[_ candelabrum] (have game "Candelabrum of Invocation")]
             (:candles candelabrum))
@@ -315,11 +319,13 @@
             (:qty candles))))
 
 (defn have-candles? [game]
+  {:pre [(:player game)]}
   (= 7 (count-candles game)))
 
 (def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant" "violet fungus" "yellow mold" "chameleon"})
 
 (defn safe-corpse-type? [player corpse {:keys [monster] :as corpse-type}]
+  {:pre [(:intrinsics player)]}
   (and (or (tin? corpse)
            (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
@@ -332,6 +338,7 @@
 (defn can-eat?
   "Only true for safe food or unknown tins"
   [player {:keys [name] :as food}]
+  {:pre [(:intrinsics player)]}
   (and (not (cursed? food))
        (can-take? food)
        (or (tin? food)
@@ -343,6 +350,7 @@
                       (safe-corpse-type? player food itemtype)))))))
 
 (defn want-to-eat? [player corpse]
+  {:pre [(:intrinsics player)]}
   (and (can-eat? player corpse)
        (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
              strength (get-in player [:stats :str*])]
@@ -356,11 +364,13 @@
 (defn update-slot
   "Apply update-fn to item at the inventory slot"
   [game slot update-fn & args]
+  {:pre [(:player game)]}
   (apply update-in game [:player :inventory slot] update-fn args))
 
 (defn nutrition-sum
   "Sum of nutrition of carried food"
   [game]
+  {:pre [(:player game)]}
   (reduce (fn [res [_ item]]
             (+ res ((fnil * 0) (:nutrition (item-id game item)) (:qty item))))
           0
@@ -369,6 +379,7 @@
 (defn nw-ratio-avg
   "Nutrition/weight ratio average for all carried food"
   [game]
+  {:pre [(:player game)]}
   (if-let [food (seq (have-all game food? #{:bagged :noncursed}))]
     (/ (nutrition-sum game)
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
@@ -377,6 +388,7 @@
 (defn free-finger?
   "Does the player have a free ring-finger?"
   [player]
+  {:pre [(:inventory player)]}
   ; TODO cursed gloves
   (less-than? 2 (filter (every-pred ring? :in-use)
                         (vals (:inventory player)))))
@@ -384,12 +396,14 @@
 (defn can-engrave?
   "Checks if the player is capable of engraving (also for non-engravable planes)"
   [{:keys [player] :as game}]
+  {:pre [(:inventory player)]}
   (not (or (not (has-hands? player))
            (impaired? player)
            (#{:air :water} (branch-key game))
            (have-levi-on game))))
 
 (defn weight-mod [game item]
+  {:pre [(:player game)]}
   (if (and (:items item) (boh? game item))
     (case (:buc item)
       :blessed (comp inc (partial * 0.25))
@@ -398,6 +412,7 @@
     identity))
 
 (defn weight-sum [game]
+  {:pre [(:player game)]}
   (reduce + (for [[_ item] (inventory game)
                   :let [q (weight-mod game item)]
                   i (conj (:items item) item)
@@ -411,21 +426,25 @@
                       (:str stats))))))
 
 (defn weight-to-burden [game]
+  {:pre [(:player game)]}
   (- (capacity (:player game)) (weight-sum game)))
 
 (defn available-gold
   "Return the amount of gold the player has in main inventory"
   [game]
+  {:pre [(:player game)]}
   (get-in game [:player :inventory \$ :qty]))
 
 (defn gold
   "Return the amount of gold the player has including bagged gold"
   [game]
+  {:pre [(:player game)]}
   (have-sum game gold? #{:bagged}))
 
 (defn inventory-label
   "Returns the [slot item] of something in main inventory that matches the label or nil"
   [game label]
+  {:pre [(:player game)]}
   (find-first #(or (.startsWith (:label (val %)) label)
                    (= (:name (val %)) label))
               (inventory game)))
