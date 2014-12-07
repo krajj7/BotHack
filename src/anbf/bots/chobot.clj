@@ -108,14 +108,15 @@
       (with-reason "castle plan B"
         (if-let [[slot scroll] (have game "scroll of earth" #{:noncursed})]
           (with-reason "using scroll of earth"
-            (if-let [{:keys [step]} (navigate game (position 0 0))];TODO fix pos
+            (if-let [{:keys [step]} (navigate game (position 12 12))]
               (or step (->Read slot))))
           (with-reason "using wand of cold"
             (if-let [[slot _] (have game "wand of cold")]
-              (if-let [pool (find-first pool? (for [pos []] ; TODO fix position
-                                                (at level pos)))]
+              (if-let [pool (find-first pool? (for [y [11 12 13]]
+                                                (at level 12 y)))]
                 (if-let [{:keys [step]}
-                         (navigate game #(= 2 (distance player pool)))]
+                         (navigate game #(and (= 2 (distance pool %))
+                                              (in-line pool %)))]
                   (or step (->ZapWandAt slot (towards player pool))))))))))))
 
 (defn full-explore [game]
@@ -132,7 +133,7 @@
                     (:seen (at minetown 48 5)))
               (explore game :mines)))
           (explore game :main "Dlvl:20")
-          (if (<= 14 (:xplvl (:player game)))
+          (if (and (have-levi game) (<= 14 (:xplvl (:player game))))
             (explore game :quest))
           ;(explore game :main :medusa)
           (castle-plan-b game)
@@ -205,7 +206,7 @@
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
    ;#{"ring of slow digestion"}
-   ;#{"ring of conflict"}
+   #{"ring of conflict"}
    #{"ring of regeneration"}
    #{"ring of invisibility"}
    #{"Orb of Fate"}
@@ -1164,7 +1165,7 @@
        (or (know-id? game item)
            (:safe (item-id game item)))))
 
-(defn use-features [game]
+(defn use-features [{:keys [player] :as game}]
   (or (if-let [[slot ring] (have game #(and (ring? %)
                                             (not (know-id? game %))))]
         (with-reason "drop ring in sink"
@@ -1194,7 +1195,14 @@
         ; TODO remove items from tile
         (or (with-reason "going to throne" step)
             ; TODO drop gold
-            (with-reason "sitting on throne" ->Sit)))))
+            (with-reason "sitting on throne" ->Sit)))
+      (if-let [drawbridge (find-first drawbridge? (tile-seq (curlvl game)))]
+        (with-reason "destroy drawbridge"
+          (if-let [[slot _] (have game "wand of striking")]
+            (if-let [{:keys [step]}
+                     (navigate game #(and (= 3 (distance drawbridge %))
+                                          (in-line drawbridge %)))]
+              (or step (->ZapWandAt slot (towards player drawbridge)))))))))
 
 (defn kill-medusa [anbf]
   (reify ActionHandler

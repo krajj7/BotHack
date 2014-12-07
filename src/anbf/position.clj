@@ -98,3 +98,7 @@
         :when (or (= x (:x NW-corner)) (= x (:x SE-corner))
                   (= y (:y NW-corner)) (= y (:y SE-corner)))]
     (position x y)))
+
+(defn in-line [from to]
+  (or (= (:x from) (:x to))
+      (= (:y from) (:y to))))
