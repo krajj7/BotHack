@@ -941,6 +941,12 @@
         (log/debug "pause condition met")
         (pause anbf)))))
 
+(defn- eat-all? [{:keys [player] :as game}]
+  (or (hungry? player)
+      (> 1000 (nutrition-sum game))
+      (and (have-intrinsic? game :fire)
+           (have-intrinsic? game :poison))))
+
 (defn- feed [{:keys [player] :as game}]
   (if-not (satiated? player)
     (let [beneficial? #(every-pred
@@ -956,7 +962,7 @@
                        (find-first (beneficial? player)) :label
                        ->Eat
                        (without-levitation game)))))
-          (if true #_(hungry? player) ; TODO eat tins
+          (if (eat-all? game)
             (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
               (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
