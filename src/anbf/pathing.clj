@@ -1068,8 +1068,10 @@
          @(:explore-cache game)
          (explore-step game)))))
   ([game branch]
-   (explore game branch :end))
+   (explore game branch :end false))
   ([game branch tag-or-dlvl]
+   (explore game branch tag-or-dlvl false))
+  ([game branch tag-or-dlvl exclusive?]
    (with-reason "exploring" branch "until" tag-or-dlvl
      (or (if-let [l (and (not= :main (branch-key game branch))
                          (shallower-unexplored game :main branch))]
@@ -1078,7 +1080,7 @@
          (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
            (with-reason "first exploring previous levels of branch"
              (explore-level game branch l)))
-         (if-not (explored? game branch tag-or-dlvl)
+         (if-not (or exclusive? (explored? game branch tag-or-dlvl))
            (with-reason "reaching exploration target"
              (explore-level game branch tag-or-dlvl)))
          (log/debug "all explored")))))

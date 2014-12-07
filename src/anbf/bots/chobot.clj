@@ -99,6 +99,25 @@
       (have game (some-fn dart? ammo?))
       (have game rocks?)))
 
+(defn castle-plan-b [{:keys [player] :as game}]
+  (let [level (curlvl game)]
+    (if (and (:castle (:tags level))
+             (not (get-level game :main :votd))
+             (or (not (have-levi game))
+                 (not (reflection? game))))
+      (with-reason "castle plan B"
+        (if-let [[slot scroll] (have game "scroll of earth" #{:noncursed})]
+          (with-reason "using scroll of earth"
+            (if-let [{:keys [step]} (navigate game (position 0 0))];TODO fix pos
+              (or step (->Read slot))))
+          (with-reason "using wand of cold"
+            (if-let [[slot _] (have game "wand of cold")]
+              (if-let [pool (find-first pool? (for [pos []] ; TODO fix position
+                                                (at level pos)))]
+                (if-let [{:keys [step]}
+                         (navigate game #(= 2 (distance player pool)))]
+                  (or step (->ZapWandAt slot (towards player pool))))))))))))
+
 (defn full-explore [game]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
@@ -115,7 +134,9 @@
           (explore game :main "Dlvl:20")
           (if (<= 14 (:xplvl (:player game)))
             (explore game :quest))
-          (explore game :main :medusa)
+          ;(explore game :main :medusa)
+          (castle-plan-b game)
+          (explore game :main :castle :exclusive)
           (explore game :vlad)
           (explore game :main)
           (explore game :wiztower)
@@ -195,7 +216,7 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
-   #{"bag of holding"}
+   ;#{"bag of holding"}
    desired-cloak
    desired-suit
    desired-shield
@@ -203,6 +224,7 @@
    desired-boots
    desired-helmet
    desired-gloves
+   #{"scroll of earth"}
    #{"amulet of reflection"}
    #{"amulet of life saving"}
    #{"amulet of ESP"}
