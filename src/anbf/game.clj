@@ -339,9 +339,9 @@
       MultilineMessageHandler
       (message-lines [_ lines]
         (or (if (and (re-seq things-re (first lines)) (moved? @game))
-              (update-tile anbf))
+              (swap! game update-at-player assoc :new-items true))
             (if-let [level (level-msg (first lines))]
-              (update-on-known-position anbf add-curlvl-tag level))))
+              (swap! game update-at-player add-curlvl-tag level))))
       ToplineMessageHandler
       (message [_ text]
         (swap! game assoc :last-topline text)
