@@ -16,7 +16,7 @@
 
 (defn- transfer-pair [{:keys [player] :as game} [old-monster monster]]
   (let [cur (monster-at game monster)]
-    (log/debug "transfer:" \newline old-monster \newline "cur" \newline cur
+    #_(log/debug "transfer:" \newline old-monster \newline "cur" \newline cur
                "to" \newline monster)
     (reset-monster game
       (as-> (or cur old-monster) monster
@@ -49,7 +49,7 @@
               (position n)))))
 
 (defn- transfer-unpaired [{:keys [player] :as game} unpaired]
-  (log/debug "unpaired" unpaired)
+  ;(log/debug "unpaired" unpaired)
   (let [tile (at-curlvl game unpaired)]
     (if (and (not (monster? tile))
              (not (and (blind? player)

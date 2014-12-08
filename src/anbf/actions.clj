@@ -930,8 +930,8 @@
           remaining (atom labels)]
       (reify PickupHandler
         (pick-up-what [_ options]
-          (log/debug options)
-          (log/debug "want" remaining)
+          ;(log/debug options)
+          ;(log/debug "want" remaining)
           (loop [opts options
                  res #{}]
             (if-let [[slot lbl] (first opts)]
