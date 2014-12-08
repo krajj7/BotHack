@@ -398,13 +398,15 @@
            ((some-fn map? set?) opts)]}]
    (log/debug "navigating" pos-or-goal-fn opts)
    (let [level (curlvl game)
+         branch (branch-key game level)
          levi (and (not no-levitation)
                    (not walking)
+                   (not= :sokoban branch)
                    (or (have-levi-on game)
                        (have-levi game)))
          pick (and (not walking)
                    (not no-dig)
-                   (not= :sokoban (branch-key game))
+                   (not= :sokoban branch)
                    (have-pick game))
          opts (cond-> opts
                 (set? opts) (zipmap (repeat true))
