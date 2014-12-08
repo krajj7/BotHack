@@ -319,7 +319,7 @@
           (swap! game assoc-in [:player :trapped] true)
           #"A black ooze gushes up from the drain!"
           (swap! game update-from-player dir update :tags conj :pudding)
-          #"The dishwasher returns!"
+          #"The dish washer returns!"
           (swap! game update-from-player dir update :tags conj :foocubus)
           #"You see a ring shining in its midst"
           (swap! game update-from-player dir update :tags conj :ring)
