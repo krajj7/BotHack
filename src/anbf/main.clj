@@ -59,6 +59,8 @@
         (log-state game))
       ActionChosenHandler
       (action-chosen [_ action]
+        (if (= :pray (typekw action))
+          (log/warn "praying"))
         (log/info "Performing action:" (dissoc action :reason)
                   "\n reasons:\n" (with-out-str (pprint (:reason action)))))
       InventoryHandler
@@ -99,18 +101,28 @@
   (->> (take 1 args) (apply new-anbf) init-ui start (def a)))
 
 ; shorthand functions for REPL use
-(defn- w [ch] (raw-write (:jta a) ch))
+(defn- w "raw write" [ch] (raw-write (:jta a) ch))
 
-(defn- r [] (w (ctrl \r)))
+(defn- r "redraw" [] (w (ctrl \r)))
 
-(defn- p [] (pause a))
+(defn- p "pause" [] (pause a))
 
-(defn- s [] (stop a))
-
-(defn- u []
+(defn- u "unpause" []
   (r)
   (if (:inhibited @(:delegator a))
     (unpause a)))
+
+(defn- s "single AI step" []
+  (u)
+  (register-handler a
+    (reify ActionChosenHandler
+      (action-chosen [this _]
+        (register-handler a
+          (reify FullFrameHandler
+            (full-frame [this2 _]
+              (p)
+              (deregister-handler a this)
+              (deregister-handler a this2))))))))
 
 (defn- g [] (or (some-> a :game deref)
                 (log/debug "making initial game state")
