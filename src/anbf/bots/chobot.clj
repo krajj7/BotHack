@@ -199,7 +199,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -382,7 +382,8 @@
              (let [id (item-name game item)]
                (and (or (@desired id)
                         (should-try? game item)
-                        (some @desired (map :name (possible-ids game item))))
+                        (and (some @desired (possible-names game item))
+                             (not (potion? item))))
                     (if-let [[_ o] (and (desired-singular id)
                                         (have game id
                                               #{:bagged :can-remove}))]
@@ -1344,7 +1345,7 @@
       (rocks? item) (- 10)
       (not know?) (+ 2)
       (nil? (:buc item)) inc
-      (some @desired (map :name (possible-ids game item))) (+ 5)
+      (some @desired (possible-ids game item)) (+ 5)
       (and (not know?)
            (not (#{100 200} price))
            (scroll? item)) (+ 10)
@@ -1390,7 +1391,7 @@
                 (charge-what [_ _] slot))
               (->Read s)))))))
 
-(defn use-items [game]
+(defn use-items [{:keys [player] :as game}]
   (if-not (shop? (at-player game))
     (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
           (if-let [[scroll _] (and (> (enchantment i) 7)
@@ -1436,7 +1437,17 @@
                                 (unbag game slot item)) want)
                   (with-reason "identify" (first want)
                     (or (unbag game slot item)
-                        (->Read slot))))))))))
+                        (->Read slot)))))))
+        (if-let [[slot item] (have game "potion of gain level" #{:bagged})]
+          (with-reason "!oGL"
+            (or (unbag game slot item)
+                (->Quaff slot))))
+        (if-let [[slot item] (have game #{"potion of extra healing"
+                                          "potion of full healing"} #{:bagged})]
+          (if (= (:hp player) (:maxhp player))
+            (with-reason "improve maxhp"
+              (or (unbag game slot item)
+                  (->Quaff slot))))))))
 
 (defn choose-identify [game options]
   (let [want (want-id game)]
