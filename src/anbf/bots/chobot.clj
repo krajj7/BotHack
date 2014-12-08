@@ -282,8 +282,12 @@
           (* 15 (- (count cat-vec) (.indexOf cat-vec iname)))
           0)))))
 
+(defn- want-protection? [game]
+  (< (:protection (:player game)) 2))
+
 (defn- want-gold? [game]
-  (< (:protection (:player game)) 4))
+  (and (want-protection? game)
+       (< (gold game) (* 400 (inc (:xplvl (:player game)))))))
 
 (defn currently-desired
   "Returns the set of item names that the bot currently wants."
@@ -1456,7 +1460,7 @@
     (with-reason "randomly use unihorn" (->Apply slot))))
 
 (defn get-protection [{:keys [player] :as game}]
-  (if (and (want-gold? game) (> (gold game) (* 400 (:xplvl player))))
+  (if (and (want-protection? game) (> (gold game) (* 400 (:xplvl player))))
     (with-reason "get protection"
       (or (if-let [priest (find-first (every-pred priest? :peaceful
                                                   (partial adjacent? player))
