@@ -214,7 +214,10 @@
                                  (initial-intrinsics race)))
         (deregister-handler anbf this)))))
 
-(defn moved?
+(defn- move-action? [game]
+  (#{:move :autotravel} (typekw (:last-action* game))))
+
+(defn- moved?
   "Returns true if the player moved during the last action turn"
   [game]
   {:pre [(:player game)]}
@@ -354,8 +357,11 @@
               (swap! game assoc-in [:player :grabbed] true)
               #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)"
               (swap! game assoc-in [:player :grabbed] false)
+              etext-re
+              (if (move-action? @game)
+                (update-tile anbf))
               thing-re
-              (if (moved? @game)
+              (if (move-action? @game)
                 (update-tile anbf))
               #"The ([^!]+) turns to flee!"
               :>> (partial swap! game update-fleeing)

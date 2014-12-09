@@ -7,6 +7,7 @@
             [anbf.itemid :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.level :refer :all]
+            [anbf.monster :refer :all]
             [anbf.pathing :refer :all]
             [anbf.position :refer :all]
             [anbf.player :refer :all]
@@ -333,7 +334,8 @@
 (defn do-soko [game]
   (if (not (soko-done? game))
     (with-reason "sokoban"
-      (or (seek-branch game :sokoban)
+      (or (:step (navigate game #(mimic? (monster-at game %)) #{:adjacent}))
+          (seek-branch game :sokoban)
           (if-let [{:keys [step target]}
                    (navigate game #(and (hole? %) (:new-items %)
                                         (not (:thump %)))
@@ -342,6 +344,10 @@
               (or step (kick game (towards (:player game) target)))))
           (soko-move game)
           (explore game)
+          (if (:end (curlvl-tags game))
+            (:step (navigate game #(and ((some soko-items (curlvl-tags game))
+                                         (position %))
+                                        (not (:walked %))))))
           (visit game :sokoban :end)))))
 
 (defn soko-handler [{:keys [game] :as anbf}]
@@ -372,6 +378,7 @@
             (when (and (not (dizzy? old-player))
                        (boulder? old-tile)
                        (or (boulder? target)
+                           (:engulfed player)
                            (and (hallu? player) (item? target)))
                        (not (boulder? (->> (in-direction old-tile dir)
                                            (at-curlvl last-state)))))

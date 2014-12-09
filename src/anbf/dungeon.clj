@@ -150,7 +150,7 @@
     (monster-at (curlvl game-or-level) pos)))
 
 (defn real-boulder? [level pos]
-  (and (boulder? (at level pos)) (not (monster-at level pos))))
+  (and (boulder? (at level pos)) (not (mimic? (monster-at level pos)))))
 
 (defn update-at
   "Update the Tile on current or given level at given position by applying update-fn to its current value and args"
