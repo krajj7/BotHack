@@ -282,6 +282,25 @@
     (if-let [l (get-level game :main (branch-key game branch))]
       (:dlvl l))))
 
+(defn- merge-tile [new-tile old-tile]
+  (-> (if (:branch-id old-tile)
+        (assoc new-tile :branch-id (:branch-id old-tile))
+        new-tile)
+      (update :tags into (:tags old-tile))
+      (update :first-walked max* (:first-walked old-tile))
+      (update :walked max* (:walked old-tile))
+      (update :seen #(or % (:seen old-tile)))
+      (update :feature #(or % (:feature old-tile)))
+      (update :searched + (:searched old-tile))))
+
+(defn- merge-levels [old-level new-level]
+  (log/debug "merging dlvl" (:dlvl old-level))
+  (-> new-level
+      (update :blueprint #(or (:blueprint old-level) %))
+      ; forget monsters
+      (update :tags into (:tags old-level))
+      (update :tiles (partial map-tiles merge-tile) (:tiles old-level))))
+
 (defn merge-branch-id
   "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
   [{:keys [dungeon] :as game} branch-id branch]
@@ -291,10 +310,11 @@
   (-> game
       (assoc-in [:dungeon :id->branch branch-id] branch)
       (ensure-branch branch)
-      (update-in [:dungeon :levels branch] into (-> dungeon :levels branch-id))
+      (update-in [:dungeon :levels branch] (partial merge-with merge-levels)
+                 (-> dungeon :levels branch-id))
       (update-in [:dungeon :levels :main (branch-entry game branch-id) :tags]
                  #(-> % (disj branch-id) (conj branch)))
-      (update-in [:dungeon :levels] dissoc branch-id)))
+      (dissoc-in [:dungeon :levels branch-id])))
 
 (defn infer-branch [game]
   {:pre [(:dungeon game)]}

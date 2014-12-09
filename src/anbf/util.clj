@@ -175,3 +175,8 @@
         (.endsWith s "**") 21
         (< 49 (parse-int (subs s 3))) 19
         :else 20))
+
+(defn max* [x y]
+  (if (and x y)
+    (max x y)
+    (or x y)))
