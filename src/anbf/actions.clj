@@ -1487,6 +1487,12 @@
       (offer-how-much [_ _] amt))
     (->Chat dir)))
 
+(defaction Pay [dir]
+  (trigger [_] "p")
+  (handler [_ {:keys [game] :as anbf}]
+    (reify DirectionHandler
+      (what-direction [_ _] dir))))
+
 ; factory functions for Java bots ; TODO the rest
 (gen-class
   :name anbf.bot.Actions

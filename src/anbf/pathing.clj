@@ -153,7 +153,12 @@
                    (swap! (:game anbf) update-at target
                           update :blocked (fnil inc 0)))))))))
      (with-reason "fidgeting to make peacefuls move"
-       (or (arbitrary-move game level)
+       (or (if-let [shk (and (not= :pay (typekw (:last-action* game)))
+                             (find-first
+                               (comp shopkeeper? (partial monster-at level))
+                               (neighbors level player)))]
+             (->Pay (towards player shk)))
+           (arbitrary-move game level)
            (->Search))))))
 
 (defn safe-from-guards?
