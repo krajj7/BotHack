@@ -144,6 +144,8 @@
     (force-god [_ _] true)
     SeducedEquipRemoveHandler
     (seduced-remove [_ _] false)
+    SeducedPutOnHandler
+    (seduced-puton [_ _] false)
     StopEatingHandler
     (stop-eating [_ _] true)
     WizmodeEnhanceHandler

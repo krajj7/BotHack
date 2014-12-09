@@ -237,6 +237,9 @@
 (defyesnohandler SeducedEquipRemoveHandler
   (seduced-remove [handler ^String text]))
 
+(defyesnohandler SeducedPutOnHandler
+  (seduced-puton [handler ^String text]))
+
 (defchoicehandler ApplyItemHandler
   (apply-what [handler ^String prompt]))
 
