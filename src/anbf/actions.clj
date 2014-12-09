@@ -673,7 +673,7 @@
       (message [_ msg]
         (condp re-seq msg
           #"has no oil|has run out of power"
-          (do (swap! game identify-slot game slot "oil lamp")
+          (do (swap! game identify-slot slot "oil lamp")
               (name-item anbf slot "empty"))
           #" lamp is now (on|off)|burns? brightly!|You light your |^You snuff "
           (update-inventory anbf)

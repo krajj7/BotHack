@@ -312,8 +312,7 @@
             (conj res "Amulet of Yendor"))
           res)
         (cond-> res
-          (not (have-intrinsic?
-                 player :speed)) (conj "wand of speed monster")
+          (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -447,7 +446,8 @@
                                  (some explorable-container? (:items %))
                                  (unlockable-chest? game %)
                                  (some to-take? (concat (:items %)
-                                                        (lootable-items %)))))]
+                                                        (lootable-items %))))
+                       #{:no-fight})]
       (with-reason "new or desired item at" target step)
       (log/debug "no desirable items anywhere"))))
 
@@ -479,7 +479,8 @@
 
 (defn- wear-amulet [game]
   (with-reason "wear amulet"
-    (if-let [[slot item] (choose-amulet game)]
+    (if-let [[slot item] (and (not= :remove (typekw (:last-action game)))
+                              (choose-amulet game))]
       (or (unbag game slot item)
           (make-use game slot)))))
 
@@ -668,10 +669,17 @@
                 (->Wield \-))))
           (->Move (towards (:player game) monster))))))
 
+(defn mobile? [game monster]
+  (and (not (mimic? monster))
+       (not (sessile? monster))
+       (or (:awake monster)
+           (> 6 (- (:turn game) (:first-known monster))))))
+
 (defn kite [{:keys [player] :as game} monster]
   (if (and (adjacent? player monster)
            (#{"black pudding" "brown pudding" "dwarf" "mumak"}
                      (typename monster))
+           (mobile? game monster)
            (not (:just-moved monster)))
     (with-reason "kite"
       (:step (navigate game #(= 2 (distance monster %))
@@ -806,12 +814,12 @@
               (if (engravable? tile)
                 (with-reason "retreat engrave"
                   (engrave-e game (not-any? ignores-e? (vals threats))))
-                (if-let [t (some #(and (engravable? %)
-                                       (not (monster-at level %))
-                                       (less-than? (count adjacent)
-                                                   (filter threats
-                                                           (neighbors %))))
-                                 (neighbors level tile))]
+                (if-let [t (find-first #(and (engravable? %)
+                                             (not (monster-at level %))
+                                             (less-than?
+                                               (count adjacent)
+                                               (filter threats (neighbors %))))
+                                       (neighbors level tile))]
                   (with-reason "moving to neighbor tile to engrave"
                     (->Move (towards player t))))))
             (if (or (empty? threats)
@@ -832,6 +840,7 @@
                   step)))
             (if-let [nbr (find-first #(and (not (exposed? game level %))
                                            (passable-walking? game level tile %)
+                                           (not (monster-at level %))
                                            (not-any? threats (neighbors %)))
                                      (neighbors level tile))]
               (with-reason "running away"
@@ -870,12 +879,6 @@
            :let [target (first monsters)]
            :when (and target (not (:remembered target)))]
        target))))
-
-(defn mobile? [game monster]
-  (and (not (mimic? monster))
-       (not (sessile? monster))
-       (or (:awake monster)
-           (> 6 (- (:turn game) (:first-known monster))))))
 
 (defn- use-rings [{:keys [player] :as game} threats]
   (or (if-let [[slot _] (and (free-finger? player)
@@ -962,7 +965,8 @@
                                           (in-direction player)
                                           (exposed? game level)))
                           (with-reason "staying in more favourable position"
-                            ->Search))
+                            (if (pos? (rand-int 6))
+                              ->Search)))
                         (if (and (some #(and (= 2 (distance player %))
                                              (mobile? game %))
                                        threats)
@@ -1378,7 +1382,7 @@
 (defn- safe-enchant? [item]
   (case (item-type item)
     :weapon (> 6 (enchantment item))
-    :armor (> 5 (enchantment item))
+    :armor (> 4 (enchantment item))
     nil))
 
 (defn- recharge [game slot]

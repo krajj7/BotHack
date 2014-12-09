@@ -647,7 +647,7 @@
   "Are the walls diggable on this level?"
   [game level]
   (and ;(not= "Home 1" (:dlvl game))
-       (not-any? #{:rogue :sanctum :medusa} (:tags level))
+       (not-any? #{:rogue :sanctum :medusa :bigroom} (:tags level))
        (or (:orcus (:tags level)) (not (:undiggable (:blueprint level))))
        (not (#{:vlad :astral :sokoban :quest} (branch-key game level)))))
 

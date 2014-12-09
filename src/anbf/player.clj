@@ -303,8 +303,8 @@
   (log/debug "removing intrinsic:" intrinsic)
   (update-in game [:player :intrinsics] disj intrinsic))
 
-(defn have-intrinsic? [{:keys [player] :as game} resist]
-  (resist (:intrinsics (or player (:player game)))))
+(defn have-intrinsic? [{:keys [player] :as game-or-player} resist]
+  (resist (:intrinsics (or player game-or-player))))
 
 (defn fast? [player]
   {:pre [(:intrinsics player)]}
@@ -421,6 +421,7 @@
               (* (:qty i) (if (= i item) w (q w))))))
 
 (defn capacity [{:keys [stats] :as player}]
+  {:pre [stats]}
   (min 1000
        (+ 50 (* 25 (+ (:con stats)
                       (:str stats))))))

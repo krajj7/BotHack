@@ -317,7 +317,10 @@
       (assoc :new-items true)))
 
 (defn lootable-items [tile]
-  (mapcat :items (:items tile)))
+  (for [container (:items tile)
+        :when (not (:cost container))
+        item (:items container)]
+    item))
 
 (defn e?
   "Is Elbereth inscribed on the current tile?"
@@ -332,7 +335,8 @@
 (defn engravable?
   "Considers water/air plane tiles engravable (can-engrave? catches this case)"
   [tile]
-  ((not-any-fn? pool? lava? fountain? altar? grave?) tile))
+  (and (walkable? tile)
+       ((not-any-fn? pool? lava? fountain? altar? grave?) tile)))
 
 (defn temple? [tile]
   (= :temple (:room tile)))
