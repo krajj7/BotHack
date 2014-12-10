@@ -286,6 +286,12 @@
           (swap! game add-observed-cost (appearance-of item)
                  (/ (:cost item) (:qty item))))))))
 
+(defn unmark-temple [game]
+  (update-curlvl game update :tiles
+                 (partial map-tiles #(if (= :temple (:room %))
+                                       (assoc % :room nil)
+                                       %))))
+
 (defn game-handler
   [{:keys [game delegator] :as anbf}]
   (let [portal (atom nil)
@@ -353,6 +359,8 @@
             (if-let [room (room-type text)]
               (update-before-action anbf mark-room room))
             (condp-all re-first-group text
+              #"You have an eerie feeling|A shiver runs down your|You feel like you are being watched"
+              (swap! game unmark-temple)
               #"(?:grabs|swings itself around) you!"
               (swap! game assoc-in [:player :grabbed] true)
               #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)"
