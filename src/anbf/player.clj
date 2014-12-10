@@ -130,7 +130,7 @@
                              (partial item-name game)))))
 
 (def slots
-  [:helmet :cloak :suit :shirt :shield :gloves :boots :accessory])
+  [:helmet :cloak :suit :shirt :shield :gloves :boots :accessory :amulet])
 
 (def blocker-slots
   (reduce #(update %1 %2 conj %2) {:suit [:cloak]
@@ -155,14 +155,16 @@
 (defn blockers ; TODO extend to weapons, consider cursed two-hander...
   "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
   [game item]
-  (if-let [subtype (item-subtype item)]
-    (for [btype (blocker-slots subtype)
-          :let [blocker (have game (every-pred :worn (comp (partial = btype)
-                                                           item-subtype)))]
-          :when blocker]
-      blocker)
-    (if (weapon? item)
-      [(wielding game)])))
+  (or (if-let [subtype (item-subtype item)]
+        (for [btype (blocker-slots subtype)
+              :let [blocker (have game (every-pred :worn (comp (partial = btype)
+                                                               item-subtype)))]
+              :when blocker]
+          blocker))
+      (if (weapon? item)
+        [(wielding game)])
+      (if (amulet? item)
+        [(have game amulet? #{:in-use})])))
 
 (defn cursed-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]
