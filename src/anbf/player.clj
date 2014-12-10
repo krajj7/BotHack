@@ -182,6 +182,8 @@
                        (if (:noncursed opts) noncursed?)
                        (if (:buc opts) (comp (partial = (:buc opts)) :buc))
                        (if (:nonblessed opts) (complement blessed?))
+                       (if (:blessed opts) blessed?)
+                       (if (:cursed opts) cursed?)
                        (if (:know-buc opts) (comp some? :buc))
                        (if (false? (:know-buc opts)) (comp nil? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))

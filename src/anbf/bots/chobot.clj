@@ -343,8 +343,8 @@
         (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))))
 
 (defn- take-cursed? [game item]
-  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn"} (item-name game item))
-      ((some-fn ring? amulet? scroll? potion? tool? artifact?) item)))
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify"} (item-name game item))
+      ((some-fn ring? amulet? tool? artifact?) item)))
 
 (defn want-buy? [game item]
   false) ; TODO
@@ -590,6 +590,16 @@
     (with-reason "removing potentially unsafe item"
       (remove-use game slot))))
 
+(defn- remove-levi
+  ([game] (remove-levi game nil))
+  ([game path]
+   (if-let [[slot _] (and (not (needs-levi? (at-player game)))
+                          (not (#{:water :air} (:branch-id game)))
+                          (not-any? needs-levi? path)
+                          (have-levi-on game))]
+     (with-reason "don't want levi"
+       (remove-use game slot)))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
@@ -617,12 +627,7 @@
             (with-reason "reequip - weapon"
               (wield-weapon game))))
         (use-light game level)
-        (if-let [[slot _] (and (not (needs-levi? (at-player game)))
-                               (not (#{:water :air} branch))
-                               (not-any? needs-levi? tile-path)
-                               (have-levi-on game))]
-          (with-reason "reequip - don't need levi"
-            (remove-use game slot))))))
+        (remove-levi game tile-path))))
 
 (defn- bait-wizard [game level monster]
   (if (and (= :magenta (:color monster)) (= \@ (:glyph monster))
@@ -762,12 +767,14 @@
 (defn engrave-e
   ([game] (engrave-e game false))
   ([{:keys [player] :as game} perma?]
-   (let [tile (at-player game)
-         append? (e? tile)]
-     (if-not (or (not (can-engrave? game))
-                 (perma-e? tile)
-                 (not (engravable? tile)))
-       (->Engrave (engrave-slot game perma?) "Elbereth" append?)))))
+   (with-reason "engrave E"
+     (let [tile (at-player game)
+           append? (e? tile)]
+       (if (and (engravable? tile)
+                (not (perma-e? tile)))
+         (or (remove-levi game)
+             (if-not (not (can-engrave? game))
+               (->Engrave (engrave-slot game perma?) "Elbereth" append?))))))))
 
 (defn pray-for-hp [{:keys [player] :as game}]
   (if (and (can-pray? game)
@@ -908,6 +915,9 @@
         (with-reason "invis for combat"
           (make-use game slot)))))
 
+(defn hits-hard? [m]
+  (= "winged gargoyle" (typename m)))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -947,6 +957,7 @@
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
                                    (find-first ignores-e? adjacent)
+                                   (find-first hits-hard? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
               (if-let [m (min-by (partial distance player)
@@ -1205,23 +1216,22 @@
     "2 blessed scrolls of genocide"
     (and (not (have-dsm game))
          (not (have game "cloak of magic resistance")))
-    "blessed +3 gray dragon scale mail"
+    "blessed greased +3 gray dragon scale mail"
     (not (have-dsm game))
-    "blessed +3 silver dragon scale mail"
+    "blessed greased +3 silver dragon scale mail"
     (and (have-dsm game) (not (have game #{"amulet of reflection"
                                            "shield of reflection"})))
-    "blessed fixed +3 shield of reflection"
+    "blessed greased fixed +3 shield of reflection"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
+    (not (have game "gauntlets of power"))
+    "blessed fixed +3 gauntlets of power"
     (not (have game "speed boots"))
     "blessed fixed +3 speed boots"
-    (not (every? (:genocided game)
-                 #{"mind flayer" "master mind flayer"}))
+    (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
     "2 uncursed scrolls of genocide"
     (not (have game "helm of telepathy"))
     "blessed fixed +3 helm of telepathy"
-    (not (have game "gauntlets of power"))
-    "blessed fixed +3 gauntlets of power"
     :else "2 blessed scrolls of genocide"))
 
 (defn- want-buc? [game item]
