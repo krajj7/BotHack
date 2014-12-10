@@ -21,6 +21,11 @@
             [anbf.tracker :refer :all]
             [anbf.actions :refer :all]))
 
+(defn pray [game]
+  (with-reason "pray"
+    (if (can-pray? game)
+      (->Pray))))
+
 (defn- hostile-dist-thresh [game]
   (cond
     (planes (branch-key game)) 1
@@ -58,7 +63,13 @@
         (with-reason "praying for food" ->Pray))))
 
 (defn- handle-illness [{:keys [player] :as game}]
-  (or (if-let [[slot _] (and (unihorn-recoverable? game)
+  (or (if-let [[slot item] (and (:stoning player)
+                                (have game "lizard corpse" #{:bagged}))]
+        (with-reason "fix stoning"
+          (or (unbag game slot item)
+              (->Eat slot)
+              (pray game))))
+      (if-let [[slot _] (and (unihorn-recoverable? game)
                              ; rest can wait
                              (some (:state player) #{:conf :stun :ill :blind})
                              (have-unihorn game))]
@@ -189,7 +200,7 @@
   (ordered-set "shield of reflection" "small shield"))
 
 (def desired-cloak
-  (ordered-set "cloak of magic resistance" "cloak of displacement" "oilskin cloak" "cloak of protection" "cloak of invisibility" "elven cloak" "dwarvish cloak"))
+  (ordered-set "cloak of magic resistance" "cloak of protection" "oilskin cloak"  "cloak of displacement" "elven cloak" "dwarvish cloak"))
 
 (def desired-helmet
   (ordered-set "helm of telepathy" "helm of brilliance" "dwarvish iron helm" "orcish helm"))
@@ -1509,8 +1520,7 @@
                                              (neighbors level player))]
       (with-reason "grabbed - avoid drowning"
         (if drowner
-          (or (if (can-pray? game)
-                (->Pray))
+          (or (pray game)
               (if-let [[slot ring] (have-levi-on game)]
                 (if (and (ring? ring) (walkable? (at-player game)))
                   (remove-use game slot)))
