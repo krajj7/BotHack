@@ -106,9 +106,9 @@
           (seek game stairs-up?)))))
 
 (defn have-throwable [game]
-  (or (have game (some-fn dagger? short-sword?))
-      (have game (some-fn dart? ammo?))
-      (have game rocks?)))
+  (or (have game (some-fn dagger? short-sword?) #{:can-remove})
+      (have game (some-fn dart? ammo?) #{:can-remove})
+      (have game rocks? #{:can-remove})))
 
 (defn castle-plan-b [{:keys [player] :as game}]
   (let [level (curlvl game)]
@@ -480,7 +480,7 @@
     (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
       (or (uncurse-weapon game)
           (with-reason "wielding better weapon -" (:label weapon)
-            (->Wield slot))))))
+            (make-use game slot))))))
 
 (defn- choose-amulet [{:keys [player] :as game}]
   (or (and (not (reflection? game))
@@ -613,7 +613,7 @@
                                     (have game real-amulet?))]
             (if-not (:in-use item)
               (with-reason "using amulet to search for portal"
-                (->Wield slot)))
+                (make-use game slot)))
             (with-reason "reequip - weapon"
               (wield-weapon game))))
         (use-light game level)
@@ -673,8 +673,7 @@
     (if (corrosive? monster)
       (or (if-let [[slot item] (have game corrodeproof-weapon?
                                      #{:can-use :noncursed})]
-            (if-not (:in-use item)
-              (->Wield slot))
+            (make-use game slot)
             (if-let [[_ w] (wielding game)]
               (if (not (cursed? w))
                 (->Wield \-))))
