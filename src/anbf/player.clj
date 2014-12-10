@@ -67,7 +67,7 @@
 
 (defn update-player [player status]
   (cond-> (->> (keys player) (select-keys status) (into player))
-    (not (:blind status)) (update [:state] disj :ext-blind)
+    (not (:blind status)) (update :state disj :ext-blind)
     (= "HD" (:xp-label status)) (assoc :polymorphed (some->> (:title status)
                                                              string/lower-case
                                                              name->monster))
