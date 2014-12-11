@@ -486,7 +486,8 @@
                 (make-use game slot)))))))
 
 (defn- choose-amulet [{:keys [player] :as game}]
-  (or (and (not (reflection? game))
+  (or (and (not (have game #{"silver dragon scale mail"
+                             "shield of reflection"} #{:in-use}))
            (have game "amulet of reflection" #{:can-use :bagged}))
       (have game "amulet of life saving" #{:can-use :bagged})
       (have game "amulet of ESP" #{:can-use :bagged})))
