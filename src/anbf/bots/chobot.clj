@@ -294,7 +294,7 @@
           0)))))
 
 (defn- want-protection? [game]
-  (< (:protection (:player game)) 2))
+  (< (:protection (:player game)) 3))
 
 (defn- want-gold? [game]
   (and (want-protection? game)
@@ -476,11 +476,14 @@
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
-    (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
-      (or (uncurse-weapon game)
-          (with-reason "wielding better weapon -" (:label weapon)
-            (make-use game slot))))))
+  (or (if-let [excal (find-first #(= "Excalibur" (item-name game %))
+                                 (:items (at-player game)))]
+        (->PickUp (:label excal)))
+      (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
+        (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
+          (or (uncurse-weapon game)
+              (with-reason "wielding better weapon -" (:label weapon)
+                (make-use game slot)))))))
 
 (defn- choose-amulet [{:keys [player] :as game}]
   (or (and (not (reflection? game))
