@@ -774,7 +774,7 @@
   ([{:keys [player] :as game} perma?]
    (with-reason "engrave E"
      (let [tile (at-player game)
-           append? (e? tile)]
+           append? (or (e? tile) (less-than? 200 (:engraving tile)))]
        (if (and (engravable? tile)
                 (not (perma-e? tile)))
          (or (remove-levi game)
