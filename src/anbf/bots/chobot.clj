@@ -237,6 +237,7 @@
    desired-helmet
    desired-gloves
    #{"scroll of earth"}
+   #{"scroll of teleportation"}
    #{"amulet of reflection"}
    #{"amulet of life saving"}
    #{"amulet of ESP"}

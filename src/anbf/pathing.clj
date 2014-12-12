@@ -724,7 +724,13 @@
                                                (partial safely-walkable? level))
                                              (more-than? 2)))))]
         (or (with-reason "finding somewhere to dig down" step)
-            (with-reason "digging down" (dig pick \>)))))))
+            (with-reason "digging down" (dig pick \>))))
+      (if-let [[slot item] (and (diggable-floor? game (curlvl game))
+                                (#{:floor :corridor}
+                                          (:feature (at-player game)))
+                                (have game "wand of digging" #{:bagged}))]
+        (or (unbag game slot item)
+            (->ZapWandAt slot \>))))))
 
 (defn seek-portal [game]
   (let [level (curlvl game)]
@@ -758,8 +764,20 @@
           (explore game)
           (search-level game)))))
 
+(defn unstuck [game]
+  (with-reason "unstuck"
+    (or (if-let [[slot item] (have game "scroll of teleportation" #{:bagged})]
+          (or (unbag game slot item)
+              (->Read slot)))
+        (if-let [[slot item] (have game "wand of teleportation" #{:bagged})]
+          (or (unbag game slot item)
+              (->ZapWandAt slot \.)))
+        (go-down game (curlvl game)))))
+
 (defn search-level
-  ([game] (or (search-level game 10)
+  ([game] (or (search-level game 3)
+              (unstuck game)
+              (search-level game 10)
               (throw (IllegalStateException. "stuck :-("))))
   ([game max-iter]
    (with-reason "searching - max-iter =" max-iter

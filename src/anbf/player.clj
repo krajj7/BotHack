@@ -334,10 +334,9 @@
            (have-intrinsic? player :poison)
            (not (:poisonous corpse-type)))
        (not ((:race player) (:tags monster)))
-       (or (= "tengu" (:name monster))
-           (not (or (taboo-corpses (:name monster))
-                    ((some-fn :were :teleport :domestic) (:tags monster))
-                    (re-seq #"bat$" (:name monster)))))))
+       (not (or (taboo-corpses (:name monster))
+                ((some-fn :were :teleport :domestic) (:tags monster))
+                (re-seq #"bat$" (:name monster))))))
 
 (defn can-eat?
   "Only true for safe food or unknown tins"

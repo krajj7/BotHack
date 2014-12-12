@@ -46,14 +46,6 @@
       (with-reason "reading the book"
         (->Read slot)))))
 
-(defn unbag
-  "Return action to take out 1 or qty of the item out of a bag, returns nil if item is already present in main inventory or not found in any bags"
-  ([game maybe-bag-slot item] (unbag game maybe-bag-slot item 1))
-  ([game maybe-bag-slot item qty]
-   (if (not= item (inventory-slot game maybe-bag-slot))
-     (with-reason "preparing item -" (:name item)
-       (take-out maybe-bag-slot (:label item) qty)))))
-
 (defn bless
   "Take holy water out of a bag (if bagged) and dip item at slot into it"
   [game slot]
