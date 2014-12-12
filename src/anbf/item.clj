@@ -63,7 +63,8 @@
         (update res :candles #(if (= % "no") 0 (parse-int %)))
         res)
       (reduce #(update %1 %2 str->kw) res [:buc :proof])
-      (if (and (:enchantment raw) (not (:buc res)))
+      (if (or (and (:enchantment raw) (not (:buc res)))
+              (and (:charges raw) (not (:buc res))))
         (assoc res :buc :uncursed)
         res)
       (reduce #(update %1 %2 parse-int) res
