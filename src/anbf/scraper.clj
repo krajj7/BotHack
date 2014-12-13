@@ -132,6 +132,7 @@
   (condp #(.startsWith %2 %1) msg
     "Where do you want to travel to?" travel-where
     "To what location" teleport-where
+    "Pay whom" pay-whom
     "(For instructions type a ?)" teleport-where ; assuming there was a topline msg "To what position do you want to be teleported?--More--"
     (throw (UnsupportedOperationException.
              (str "unknown location message" msg)))))
@@ -476,6 +477,7 @@
                    (handle-direction frame)
                    (undrawn? frame "In what direction")
                    (handle-location frame)
+                   (undrawn? frame "Pay whom")
                    (undrawn? frame "Where do you want")
                    (log/debug "no-mark - not direction/location prompt")
                    (initial frame)))
@@ -550,7 +552,7 @@
       ActionChosenHandler
       (action-chosen [_ action]
         (dosync
-          (if (= :autotravel (typekw action))
+          (if (#{:autotravel :pay} (typekw action))
             (no-mark "")
             (ref-set scraper nil)) ; escape sink
           (log/debug "reset scraper for" (type action))))

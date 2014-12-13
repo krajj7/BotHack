@@ -96,8 +96,9 @@
       (reify ToplineMessageHandler
         (message [_ msg]
           (when (re-seq no-monster-re msg)
-            (swap! game update-at target
-                   #(if (blank? %) (assoc % :feature :rock) %))
+            (swap! game update-at target #(if (blank? %)
+                                            (assoc % :feature :rock)
+                                            (assoc % :pushed true)))
             (swap! game remove-monster target)))))))
 
 (defn mark-trap-here [anbf]
@@ -1499,11 +1500,11 @@
       (offer-how-much [_ _] amt))
     (->Chat dir)))
 
-(defaction Pay [dir]
+(defaction Pay [shk]
   (trigger [_] "p")
   (handler [_ {:keys [game] :as anbf}]
-    (reify DirectionHandler
-      (what-direction [_ _] dir))))
+    (reify PayWhomHandler
+      (pay-whom [_] shk))))
 
 ; factory functions for Java bots ; TODO the rest
 (gen-class

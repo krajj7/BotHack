@@ -225,6 +225,9 @@
 (deflocationhandler AutotravelHandler
   (travel-where [handler]))
 
+(deflocationhandler PayWhomHandler
+  (pay-whom [handler]))
+
 (defchoicehandler ChooseCharacterHandler
   (choose-character [handler]))
 

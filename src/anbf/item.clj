@@ -240,3 +240,7 @@
 
 (defn enchantment [item]
   (or (:enchantment item) 0))
+
+(defn charged? [item]
+  (and (not= "empty" (:specific item))
+       (not ((fnil zero? 1) (:charges item)))))

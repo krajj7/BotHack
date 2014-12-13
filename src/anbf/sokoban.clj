@@ -284,6 +284,7 @@
 
 (defn- soko-move [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
+                          (some (some-fn hole? pit?) (tile-seq (curlvl game)))
                           (some (partial find solutions) (curlvl-tags game)))]
     (let [level (curlvl game)
           boulders (count (filter (partial real-boulder? level)
@@ -348,7 +349,8 @@
             (:step (navigate game #(and ((some soko-items (curlvl-tags game))
                                          (position %))
                                         (not (:walked %))))))
-          (visit game :sokoban :end)))))
+          (seek-level game :sokoban :end)
+          (search-level game 1)))))
 
 (defn soko-handler [{:keys [game] :as anbf}]
   (reify

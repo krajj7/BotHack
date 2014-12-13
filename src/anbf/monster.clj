@@ -127,3 +127,6 @@
         (:attacks (:type monster))))
 
 (defn slow? [m] (some-> m :type :speed (< 7)))
+
+(defn leprechaun? [m]
+  (= "leprechaun" (typename m)))

@@ -71,7 +71,9 @@
               (pray game))))
       (if-let [[slot _] (and (unihorn-recoverable? game)
                              ; rest can wait
-                             (some (:state player) #{:conf :stun :ill :blind})
+                             (or (some (:state player) #{:conf :stun :ill})
+                                 (and (not (have-intrinsic? player :telepathy))
+                                      (blind? player)))
                              (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
       (if (:ill (:state player))
@@ -219,7 +221,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -373,8 +375,7 @@
          (not= "bag of tricks" id)
          (not (and (have-intrinsic? (:player game) :speed)
                    (= "wand of speed monster" id)))
-         (or (not= "empty" (:specific item))
-             (= "wand of wishing" id))
+         (or (charged? item) (= "wand of wishing" id))
          (or (and (not= :cursed (:buc item))
                   (> 2 (or (:erosion item) 0)))
              (take-cursed? game item))
@@ -726,6 +727,11 @@
                             (have game "wand of cold"))]
     (->ZapWandAt slot (towards (:player game) monster))))
 
+(defn hit-leprechaun [game monster]
+  (if-let [qty (and (leprechaun? monster)
+                    (some-> (have game "gold piece") secondv :qty))]
+    (->DropSingle \$ qty)))
+
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
     (or (bait-wizard game level monster)
@@ -737,6 +743,7 @@
             (make-use game slot)))
         (if (adjacent? player monster)
           (or (hit-eel game monster)
+              (hit-leprechaun game monster)
               (hit-surtur game monster)
               (hit-floating-eye game monster)
               (kite game monster)
@@ -780,8 +787,9 @@
 
 (defn- engrave-slot [game perma?]
   (or (if perma?
-        (firstv (have game #{"wand of fire"
-                             "wand of lightning"})))
+        (firstv (or (have game #{"wand of fire"
+                                 "wand of lightning"})
+                    (have game "wand of digging"))))
       \-))
 
 (defn engrave-e
@@ -808,7 +816,7 @@
        (more-than? 2)))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
-  (or (>= (/ hp maxhp) 9/10)))
+  (>= (/ hp maxhp) 9/10))
 
 (defn- recover
   ([game]
@@ -1143,7 +1151,7 @@
         (make-excal game)))))
 
 (defn rob? [m]
-  (#{"dwarf" "dwarf lord" "hobbit"} (typename m)))
+  (#{"dwarf" "dwarf lord" "dwarf king" "hobbit"} (typename m)))
 
 (defn rob-peacefuls [{:keys [player] :as game}]
   (let [level (curlvl game)]
@@ -1151,7 +1159,8 @@
                  (not (shop? (at level player))))
           (if-let [{:keys [step target]}
                    (navigate game #(if-let [monster (monster-at level %)]
-                                     (or (blocked? %) (rob? monster)))
+                                     (and (not (unicorn? monster))
+                                          (or (blocked? %) (rob? monster))))
                              #{:adjacent})]
             (with-reason "robbing a poor peaceful dorf"
               (or step (->Attack (towards player target)))))))))
@@ -1211,7 +1220,7 @@
           (log/debug "found stolen items, now missing" @robbed-of)))
       ToplineMessageHandler
       (message [_ msg]
-        (when-let [label (re-first-group #" (?:stole|snatches) ([^.!]*)\[.!]"
+        (when-let [label (re-first-group #" (?:stole|snatches) ([^.!]*)[.!]"
                                          msg)]
           (log/debug "robbed of" label)
           (if-let [[_ item] (inventory-label @game label)]
@@ -1435,7 +1444,7 @@
     nil))
 
 (defn- recharge [game slot]
-  (if (= "empty" (:specific (inventory-slot game slot)))
+  (if-not (charged? (inventory-slot game slot))
     (if-let [[s item] (or (have game "scroll of charging" #{:blessed :bagged})
                           (have game "scroll of charging" #{:wished :bagged}))]
       (with-reason "recharge"
@@ -1448,7 +1457,7 @@
 (defn use-items [{:keys [player] :as game}]
   (if-not (shop? (at-player game))
     (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
-          (if-let [[scroll _] (and (> (enchantment i) 7)
+          (if-let [[scroll _] (and (< (enchantment i) 7)
                                    (have game "scroll of enchant weapon"
                                          #{:bagged :noncursed}))]
             (or (with-reason "enchant excal"
@@ -1487,7 +1496,7 @@
           (with-reason "wish"
             (or (unbag game slot wow)
                 (recharge game slot)
-                (if (not= "empty" (:specific wow))
+                (if (charged? wow)
                   (->ZapWand slot)))))
         (if-let [[slot item] (have game "scroll of identify"
                                    #{:bagged :noncursed})]

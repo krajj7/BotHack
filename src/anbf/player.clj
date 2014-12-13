@@ -63,7 +63,8 @@
   (isWeak [this] (boolean (weak? this))))
 
 (defn new-player []
-  (map->Player {:protection 0}))
+  (map->Player {:protection 0
+                :inventory {}}))
 
 (defn update-player [player status]
   (cond-> (->> (keys player) (select-keys status) (into player))

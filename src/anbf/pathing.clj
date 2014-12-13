@@ -29,6 +29,7 @@
     (not (stairs? tile)) (+ 0.1)
     (not (engravable? tile)) (+ 0.5)
     (cloud? tile) (+ 10)
+    (:blocked tile) (+ (* 10 (:blocked tile)))
     (not (or (:dug tile) (:walked tile))) (+ 0.2)
     (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
 
@@ -157,7 +158,7 @@
                              (find-first
                                (comp shopkeeper? (partial monster-at level))
                                (neighbors level player)))]
-             (->Pay (towards player shk)))
+             (->Pay shk))
            (arbitrary-move game level)
            (->Search))))))
 
@@ -211,7 +212,9 @@
 
 (defn- kick-door [{:keys [player] :as game} level tile dir]
   (if (door-open? tile)
-    [8 (with-reason "closing door to kick it" (->Close dir))]
+    [8 (with-reason "closing door to kick it"
+         (if-not (monster-at level tile)
+           (->Close dir)))]
     [(if (:leg-hurt player) 30 6) (kick game dir)]))
 
 (defn can-unlock? [game]
@@ -785,7 +788,8 @@
      (let [level (curlvl game)]
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
-             (if (and (= 1 mul) (not= :sokoban (branch-key game)))
+             (if (and (= 1 mul) (or (not= :sokoban (branch-key game))
+                                    (:end (:tags level))))
                (push-boulders game level))
              (if (= :water (branch-key game)) (seek-portal game))
              (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))
