@@ -459,3 +459,6 @@
 (defn have-mr? [game]
   (have game #{"gray dragon scale mail" "cloak of magic resistance"
                "Magicbane" "gray dragon scales"} #{:in-use}))
+
+(defn overloaded? [player]
+  (= :overloaded (:burden player)))

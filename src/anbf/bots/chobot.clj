@@ -51,7 +51,7 @@
     (enhance-all)))
 
 (defn- handle-starvation [{:keys [player] :as game}]
-  (or (if (weak? player)
+  (or (if (and (weak? player) (not (overloaded? player)))
         (if-let [[slot food] (have game (every-pred (partial can-eat? player)
                                                     (complement tin?))
                                    #{:bagged})]
@@ -1038,7 +1038,7 @@
            (have-intrinsic? game :poison))))
 
 (defn- feed [{:keys [player] :as game}]
-  (if-not (satiated? player)
+  (if-not (or (satiated? player) (overloaded? player))
     (let [beneficial? #(every-pred
                          (partial fresh-corpse? game %)
                          (partial want-to-eat? player))
