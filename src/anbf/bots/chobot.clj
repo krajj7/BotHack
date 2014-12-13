@@ -1254,16 +1254,15 @@
     "blessed greased fixed +3 shield of reflection"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
-    (not (:see-invis (:intrinsics (:player game))))
-    "blessed potion of see invisible"
-    (not (have game "gauntlets of power"))
-    "blessed fixed +3 gauntlets of power"
+    (and (not (have game "helm of telepathy"))
+         (not (:see-invis (:intrinsics (:player game)))))
+    "blessed fixed +3 helm of telepathy"
     (not (have game "speed boots"))
     "blessed fixed +3 speed boots"
     (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
     "2 uncursed scrolls of genocide"
-    (not (have game "helm of telepathy"))
-    "blessed fixed +3 helm of telepathy"
+    (not (have game "gauntlets of power"))
+    "blessed fixed +3 gauntlets of power"
     :else "2 blessed scrolls of genocide"))
 
 (defn- want-buc? [game item]
