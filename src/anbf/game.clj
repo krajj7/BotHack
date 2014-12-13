@@ -480,6 +480,12 @@
               (swap! game add-intrinsic :invisibility)
               #"You feel paranoid"
               (swap! game remove-intrinsic :invisibility)
+              #"This tastes like slime mold juice"
+              (if-let [item (some->> (:last-action @game) :slot
+                                     (inventory-slot @game))]
+                (if (and (blessed? item)
+                         (= "potion of see invisible" (item-name @game item)))
+                  (swap! game add-intrinsic :see-invis)))
               #"You see an image of someone stalking you|You feel transparent|You feel very self-conscious|Your vision becomes clear"
               (swap! game add-intrinsic :see-invis)
               #"You feel perceptive!"

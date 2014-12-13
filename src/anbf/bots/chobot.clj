@@ -219,7 +219,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -1239,6 +1239,8 @@
     "blessed greased fixed +3 shield of reflection"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
+    (not (:see-invis (:intrinsics (:player game))))
+    "blessed potion of see invisible"
     (not (have game "gauntlets of power"))
     "blessed fixed +3 gauntlets of power"
     (not (have game "speed boots"))
@@ -1458,6 +1460,12 @@
                   (remove-use game (first slots)))
                 (or (unbag game scroll si)
                     (->Read scroll))))))
+        (if-let [[slot item] (have game #{"potion of gain level"
+                                          "potion of see invisible"}
+                                   #{:bagged})]
+          (with-reason "helpful potion"
+            (or (unbag game slot item)
+                (->Quaff slot))))
         (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
           (with-reason "rubbing lamp"
             (or (unbag game slot item)
@@ -1484,10 +1492,6 @@
                   (with-reason "identify" (first want)
                     (or (unbag game slot item)
                         (->Read slot)))))))
-        (if-let [[slot item] (have game "potion of gain level" #{:bagged})]
-          (with-reason "!oGL"
-            (or (unbag game slot item)
-                (->Quaff slot))))
         (if-let [[slot item] (have game #{"potion of extra healing"
                                           "potion of full healing"} #{:bagged})]
           (if (= (:hp player) (:maxhp player))

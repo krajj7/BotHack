@@ -653,7 +653,9 @@
                     (reify ActionHandler
                       (choose-action [this game]
                         (deregister-handler anbf this)
-                        (->Name slot name)))))
+                        (if (inventory-slot game slot)
+                          (->Name slot name)
+                          (log/warn "naming nonexistent slot"))))))
 
 (defn- identify-slot [game slot id]
   {:pre [(:discoveries game) (char? slot) (string? id)]}
@@ -1414,15 +1416,15 @@
                            (:name (label->item @wish)))]
           (swap! game identify-slot @slot id)
           (swap! game update-slot @slot assoc :buc (:buc (label->item @wish)))
-          (name-item anbf @slot "wish")
           (reset! slot nil)
           (reset! wish nil)))
       ToplineMessageHandler
       (message [_ msg]
         (if (and @wish (nil? @slot))
-          (if-let [s (and (some? @wish) (nil? @slot)
-                          (first (re-first-group #"^([a-zA-Z]) - " msg)))]
-            (reset! slot s)))))))
+          (when-let [s (and (some? @wish) (nil? @slot)
+                            (first (re-first-group #"^([a-zA-Z]) - " msg)))]
+            (reset! slot s)
+            (name-item anbf s "wish")))))))
 
 (defn mark-recharge-handler [{:keys [game] :as anbf}]
   (reify CommandResponseHandler
