@@ -585,6 +585,7 @@
 (defn room-type [msg]
   ; TODO temples, maybe treasure zoos etc.
   (or (if (.endsWith msg ", welcome to Delphi!\"") :oracle)
+      (if (re-seq #"Invisible customers are not welcome" msg) :shop)
       (shop-types (re-first-group room-re msg))))
 
 (defn mark-room [game kind]

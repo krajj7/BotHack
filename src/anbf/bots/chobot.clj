@@ -217,7 +217,7 @@
   (ordered-set "shield of reflection" "small shield"))
 
 (def desired-cloak
-  (ordered-set "cloak of magic resistance" "cloak of protection" "oilskin cloak"  "cloak of displacement" "elven cloak" "dwarvish cloak"))
+  (ordered-set "cloak of magic resistance" "cloak of protection" "oilskin cloak" "cloak of displacement" "cloak of invisibility" "elven cloak" "dwarvish cloak"))
 
 (def desired-helmet
   (ordered-set "helm of telepathy" "helm of brilliance" "dwarvish iron helm" "orcish helm"))
@@ -520,6 +520,9 @@
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
                :when (and armor (not (:in-use armor))
+                          (or (not= "cloak of invisibility"
+                                    (item-name game armor))
+                              (not (shop? (at-player game))))
                           (not= :takeoff (typekw (:last-action game))))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
