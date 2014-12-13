@@ -721,6 +721,11 @@
       (with-reason "away from water"
         (:step (navigate game floor? {:no-fight true :max-steps 6}))))))
 
+(defn hit-surtur [game monster]
+  (if-let [[slot item] (and (= "Lord Surtur" (:name monster))
+                            (have game "wand of cold"))]
+    (->ZapWandAt slot (towards (:player game) monster))))
+
 (defn- hit [{:keys [player] :as game} level monster]
   (with-reason "hitting" monster
     (or (bait-wizard game level monster)
@@ -732,6 +737,7 @@
             (make-use game slot)))
         (if (adjacent? player monster)
           (or (hit-eel game monster)
+              (hit-surtur game monster)
               (hit-floating-eye game monster)
               (kite game monster)
               (hit-corrosive game monster)
