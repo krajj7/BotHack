@@ -112,23 +112,32 @@
 
 (defn castle-plan-b [{:keys [player] :as game}]
   (let [level (curlvl game)]
-    (if (and (:castle (:tags level))
-             (not (get-level game :main :votd))
-             (or (not (have-levi game))
-                 (not (reflection? game))))
-      (with-reason "castle plan B"
-        (if-let [[slot scroll] (have game "scroll of earth" #{:noncursed})]
-          (with-reason "using scroll of earth"
-            (if-let [{:keys [step]} (navigate game (position 12 12))]
-              (or step (->Read slot))))
-          (with-reason "using wand of cold"
-            (if-let [[slot _] (have game "wand of cold")]
-              (if-let [pool (find-first pool? (for [y [11 12 13]]
-                                                (at level 13 y)))]
-                (if-let [{:keys [step]}
-                         (navigate game #(and (= 2 (distance pool %))
-                                              (in-line pool %)))]
-                  (or step (->ZapWandAt slot (towards player pool))))))))))))
+    (if (:castle (:tags level))
+      (if (and (not (get-level game :main :votd))
+               (or (not (have-levi game))
+                   (not-any? (:genocided game) #{";" "electric eel"})
+                   (not (reflection? game))) )
+        (or (with-reason "castle plan B"
+              (if-let [[slot scroll] (have game "scroll of earth"
+                                           #{:noncursed})]
+                (with-reason "using scroll of earth"
+                  (if-let [{:keys [step]} (navigate game (position 12 12))]
+                    (or step (->Read slot))))
+                (with-reason "using wand of cold"
+                  (if-let [[slot _] (have game "wand of cold")]
+                    (if-let [pool (and (not-any? walkable? (for [y [11 12 13]]
+                                                             (at level 13 y)))
+                                       (find-first pool? (for [y [11 12 13]]
+                                                           (at level 13 y))))]
+                      (if-let [{:keys [step]}
+                               (navigate game #(and (= 2 (distance pool %))
+                                                    (in-line pool %)))]
+                        (or step (->ZapWandAt slot (towards player pool)))))))))
+            (if-let [wow (find-first (complement :seen) (for [y [7 17]
+                                                              x [12 66]]
+                                                          (at level x y)))]
+              (with-reason "getting WoW"
+                (:step (navigate game wow #{:no-traps})))))))))
 
 (defn full-explore [game]
   (with-reason "full-explore"
@@ -146,7 +155,7 @@
           (explore game :main "Dlvl:20")
           (if (and (have-levi game) (<= 14 (:xplvl (:player game))))
             (explore game :quest))
-          ;(explore game :main :medusa)
+          (explore game :main :medusa)
           (castle-plan-b game)
           (explore game :main :castle :exclusive)
           (explore game :vlad)
@@ -1274,8 +1283,10 @@
       ; TODO altars not on current level
       (if (have game (partial want-buc? game) #{:can-remove :bagged})
         (with-reason "going to altar" (:step (navigate game altar?))))
-      (if-let [{:keys [step]} (navigate game (every-pred throne?
-                                                         (comp empty? :items)))]
+      (if-let [{:keys [step]}
+               (and (or (not (:castle (curlvl-tags game)))
+                        (< (:ac player) -3))
+                    (navigate game (every-pred throne? (comp empty? :items))))]
         ; TODO remove items from tile
         (or (with-reason "going to throne" step)
             ; TODO drop gold
