@@ -80,8 +80,8 @@
                 (->Eat slot))
               (if-let [[slot item] (or (have game "potion of healing"
                                           {:buc :blessed :bagged true})
-                                    (have game #{"potion of extra healing"
-                                                 "potion of full healing"}
+                                       (have game #{"potion of extra healing"
+                                                    "potion of full healing"}
                                           #{:noncursed :bagged}))]
                 (or (unbag game slot item)
                     (->Quaff slot))))))))
@@ -124,7 +124,7 @@
           (with-reason "using wand of cold"
             (if-let [[slot _] (have game "wand of cold")]
               (if-let [pool (find-first pool? (for [y [11 12 13]]
-                                                (at level 12 y)))]
+                                                (at level 13 y)))]
                 (if-let [{:keys [step]}
                          (navigate game #(and (= 2 (distance pool %))
                                               (in-line pool %)))]

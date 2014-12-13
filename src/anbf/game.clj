@@ -350,7 +350,7 @@
         (or (if (and (re-seq things-re (first lines)) (moved? @game))
               (swap! game update-at-player assoc :new-items true))
             (if-let [level (level-msg (first lines))]
-              (swap! game update-at-player add-curlvl-tag level))))
+              (swap! game add-curlvl-tag level))))
       ToplineMessageHandler
       (message [_ text]
         (swap! game assoc :last-topline text)
