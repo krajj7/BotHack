@@ -218,10 +218,13 @@
         (knowable-appearance? (appearance-of item))
         ((some-fn tool? ring? scroll? wand? potion? armor?) item))))
 
+(defn wished? [item]
+  (= "wish" (:specific item)))
+
 (defn safe? [game item]
   (or (weapon? item)
       (tool? item)
-      (and (safe-buc? item)
+      (and (or (safe-buc? item) (:in-use item) (wished? item))
            (:safe (item-id game item)))))
 
 (defn shops-taking [item]

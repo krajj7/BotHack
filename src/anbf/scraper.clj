@@ -152,7 +152,7 @@
 
 (defn- prompt-fn [msg]
   (condp re-seq msg
-    #"^What do you want to name this" what-name
+    #"^What do you want to name " what-name
     #"^Call .*:" call-what-name
     #"^How much will you offer\?" offer-how-much
     #"^To what level do you want to teleport\?" leveltele

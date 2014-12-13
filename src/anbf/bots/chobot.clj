@@ -1220,6 +1220,7 @@
   (cond
     (and (#{:engrave :zapwand} (typekw (:last-action game)))
          (not (have game "scroll of charging" #{:blessed :bagged}))
+         (not (have game "scroll of charging" #{:wished :bagged}))
          (not= "recharged"
                (:specific (inventory-slot game (:slot (:last-action game))))))
     "2 blessed scrolls of charging"
@@ -1427,9 +1428,10 @@
 
 (defn- recharge [game slot]
   (if (= "empty" (:specific (inventory-slot game slot)))
-    (if-let [[s scroll] (have game "scroll of charging" #{:blessed :bagged})]
+    (if-let [[s item] (or (have game "scroll of charging" #{:blessed :bagged})
+                          (have game "scroll of charging" #{:wished :bagged}))]
       (with-reason "recharge"
-        (or (unbag game s scroll)
+        (or (unbag game s item)
             (with-handler
               (reify ChargeWhatHandler
                 (charge-what [_ _] slot))

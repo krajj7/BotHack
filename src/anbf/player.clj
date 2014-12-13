@@ -184,6 +184,7 @@
                        (if (:nonblessed opts) (complement blessed?))
                        (if (:blessed opts) blessed?)
                        (if (:cursed opts) cursed?)
+                       (if (:wished opts) wished?)
                        (if (:know-buc opts) (comp some? :buc))
                        (if (false? (:know-buc opts)) (comp nil? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))
@@ -232,6 +233,9 @@
    Options map (or set if all map vals would be true) can contain:
      :noncursed - return only items not known to be cursed
      :nonblessed - return only items not known to be blessed
+     :blessed - only blessed
+     :cursed - only cursed
+     :wished - only wished-for items
      :buc <:cursed/:uncursed/:blessed> - return only items known to have given buc
      :know-buc - if true items with any (known) buc, if false items with unknown buc
      :safe-buc - same as :know-buc + :noncursed

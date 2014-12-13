@@ -1413,6 +1413,8 @@
                            (= :inventory (typekw (:last-action* @game)))
                            (:name (label->item @wish)))]
           (swap! game identify-slot @slot id)
+          (swap! game update-slot @slot assoc :buc (:buc (label->item @wish)))
+          (name-item anbf @slot "wish")
           (reset! slot nil)
           (reset! wish nil)))
       ToplineMessageHandler
