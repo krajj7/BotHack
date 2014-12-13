@@ -1255,11 +1255,15 @@
         ; TODO remove items from tile
         (if-let [{:keys [step target]} (navigate game
                                                  #(and (sink? %)
+                                                       (not (blocked? %))
                                                        (not (:ring (:tags %)))
                                                        (empty? (:items %)))
                                                  #{:adjacent})]
           (with-reason "kick sink"
-            (or step (kick game target)))))
+            (or step
+                (if (monster-at game target)
+                  (fidget game (curlvl game) target))
+                (kick game target)))))
       (if (altar? (at-player game))
         (if-let [[slot item] (have game {:can-remove true
                                          :bagged true :know-buc false})]
