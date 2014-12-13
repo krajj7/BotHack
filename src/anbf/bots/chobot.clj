@@ -63,12 +63,18 @@
         (with-reason "praying for food" ->Pray))))
 
 (defn- handle-illness [{:keys [player] :as game}]
-  (or (if-let [[slot item] (and (:stoning player)
-                                (have game "lizard corpse" #{:bagged}))]
+  (or (if (:stoning player)
         (with-reason "fix stoning"
-          (or (unbag game slot item)
-              (->Eat slot)
-              (pray game))))
+          (if-let [[slot item] (have game "lizard corpse" #{:bagged})]
+            (or (unbag game slot item)
+                (->Eat slot))
+            (pray game))))
+      (if (:lycantrophy player)
+        (with-reason "fix lycantrophy"
+          (if-let [[slot item] (have game "sprig of wolfsbane" #{:bagged})]
+            (or (unbag game slot item)
+                (->Eat slot))
+            (pray game))))
       (if-let [[slot _] (and (unihorn-recoverable? game)
                              ; rest can wait
                              (or (some (:state player) #{:conf :stun :ill})
@@ -239,6 +245,7 @@
    #{"Bell of Opening"}
    #{"Book of the Dead"}
    #{"lizard corpse"}
+   #{"sprig of wolfsbane"}
    ;#{"bag of holding"}
    desired-cloak
    desired-suit
@@ -339,10 +346,7 @@
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
-  (or (if (:lycantrophy player)
-        (if-not (in-gehennom? game)
-          (with-reason "curing lycantrophy" ->Pray)))
-      (if (and (has-hands? player)
+  (or (if (and (has-hands? player)
                (:ext-blind (:state player)))
         (with-reason "fixing external blindness" ->Wipe))
       (if-let [[slot _] (and (unihorn-recoverable? game)
