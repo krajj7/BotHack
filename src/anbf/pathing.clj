@@ -418,6 +418,7 @@
                 levi (assoc :levi levi)
                 pick (assoc :pick pick))
          move-fn #(move game level %1 %2 opts)]
+     ; code below decides whether to run dijkstra (multiple goals) or A* (single goal) or nothing (no goal tile on the level)
      (if-not ((some-fn set? fn? keyword?) pos-or-goal-fn)
        (get-a*-path game level player pos-or-goal-fn move-fn opts max-steps)
        (let [goal-fn (if (set? pos-or-goal-fn)

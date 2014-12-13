@@ -30,13 +30,16 @@
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"
   [level]
+  {:pre [(or (nil? level) (:monsters level))]}
   (apply concat (:tiles level)))
 
 (defn column [level x]
+  {:pre [(:monsters level)]}
   (for [y (range 1 22)]
     (at level x y)))
 
 (defn shop-inside? [level tile]
+  {:pre [(:monsters level)]}
   (not-any? door? (including-origin neighbors level tile)))
 
 (def oracle-position {:x 39 :y 12})
