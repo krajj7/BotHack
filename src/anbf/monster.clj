@@ -125,3 +125,5 @@
   (some #(and (= :passive (:type %))
               (#{:corrode :acid} (:damage-type %)))
         (:attacks (:type monster))))
+
+(defn slow? [m] (some-> m :type :speed (< 7)))

@@ -993,11 +993,11 @@
                           (with-reason "staying in more favourable position"
                             (if (pos? (rand-int 6))
                               ->Search)))
-                        (if (and (some #(and (= 2 (distance player %))
-                                             (mobile? game %))
-                                       threats)
-                                 (pos? (rand-int 10))) ; mobile? is not that reliable
-                          (with-reason "baiting monsters" ->Search))
+                        (if-let [m (find-first #(and (= 2 (distance player %))
+                                                     (mobile? game %))
+                                               threats)]
+                          (if (pos? (rand-int (if (slow? m) 50 10)))
+                            (with-reason "baiting monsters" ->Search)))
                         step))))))
         (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
