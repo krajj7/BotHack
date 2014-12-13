@@ -78,16 +78,20 @@
 (defn topline [frame]
   (-> frame (nth-line 0) string/trim))
 
-(defn topline-cursor? [frame]
+(defn extra-topline-cursor? [frame]
   (let [y (-> frame :cursor :y)]
     (or (= 1 y) (and (or (= 2 y)
                          (.startsWith (topline frame) "You read:"))
                      (before-cursor? frame "--More--")))))
 
+(defn topline-cursor? [frame]
+  (or (zero? (-> frame :cursor :y))
+      (extra-topline-cursor? frame)))
+
 (defn topline+
   "Returns the top line with possible overflow on the second line appended."
   [frame]
-  (if (topline-cursor? frame)
+  (if (extra-topline-cursor? frame)
     (apply str (topline frame) (if-not (wrapped-cursor? frame) " ")
            (map (comp string/trim (partial nth-line frame))
                 (range 1 (inc (-> frame :cursor :y)))))

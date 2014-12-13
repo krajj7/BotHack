@@ -329,8 +329,9 @@
                  (log/debug "Handling choice prompt")
                  (ref-set menu-nextpage nil)
                  (emit-botl delegator frame)
-                 ; TODO prompt may re-appear in lastmsg+action as topline msg
+                 ; XXX prompt may re-appear in lastmsg+action as topline msg
                  (apply send delegator (choice-call text))
+                 (ref-set prev (topline+ frame))
                  initial))
              (handle-more [frame]
                (or (when-let [item-list (more-list frame)]
@@ -446,7 +447,11 @@
              (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
                (log/debug "sink discarding redraw"))
              (initial [frame]
-               (or (handle-game-start frame)
+                 (or (log/debug "initial scraper, prev =" @prev)
+                   (and (= @prev (topline+ frame))
+                        (topline-cursor? frame))
+                   (ref-set prev nil)
+                   (handle-game-start frame)
                    (handle-game-end frame)
                    (handle-more frame)
                    (handle-menu frame)
@@ -465,7 +470,8 @@
                (log/debug "no-mark maybe direction/location prompt, prev ="
                           @prev)
                (or (and (= @prev (topline frame))
-                        (zero? (-> frame :cursor :y))) (ref-set prev nil)
+                        (zero? (-> frame :cursor :y)))
+                   (ref-set prev nil)
                    (log/debug "no-mark - new topline:" (topline frame))
                    (handle-direction frame)
                    (undrawn? frame "In what direction")
@@ -498,7 +504,8 @@
                  (send delegator write (str (ctrl \p)))
                  lastmsg+action))
              (lastmsg+action [frame]
-               (or (when (and (more-prompt? frame) (topline-cursor? frame))
+               (or (when (and (more-prompt? frame)
+                              (extra-topline-cursor? frame))
                      (send delegator write "\n##\n\n")
                      lastmsg-clear)
                    (if (= "# #" (topline frame))
