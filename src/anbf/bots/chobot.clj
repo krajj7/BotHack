@@ -748,7 +748,7 @@
 
 (defn- low-hp? [{:keys [hp maxhp] :as player}]
   (or (< hp 10)
-      (<= (/ hp maxhp) 1/3)))
+      (<= (/ hp maxhp) 9/20)))
 
 (defn can-ignore? [{:keys [player] :as game} monster]
   (or (passive? monster)
@@ -802,7 +802,7 @@
        (more-than? 2)))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
-  (or (> (/ hp maxhp) 8/10)))
+  (or (>= (/ hp maxhp) 9/10)))
 
 (defn- recover
   ([game]
