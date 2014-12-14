@@ -71,6 +71,8 @@
 
 (defn oracle? [m] (= "Oracle" (typename m)))
 
+(defn medusa? [m] (= "Medusa" (typename m)))
+
 (defn unique? [m] (get-in m [:type :gen-flags :unique]))
 
 (defn priest? [m] (some-> (typename m) (.contains "priest")))
