@@ -152,6 +152,9 @@
                                             (not (:branch-id %))))]
                 (or step ->Ascend))))))))
 
+(defn- have-dsm [game]
+  (have game #{"silver dragon scale mail" "gray dragon scale mail"}))
+
 (defn full-explore [game]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
@@ -307,6 +310,7 @@
      (artifact? item) (+ 50)
      (:erosion item) (- (:erosion item))
      (:enchantment item) (+ (:enchantment item))
+     (and (wand? item) (not (:charges item))) (+ 3)
      (:charges item) (+ (:charges item))
      (:proof item) (+ 3)
      (blessed? item) (+ 2)
@@ -1242,9 +1246,6 @@
             (swap! robbed-of conj
                    [(:turn @game) (:dlvl @game) (:branch-id @game) item])
             (log/warn "stolen item" label "not in inventory?")))))))
-
-(defn- have-dsm [game]
-  (have game #{"silver dragon scale mail" "gray dragon scale mail"}))
 
 (defn wish [game]
   (cond
