@@ -314,7 +314,7 @@
                  (-> dungeon :levels branch-id))
       (update-in [:dungeon :levels :main (branch-entry game branch-id) :tags]
                  #(-> % (disj branch-id) (conj branch)))
-      (dissoc-in [:dungeon :levels branch-id])))
+      (update-in [:dungeon :levels] dissoc branch-id)))
 
 (defn infer-branch [game]
   {:pre [(:dungeon game)]}

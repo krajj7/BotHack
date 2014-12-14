@@ -1506,11 +1506,63 @@
     (reify PayWhomHandler
       (pay-whom [_] shk))))
 
-; factory functions for Java bots ; TODO the rest
+(def ^:private -withReason with-reason)
+(def ^:private -ApplyAt ->ApplyAt)
+(def ^:private -Drop ->DropSingle)
+
+; factory functions for Java bots
 (gen-class
   :name anbf.bot.Actions
-  :methods [^:static [Move [anbf.bot.Direction] anbf.bot.IAction]
+  :methods [^:static [Attack [anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Move [anbf.bot.Direction] anbf.bot.IAction]
             ^:static [Pray [] anbf.bot.IAction]
+            ^:static [Search [] anbf.bot.IAction]
+            ^:static [Wait [] anbf.bot.IAction]
+            ^:static [Ascend [] anbf.bot.IAction]
+            ^:static [Descend [] anbf.bot.IAction]
+            ^:static [Kick [anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Close [anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Look [] anbf.bot.IAction]
+            ^:static [FarLook [anbf.bot.IPosition] anbf.bot.IAction]
+            ^:static [Open [anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Inventory [] anbf.bot.IAction]
+            ^:static [Discoveries [] anbf.bot.IAction]
+            ^:static [Name [char String] anbf.bot.IAction]
+            ^:static [Call [char String] anbf.bot.IAction]
+            ^:static [Apply [char] anbf.bot.IAction]
+            ^:static [ApplyAt [char anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [ForceLock [] anbf.bot.IAction]
+            ^:static [Unlock [char anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Wield [char] anbf.bot.IAction]
+            ^:static [Wear [char] anbf.bot.IAction]
+            ^:static [PutOn [char] anbf.bot.IAction]
+            ^:static [Remove [char] anbf.bot.IAction]
+            ^:static [TakeOff [char] anbf.bot.IAction]
+            ^:static [Drop [char] anbf.bot.IAction]
+            ^:static [Drop [char int] anbf.bot.IAction]
+            ^:static [Quiver [char] anbf.bot.IAction]
+            ^:static [PickUp [java.util.Set] anbf.bot.IAction]
+            ^:static [PickUp [String] anbf.bot.IAction]
+            ^:static [Autotravel [anbf.bot.IPosition] anbf.bot.IAction]
+            ^:static [Enhance [] anbf.bot.IAction]
+            ^:static [Read [char] anbf.bot.IAction]
+            ^:static [Sit [] anbf.bot.IAction]
+            ^:static [Eat [char] anbf.bot.IAction]
+            ^:static [Eat [String] anbf.bot.IAction]
+            ^:static [Quaff [char] anbf.bot.IAction]
+            ^:static [Offer [char] anbf.bot.IAction]
+            ^:static [Loot [] anbf.bot.IAction]
+            ^:static [Dip [char char] anbf.bot.IAction]
+            ^:static [Throw [char anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Engrave [char String boolean] anbf.bot.IAction]
+            ^:static [Wipe [] anbf.bot.IAction]
+            ^:static [ZapWand [char] anbf.bot.IAction]
+            ^:static [Rub [char] anbf.bot.IAction]
+            ^:static [Chat [anbf.bot.Direction] anbf.bot.IAction]
+            ^:static [Contribute [anbf.bot.Direction int] anbf.bot.IAction]
+            ^:static [Pay [anbf.bot.IPosition] anbf.bot.IAction]
+            ^:static [Repeated [anbf.bot.IAction int] anbf.bot.IAction]
+            ^:static [withReason [String anbf.bot.IAction] anbf.bot.IAction]
             ^:static [withHandler [anbf.bot.IAction Object] anbf.bot.IAction]
             ^:static [withHandler [anbf.bot.IAction int Object]
                       anbf.bot.IAction]])

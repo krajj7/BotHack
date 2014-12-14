@@ -56,7 +56,7 @@
   "Loads a Java bot class and runs its constructor that accepts anbf.bot.IANBF as the only parameter."
   [anbf bot-class]
   (.newInstance (.getConstructor (resolve bot-class)
-                                 ((into-array [anbf.bot.IANBF])))
+                                 (into-array [anbf.bot.IANBF]))
                 (into-array [anbf])))
 
 (defn- start-bot [{:keys [config] :as anbf}]

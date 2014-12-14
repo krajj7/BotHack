@@ -73,7 +73,7 @@
                                                              string/lower-case
                                                              name->monster))
     (= "Exp" (:xp-label status)) (assoc :polymorphed nil)
-    (zero? (:gold status)) (dissoc-in [:inventory \$])
+    (zero? (:gold status)) (update :inventory dissoc \$)
     (pos? (:gold status)) (assoc-in [:inventory \$]
                                     (assoc (label->item "uncursed gold piece")
                                            :qty (:gold status)))))

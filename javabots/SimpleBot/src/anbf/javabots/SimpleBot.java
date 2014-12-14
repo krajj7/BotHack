@@ -13,6 +13,7 @@ public class SimpleBot {
 		@Override
 		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
+			//return Actions.Contribute(smallCircle[next++]);
 			return Actions.Move(smallCircle[next++]);
 		}
 	}
