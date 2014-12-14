@@ -885,7 +885,7 @@
               (recover game))
             (if-let [{:keys [step target]} (navigate game stairs-up?
                                                      #{:no-fight :explored
-                                                       :no-autonav})]
+                                                       :no-autonav :walking})]
               (if (stairs-up? (at level player))
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
