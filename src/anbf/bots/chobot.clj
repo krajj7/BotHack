@@ -1422,6 +1422,9 @@
       (and (not know?)
            (not (#{100 200} price))
            (scroll? item)) (+ 10)
+      (and (not know?) (not (have game #{"silver dragon scale mail"
+                                         "shield of reflection"}))
+           (could-be? game "amulet of reflection" item)) (+ 10)
       (and (not know?)
            (could-be? game "scroll of remove curse" item)) (+ 10)
       (and (not know?)
