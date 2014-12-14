@@ -2,7 +2,8 @@
   (:require [clojure.string :as string]))
 
 (def vi-directions
-  {:NW \y :N \k :NE \u
+  {:> \> :. \.
+   :NW \y :N \k :NE \u
    :W  \h        :E \l
    :SW \b :S \j :SE \n})
 

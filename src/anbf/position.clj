@@ -1,5 +1,6 @@
 (ns anbf.position
-  (:require [clojure.tools.logging :as log]))
+  (:require [clojure.tools.logging :as log]
+            [anbf.util :refer :all]))
 
 (defn position
   ([x y] {:x x :y y})
@@ -74,7 +75,8 @@
    (some->> (in-direction from dir) (at level)))
   ([from dir]
    {:pre [(valid-position? from)]}
-   (let [res (position (unchecked-add ((dirmap dir) 0) (:x from))
+   (let [dir (enum->kw dir)
+         res (position (unchecked-add ((dirmap dir) 0) (:x from))
                        (unchecked-add ((dirmap dir) 1) (:y from)))]
      (if (valid-position? res)
        res))))

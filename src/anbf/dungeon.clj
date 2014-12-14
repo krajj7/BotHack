@@ -169,7 +169,7 @@
 (defn update-from-player
   "Update the Tile one move from player's position in given direction by applying update-fn to its current value and args"
   [game dir update-fn & args]
-  {:pre [(:dungeon game) (dirmap dir)]}
+  {:pre [(:dungeon game)]}
   (apply update-at game (in-direction (:player game) dir) update-fn args))
 
 (defn update-item-at-player [game idx update-fn & args]

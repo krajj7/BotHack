@@ -160,7 +160,8 @@
 (defaction Move [dir]
   (trigger [_] (direction-trigger dir))
   (handler [_ {:keys [game] :as anbf}]
-    (let [got-message (atom false)
+    (let [dir (enum->kw dir)
+          got-message (atom false)
           old-game @game
           old-player (:player old-game)
           old-pos (position old-player)
@@ -751,29 +752,30 @@
       (force-lock [_ _] true))))
 
 (defn ->Unlock [slot dir]
-  (->> (->ApplyAt slot dir)
-       (with-handler priority-top
-         (fn [{:keys [game] :as anbf}]
-           (if (= \. dir)
-             (doseq [[idx item] (indexed (:items (at-player @game)))
-                     :when (:locked item)]
-               (swap! game update-item-at-player idx assoc :locked false)))
-           (reify
-             ToplineMessageHandler
-             (message [_ msg]
-               (if (not= \. dir)
-                 (handle-door-message game dir msg)))
-             LockHandler
-             (lock-it [_ _]
-               (if (dirmap dir)
-                 (swap! game update-from-player dir
-                        assoc :feature :door-closed))
-               false)
-             (unlock-it [_ _]
-               (if (dirmap dir)
-                 (swap! game update-from-player dir
-                        assoc :feature :door-locked))
-               true))))))
+  (let [dir (enum->kw dir)]
+    (->> (->ApplyAt slot dir)
+         (with-handler priority-top
+           (fn [{:keys [game] :as anbf}]
+             (if (= \. dir)
+               (doseq [[idx item] (indexed (:items (at-player @game)))
+                       :when (:locked item)]
+                 (swap! game update-item-at-player idx assoc :locked false)))
+             (reify
+               ToplineMessageHandler
+               (message [_ msg]
+                 (if (not= \. dir)
+                   (handle-door-message game dir msg)))
+               LockHandler
+               (lock-it [_ _]
+                 (if (dirmap dir)
+                   (swap! game update-from-player dir
+                          assoc :feature :door-closed))
+                 false)
+               (unlock-it [_ _]
+                 (if (dirmap dir)
+                   (swap! game update-from-player dir
+                          assoc :feature :door-locked))
+                 true)))))))
 
 (defn- possible-autoid
   "Check if the item at slot auto-identified on use.  If no-mark? is true the result is not used for item-id purposes"
@@ -1128,7 +1130,7 @@
 
 (defn kick [{:keys [player] :as game} target-or-dir]
   (let [dir (if (keyword? target-or-dir)
-              target-or-dir
+              (enum->kw target-or-dir)
               (towards player target-or-dir))]
     (if-not (:thump (in-direction (curlvl game) player dir))
       (with-reason "kick"

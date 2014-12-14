@@ -99,7 +99,7 @@
 
 (defn- yesno [s] (if s "y" "n"))
 
-(defn- direction [s] (get vi-directions s s))
+(defn- direction [s] (get vi-directions (enum->kw s) s))
 
 (defn- respond-menu [options]
   (if (coll? options)
