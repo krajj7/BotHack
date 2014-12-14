@@ -1066,7 +1066,8 @@
           (with-reason "exploring" (at level (:target path))
             (:step path)))
         ; TODO search for shops if heard but not found
-        (if (unexplored-column game level)
+        (if (and (unexplored-column game level)
+                 (not (and (:medusa (:tags level)) (not (have-levi game)))))
           (with-reason "level not explored enough, searching"
             (search-level game (search-limit game level))))
         (if-let [bldrs (and (not= :sokoban branch)
