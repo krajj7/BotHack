@@ -81,7 +81,7 @@
         (doseq [h @action-handlers]
           (deregister-handler anbf h))
         (reset! action-handlers #{})
-        (when-let [h (handler (log/spy action) anbf)]
+        (when-let [h (handler action anbf)]
           (register-handler anbf priority-top h)
           (swap! action-handlers conj h))
         (doseq [[p handler] (:handlers action)]

@@ -446,7 +446,7 @@
         (without-levitation game
           (with-reason "unlock chest"
             (or (if-let [[slot _] (have-key game)]
-                  (->Unlock slot \.))
+                  (->Unlock slot :.))
                 (if-let [[slot _] (or (have game dagger? #{:safe})
                                       (have game dagger? #{:noncursed}))]
                   (or (make-use game slot)
