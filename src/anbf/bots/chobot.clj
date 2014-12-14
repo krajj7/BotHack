@@ -145,7 +145,12 @@
                                                               x [12 66]]
                                                           (at level x y)))]
               (with-reason "getting WoW"
-                (:step (navigate game wow #{:no-traps})))))))))
+                (:step (navigate game wow #{:no-traps}))))
+            (with-reason "visit Medusa"
+              (if-let [{:keys [step]}
+                       (navigate game #(and (stairs-up? %)
+                                            (not (:branch-id %))))]
+                (or step ->Ascend))))))))
 
 (defn full-explore [game]
   (with-reason "full-explore"
