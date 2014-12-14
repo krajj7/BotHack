@@ -1181,9 +1181,9 @@
   (with-reason "wandering"
     (or (explore game)
         (search-level game 1)
-        (navigate game (->> (curlvl game) tile-seq
-                            (filter :walked)
-                            (min-by :walked))))))
+        (:step (navigate game (->> (curlvl game) tile-seq
+                                   (filter :walked)
+                                   (min-by :walked)))))))
 
 (defn- hunt-action [{:keys [player] :as game} robbed-of]
   (if-let [[_ dlvl branch _] (first robbed-of)]
