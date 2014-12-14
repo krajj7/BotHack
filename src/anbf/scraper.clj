@@ -203,6 +203,7 @@
     #"^There (?:is|are) ([^;]+) here; sacrifice (?:it|one)\?"
     :>> (partial apply list sacrifice-it)
     #"^What do you want to eat\?" eat-what
+    #"^Do you wish to teleport" do-teleport
     #"^What do you want to sacrifice\?" sacrifice-what
     #"^Attach the .*to the candelabrum\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb

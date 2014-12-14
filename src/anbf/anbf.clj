@@ -152,6 +152,8 @@
     (enhance-without-practice [_ _] false)
     DumpCoreHandler
     (dump-core [_ _] "q")
+    DoTeleportHandler
+    (do-teleport [_ _] true)
     CreateWhatMonsterHandler
     (create-what-monster [_ _] esc)
     IdentifyWhatHandler

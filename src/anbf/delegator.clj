@@ -426,6 +426,9 @@
 (defyesnohandler WizmodeEnhanceHandler
   (enhance-without-practice [handler ^String prompt]))
 
+(defyesnohandler DoTeleportHandler
+  (do-teleport [handler ^String prompt]))
+
 (defmenuhandler EnhanceWhatHandler
   (enhance-what [handler ^clojure.lang.IPersistentMap options]))
 
