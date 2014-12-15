@@ -550,12 +550,15 @@
                                         "luckstone" "bag of holding"}
                                  #{:nonblessed :know-buc})]
         (bless game slot))
-      (if-let [[_ item] (have game (every-pred cursed? :in-use))]
-        (if-let [[slot scroll] (have game "scroll of remove curse"
-                                     #{:noncursed :bagged})]
-          (with-reason "uncursing" (:label item)
-            (or (unbag game slot scroll)
-                (->Read slot)))))))
+      (if-let [[slot scroll] (have game "scroll of remove curse"
+                                   #{:noncursed :bagged})]
+        (or (if-let [[s item] (have game cursed? #{:can-use})]
+              (with-reason "put on to uncurse" (:label item)
+                (make-use game s)))
+            (if-let [[_ item] (have game (every-pred cursed? :in-use))]
+              (with-reason "uncursing" (:label item)
+                (or (unbag game slot scroll)
+                    (->Read slot))))))))
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
