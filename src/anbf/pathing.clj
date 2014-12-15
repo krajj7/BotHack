@@ -1051,8 +1051,13 @@
     (or (seek-level game branch tag-or-dlvl)
         (explore game))))
 
+(defn- center-explored? [level]
+  (some :feature (for [y (range 5 15)]
+                   (at level 40 y))))
+
 (defn- search-limit [game level]
-  (cond (= :mines (branch-key game)) 10
+  (cond (and (:minetown (:tags level)) (center-explored? level)) 1
+        (= :mines (branch-key game)) 10
         (more-than? 1 (unexplored-columns game level)) 2
         :else 1))
 
