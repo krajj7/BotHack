@@ -775,7 +775,7 @@
               (->Read slot)))
         (if-let [[slot item] (have game "wand of teleportation" #{:bagged})]
           (or (unbag game slot item)
-              (->ZapWandAt slot \.)))
+              (->ZapWandAt slot :.)))
         (go-down game (curlvl game)))))
 
 (defn search-level

@@ -651,7 +651,7 @@
         (if-let [[slot i] (and (not (have-intrinsic? game :speed))
                                (have game "wand of speed monster" #{:bagged}))]
           (with-reason "zapping self with /oSpeed"
-            (or (unbag game slot i) (->ZapWandAt slot \.))))
+            (or (unbag game slot i) (->ZapWandAt slot :.))))
         (if (and (not= :wield (some-> game :last-action typekw))
                  step (not (:dug step))
                  (every? walkable? tile-path))
@@ -1619,7 +1619,12 @@
                           ReallyAttackHandler
                           (really-attack [_ _] false)))
       (register-handler (reify VaultGuardHandler
-                          (who-are-you [_ _] "Croesus")))
+                          (who-are-you [_ _]
+                            (if (have @(:game anbf) #{"pick-axe"
+                                                      "scroll of teleportation"
+                                                      "wand of teleportation"}
+                                      #{:can-use})
+                              "Croesus"))))
       (register-handler (respond-geno))
       (register-handler (reify MakeWishHandler
                           (make-wish [_ _]
