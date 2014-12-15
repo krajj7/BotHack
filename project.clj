@@ -4,6 +4,7 @@
   :license {:name "GPLv2"}
   :repositories {"local" "file:repo"}
   :java-source-paths ["jta26/de/mud" "java"]
+  :javac-options ["-target" "1.7" "-source" "1.7"]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]
