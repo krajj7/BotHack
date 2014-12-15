@@ -820,7 +820,8 @@
    (with-reason "engrave E"
      (let [tile (at-player game)
            append? (or (e? tile) (less-than? 200 (:engraving tile)))]
-       (if (and (engravable? tile)
+       (if (and (has-hands? player)
+                (engravable? tile)
                 (not (perma-e? tile)))
          (or (remove-levi game)
              (if-not (not (can-engrave? game))

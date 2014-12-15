@@ -728,7 +728,9 @@
                                                (partial safely-walkable? level))
                                              (more-than? 2)))))]
         (or (with-reason "finding somewhere to dig down" step)
-            (with-reason "digging down" (dig pick :>))))
+            (with-reason "digging down"
+              (without-levitation game
+                (dig pick :>)))))
       (if-let [[slot item] (and (diggable-floor? game (curlvl game))
                                 (#{:floor :corridor}
                                           (:feature (at-player game)))
