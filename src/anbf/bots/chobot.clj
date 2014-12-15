@@ -1365,7 +1365,8 @@
                                            (not (tried? game %))
                                            (wand? %)) #{:nonempty})]
           (with-reason "engrave-id wand" w
-            (or (:step (navigate game engravable?))
+            (or (:step (navigate game (every-pred engravable?
+                                                  (complement perma-e?))))
                 (if-not (:engraving (at-player game))
                   (engrave-e game))
                 (->Engrave slot "Elbereth" true)))))
