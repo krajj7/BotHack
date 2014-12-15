@@ -897,8 +897,7 @@
                 (if (and (seq threats) (not= 1 (dlvl game)))
                   (with-reason "retreating upstairs" ->Ascend)
                   (with-reason "prepared to retreat upstairs" ->Search))
-                (if (or (not (:dir step))
-                        (stairs-up? (:target step))
+                (if (or (= (position target) (position (first (:path step))))
                         (not-any? threats (neighbors
                                             (in-direction player (:dir step)))))
                   step)))

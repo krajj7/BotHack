@@ -728,13 +728,13 @@
                                                (partial safely-walkable? level))
                                              (more-than? 2)))))]
         (or (with-reason "finding somewhere to dig down" step)
-            (with-reason "digging down" (dig pick \>))))
+            (with-reason "digging down" (dig pick :>))))
       (if-let [[slot item] (and (diggable-floor? game (curlvl game))
                                 (#{:floor :corridor}
                                           (:feature (at-player game)))
                                 (have game "wand of digging" #{:bagged}))]
         (or (unbag game slot item)
-            (->ZapWandAt slot \>))))))
+            (->ZapWandAt slot :>))))))
 
 (defn seek-portal [game]
   (let [level (curlvl game)]
