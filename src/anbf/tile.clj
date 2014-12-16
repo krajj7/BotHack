@@ -233,7 +233,7 @@
 (defn- update-feature-with-item [tile]
   ; if items appeared in rock/wall/doors we should check it out
   (if (and (empty? (:items tile)) (#{:rock :wall :door-closed :door-locked
-                                     :door-secret} (:feature tile)))
+                                     :door-secret :pool} (:feature tile)))
     (assoc tile :feature nil)
     tile))
 

@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.chobot"
+ :bot "anbf.bots.mainbot"
  :interface :ssh
  :menubot "anbf.bots.dgl-menu"
  :host "acehack.de"

@@ -1,4 +1,4 @@
-(ns anbf.bots.chobot
+(ns anbf.bots.mainbot
   (:require [clojure.tools.logging :as log]
             [flatland.ordered.set :refer [ordered-set]]
             [anbf.anbf :refer :all]
@@ -158,21 +158,21 @@
 (defn full-explore [game]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
-      (or (explore game :mines :minetown)
-          (explore game :main :sokoban)
-          (if (and (have game "Excalibur") (have-throwable game))
-            (do-soko game))
-          (explore game :main :quest)
-          (let [minetown (get-level game :mines :minetown)]
-            (if (or (some->> game have-key secondv key?)
-                    (not (:minetown-grotto (:tags minetown)))
-                    (:seen (at minetown 48 5)))
-              (explore game :mines)))
-          (explore game :main "Dlvl:20")
-          (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
-                   (have-dsm game))
-            (explore game :quest))
-          (explore game :main :medusa)
+      (or ;(explore game :mines :minetown)
+          ;(explore game :main :sokoban)
+          ;(if (and (have game "Excalibur") (have-throwable game))
+          ;  (do-soko game))
+          ;(explore game :main :quest)
+          ;(let [minetown (get-level game :mines :minetown)]
+          ;  (if (or (some->> game have-key secondv key?)
+          ;          (not (:minetown-grotto (:tags minetown)))
+          ;          (:seen (at minetown 48 5)))
+          ;    (explore game :mines)))
+          ;(explore game :main "Dlvl:20")
+          ;(if (and (have-levi game) (<= 14 (:xplvl (:player game)))
+          ;         (have-dsm game))
+          ;  (explore game :quest))
+          ;(explore game :main :medusa)
           (if (and (not (have-dsm game)) (not (explored? game :main :castle)))
             (seek-level game :main :castle))
           (castle-plan-b game)
@@ -984,7 +984,8 @@
                             (keep (partial monster-at level))
                             (filter hostile?)
                             (remove (partial can-ignore? game)))]
-          (or (if (and (not (e? (at-player game)))
+          (or ; TODO if standing on ice without levi move away, also drawbridge
+              (if (and (not (e? (at-player game)))
                        (or (more-than? 1 (remove (some-fn :fleeing
                                                           ignores-e?) adjacent))
                            (some (every-pred (partial keep-away? game)
