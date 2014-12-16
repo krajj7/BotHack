@@ -971,6 +971,8 @@
                     (boulder? (at level 12 12)))
                (and (not (:walked (at level 35 15)))
                     (not (:walked (at level 35 14)))
+                    (not (:walked (at level 40 8)))
+                    (not (:walked (at level 40 16)))
                     (= (position (at-player game)) (position 35 12))))
            (pos? (rand-int 20)))
     (with-reason "stay in fort" ->Search)))
@@ -1292,10 +1294,10 @@
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
     (not (have game "speed boots"))
-    "blessed fixed greased +3 speed boots"
+    "blessed greased fixed +3 speed boots"
     (and (not (have game "helm of telepathy"))
          (not (:see-invis (:intrinsics (:player game)))))
-    "blessed fixed greased +3 helm of telepathy"
+    "blessed greased fixed +3 helm of telepathy"
     (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
     "2 uncursed scrolls of genocide"
     (not (have game "gauntlets of power"))
