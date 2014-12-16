@@ -490,11 +490,7 @@
                                 (have game "scroll of remove curse"
                                       #{:noncursed :bagged}))]
       (with-reason "uncursing weapon" (:label weapon)
-        (or (if (not (cursed? (secondv (wielding game))))
-              (if-let [[slot item] (have game cursed? {:in-use false})]
-                (with-reason "wield for extra uncurse"
-                  (->Wield slot))))
-            (unbag game slot scroll)
+        (or (unbag game slot scroll)
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
@@ -547,12 +543,17 @@
         (bless game slot))
       (if-let [[slot scroll] (have game "scroll of remove curse"
                                    #{:noncursed :bagged})]
-        (or (if-let [[s item] (have game cursed? #{:can-use})]
+        (or (if-let [[s item] (have game (some-fn armor? ring? amulet?)
+                                    {:can-use true :cursed true :in-use false})]
               (with-reason "put on to uncurse" (:label item)
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
-                (or (unbag game slot scroll)
+                (or (if-not (cursed? (secondv (wielding game)))
+                      (if-let [[slot item] (have game cursed? {:in-use false})]
+                        (with-reason "wield for extra uncurse"
+                          (->Wield slot))))
+                    (unbag game slot scroll)
                     (->Read slot))))))))
 
 (defn lit-mines? [game level]

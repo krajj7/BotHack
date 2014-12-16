@@ -341,7 +341,7 @@
         (swap! game update-map frame))
       CommandResponseHandler
       (response-chosen [_ method res]
-        (when (or (= genocide-class method)
+        (when (or (= genocide-class method) ;FIXME doesn't consider cursed geno!
                   (= genocide-monster method))
           (swap! game update :genocided conj res))
         (when (and (= make-wish method) (not= "nothing" res))

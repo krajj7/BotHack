@@ -137,7 +137,7 @@
   (reduce #(update %1 %2 conj %2) {:suit [:cloak]
                                    :shirt [:cloak :suit]} slots))
 
-(declare have)
+(declare have have-all)
 
 (defn inventory-slot
   "Return item for the inventory slot (letter or slot keyword)"
@@ -153,17 +153,28 @@
   [game]
   (have game :wielded))
 
-(defn blockers ; TODO extend to weapons, consider cursed two-hander...
-  "Return list of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
-  [game item]
+(defn free-finger?
+  "Does the player have a free ring-finger?"
+  [player]
+  {:pre [(:inventory player)]}
+  (less-than? 2 (filter (every-pred ring? :in-use)
+                        (vals (:inventory player)))))
+
+(defn blockers
+  "Return a seq of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
+  [{:keys [player] :as game} item]
   (or (if-let [subtype (item-subtype item)]
         (for [btype (blocker-slots subtype)
               :let [blocker (have game (every-pred :worn (comp (partial = btype)
                                                                item-subtype)))]
               :when blocker]
           blocker))
-      (if (weapon? item)
+      (if (weapon? item) ; TODO consider cursed two-hander...
         [(wielding game)])
+      (if (ring? item)
+        (concat (have-all game #(= :gloves (item-subtype %)) #{:in-use :cursed})
+                (if-not (free-finger? player)
+                  (have-all game ring? #{:in-use}))))
       (if (amulet? item)
         [(have game amulet? #{:in-use})])))
 
@@ -392,14 +403,6 @@
     (/ (nutrition-sum game)
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
                food))))
-
-(defn free-finger?
-  "Does the player have a free ring-finger?"
-  [player]
-  {:pre [(:inventory player)]}
-  ; TODO cursed gloves
-  (less-than? 2 (filter (every-pred ring? :in-use)
-                        (vals (:inventory player)))))
 
 (defn can-engrave?
   "Checks if the player is capable of engraving (also for non-engravable planes)"
