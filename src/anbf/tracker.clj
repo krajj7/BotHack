@@ -140,6 +140,7 @@
                                 (or (<= 30 (- turn death-turn))
                                     (not montype)
                                     (and (undead? monster)
+                                         (not= "wraith" (:name montype))
                                          (.contains (:name montype)
                                                     (:name corpse-type)))))
                               relevant-deaths)
