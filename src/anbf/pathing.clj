@@ -340,6 +340,7 @@
   (and (not (shop? from))
        ((not-any-fn? shop? trap? unknown?) to)
        (edge-passable-walking? game level from to)
+       (not (and (:castle (:tags level)) (door? from)))
        (or (safely-walkable? level to)
            (and ((some-fn pool? ice?) to)
                 (-> opts :levi secondv :in-use)))))

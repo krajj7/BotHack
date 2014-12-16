@@ -141,11 +141,6 @@
                                (navigate game #(and (= 2 (distance pool %))
                                                     (in-line pool %)))]
                         (or step (->ZapWandAt slot (towards player pool)))))))))
-            (if-let [wow (find-first (complement :seen) (for [y [7 17]
-                                                              x [12 66]]
-                                                          (at level x y)))]
-              (with-reason "getting WoW"
-                (:step (navigate game wow #{:no-traps}))))
             (with-reason "visit Medusa"
               (if-let [{:keys [step]}
                        (navigate game #(and (stairs-up? %)
@@ -968,6 +963,25 @@
 (defn hits-hard? [m]
   (= "winged gargoyle" (typename m)))
 
+(defn castle-fort [game level]
+  (if (and (:castle (:tags level))
+           (or (and (not (:walked (at level 14 12)))
+                    (= (position (at-player game)) (position 11 12))
+                    (boulder? (at level 10 12)) (boulder? (at level 11 13))
+                    (boulder? (at level 12 12)))
+               (and (not (:walked (at level 35 15)))
+                    (not (:walked (at level 35 14)))
+                    (= (position (at-player game)) (position 35 12))))
+           (pos? (rand-int 20)))
+    (with-reason "stay in fort" ->Search)))
+
+(defn castle-move [game level]
+  (if (:castle (:tags level))
+    (with-reason "make castle fort"
+      (if (and (= (position (at-player game)) (position 12 12))
+               (boulder? (at level 11 12)) (boulder? (at level 11 13)))
+        (without-levitation game (->Move :W))))))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -976,6 +990,7 @@
                   :walking true
                   :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
+        (castle-move game level)
         ; TODO special handling of uniques
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
@@ -1030,6 +1045,7 @@
                   (with-reason "targetting enemy" monster
                     (or (use-rings game threats)
                         (hit game level monster)
+                        (castle-fort game level)
                         (if (and (more-than? 2 (filter (partial mobile? game)
                                                        threats))
                                  (not (exposed? game level player))
@@ -1063,7 +1079,8 @@
                                   (monster-at game))]
               (if (< (+ (:first-known monster) 10) (:turn game))
                 (with-reason "ranged attack soko blocker"
-                  (ranged game monster)))))))))
+                  (ranged game monster))))))
+        (castle-fort game level))))
 
 (defn- bribe-demon [prompt]
   (->> prompt ; TODO parse amount and pass as arg in the scraper, not in bot logic
@@ -1274,11 +1291,11 @@
     "blessed greased fixed +3 shield of reflection"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
+    (not (have game "speed boots"))
+    "blessed fixed greased +3 speed boots"
     (and (not (have game "helm of telepathy"))
          (not (:see-invis (:intrinsics (:player game)))))
-    "blessed fixed +3 helm of telepathy"
-    (not (have game "speed boots"))
-    "blessed fixed +3 speed boots"
+    "blessed fixed greased +3 helm of telepathy"
     (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
     "2 uncursed scrolls of genocide"
     (not (have game "gauntlets of power"))
@@ -1291,8 +1308,18 @@
        (or (know-id? game item)
            (:safe (item-id game item)))))
 
+(defn wow-spot [game]
+  (for [y [6 18]
+        x [12 66]]
+    (at-curlvl game x y)))
+
 (defn use-features [{:keys [player] :as game}]
-  (or (if-let [[slot ring] (have game #(and (ring? %)
+  (or (if-let [wow (and (:castle (curlvl-tags game))
+                        (not-any? perma-e? (wow-spot game))
+                        (find-first (complement :walked) (wow-spot game)))]
+        (with-reason "getting WoW"
+          (:step (navigate game wow #{:no-traps}))))
+      (if-let [[slot ring] (have game #(and (ring? %)
                                             (not (know-id? game %))))]
         (with-reason "drop ring in sink"
           (if-let [{:keys [step]} (navigate game sink?)]
@@ -1555,7 +1582,7 @@
       (genocide-monster [_ _] (next! geno-types)))))
 
 (defn random-unihorn [game]
-  (if-let [[slot _] (and (zero? (rand-int 200)) (have-unihorn game))]
+  (if-let [[slot _] (and (zero? (rand-int 150)) (have-unihorn game))]
     (with-reason "randomly use unihorn" (->Apply slot))))
 
 (defn get-protection [{:keys [player] :as game}]
@@ -1694,26 +1721,26 @@
       (register-handler 8 (hunt anbf))
       (register-handler 9 (reify ActionHandler
                             (choose-action [_ game]
-                              (use-features game))))
-      (register-handler 9 (reify ActionHandler
-                            (choose-action [_ game]
                               (random-unihorn game))))
       (register-handler 10 (reify ActionHandler
                             (choose-action [_ game]
                               (itemid game))))
       (register-handler 11 (reify ActionHandler
                             (choose-action [_ game]
-                              (shop game))))
+                              (use-features game))))
       (register-handler 12 (reify ActionHandler
+                            (choose-action [_ game]
+                              (shop game))))
+      (register-handler 13 (reify ActionHandler
                              (choose-action [_ game]
                                (bag-items game))))
-      (register-handler 14 (reify ActionHandler
+      (register-handler 15 (reify ActionHandler
                             (choose-action [_ game]
                               (get-protection game))))
-      (register-handler 15 (excal-handler anbf))
-      (register-handler 16 (reify ActionHandler
+      (register-handler 16 (excal-handler anbf))
+      (register-handler 17 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 18 (reify ActionHandler
+      (register-handler 19 (reify ActionHandler
                              (choose-action [_ game]
                                (progress game))))))

@@ -185,7 +185,8 @@
                     (and (not (#{\I \1 \2 \3 \4 \5 \E \X \P} glyph))
                          (door? tile)) :door-open
                     (and (not (#{\I \1 \2 \3 \4 \5 \E \X} glyph))
-                         (#{:rock :wall :tree} feature)) nil ; could be just-found door or corridor
+                         (#{:rock :wall :tree :drawbridge-raised}
+                          feature)) nil ; could be just-found door or corridor
                     :else feature)
          :dug (or (:dug tile)
                   (and (diggable? tile) (#{\U \p \h \r} glyph)))))
@@ -233,7 +234,8 @@
 (defn- update-feature-with-item [tile]
   ; if items appeared in rock/wall/doors we should check it out
   (if (and (empty? (:items tile)) (#{:rock :wall :door-closed :door-locked
-                                     :door-secret :pool} (:feature tile)))
+                                     :drawbridge-raised :door-secret :pool}
+                                           (:feature tile)))
     (assoc tile :feature nil)
     tile))
 

@@ -232,6 +232,23 @@
 (def soko-4a-holes [{:y 5 :x 34} {:y 5 :x 35} {:y 5 :x 36} {:y 5 :x 37} {:y 5 :x 38} {:y 5 :x 39} {:y 5 :x 40} {:y 5 :x 41} {:y 5 :x 42} {:y 5 :x 43} {:y 5 :x 44} {:y 5 :x 45} {:y 5 :x 46} {:y 5 :x 47} {:y 5 :x 48} {:y 5 :x 49}])
 ; 4b not necessary, holes initially out of LOS
 
+(def castle-features
+  (into {{:x 55 :y 11} :door-secret
+         {:x 54 :y 9} :door-secret
+         {:x 56 :y 9} :door-secret
+         {:x 55 :y 13} :door-secret
+         {:x 56 :y 15} :door-secret
+         {:x 54 :y 15} :door-secret
+         {:x 46 :y 12} :door-secret
+         {:x 48 :y 12} :trapdoor
+         {:x 52 :y 12} :trapdoor
+         {:x 56 :y 12} :trapdoor
+         {:x 60 :y 12} :trapdoor
+         {:x 63 :y 12} :trapdoor}
+        (for [x (range 22 35)
+              y [8 16]]
+          [(position x y) :wall])))
+
 (def blueprints
   [{:branch :sokoban
     :tag :soko-2a
@@ -289,18 +306,7 @@
     :undiggable-floor true
     :cutoff-rows [1 2]
     :cutoff-cols [0 78 79]
-    :features {{:x 55 :y 11} :door-secret
-               {:x 54 :y 9} :door-secret
-               {:x 56 :y 9} :door-secret
-               {:x 55 :y 13} :door-secret
-               {:x 56 :y 15} :door-secret
-               {:x 54 :y 15} :door-secret
-               {:x 46 :y 12} :door-secret
-               {:x 48 :y 12} :trapdoor
-               {:x 52 :y 12} :trapdoor
-               {:x 56 :y 12} :trapdoor
-               {:x 60 :y 12} :trapdoor
-               {:x 63 :y 12} :trapdoor}}
+    :features castle-features}
    {:branch :main
     :tag :votd
     :undiggable true
