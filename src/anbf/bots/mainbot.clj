@@ -334,7 +334,7 @@
               desired-items)
          res always-desired]
     (if-let [c (first cs)]
-      (if-let [[slot i] (max-by (comp utility secondv)
+      (if-let [[slot i] (max-by (comp (partial utility game) secondv)
                                 (have-all game c #{:bagged}))]
         (recur (rest cs)
                (into (conj res (:name i))
