@@ -195,7 +195,7 @@
   "Returns a lazy seq of all matching [slot item] pairs in inventory, options same as 'have'"
   ([game name-or-set-or-fn]
    (have-all game name-or-set-or-fn {}))
-  ([game name-or-set-or-fn opts]
+  ([{:keys [player] :as game} name-or-set-or-fn opts]
    {:pre [((some-fn ifn? string?) name-or-set-or-fn)
           ((some-fn map? set?) opts)]}
    (let [opts (if (set? opts) (zipmap opts (repeat true)) opts)
@@ -203,9 +203,9 @@
      (concat (for [[slot item] (inventory game)
                    :when (and (selector item)
                               (not (and (:can-use opts)
-                                        (if (weapon? item)
-                                          (not (has-hands? (:player game)))
-                                          (cursed-blockers game slot))
+                                        (and (or (armor? item) (weapon? item))
+                                             (not (has-hands? player)))
+                                        (cursed-blockers game slot)
                                         (not (:in-use item))))
                               (not (and (:can-remove opts)
                                         (:in-use item)

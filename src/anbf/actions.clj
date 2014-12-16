@@ -1100,7 +1100,8 @@
 
 (defn make-use [game slot]
   (let [item (inventory-slot game slot)]
-    (if-not (or (:in-use item) (cursed-blockers game slot))
+    (if-not (or (:in-use item) (cursed-blockers game slot)
+                (not (has-hands? (:player game))))
       (or (remove-blockers game slot)
           ((use-action item) slot)))))
 
