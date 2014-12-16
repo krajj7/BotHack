@@ -596,7 +596,7 @@
 
 (defn- search-corridors [game level howmuch]
   (if-let [p (navigate game (fn searchable? [tile]
-                              (and (corridor? tile)
+                              (and ((some-fn corridor? door?) tile)
                                    (searchable-position? tile)
                                    (< (searched level tile) howmuch))))]
     (with-reason "searching corridors"
