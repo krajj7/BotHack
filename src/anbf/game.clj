@@ -73,9 +73,10 @@
        (adjacent? (:player game) tile)
        (or (and (:feature tile) (not (rock? tile)))
            (:item-glyph tile)
-           (->> (neighbors level tile)
-                (filter (some-fn unknown? rock? corridor?))
-                (less-than? 2)))))
+           (and (->> (neighbors level tile)
+                     (filter (some-fn unknown? rock? corridor? door?))
+                     (less-than? 2))
+                (->> (neighbors level tile) (filter door?) (less-than? 2))))))
 
 (defn- update-visible-tile [game level tile]
   (assoc tile
