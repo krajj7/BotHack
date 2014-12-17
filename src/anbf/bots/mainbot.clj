@@ -226,7 +226,7 @@
   (ordered-set "shield of reflection" "small shield"))
 
 (def desired-cloak
-  (ordered-set "cloak of magic resistance" "cloak of protection" "oilskin cloak" "cloak of displacement" "cloak of invisibility" "elven cloak" "dwarvish cloak"))
+  (ordered-set "cloak of magic resistance" "cloak of protection" "oilskin cloak" "elven cloak" "cloak of displacement" "cloak of invisibility" "dwarvish cloak"))
 
 (def desired-helmet
   (ordered-set "helm of telepathy" "helm of brilliance" "dwarvish iron helm" "orcish helm"))
