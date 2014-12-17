@@ -159,9 +159,10 @@
             (do-soko game))
           (explore game :main :quest)
           (let [minetown (get-level game :mines :minetown)]
-            (if (or (some->> game have-key secondv key?)
-                    (not (:minetown-grotto (:tags minetown)))
-                    (:seen (at minetown 48 5)))
+            (if (and (or (some->> game have-key secondv key?)
+                         (not (:minetown-grotto (:tags minetown)))
+                         (:seen (at minetown 48 5)))
+                     (or (< -8 (:ac game)) (not (have-pick game))))
               (explore game :mines)))
           (explore game :main "Dlvl:20")
           (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
