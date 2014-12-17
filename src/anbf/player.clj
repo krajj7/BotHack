@@ -404,12 +404,25 @@
        (reduce (fn [res [_ item]] (+ (:weight (item-id game item)) res)) 0
                food))))
 
+(defn overloaded? [player]
+  (= :overloaded (:burden player)))
+
+(defn overtaxed? [player]
+  (#{:overtaxed :overloaded} (:burden player)))
+
+(defn strained? [player]
+  (#{:strained :overtaxed :overloaded} (:burden player)))
+
+(defn stressed? [player]
+  (#{:stressed :strained :overtaxed :overloaded} (:burden player)))
+
 (defn can-engrave?
   "Checks if the player is capable of engraving (also for non-engravable planes)"
   [{:keys [player] :as game}]
   {:pre [(:inventory player)]}
   (not (or (not (has-hands? player))
            (impaired? player)
+           (overtaxed? player)
            (#{:air :water} (branch-key game))
            (have-levi-on game))))
 
@@ -467,6 +480,3 @@
 (defn have-mr? [game]
   (have game #{"gray dragon scale mail" "cloak of magic resistance"
                "Magicbane" "gray dragon scales"} #{:in-use}))
-
-(defn overloaded? [player]
-  (= :overloaded (:burden player)))

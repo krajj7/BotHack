@@ -1133,7 +1133,8 @@
   (let [dir (if (keyword? target-or-dir)
               (enum->kw target-or-dir)
               (towards player target-or-dir))]
-    (if-not (:thump (in-direction (curlvl game) player dir))
+    (if-not (or (:thump (in-direction (curlvl game) player dir))
+                (stressed? player))
       (with-reason "kick"
         (if (:leg-hurt player)
           (with-reason "wait out leg hurt" (search 10))

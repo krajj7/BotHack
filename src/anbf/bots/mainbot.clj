@@ -63,7 +63,9 @@
         (with-reason "praying for food" ->Pray))))
 
 (defn- handle-illness [{:keys [player] :as game}]
-  (or (if (:stoning player)
+  (or (if (overtaxed? player)
+        (with-reason "overtaxed" (search 10)))
+      (if (:stoning player)
         (with-reason "fix stoning"
           (if-let [[slot item] (have game "lizard corpse" #{:bagged})]
             (or (unbag game slot item)
@@ -495,8 +497,9 @@
             (->Read slot))))))
 
 (defn- wield-weapon [{:keys [player] :as game}]
-  (or (if-let [excal (find-first #(= "Excalibur" (item-name game %))
-                                 (:items (at-player game)))]
+  (or (if-let [excal (and (not (overloaded? player))
+                          (find-first #(= "Excalibur" (item-name game %))
+                                      (:items (at-player game))))]
         (->PickUp (:label excal)))
       (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
         (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
