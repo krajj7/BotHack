@@ -282,13 +282,15 @@
 
 (def ^:private bswitch (position 30 15)) ; ugly hack to handle the one layout where paths have to cross
 
+(defn- boulder-count [level]
+  (count (filter (partial real-boulder? level) (tile-seq level))))
+
 (defn- soko-move [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
                           (some (some-fn hole? pit?) (tile-seq (curlvl game)))
                           (some (partial find solutions) (curlvl-tags game)))]
     (let [level (curlvl game)
-          boulders (count (filter (partial real-boulder? level)
-                                  (tile-seq level)))
+          boulders (boulder-count level)
           x (if (and (:soko-4a (curlvl-tags game))
                      (real-boulder? level bswitch))
               (+ 100 boulders)
@@ -358,6 +360,14 @@
     (about-to-choose [this {:keys [player last-state last-action* turn*]
                             :as game}]
       (when (= :sokoban (branch-key game))
+        (when (and (not-any? hallu? [player (:player last-state)])
+                   (= (:dlvl last-state) (:dlvl game))
+                   ; new boulders? abandon all hope.
+                   (< (boulder-count (curlvl last-state))
+                      (boulder-count (curlvl game))))
+          ; FIXME could be avoided in some cases recognizing mimics on non-:end (mapping initial boulders for other levels)
+          (log/warn "giving up on soko")
+          (swap! (:game anbf) assoc :soko-done true))
         (let [level (curlvl game)]
           (if (and (:soko-4a (:tags level))
                    (= :move (typekw last-action*))
@@ -410,11 +420,6 @@
                 (swap! game add-discovery (first matching) id)))))))
     ToplineMessageHandler
     (message [_ msg]
-      (if (= :sokoban (branch-key @game))
-        (condp re-seq msg
-          boulder-plug-re
-          (swap! game #(assoc % :last-fill (inc (:turn* %))))
-          #"The ceiling rumbles "
-          (do (log/warn "?oEarth used on soko")
-              (swap! game assoc :soko-done true)) ; abandon all hope
-          nil)))))
+      (if (and (= :sokoban (branch-key @game))
+               (re-seq boulder-plug-re msg))
+        (swap! game #(assoc % :last-fill (inc (:turn* %))))))))
