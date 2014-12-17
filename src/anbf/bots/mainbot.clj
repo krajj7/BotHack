@@ -421,7 +421,13 @@
              (let [id (item-name game item)]
                (and (or (@desired id)
                         (should-try? game item)
-                        (and (some @desired (possible-names game item))
+                        (and (if-let [wanted (some @desired
+                                                   (possible-names game item))]
+                               (if-let [[_ o] (and (desired-singular wanted)
+                                                   (have game (:name item)
+                                                      #{:bagged :can-remove}))]
+                                 (> (utility item) (utility o))
+                                 true))
                              (not (potion? item))))
                     (if-let [[_ o] (and (desired-singular id)
                                         (have game id
