@@ -400,8 +400,8 @@
               (swap! game assoc-in [:player :can-enhance] true)
               #"You feel weaker"
               (swap! game assoc-in [:player :stat-drained] true)
-              #"makes you feel (better|great)"
-              (swap! game assoc-in [:player :stat-drained] false)
+              #"makes you feel better"
+              (swap! game assoc-in [:player :stat-drained] true)
               #"You feel feverish"
               (swap! game assoc-in [:player :lycantrophy] true)
               #"You feel purified"
@@ -439,7 +439,7 @@
                   (swap! game adjust-prayer-timeout)
                   (swap! game assoc-in [:player :protection] 0)
                   (swap! game assoc :god-angry true)) ; might as well #quit
-              #"You feel a strange mental acuity|You feel in touch with the cosmos"
+              #"You feel a strange mental acuity|You feel in touch with the cosmos|thee the gift of Telepathy"
               (swap! game add-intrinsic :telepathy)
               #"Your senses fail"
               (swap! game remove-intrinsic :telepathy)
