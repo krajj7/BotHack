@@ -999,7 +999,8 @@
   (if (:castle (:tags level))
     (with-reason "make castle fort"
       (if (and (= (position (at-player game)) (position 12 12))
-               (boulder? (at level 11 12)) (boulder? (at level 11 13)))
+               (boulder? (at level 11 12)) (boulder? (at level 11 13))
+               (not (boulder? (at level 10 12))))
         (without-levitation game (->Move :W))))))
 
 (defn fight [{:keys [player] :as game}]
