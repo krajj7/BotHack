@@ -146,13 +146,13 @@
             (with-reason "visit Medusa"
               (if-let [{:keys [step]}
                        (navigate game #(and (stairs-up? %)
-                                            (not (:branch-id %))))]
+                                            (not (visited-stairs? %))))]
                 (or step ->Ascend))))))))
 
 (defn- have-dsm [game]
   (have game #{"silver dragon scale mail" "gray dragon scale mail"}))
 
-(defn full-explore [game]
+(defn full-explore [{:keys [player] :as game}]
   (with-reason "full-explore"
     (if-not (get-level game :main :sanctum)
       (or (explore game :mines :minetown)
@@ -164,16 +164,18 @@
             (if (and (or (some->> game have-key secondv key?)
                          (not (:minetown-grotto (:tags minetown)))
                          (:seen (at minetown 48 5)))
-                     (or (< -8 (:ac game)) (not (have-pick game))))
+                     (or (< -7 (:ac player)) (not (have-pick game))))
               (explore game :mines)))
           (explore game :main "Dlvl:20")
-          (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
-                   (have-dsm game))
-            (explore game :quest))
-          (explore game :main :medusa)
+          ;(explore game :main :medusa)
           (if (and (not (have-dsm game)) (not (explored? game :main :castle)))
             (seek-level game :main :castle))
           (castle-plan-b game)
+          (if (> -7 (:ac player))
+            (explore-level game :main :castle))
+          (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
+                   (have-dsm game))
+            (explore game :quest))
           (explore game :main :castle :exclusive)
           (explore game :vlad)
           (explore game :main)
@@ -196,7 +198,9 @@
   [game]
   #_(< 3205 (:turn game))
   #_(= {:x 33 :y 14} (position (:player game)))
-  #_(= :sokoban (branch-key game))
+  #_(and (= :sokoban (branch-key game))
+       (or (:end (curlvl-tags game))
+           (soko-done? game)))
   #_(:oracle (curlvl-tags game))
   #_(= :astral (branch-key game))
   #_(= "Dlvl:46" (:dlvl game))
@@ -1332,7 +1336,7 @@
                         (not-any? perma-e? (wow-spot game))
                         (find-first (complement :walked) (wow-spot game)))]
         (with-reason "getting WoW"
-          (:step (navigate game wow #{:no-traps}))))
+          (:step (navigate game wow #{:no-traps :no-levitation}))))
       (if-let [[slot ring] (have game #(and (not (know-id? game %))
                                             (ring? %)) #{:can-remove})]
         (with-reason "drop ring in sink"
@@ -1373,25 +1377,35 @@
                                           (in-line drawbridge %)))]
               (or step (->ZapWandAt slot (towards player drawbridge)))))))))
 
+(defn- medusa-spot [level]
+  (if (:medusa-1 (:tags level))
+    (at level {:x 38 :y 11})
+    (if (:medusa-2 (:tags level))
+      (at level {:x 70 :y 11}))))
+
+(defn- medusa-action [{:keys [player] :as game} medusa]
+  (with-reason "killing medusa"
+    (if-let [[slot item] (have game blind-tool #{:noncursed})]
+      (if (= (:dlvl game) (:dlvl medusa))
+        (or (if (> 25 (distance player {:x 38 :y 11}) 3)
+              (go-down game medusa))
+            (:step (navigate game (medusa-spot medusa) #{:adjacent}))
+            (if (adjacent? player (medusa-spot medusa))
+              ->Search))
+        (if (and (stairs-up? (at-player game))
+                 (= (prev-dlvl (:dlvl game)) (:dlvl medusa)))
+          (or (if (not (visited-stairs? (at-player game)))
+                (make-use game slot))
+              ->Ascend))))))
+
 (defn kill-medusa [anbf]
   (reify ActionHandler
-    (choose-action [this {:keys [player] :as game}]
-      (with-reason "killing medusa"
-        (if-let [medusa (and (not (reflection? game))
-                             (get-level game :main :medusa))]
-          (if (or (and (:medusa-1 (curlvl-tags game))
-                       (:seen (at medusa {:x 38 :y 11})))
-                  (and (:medusa-2 (curlvl-tags game))
-                       (:seen (at medusa {:x 70 :y 11}))))
-            ; TODO search nearby medusa instead of :seen and only use blindfold on first ascend (no :branch-id)
-            (do (deregister-handler anbf this) nil)
-            (if-let [[slot item] (have game blind-tool #{:noncursed})]
-              (or (if (and (stairs-up? (at-player game))
-                           (= (prev-dlvl (:dlvl game)) (:dlvl medusa)))
-                    (or (make-use game slot) ->Ascend))
-                  (if (and (= (:dlvl game) (:dlvl medusa))
-                           (> 20 (distance player {:x 38 :y 11})))
-                    (go-down game medusa))))))))))
+    (choose-action [this game]
+      (if-let [medusa (and (not (reflection? game))
+                           (get-level game :main :medusa))]
+        (if ((fnil pos? 0) (:searched (medusa-spot medusa)))
+          (do (deregister-handler anbf this) nil)
+          (medusa-action game medusa))))))
 
 (defn safe-zap? [game dir]
   (let [level (curlvl game)]

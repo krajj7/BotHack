@@ -138,6 +138,7 @@
 (defn- parse-map [game frame]
   (-> game
       (update-curlvl assoc :monsters (gather-monsters game frame))
+      (remove-monster (:player game))
       (update-curlvl update :tiles (partial map-tiles parse-tile)
                      (rest (:lines frame))
                      (rest (:colors frame)))))

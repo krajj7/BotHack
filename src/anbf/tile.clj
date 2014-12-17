@@ -342,3 +342,6 @@
 
 (defn temple? [tile]
   (= :temple (:room tile)))
+
+(defn visited-stairs? [tile]
+  (and (stairs? tile) (:branch-id tile)))
