@@ -366,6 +366,7 @@
         (when (and (not-any? hallu? [player (:player last-state)])
                    (= (:dlvl last-state) (:dlvl game))
                    (= (mimic-count game) (mimic-count last-state))
+                   (some (some-fn hole? pit?) (tile-seq (curlvl game)))
                    ; new boulders? abandon all hope.
                    (< (boulder-count (curlvl last-state))
                       (boulder-count (curlvl game))))

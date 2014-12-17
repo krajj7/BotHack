@@ -369,7 +369,7 @@
               (swap! game assoc-in [:player :grabbed] false)
               #"Nothing happens"
               (if (and (:stat-drained (:player @game))
-                       (= :apply (:last-action* @game)))
+                       (= :apply (typekw (:last-action* @game))))
                 (swap! game assoc-in [:player :stat-drained] false))
               etext-re
               (if (move-action? @game)
