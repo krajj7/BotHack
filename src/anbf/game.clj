@@ -431,8 +431,12 @@
               #"shop appears to be deserted"
               (if (< 33 (dlvl @game))
                 (swap! game add-curlvl-tag :orcus))
-              #"You hear the rumble of distant thunder|You hear the studio audience applaud!|You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
+              #"You hear the rumble of distant thunder|You hear the studio audience applaud!"
+              (do (swap! game assoc-in [:player :protection] 0)
+                  (swap! game adjust-prayer-timeout))
+              #"You feel guilty about losing your pet|Thou art arrogant, mortal|You feel that.* is displeased\."
               (do (log/warn "god angered:" text)
+                  (swap! game adjust-prayer-timeout)
                   (swap! game assoc-in [:player :protection] 0)
                   (swap! game assoc :god-angry true)) ; might as well #quit
               #"You feel a strange mental acuity|You feel in touch with the cosmos"

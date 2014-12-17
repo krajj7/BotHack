@@ -214,10 +214,13 @@
                                 assoc :peaceful :update)
           nil)))))
 
+(defn adjust-prayer-timeout [game]
+  (assoc game :last-prayer (:turn game)))
+
 (defaction Pray []
   (trigger [_] "#pray\n")
   (handler [_ anbf]
-    (swap! (:game anbf) #(assoc % :last-prayer (:turn %)))))
+    (swap! (:game anbf) adjust-prayer-timeout)))
 
 (defn- update-searched [{:keys [player turn] :as game} start]
   ; TODO maybe take speed into consideration
