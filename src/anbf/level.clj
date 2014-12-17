@@ -245,9 +245,12 @@
          {:x 56 :y 12} :trapdoor
          {:x 60 :y 12} :trapdoor
          {:x 63 :y 12} :trapdoor}
-        (for [x (range 22 35)
-              y [8 16]]
-          [(position x y) :wall])))
+        (concat (for [x (range 46 50)
+                      y [11 13]]
+                  [(position x y) :wall])
+                (for [x (range 22 35)
+                      y [8 16]]
+                  [(position x y) :wall]))))
 
 (def blueprints
   [{:branch :sokoban
