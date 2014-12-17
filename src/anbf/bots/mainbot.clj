@@ -1216,8 +1216,7 @@
 
 (defn rob-peacefuls [{:keys [player] :as game}]
   (let [level (curlvl game)]
-    (or (if (and (safe-from-guards? level)
-                 (not (shop? (at level player))))
+    (or (if (not (shop? (at level player)))
           (if-let [{:keys [step target]}
                    (navigate game #(if-let [monster (monster-at level %)]
                                      (and (not (unicorn? monster))
