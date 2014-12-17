@@ -1319,24 +1319,24 @@
         x [12 66]]
     (at-curlvl game x y)))
 
+(defn- kickable-sink? [tile]
+  (and (sink? tile) (not (blocked? tile)) (empty? (:items tile))
+       (not (:ring (:tags tile)))))
+
 (defn use-features [{:keys [player] :as game}]
   (or (if-let [wow (and (:castle (curlvl-tags game))
                         (not-any? perma-e? (wow-spot game))
                         (find-first (complement :walked) (wow-spot game)))]
         (with-reason "getting WoW"
           (:step (navigate game wow #{:no-traps}))))
-      (if-let [[slot ring] (have game #(and (ring? %)
-                                            (not (know-id? game %))))]
+      (if-let [[slot ring] (have game #(and (not (know-id? game %))
+                                            (ring? %)) #{:can-remove})]
         (with-reason "drop ring in sink"
           (if-let [{:keys [step]} (navigate game sink?)]
-            (or step (->Drop slot)))))
+            (or step (remove-use game slot) (->Drop slot)))))
       (if (have game "Excalibur" #{:can-use})
         ; TODO remove items from tile
-        (if-let [{:keys [step target]} (navigate game
-                                                 #(and (sink? %)
-                                                       (not (blocked? %))
-                                                       (not (:ring (:tags %)))
-                                                       (empty? (:items %)))
+        (if-let [{:keys [step target]} (navigate game kickable-sink?
                                                  #{:adjacent})]
           (with-reason "kick sink"
             (or step
