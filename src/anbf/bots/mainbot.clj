@@ -1581,9 +1581,9 @@
 
 (defn- respond-geno []
   (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))
-        geno-types (atom (list "electric eel" "master mind flayer" "mind flayer"
-                               "disenchanter" "green slime" "golden naga"
-                               "gremlin"))
+        geno-types (atom (list "minotaur" "electric eel" "master mind flayer"
+                               "mind flayer" "disenchanter" "green slime"
+                               "golden naga" "gremlin"))
         next! (fn [g]
                 (when-let [res (peek @g)]
                   (swap! g pop)
