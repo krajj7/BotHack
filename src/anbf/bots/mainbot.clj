@@ -536,6 +536,9 @@
        (= :light (item-subtype item))
        (= :copper (item-id item))))
 
+(defn- wearable? [item]
+  ((some-fn armor? ring? amulet?) item))
+
 (defn bless-gear [game]
   (or (if-let [[slot item] (have game #{"Orb of Fate" "unicorn horn"
                                         "luckstone" "bag of holding"}
@@ -543,8 +546,8 @@
         (bless game slot))
       (if-let [[slot scroll] (have game "scroll of remove curse"
                                    #{:noncursed :bagged})]
-        (or (if-let [[s item] (have game (some-fn armor? ring? amulet?)
-                                    {:can-use true :cursed true :in-use false})]
+        (or (if-let [[s item] (have game #(and (wearable? %) (know-id? game %))
+                           {:can-use true :cursed true :in-use false})]
               (with-reason "put on to uncurse" (:label item)
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
@@ -639,8 +642,8 @@
         step (first tile-path)
         branch (branch-key game)]
     (or (wear-amulet game)
-        (bless-gear game)
         (drop-junk game)
+        (bless-gear game)
         (wear-armor game)
         (remove-unsafe game)
         (remove-rings game)
@@ -1376,6 +1379,7 @@
                        (:seen (at medusa {:x 38 :y 11})))
                   (and (:medusa-2 (curlvl-tags game))
                        (:seen (at medusa {:x 70 :y 11}))))
+            ; TODO search nearby medusa instead of :seen and only use blindfold on first ascend (no :branch-id)
             (do (deregister-handler anbf this) nil)
             (if-let [[slot item] (have game blind-tool #{:noncursed})]
               (or (if (and (stairs-up? (at-player game))
