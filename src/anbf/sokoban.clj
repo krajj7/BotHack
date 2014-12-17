@@ -285,6 +285,9 @@
 (defn- boulder-count [level]
   (count (filter (partial real-boulder? level) (tile-seq level))))
 
+(defn- mimic-count [game]
+  (count (filter mimic? (curlvl-monsters game))))
+
 (defn- soko-move [{:keys [player last-fill] :as game}]
   (when-let [[tag s] (and (= :sokoban (branch-key game))
                           (some (some-fn hole? pit?) (tile-seq (curlvl game)))
@@ -362,6 +365,7 @@
       (when (= :sokoban (branch-key game))
         (when (and (not-any? hallu? [player (:player last-state)])
                    (= (:dlvl last-state) (:dlvl game))
+                   (= (mimic-count game) (mimic-count last-state))
                    ; new boulders? abandon all hope.
                    (< (boulder-count (curlvl last-state))
                       (boulder-count (curlvl game))))
