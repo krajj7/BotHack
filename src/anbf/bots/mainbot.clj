@@ -62,6 +62,18 @@
                (can-pray? game))
         (with-reason "praying for food" ->Pray))))
 
+(defn- cursed-levi [{:keys [player] :as game}]
+  (if (and (have game #{"boots of levitation" "ring of levitation"}
+                 #{:cursed :in-use})
+           (not (have game holy-water? #{:bagged}))
+           (not (have game "scroll of remove curse" #{:bagged :noncursed})))
+    (with-reason "cursed levitation"
+      ; won't work if we're in wiztower or vlad's
+      (or (if (below-castle? game)
+            (seek-level game :main :castle))
+          (pray game)
+          (search 10)))))
+
 (defn- handle-illness [{:keys [player] :as game}]
   (or (if (overtaxed? player)
         (with-reason "overtaxed" (search 10)))
@@ -485,6 +497,16 @@
                   (->PickUp (->> to-get set vec)))))
             (log/debug "no desired items here"))))))
 
+(defn- remove-levi
+  ([game] (remove-levi game nil))
+  ([game path]
+   (if-let [[slot _] (and (not (needs-levi? (at-player game)))
+                          (not (#{:water :air} (:branch-id game)))
+                          (not-any? needs-levi? path)
+                          (have-levi-on game))]
+     (with-reason "don't want levi"
+       (remove-use game slot)))))
+
 (defn consider-items [{:keys [player] :as game}]
   (let [to-take? (take-selector game)]
     (if-let [{:keys [step target]}
@@ -640,16 +662,6 @@
   (if-let [[slot _] (have game #(not (safe? game %)) #{:can-remove})]
     (with-reason "removing potentially unsafe item"
       (remove-use game slot))))
-
-(defn- remove-levi
-  ([game] (remove-levi game nil))
-  ([game path]
-   (if-let [[slot _] (and (not (needs-levi? (at-player game)))
-                          (not (#{:water :air} (:branch-id game)))
-                          (not-any? needs-levi? path)
-                          (have-levi-on game))]
-     (with-reason "don't want levi"
-       (remove-use game slot)))))
 
 (defn reequip [game]
   (let [level (curlvl game)
@@ -1729,7 +1741,10 @@
       (register-handler -4 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))
-      (register-handler -3 (kill-medusa anbf))
+      (register-handler -3 (reify ActionHandler
+                             (choose-action [_ game]
+                               (cursed-levi game))))
+      (register-handler -2 (kill-medusa anbf))
       (register-handler -2 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))

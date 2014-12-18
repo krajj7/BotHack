@@ -697,6 +697,10 @@
         (and (= (:dlvl game) (:dlvl medusa))
              (< 22 (:x (:player game)))))))
 
+(defn below-castle? [game]
+  (if-let [castle (get-dlvl game :main :castle)]
+    (pos? (dlvl-compare (:dlvl game) castle))))
+
 (defn apply-default-blueprint [game]
   (if (and (in-gehennom? game) (not (:votd (curlvl-tags game)))
            (some wall? (neighbors (curlvl game) (:player game))))
