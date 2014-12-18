@@ -1,7 +1,6 @@
 (ns anbf.player
   "representation of the bot avatar"
   (:require [clojure.tools.logging :as log]
-            [clojure.string :as string]
             [anbf.util :refer :all]
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
@@ -66,12 +65,16 @@
   (map->Player {:protection 0
                 :inventory {}}))
 
+(defn- selfpoly-monster [title]
+  (if title
+    (name->monster title)
+    (name->monster "guardian naga hatchling"))) ; FIXME hatchlings are too long to fit the statusline, this is a workaround (we might be a different long-named monster)
+
 (defn update-player [player status]
   (cond-> (->> (keys player) (select-keys status) (into player))
     (not (:blind status)) (update :state disj :ext-blind)
-    (= "HD" (:xp-label status)) (assoc :polymorphed (some->> (:title status)
-                                                             string/lower-case
-                                                             name->monster))
+    (= "HD" (:xp-label status)) (assoc :polymorphed
+                                       (selfpoly-monster (:title status)))
     (= "Exp" (:xp-label status)) (assoc :polymorphed nil)
     (zero? (:gold status)) (update :inventory dissoc \$)
     (pos? (:gold status)) (assoc-in [:inventory \$]
@@ -101,7 +104,10 @@
 
 (defn has-hands? [player]
   ; TODO two handed weapon with shield ...
-  (not (get-in player [:polymorphed :tags :nohands])))
+  (if-let [poly (:polymorphed player)]
+    (and (not (:nohands (:tags poly)))
+         (not (:nolimbs (:tags poly))))
+    true))
 
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

@@ -491,8 +491,10 @@
                                        (m glyph)))]))
     (assoc-in m [\space nil] (get-in m [\X nil]))))
 
-(def name->monster ; {name => MonsterType}
-  (into {} (for [{:keys [name] :as m} monster-types] [name m])))
+(def name->monster ; {name => MonsterType}, also all-lowercase name variants
+  (into {} (for [{:keys [name] :as m} monster-types
+                 entry [[name m] [(string/lower-case name) m]]]
+             entry)))
 
 (def by-rank-map
   (reduce (fn [res [role ranks]]
