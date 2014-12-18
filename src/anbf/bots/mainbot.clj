@@ -1599,18 +1599,23 @@
   (let [want (want-id game)]
     (find-first options (map firstv want))))
 
-(defn- respond-geno []
+(defn- respond-geno [anbf]
   (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))
-        geno-types (atom (list "minotaur" "electric eel" "master mind flayer"
-                               "mind flayer" "disenchanter" "green slime"
+        geno-types (atom (list "master mind flayer" "mind flayer"
+                               "electric eel" "disenchanter" "green slime"
                                "golden naga" "gremlin"))
+        throne-geno (atom (list "minotaur" "disenchanter" "green slime"
+                                "golden naga" "gremlin"))
         next! (fn [g]
                 (when-let [res (peek @g)]
                   (swap! g pop)
                   res))]
     (reify GenocideHandler
       (genocide-class [_ _] (next! geno-classes))
-      (genocide-monster [_ _] (next! geno-types)))))
+      (genocide-monster [_ _]
+        (if (= :sit (typekw (:last-action @(:game anbf))))
+          (next! throne-geno)
+          (next! geno-types))))))
 
 (defn random-unihorn [game]
   (if-let [[slot _] (and (zero? (rand-int 150)) (have-unihorn game))]
@@ -1685,7 +1690,7 @@
                                                       "wand of teleportation"}
                                       #{:can-use})
                               "Croesus"))))
-      (register-handler (respond-geno))
+      (register-handler (respond-geno anbf))
       (register-handler (reify MakeWishHandler
                           (make-wish [_ _]
                             (wish @game))))
