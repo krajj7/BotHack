@@ -494,7 +494,8 @@
                                  (some to-take? (concat (:items %)
                                                         (lootable-items %))))
                        #{:no-fight})]
-      (with-reason "new or desired item at" target step)
+      (with-reason "new or desired item at" target
+        (or step (remove-levi game)))
       (log/debug "no desirable items anywhere"))))
 
 (defn uncurse-weapon [game]
@@ -866,9 +867,11 @@
              (make-use game slot)))
          (if safe?
            (with-reason "recovering - exploring nearby items"
-             (:step (navigate game :new-items {:no-fight true :no-autonav true
-                                               :no-traps true :explored true
-                                               :max-steps 10}))))
+             (without-levitation game
+               (:step (navigate game :new-items {:no-fight true :no-autonav true
+                                                 :no-traps true :explored true
+                                                 :no-levitation true
+                                                 :max-steps 10})))))
          (with-reason "moving to safer position"
            (:step (navigate game
                             (complement (partial exposed? game (curlvl game)))
