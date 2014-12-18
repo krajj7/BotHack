@@ -108,7 +108,8 @@
 (defn- soko-mimic? [game level tile]
   (if-let [sokotag (or (:soko-4a (:tags level))
                        (:soko-4b (:tags level)))]
-    (and (= \8 (:glyph tile))
+    (and ;(= \8 (:glyph tile)) - not yet updated
+         (= \8 (get-in game [:frame :lines (:y tile) (:x tile)]))
          (not (:pushed tile))
          (not ((initial-boulders sokotag) (position tile))))))
 
