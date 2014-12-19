@@ -133,7 +133,7 @@
        (project [id cha]
          (base-cha-cost price (cha-group cha) cost)
          (membero enchant (if (= :armor (item-type (name->item id)))
-                            [0 1 2 3]
+                            [0 1 2 3 4]
                             [0]))
          (project [enchant]
            (== price (+ (* enchant 10) (:price (name->item id))))))]
@@ -360,6 +360,12 @@
       (assoc-in [:player :stats :cha] 10)
       (add-observed-cost "old gloves" 93)
       (possible-ids {:name "old gloves"})
+      ((partial map :name)))
+
+#_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 10)
+      (add-observed-cost "opera cloak" 50 :sell)
+      (possible-ids {:name "opera cloak"})
       ((partial map :name)))
 
 #_(-> (#'anbf.game/new-game)

@@ -347,7 +347,7 @@
   (and (want-protection? game)
        (< (gold game) (* 400 (inc (:xplvl (:player game)))))))
 
-(defn currently-desired
+(defn- currently-desired
   "Returns the set of item names that the bot currently wants."
   [{:keys [player] :as game}]
   (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
@@ -393,8 +393,10 @@
 (defn want-buy? [game item]
   false) ; TODO
 
-;(if-not (resolve 'desired))
-(def desired (atom #{}))
+(def ^:private desired* (atom nil))
+
+(defn- desired [game]
+  (or @desired* (currently-desired game)))
 
 (defn- worthwhile? [game item]
   (let [id (item-name game item)]
@@ -403,7 +405,7 @@
          (not (and ((some-fn potion? scroll? wand? ring? amulet?) item)
                    (know-id? game item)
                    (not (desired-singular id))
-                   (not (@desired id))))
+                   (not ((desired game) id))))
          (not= "bag of tricks" id)
          (not (and (have-intrinsic? (:player game) :speed)
                    (= "wand of speed monster" id)))
@@ -434,9 +436,9 @@
              (worthwhile? game item)
              (let [id (item-name game item)]
                (and (or (> 16 (:qty item)) (not (rocks? item)))
-                    (or (@desired id)
+                    (or ((desired game) id)
                         (should-try? game item)
-                        (and (if-let [wanted (some @desired
+                        (and (if-let [wanted (some (desired game)
                                                    (possible-names game item))]
                                (if-let [[_ o] (and (desired-singular wanted)
                                                    (have game (:name item)
@@ -445,7 +447,7 @@
                                  true))
                              (not (potion? item))))
                     (if-let [[_ o] (and (desired-singular id)
-                                        (have game id #{:bagged}))]
+                                        (have game id #{:bagged :can-remove}))]
                       (> (utility item) (utility o))
                       true)))))))
 
@@ -1530,7 +1532,7 @@
       (rocks? item) (- 10)
       (not know?) (+ 2)
       (nil? (:buc item)) inc
-      (some @desired (possible-ids game item)) (+ 5)
+      (some (desired game) (possible-ids game item)) (+ 5)
       (and (not know?)
            (not (#{100 200} price))
            (scroll? item)) (+ 10)
@@ -1742,11 +1744,11 @@
       (register-handler (reify AboutToChooseActionHandler
                           (about-to-choose [_ game]
                             (if (or (= :inventory (typekw (:last-action* game)))
-                                    (empty? @desired)
+                                    (nil? @desired*)
                                     (some-> game :last-state at-player shop?)
                                     (shop? (at-player game)))
                               ; expensive (~3 ms)
-                              (reset! desired (currently-desired game))))))
+                              (reset! desired* (currently-desired game))))))
       ; expensive action-decision handlers could easily be aggregated and made to run in parallel as thread-pooled futures, dereferenced in order of their priority and cancelled when a decision is made
       (register-handler -99 (reify ActionHandler
                               (choose-action [_ game]
