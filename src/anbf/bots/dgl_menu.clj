@@ -19,7 +19,7 @@
        (before-cursor? frame "=> ")))
 
 (defn- logged-in? [frame]
-  (some #(.contains % "Logged in as ") (:lines frame)))
+  (some #(.contains % "Logged in as") (:lines frame)))
 
 (defn init [{:keys [delegator config] :as anbf}]
   (let [logged-in (reify RedrawHandler
@@ -30,7 +30,7 @@
                           (throw (IllegalStateException. "Failed to login")))
                         (log/info "DGL menubot finished")
                         (send delegator started)
-            ; the n is for acehack.de to select NetHack, for nao it does nothing
+            ; the 2 is for acehack.de to select NetHack, for nao it does nothing
                         (send delegator write "2p")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
