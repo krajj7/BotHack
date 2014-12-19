@@ -139,11 +139,14 @@
                (or (not (have-levi game))
                    (not-any? (:genocided game) #{";" "electric eel"})
                    (not (reflection? game))) )
-        (or (with-reason "castle plan B"
+        (or (with-reason "find stairs"
+              (if-not (some stairs-up? (tile-seq level))
+                (seek game stairs-up?)))
+            (with-reason "castle plan B"
               (if-let [[slot scroll] (have game "scroll of earth"
                                            #{:noncursed})]
                 (with-reason "using scroll of earth"
-                  (if-let [{:keys [step]} (navigate game (position 12 12))]
+                  (if-let [{:keys [step]} (navigate game (position 12 13))]
                     (or step (->Read slot))))
                 (with-reason "using wand of cold"
                   (if-let [[slot _] (have game "wand of cold")]
@@ -161,8 +164,10 @@
                                             (not (visited-stairs? %))))]
                 (or step ->Ascend))))))))
 
-(defn- have-dsm [game]
-  (have game #{"silver dragon scale mail" "gray dragon scale mail"}))
+(defn- have-dsm
+  ([game] (have-dsm game {}))
+  ([game opts]
+   (have game #{"silver dragon scale mail" "gray dragon scale mail"} opts)))
 
 (defn full-explore [{:keys [player] :as game}]
   (with-reason "full-explore"
@@ -179,7 +184,6 @@
                      (or (< -7 (:ac player)) (not (have-pick game))))
               (explore game :mines)))
           (explore game :main "Dlvl:20")
-          ;(explore game :main :medusa)
           (if (and (not (have-dsm game)) (not (explored? game :main :castle)))
             (seek-level game :main :castle))
           (castle-plan-b game)
@@ -429,7 +433,8 @@
         (and (can-take? item)
              (worthwhile? game item)
              (let [id (item-name game item)]
-               (and (or (@desired id)
+               (and (or (> 16 (:qty item)) (not (rocks? item)))
+                    (or (@desired id)
                         (should-try? game item)
                         (and (if-let [wanted (some @desired
                                                    (possible-names game item))]
@@ -645,7 +650,9 @@
                        (not-any? (every-pred (comp neg? utility secondv)
                                              stuck?) cat-items)))
             (if-let [[slot item] (min-by (comp (partial utility game) secondv)
-                                         (remove stuck? cat-items))]
+                                         (if (more-than? 2 cat-items)
+                                           (remove stuck? cat-items)
+                                           cat-items))]
               (with-reason "dropping less useful duplicate"
                 (or (remove-use game slot)
                     (unbag game slot item)
@@ -812,6 +819,7 @@
 
 (defn can-ignore? [{:keys [player] :as game} monster]
   (or (passive? monster)
+      (not (hostile? monster))
       (unicorn? monster)
       (and (pool? (at-curlvl game monster)) (not (flies? monster))
            (not-any? pool? (neighbors (curlvl game) player)))
@@ -1006,9 +1014,10 @@
 (defn castle-move [game level]
   (if (:castle (:tags level))
     (with-reason "make castle fort"
-      (if (and (= (position (at-player game)) (position 12 12))
-               (boulder? (at level 11 12)) (boulder? (at level 11 13))
-               (not (boulder? (at level 10 12))) (not (monster-at level 10 12)))
+      (if (and (= (position (at-player game)) (position 12 13))
+               (boulder? (at level 11 13)) (boulder? (at level 11 14))
+               (not (boulder? (at level 10 13)))
+               (not (monster-at level 10 13)))
         (without-levitation game (->Move :W))))))
 
 (defn fight [{:keys [player] :as game}]
@@ -1047,6 +1056,27 @@
                                    ; TODO if faster than threats increase max-steps
                                    {:max-steps 2 :no-traps true
                                     :no-fight true :explored true}))))
+              (if-let [{:keys [step path]}
+                       (and (exposed? game level player)
+                            (seq (filter (partial mobile? game) adjacent))
+                            (or (more-than? 1 (filter ignores-e? threats))
+                                (more-than? 2 (filter #(and (mobile? game %)
+                                                            (not (slow? %)))
+                                                      threats)))
+                            (navigate game stairs-up? {:max-steps 40
+                                                       :no-autonav true
+                                                       :walking true
+                                                       :explored true}))]
+                (if (and (not-any? #(if-let [monster (monster-at level %)]
+                                      (and (not (can-ignore? game monster))
+                                           (< 20 (- (:turn game)
+                                                    (:known monster)))))
+                                   (for [tile path
+                                         nbr (including-origin neighbors tile)]
+                                     nbr))
+                         (less-than? 8 (take-while #(exposed? game level %)
+                                                   path)))
+                  (with-reason "moving towards the upstairs" step)))
               (if-let [monster (or (find-first rider? adjacent)
                                    (find-first unique? adjacent)
                                    (find-first priest? adjacent)
@@ -1055,23 +1085,6 @@
                                    (find-first hits-hard? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
-              (if-let [{:keys [step path]}
-                       (and (exposed? game level player)
-                            (or (more-than? 1 (filter ignores-e? threats))
-                                (more-than? 2 (filter #(and (mobile? game %)
-                                                            (not (slow? %)))
-                                                      threats)))
-                            (navigate game stairs-up? {:max-steps 20
-                                                       :walking true
-                                                       :explored true}))]
-                (if (and (not-any? #(if-let [monster (monster-at level %)]
-                                      (and ()))
-                                   (for [tile path
-                                         nbr (including-origin neighbors tile)]
-                                     nbr))
-                         (less-than? 8 (take-while #(exposed? game level %)
-                                                   path)))
-                  (with-reason "moving towards the upstairs" step)))
               (if-let [m (min-by (partial distance player)
                                  (filter (every-pred (partial keep-away? game)
                                                      (complement :fleeing)
@@ -1336,6 +1349,9 @@
     (and (have-dsm game) (not (have game #{"amulet of reflection"
                                            "shield of reflection"})))
     "blessed greased fixed +3 shield of reflection"
+    (and (not (have-dsm game #{:can-use}))
+         (some->> (have-dsm game) firstv (cursed-blockers game)))
+    "2 blessed scrolls of remove curse"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
     (not (have game "speed boots"))

@@ -326,8 +326,7 @@
                                         (monster-at game))]
                     (if (and (or (= \I (:glyph monster))
                                  (not (:remembered monster)))
-                             (or (not= \I (:glyph monster))
-                                 (= :move (typekw (:last-action* game)))))
+                             (= :move (typekw (:last-action* game))))
                       (with-reason "soko blocked by monster"
                         ->Search)))
                   (with-reason "push" (->Move (towards msrc mdest))))

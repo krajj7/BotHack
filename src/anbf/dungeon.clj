@@ -144,10 +144,12 @@
            update-fn args)
     game))
 
-(defn monster-at [game-or-level pos]
-  (if (:monsters game-or-level)
-    (get-in game-or-level [:monsters (position pos)])
-    (monster-at (curlvl game-or-level) pos)))
+(defn monster-at
+  ([game-or-level x y] (monster-at game-or-level (position x y)))
+  ([game-or-level pos]
+   (if (:monsters game-or-level)
+     (get-in game-or-level [:monsters (position pos)])
+     (monster-at (curlvl game-or-level) pos))))
 
 (defn real-boulder? [level pos]
   (and (boulder? (at level pos)) (not (mimic? (monster-at level pos)))))

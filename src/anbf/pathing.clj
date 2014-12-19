@@ -792,7 +792,8 @@
        (loop [mul 1]
          (or (log/debug "search iteration" mul)
              (if (and (= 1 mul) (or (not= :sokoban (branch-key game))
-                                    (:end (:tags level))))
+                                    (not-any? (some-fn hole? pit?)
+                                              (tile-seq (curlvl game)))))
                (push-boulders game level))
              (if (= :water (branch-key game)) (seek-portal game))
              (if (and (< 43 (dlvl game)) (not (:sanctum (curlvl-tags game))))

@@ -1495,7 +1495,7 @@
 (defaction Chat [dir]
   (trigger [_] (str "#chat\n" (direction-trigger dir)))
   (handler [_ {:keys [game] :as anbf}]
-    (swap! game recheck-peaceful-status priest?)
+    (swap! game recheck-peaceful-status (some-fn priest? shopkeeper?))
     (reify ToplineMessageHandler
       (message [_ msg]
         (if (.contains msg "Thy devotion has been rewarded")
