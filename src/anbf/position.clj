@@ -74,7 +74,7 @@
   ([level from dir]
    (some->> (in-direction from dir) (at level)))
   ([from dir]
-   {:pre [(valid-position? from)]}
+   {:pre [(valid-position? from) (some? dir)]}
    (let [dir (enum->kw dir)
          res (position (unchecked-add ((dirmap dir) 0) (:x from))
                        (unchecked-add ((dirmap dir) 1) (:y from)))]

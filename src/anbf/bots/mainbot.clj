@@ -214,7 +214,7 @@
   [game]
   #_(< 3205 (:turn game))
   #_(= {:x 33 :y 14} (position (:player game)))
-  (soko-done? game)
+  #_(soko-done? game)
   #_(:oracle (curlvl-tags game))
   #_(= :astral (branch-key game))
   #_(= "Dlvl:46" (:dlvl game))
@@ -939,8 +939,8 @@
                   (with-reason "retreating upstairs" ->Ascend)
                   (with-reason "prepared to retreat upstairs" ->Search))
                 (if (or (= (position target) (position (first (:path step))))
-                        (not-any? threats (neighbors
-                                            (in-direction player (:dir step)))))
+                        (some->> (:dir step) (in-direction player)
+                                 neighbors (not-any? threats)))
                   step)))
             (if-let [nbr (find-first #(and (not (exposed? game level %))
                                            (passable-walking? game level tile %)
@@ -1258,14 +1258,14 @@
 
 (defn rob-peacefuls [{:keys [player] :as game}]
   (let [level (curlvl game)]
-    (or (if (not (shop? (at level player)))
-          (if-let [{:keys [step target]}
-                   (navigate game #(if-let [monster (monster-at level %)]
-                                     (and (not (unicorn? monster))
-                                          (or (blocked? %) (rob? monster))))
-                             #{:adjacent})]
-            (with-reason "robbing a poor peaceful dorf"
-              (or step (->Attack (towards player target)))))))))
+    (if-let [{:keys [step target]}
+             (navigate game #(if-let [monster (monster-at level %)]
+                               (and (not (unicorn? monster))
+                                    (not (shop? %))
+                                    (or (blocked? %) (rob? monster))))
+                       #{:adjacent})]
+      (with-reason "robbing a poor peaceful dorf"
+        (or step (->Attack (towards player target)))))))
 
 (defn wander [game]
   (with-reason "wandering"
