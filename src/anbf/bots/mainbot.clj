@@ -1142,6 +1142,8 @@
                          (partial fresh-corpse? game %)
                          (partial want-to-eat? player))
           edible? #(every-pred
+                     (comp (partial not= "lizard corpse")
+                           (partial item-name game))
                      (partial fresh-corpse? game %)
                      (partial can-eat? player))]
       (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
@@ -1617,8 +1619,8 @@
 (defn- respond-geno [anbf]
   (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))
         geno-types (atom (list "master mind flayer" "mind flayer"
-                               "electric eel" "disenchanter" "green slime"
-                               "golden naga" "gremlin"))
+                               "electric eel" "disenchanter" "minotaur"
+                               "green slime" "golden naga" "gremlin"))
         throne-geno (atom (list "minotaur" "disenchanter" "green slime"
                                 "golden naga" "gremlin"))
         next! (fn [g]

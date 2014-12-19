@@ -105,12 +105,15 @@
                                           (update-visible-tile game level tile)
                                           tile))))))
 
-(defn- soko-mimic? [game level tile]
+(defn- soko-mimic? [{:keys [player last-action*] :as game} level tile]
   (if-let [sokotag (or (:soko-4a (:tags level))
                        (:soko-4b (:tags level)))]
     (and ;(= \8 (:glyph tile)) - not yet updated
          (= \8 (get-in game [:frame :lines (:y tile) (:x tile)]))
          (not (:pushed tile))
+         (not (and (= :move (typekw last-action*))
+                   (= (in-direction player (:dir last-action*)) (position tile))
+                   (adjacent? player tile)))
          (not ((initial-boulders sokotag) (position tile))))))
 
 (defn- gather-monsters [game frame]
