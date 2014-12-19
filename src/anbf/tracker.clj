@@ -144,7 +144,9 @@
                                          (.contains (:name montype)
                                                     (:name corpse-type)))))
                               relevant-deaths)
-        safe-deaths (filter (fn [[death-turn _]] (> 30 (- turn death-turn)))
+        safe-deaths (filter (fn [[death-turn {montype :type :as monster}]]
+                              (and (> 30 (- turn death-turn))
+                                   (= corpse-type montype)))
                             relevant-deaths)]
     (and (empty? unsafe-deaths)
          (seq safe-deaths))))

@@ -106,7 +106,8 @@
                                                     "potion of full healing"}
                                           #{:noncursed :bagged}))]
                 (or (unbag game slot item)
-                    (->Quaff slot))))))))
+                    (->Quaff slot)))
+              (pray game))))))
 
 (defn name-first-amulet [anbf]
   (reify ActionHandler
