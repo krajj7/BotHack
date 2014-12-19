@@ -184,8 +184,9 @@
                          (:seen (at minetown 48 5)))
                      (or (< -7 (:ac player)) (not (have-pick game))))
               (explore game :mines)))
-          (explore game :main "Dlvl:20")
-          (if (and (not (have-dsm game)) (not (explored? game :main :castle)))
+          (if (and (or (not (have-dsm game))
+                       (not (some (:genocided game) #{";" "electric eel"})))
+                   (not (explored? game :main :castle)))
             (seek-level game :main :castle))
           (castle-plan-b game)
           (if (> -7 (:ac player))
@@ -773,12 +774,6 @@
                        {:max-steps 1 :no-traps true
                         :no-fight true :walking true})))))
 
-(defn hit-eel [game monster]
-  (if (and (pool? (at-curlvl game monster)) (not (flies? monster)))
-    (if (pool? (at-player game))
-      (with-reason "away from water"
-        (:step (navigate game floor? {:no-fight true :max-steps 6}))))))
-
 (defn hit-surtur [game monster]
   (if-let [[slot item] (and (= "Lord Surtur" (:name monster))
                             (have game "wand of cold"))]
@@ -799,8 +794,7 @@
           (with-reason "levitation for :air"
             (make-use game slot)))
         (if (adjacent? player monster)
-          (or (hit-eel game monster)
-              (hit-leprechaun game monster)
+          (or (hit-leprechaun game monster)
               (hit-surtur game monster)
               (hit-floating-eye game monster)
               (kite game monster)
