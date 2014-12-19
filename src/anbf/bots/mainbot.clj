@@ -1363,7 +1363,9 @@
     "2 uncursed scrolls of genocide"
     (not (have game "gauntlets of power"))
     "blessed fixed +3 gauntlets of power"
-    :else "2 blessed scrolls of genocide"))
+    (not-any? (:genocided game) #{"R" "disenchanter"})
+    "2 blessed scrolls of genocide"
+    :else "3 blessed scrolls of enchant armor"))
 
 (defn- want-buc? [game item]
   (and (nil? (:buc item))
