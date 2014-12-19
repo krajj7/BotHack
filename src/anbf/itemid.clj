@@ -369,4 +369,11 @@
       ((partial map :name)))
 
 #_(-> (#'anbf.game/new-game)
+      (assoc-in [:player :stats :cha] 9)
+      (add-observed-cost "sky blue potion" 400)
+      (add-observed-cost "sky blue potion" 533)
+      (possible-ids {:name "sky blue potion"})
+      ((partial map :name)))
+
+#_(-> (#'anbf.game/new-game)
       (could-be? "magic lamp" {:name "lamp" :generic "lamp1"}))

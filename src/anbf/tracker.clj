@@ -132,7 +132,6 @@
 (defn- only-fresh-deaths? [tile corpse-type turn]
   (let [relevant-deaths (remove (fn [[death-turn {montype :type :as monster}]]
                                   (and (< 500 (- turn death-turn))
-                                       montype
                                        (:name montype)
                                        (not= corpse-type montype)))
                                 (:deaths tile))

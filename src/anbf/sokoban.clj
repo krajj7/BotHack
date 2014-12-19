@@ -367,6 +367,7 @@
                    (= (mimic-count game) (mimic-count last-state))
                    (some (some-fn hole? pit?) (tile-seq (curlvl game)))
                    ; new boulders? abandon all hope.
+                   ; FIXME also loss of boulders (monsters with striking)
                    (< (boulder-count (curlvl last-state))
                       (boulder-count (curlvl game))))
           ; FIXME could be avoided in some cases recognizing mimics on non-:end (mapping initial boulders for other levels)

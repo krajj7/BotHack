@@ -286,8 +286,9 @@
     ; TODO autoid castle WoW
     (found-items [_ items]
       (doseq [item items :when (:cost item)]
-        (if (and (potion? item) (= :food (:room (at-player @game))))
-          (swap! game add-prop-discovery (appearance-of item) :food true))
+        ;; could be death drop
+        ;(if (and (potion? item) (= :food (:room (at-player @game))))
+        ;  (swap! game add-prop-discovery (appearance-of item) :food true))
         (if (price-id? item)
           (swap! game add-observed-cost (appearance-of item)
                  (/ (:cost item) (:qty item))))))))
