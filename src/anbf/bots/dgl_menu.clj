@@ -19,7 +19,7 @@
        (before-cursor? frame "=> ")))
 
 (defn- logged-in? [frame]
-  (some #(.contains % "Logged in as ") (:lines frame)))
+  (some #(.contains % "Logged in as") (:lines frame)))
 
 (defn init [{:keys [delegator config] :as anbf}]
   (let [logged-in (reify RedrawHandler
