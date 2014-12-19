@@ -240,7 +240,7 @@
   (ordered-set "T-shirt" "Hawaiian shirt"))
 
 (def desired-boots
-  (ordered-set "speed boots" "iron shoes"))
+  (ordered-set "speed boots" "high boots" "iron shoes"))
 
 (def desired-shield
   (ordered-set "shield of reflection" "small shield"))
