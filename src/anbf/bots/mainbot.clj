@@ -68,10 +68,10 @@
            (not (have game holy-water? #{:bagged}))
            (not (have game "scroll of remove curse" #{:bagged :noncursed})))
     (with-reason "cursed levitation"
-      ; won't work if we're in wiztower or vlad's
-      (or (if (below-castle? game)
+      ; won't work if we're in wiztower
+      (or (pray game)
+          (if (below-castle? game)
             (seek-level game :main :castle))
-          (pray game)
           (search 10)))))
 
 (defn- handle-illness [{:keys [player] :as game}]
