@@ -210,9 +210,7 @@
   [game]
   #_(< 3205 (:turn game))
   #_(= {:x 33 :y 14} (position (:player game)))
-  #_(and (= :sokoban (branch-key game))
-       (or (:end (curlvl-tags game))
-           (soko-done? game)))
+  (soko-done? game)
   #_(:oracle (curlvl-tags game))
   #_(= :astral (branch-key game))
   #_(= "Dlvl:46" (:dlvl game))
@@ -442,8 +440,7 @@
                                  true))
                              (not (potion? item))))
                     (if-let [[_ o] (and (desired-singular id)
-                                        (have game id
-                                              #{:bagged :can-remove}))]
+                                        (have game id #{:bagged}))]
                       (> (utility item) (utility o))
                       true)))))))
 
@@ -644,7 +641,9 @@
                        (and (:in-use stuck-item)
                             (not (can-remove? game stuck-slot))))]
           (if (or (more-than? 2 cat-items)
-                  (and (more-than? 1 cat-items) (not-any? stuck? cat-items)))
+                  (and (more-than? 1 cat-items)
+                       (not-any? (every-pred (comp neg? utility secondv)
+                                             stuck?) cat-items)))
             (if-let [[slot item] (min-by (comp (partial utility game) secondv)
                                          (remove stuck? cat-items))]
               (with-reason "dropping less useful duplicate"
@@ -998,15 +997,9 @@
 
 (defn castle-fort [game level]
   (if (and (:castle (:tags level))
-           (or (and (not (:walked (at level 14 12)))
-                    (= (position (at-player game)) (position 11 12))
-                    (boulder? (at level 10 12)) (boulder? (at level 11 13))
-                    (boulder? (at level 12 12)))
-               (and (not (:walked (at level 35 15)))
-                    (not (:walked (at level 35 14)))
-                    (not (:walked (at level 40 8)))
-                    (not (:walked (at level 40 16)))
-                    (= (position (at-player game)) (position 35 12))))
+           (not (:walked (at level 35 15))) (not (:walked (at level 35 14)))
+           (not (:walked (at level 40 8))) (not (:walked (at level 40 16)))
+           (= (position (at-player game)) (position 35 12))
            (pos? (rand-int 20)))
     (with-reason "stay in fort" ->Search)))
 
@@ -1015,7 +1008,7 @@
     (with-reason "make castle fort"
       (if (and (= (position (at-player game)) (position 12 12))
                (boulder? (at level 11 12)) (boulder? (at level 11 13))
-               (not (boulder? (at level 10 12))))
+               (not (boulder? (at level 10 12))) (not (monster-at level 10 12)))
         (without-levitation game (->Move :W))))))
 
 (defn fight [{:keys [player] :as game}]
@@ -1062,13 +1055,30 @@
                                    (find-first hits-hard? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
+              (if-let [{:keys [step path]}
+                       (and (exposed? game level player)
+                            (or (more-than? 1 (filter ignores-e? threats))
+                                (more-than? 2 (filter #(and (mobile? game %)
+                                                            (not (slow? %)))
+                                                      threats)))
+                            (navigate game stairs-up? {:max-steps 20
+                                                       :walking true
+                                                       :explored true}))]
+                (if (and (not-any? #(if-let [monster (monster-at level %)]
+                                      (and ()))
+                                   (for [tile path
+                                         nbr (including-origin neighbors tile)]
+                                     nbr))
+                         (less-than? 8 (take-while #(exposed? game level %)
+                                                   path)))
+                  (with-reason "moving towards the upstairs" step)))
               (if-let [m (min-by (partial distance player)
                                  (filter (every-pred (partial keep-away? game)
                                                      (complement :fleeing)
                                                      (complement :remembered)
                                                      (partial mobile? game))
                                          threats))]
-                (if (> 3 (distance player m))
+                (if (and (> 3 (distance player m)) (pos? (rand-int 15)))
                   (with-reason "trying to keep away from" m
                     (engrave-e game))))
               (if-let [m (find-first #(and (keep-away? game %)
@@ -1089,7 +1099,7 @@
                                           (in-direction player)
                                           (exposed? game level)))
                           (with-reason "staying in more favourable position"
-                            (if (pos? (rand-int 6))
+                            (if (pos? (rand-int 13))
                               ->Search)))
                         (if-let [m (find-first #(and (= 2 (distance player %))
                                                      (mobile? game %))
