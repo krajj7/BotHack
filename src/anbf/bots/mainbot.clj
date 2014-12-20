@@ -184,6 +184,7 @@
                          (:seen (at minetown 48 5)))
                      (or (< -7 (:ac player)) (not (have-pick game))))
               (explore game :mines)))
+          (explore game :main "Dlvl:20")
           (if (and (or (not (have-dsm game))
                        (not (some (:genocided game) #{";" "electric eel"})))
                    (not (explored? game :main :castle)))
@@ -1353,11 +1354,11 @@
     "2 blessed scrolls of genocide"
     (not (have game "speed boots"))
     "blessed greased fixed +3 speed boots"
+    (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
+    "2 uncursed scrolls of genocide"
     (and (not (have game "helm of telepathy"))
          (not (:see-invis (:intrinsics (:player game)))))
     "blessed greased fixed +3 helm of telepathy"
-    (not (every? (:genocided game) #{"mind flayer" "master mind flayer"}))
-    "2 uncursed scrolls of genocide"
     (not (have game "gauntlets of power"))
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
@@ -1433,7 +1434,7 @@
 
 (defn- medusa-action [{:keys [player] :as game} medusa]
   (with-reason "killing medusa"
-    (if-let [[slot item] (have game blind-tool #{:noncursed})]
+    (if-let [[slot _] (have game blind-tool #{:noncursed})]
       (if (= (:dlvl game) (:dlvl medusa))
         (or (if (> 25 (distance player {:x 38 :y 11}) 3)
               (go-down game medusa))
@@ -1772,7 +1773,7 @@
                              (choose-action [_ game]
                                (cursed-levi game))))
       (register-handler -2 (kill-medusa anbf))
-      (register-handler -2 (reify ActionHandler
+      (register-handler -1 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
       (register-handler 0 (reify ActionHandler
