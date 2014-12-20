@@ -403,7 +403,7 @@
               :>> (partial update-on-known-position anbf update-portal-range)
               #"You are slowing down|Your limbs are stiffening"
               (swap! game assoc-in [:player :stoning] true)
-              #"You feel limber|What a pity - you just ruined a future piece"
+              #"You feel (?:more )?limber|What a pity - you just ruined a future piece"
               (swap! game assoc-in [:player :stoning] false)
               #"You don't feel very well|You are turning a little green|Your limbs are getting oozy|Your skin begins to peel away|You are turning into a green slime"
               (log/warn "sliming") ; no message on fix :-(
