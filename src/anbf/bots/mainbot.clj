@@ -1339,7 +1339,7 @@
          (not= "recharged"
                (:specific (inventory-slot game (:slot (:last-action game))))))
     "2 blessed scrolls of charging"
-    (and (below-medusa? game) (not (have-levi game)))
+    (and (below-medusa? game) (not (have game "ring of levitation" #{:bagged})))
     "blessed ring of levitation"
     (and (below-medusa? game)
          (not-any? (:genocided game) #{";" "electric eel"}))
