@@ -150,7 +150,7 @@
 (defn- possibleo [appearance id]
   (fresh [x]
     (appearance-name appearance id)
-    (conda
+    (condu
       [(project [appearance]
          (== false (knowable-appearance? appearance)))]
       [(discovery x id) (== x appearance)]
@@ -165,11 +165,11 @@
       (if (or (names appearance) (exclusive-appearances appearance))
         succeed
         fail))
-    (conda
+    (condu
       [(discovery appearance id) fail]
       [(possibleo appearance id)
        (!= x id)
-       (conda
+       (condu
          [(possibleo appearance x) fail]
          [succeed])])))
 
