@@ -304,12 +304,14 @@
                        (if (door-secret? to-tile)
                          [10 (search 10)]) ; TODO stethoscope
                        (and (kickable-door? level to-tile opts)
+                            (walkable? from-tile)
                             (blocked-door level to-tile)
                             (->> (partial with-reason
                                           "the door is blocked from one side")
                                  (update (kick-door game level to-tile dir) 1)))
                        (if (diagonal dir)
-                         (if (kickable-door? level to-tile opts)
+                         (if (and (kickable-door? level to-tile opts)
+                                  (walkable? from-tile))
                            (kick-door game level to-tile dir))
                          (if (door-closed? to-tile)
                            [3 (->Open dir)]
@@ -320,7 +322,8 @@
                                      (key? i)
                                      (not (:minetown (:tags level))))
                                [4 (->Unlock slot dir)])
-                             (if (kickable-door? level to-tile opts)
+                             (if (and (kickable-door? level to-tile opts)
+                                      (walkable? from-tile))
                                (kick-door game level to-tile dir)))))))
                  (if (and (:pick opts) (diggable? to-tile) (not monster)
                           (or (boulder? to-tile) (diggable-walls? game level))
