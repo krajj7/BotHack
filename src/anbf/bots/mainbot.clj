@@ -1342,7 +1342,7 @@
     (and (below-medusa? game) (not (have-levi game)))
     "blessed ring of levitation"
     (and (below-medusa? game)
-         (not (some (:genocided game) #{";" "electric eel"})))
+         (not-any? (:genocided game) #{";" "electric eel"}))
     "2 blessed scrolls of genocide"
     (and (not (have-dsm game))
          (not (have game "cloak of magic resistance")))
