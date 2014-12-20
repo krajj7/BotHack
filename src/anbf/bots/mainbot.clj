@@ -1666,7 +1666,7 @@
           (next! geno-types))))))
 
 (defn random-unihorn [game]
-  (if-let [[slot _] (and (zero? (rand-int 150)) (have-unihorn game))]
+  (if-let [[slot _] (and (zero? (rand-int 200)) (have-unihorn game))]
     (with-reason "randomly use unihorn" (->Apply slot))))
 
 (defn get-protection [{:keys [player] :as game}]
@@ -1805,10 +1805,10 @@
       (register-handler 7 (reify ActionHandler
                             (choose-action [_ game]
                               (use-items game))))
-      (register-handler 8 (hunt anbf))
-      (register-handler 9 (reify ActionHandler
+      (register-handler 8 (reify ActionHandler
                             (choose-action [_ game]
                               (random-unihorn game))))
+      (register-handler 9 (hunt anbf))
       (register-handler 10 (reify ActionHandler
                             (choose-action [_ game]
                               (itemid game))))
