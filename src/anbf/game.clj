@@ -386,6 +386,10 @@
               :>> (partial swap! game update-fleeing)
               #"You step onto a level teleport trap!"
               (reset! levelport true)
+              #"The (.*) (?:hits|misses|just misses)[!.]"
+              :>> #(swap! game recheck-peaceful-status
+                          (every-pred (comp (partial = %) typename)
+                                      (partial adjacent? (:player @game))))
               #"You've been warned"
               (swap! game recheck-peaceful-status guard?)
               #" appears before you\."
