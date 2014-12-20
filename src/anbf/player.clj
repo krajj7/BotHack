@@ -225,6 +225,9 @@
                                                  (not (has-hands? player)))
                                             (cursed-blockers game slot))
                                         (not (:in-use item))))
+                              (not (and (false? (:can-remove opts))
+                                        (or (not (:in-use item))
+                                            (not (cursed-blockers game slot)))))
                               (not (and (:can-remove opts)
                                         (:in-use item)
                                         (cursed-blockers game slot))))]
@@ -261,7 +264,7 @@
      :unsafe-buc - complement of :safe-buc
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory
-     :can-remove - returns only items that are unused or not blocked by anything cursed
+     :can-remove - returns only items that are unused or not blocked by anything cursed, for {:can-remove false} returns only worn blocked items
      :can-use - returns only items that are already in use or not blocked by anything cursed
      :nonempty - items not named empty"
   ([game map-or-name-or-set-or-fn]

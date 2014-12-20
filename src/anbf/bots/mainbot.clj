@@ -334,7 +334,7 @@
      (:proof item) (+ 3)
      (blessed? item) (+ 2)
      (uncursed? (:buc item)) inc
-     (cursed? item) dec))
+     (and (cursed? item) (not (:in-use item))) dec))
   ([game item]
    (+ (utility item)
       (let [iname (item-name game item)
@@ -432,6 +432,10 @@
                 (not (tried? game item))
                 (safe? game item)))))
 
+(defn- have-spare [game itemname]
+  (or (have game itemname #{:can-remove :bagged})
+      (have game itemname {:can-remove false})))
+
 (defn take-selector [{:keys [player] :as game}]
   (fn [item]
     (or (real-amulet? item)
@@ -444,13 +448,13 @@
                         (and (if-let [wanted (some (desired game)
                                                    (possible-names game item))]
                                (if-let [[_ o] (and (desired-singular wanted)
-                                                   (have game (:name item)
-                                                      #{:bagged :can-remove}))]
+                                                   (have-spare game
+                                                               (:name item)))]
                                  (> (utility item) (utility o))
                                  true))
                              (not (potion? item))))
                     (if-let [[_ o] (and (desired-singular id)
-                                        (have game id #{:bagged :can-remove}))]
+                                        (have-spare game id))]
                       (> (utility item) (utility o))
                       true)))))))
 
@@ -652,12 +656,9 @@
                             (not (can-remove? game stuck-slot))))]
           (if (or (more-than? 2 cat-items)
                   (and (more-than? 1 cat-items)
-                       (not-any? (every-pred (comp neg? utility secondv)
-                                             stuck?) cat-items)))
+                       (not (some stuck? cat-items))))
             (if-let [[slot item] (min-by (comp (partial utility game) secondv)
-                                         (if (more-than? 2 cat-items)
-                                           (remove stuck? cat-items)
-                                           cat-items))]
+                                         (remove stuck? cat-items))]
               (with-reason "dropping less useful duplicate"
                 (or (remove-use game slot)
                     (unbag game slot item)
