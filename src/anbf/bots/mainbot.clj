@@ -50,11 +50,17 @@
   (if (:can-enhance (:player game))
     (enhance-all)))
 
+(defn- choose-food [{:keys [player] :as game}]
+  (or (min-by (comp nw-ratio secondv)
+              (have-all game (every-pred (partial can-eat? player)
+                                         (comp (partial not= "lizard corpse")
+                                               (partial item-name game))
+                                         (complement tin?)) #{:bagged}))
+      (have game "lizard corpse" #{:bagged})))
+
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (and (weak? player) (not (overloaded? player)))
-        (if-let [[slot food] (have game (every-pred (partial can-eat? player)
-                                                    (complement tin?))
-                                   #{:bagged})]
+        (if-let [[slot food] (choose-food game)]
           (with-reason "weak or worse, eating" food
             (or (unbag game slot food)
                 (->Eat slot)))))
@@ -1164,8 +1170,6 @@
                          (partial fresh-corpse? game %)
                          (partial want-to-eat? player))
           edible? #(every-pred
-                     (comp (partial not= "lizard corpse")
-                           (partial item-name game))
                      (partial fresh-corpse? game %)
                      (partial can-eat? player))]
       (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
