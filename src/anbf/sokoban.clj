@@ -339,8 +339,11 @@
 (defn do-soko [game]
   (if (not (soko-done? game))
     (with-reason "sokoban"
-      (or (:step (navigate game #(mimic? (monster-at game %)) #{:adjacent}))
-          (seek-branch game :sokoban)
+      (or (seek-branch game :sokoban)
+          (if-let [{:keys [step]} (navigate game #(mimic? (monster-at game %))
+                                            #{:adjacent})]
+            (with-reason "kill mimic"
+              (or step (->Attack step))))
           (if-let [{:keys [step target]}
                    (navigate game #(and (hole? %) (:new-items %)
                                         (not (:thump %)))

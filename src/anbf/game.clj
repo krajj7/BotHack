@@ -112,6 +112,7 @@
          (= \8 (get-in game [:frame :lines (:y tile) (:x tile)]))
          (not (:pushed tile))
          (not (and (= :move (typekw last-action*))
+                   (boulder? (at-curlvl (:last-state game) player))
                    (= (in-direction player (:dir last-action*)) (position tile))
                    (adjacent? player tile)))
          (not ((initial-boulders sokotag) (position tile))))))
