@@ -1419,11 +1419,13 @@
           (reset! wish res)))
       AboutToChooseActionHandler
       (about-to-choose [_ _]
-        (when-let [id (and @wish
-                           (= :inventory (typekw (:last-action* @game)))
-                           (:name (label->item @wish)))]
-          (swap! game identify-slot @slot id)
-          (swap! game update-slot @slot assoc :buc (:buc (label->item @wish)))
+        (when-let [item (and @wish
+                             (= :inventory (typekw (:last-action* @game)))
+                             (label->item @wish))]
+          (swap! game identify-slot @slot (:name item))
+          (swap! game update-slot @slot assoc :buc (:buc item))
+          (if ((some-fn potion? scroll?) item)
+            (name-item anbf @slot "wish"))
           (reset! slot nil)
           (reset! wish nil)))
       ToplineMessageHandler
@@ -1431,8 +1433,7 @@
         (if (and @wish (nil? @slot))
           (when-let [s (and (some? @wish) (nil? @slot)
                             (first (re-first-group #"^([a-zA-Z]) - " msg)))]
-            (reset! slot s)
-            (name-item anbf s "wish")))))))
+            (reset! slot s)))))))
 
 (defn mark-recharge-handler [{:keys [game] :as anbf}]
   (reify CommandResponseHandler
