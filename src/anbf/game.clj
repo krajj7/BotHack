@@ -452,7 +452,7 @@
                   (swap! game assoc :god-angry true)) ; might as well #quit
               #"You feel a strange mental acuity|You feel in touch with the cosmos|thee the gift of Telepathy"
               (swap! game add-intrinsic :telepathy)
-              #"Your senses fail"
+              #"Your senses fail|You murderer!"
               (swap! game remove-intrinsic :telepathy)
               #"You feel in control of yourself|You feel centered in your personal space"
               (swap! game add-intrinsic :telecontrol)
