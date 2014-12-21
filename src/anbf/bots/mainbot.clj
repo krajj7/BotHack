@@ -239,8 +239,7 @@
   ))
 
 (def desired-weapons
-  (ordered-set "Grayswandir" "Excalibur" "Mjollnir" "Stormbringer"
-               "katana" "long sword"))
+  (ordered-set "Excalibur" "long sword"))
 
 (def desired-suit
   (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail"))

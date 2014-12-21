@@ -198,7 +198,7 @@
          (not (and (altar? tile) (not= (:alignment (:player game))
                                        (:alignment tile)))))
        (< (prayer-timeout game)
-          (- (:turn game) (or (:last-prayer game) -1000)))))
+          (- (:turn game) (or (:last-prayer game) -1100)))))
 
 (def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+ \w+)\.|.* (\w+ \w+), welcome back to NetHack!")
 
