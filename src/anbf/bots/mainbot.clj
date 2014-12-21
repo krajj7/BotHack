@@ -1354,6 +1354,7 @@
     (not (have-dsm game))
     "blessed greased +3 silver dragon scale mail"
     (and (have-dsm game) (not (have game #{"amulet of reflection"
+                                           "silver dragon scale mail"
                                            "shield of reflection"})))
     "blessed greased fixed +3 shield of reflection"
     (and (not (have game "scroll of remove curse" #{:bagged :safe}))
