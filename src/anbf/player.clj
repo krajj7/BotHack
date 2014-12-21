@@ -5,6 +5,7 @@
             [anbf.dungeon :refer :all]
             [anbf.delegator :refer :all]
             [anbf.montype :refer :all]
+            [anbf.monster :refer :all]
             [anbf.itemid :refer :all]
             [anbf.itemtype :refer :all]
             [anbf.item :refer :all]))
@@ -106,7 +107,8 @@
   ; TODO two handed weapon with shield ...
   (if-let [poly (:polymorphed player)]
     (and (not (:nohands (:tags poly)))
-         (not (:nolimbs (:tags poly))))
+         (not (:nolimbs (:tags poly)))
+         (not (werecreature? poly)))
     true))
 
 (defn light-radius [game]

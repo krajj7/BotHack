@@ -1198,6 +1198,7 @@
   (reify ActionHandler
     (choose-action [this {:keys [player] :as game}]
       (if-let [[scroll s] (and (= :water (branch-key game))
+                               (not (:polymorphed player))
                                (have game "scroll of gold detection"
                                      #{:safe-buc :bagged}))]
         (with-reason "detecting portal"
@@ -1456,6 +1457,7 @@
   (reify ActionHandler
     (choose-action [this game]
       (if-let [medusa (and (not (reflection? game))
+                           (not (:polymorphed (:player game)))
                            (get-level game :main :medusa))]
         (if ((fnil pos? 0) (:searched (medusa-spot medusa)))
           (do (deregister-handler anbf this) nil)
