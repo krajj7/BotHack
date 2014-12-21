@@ -6,6 +6,7 @@
             [anbf.itemtype :refer :all]
             [anbf.itemid :refer :all]
             [anbf.handlers :refer :all]
+            [anbf.fov :refer :all]
             [anbf.player :refer :all]
             [anbf.pathing :refer :all]
             [anbf.monster :refer :all]
@@ -1120,6 +1121,7 @@
                             (if (pos? (rand-int 13))
                               ->Search)))
                         (if-let [m (find-first #(and (= 2 (distance player %))
+                                                     (in-fov? game %)
                                                      (mobile? game %))
                                                threats)]
                           (if (pos? (rand-int (if (slow? m) 50 10)))
