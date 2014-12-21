@@ -1373,6 +1373,9 @@
     :fights
     nil))
 
+(def ^:private empty-wand-re
+  #"You write in the dust with .*wand of (?:lightning|fire|digging)")
+
 (defaction Engrave [slot what append?]
   (trigger [_] "E")
   (handler [_ {:keys [game] :as anbf}]
@@ -1384,6 +1387,8 @@
     (reify
       ToplineMessageHandler
       (message [_ msg]
+        (if (re-seq empty-wand-re msg)
+          (name-item anbf slot "empty"))
         (if-let [effect (engrave-effect msg)]
           (swap! game add-prop-discovery (slot-appearance @game slot)
                  :engrave effect)))
