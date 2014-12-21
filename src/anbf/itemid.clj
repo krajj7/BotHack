@@ -325,6 +325,30 @@
   {:pre [(string? id) (:name item)]}
   (some #(= id (:name %)) (possible-ids game item)))
 
+(defn- facts-for-name [db name]
+  (concat (for [id (query db (run* [id] (discovery name id)))]
+            [discovery name id])
+          (for [[propname propval] (query db (run* [p v]
+                                               (appearance-prop-val name p v)))]
+            [appearance-prop-val name propname propval])
+          (for [[cha cost] (query db (run* [cha cost]
+                                       (appearance-cha-cost name cha cost)))]
+            [appearance-cha-cost name cha cost])))
+
+(defn- forget-name [game name]
+  (log/warn "forgot name" name)
+  (-> game
+      (update :used-names disj name)
+      (update :discoveries #(apply db-retractions % (facts-for-name % name)))))
+
+(defn forget-names [game names]
+  (if (seq names)
+    (reset-possibilities
+      (reduce add-eliminated
+              (reduce forget-name game names)
+              names))
+    game))
+
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 9)
       (add-observed-cost "scroll labeled PRATYAVAYAH" 26)

@@ -1,7 +1,7 @@
 (ns anbf.actions
   (:require [clojure.tools.logging :as log]
             [multiset.core :refer [multiset]]
-            [clojure.set :refer [intersection]]
+            [clojure.set :refer [intersection difference]]
             [clojure.string :as string]
             [anbf.handlers :refer :all]
             [anbf.action :refer :all]
@@ -568,8 +568,6 @@
   {:pre [(:game anbf)]}
   (update-at-player-when-known anbf assoc :new-items true))
 
-(def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*)( called [^(]+)? \(([^\)]*)\)$|^([^(]+)$")
-
 (defn- discovery-demangle [section appearance]
   (case section
     "Gems" (if (= "gray" appearance)
@@ -583,31 +581,42 @@
     "Scrolls" (str "scroll labeled " appearance)
     appearance))
 
+(def ^:private discoveries-re #"(Artifacts|Unique Items|Spellbooks|Amulets|Weapons|Wands|Gems|Armor|Food|Tools|Scrolls|Rings|Potions)|(?:\* )?([^\(]*)(?: called [^(]+)? \(([^\)]*)\)$|^(?:[^(]+)$")
+
 (defaction Discoveries []
   (trigger [_] "\\")
   (handler [_ {:keys [game] :as anbf}]
-    (reify MultilineMessageHandler
-      (message-lines [this lines-all]
-        (swap! game add-discoveries
-               (loop [section nil
-                      lines lines-all
-                      discoveries []]
-                 (if-let [line (first lines)]
-                   (let [[group id _ appearance _]
-                         (->> (string/replace line
-                                #"^(.*) called ([^(]+) \([^)]*\)" "$1 ($2)")
-                              (re-first-groups discoveries-re))]
-                     (if group
-                       (recur group (rest lines) discoveries)
-                       (if (= section "Unique Items")
-                         (recur section (rest lines) discoveries)
-                         (if appearance
-                           (recur section (rest lines)
-                                (conj discoveries
-                                      [(discovery-demangle
-                                         section appearance) id]))
-                           (recur section (rest lines) discoveries)))))
-                   discoveries)))))))
+    (let [known-names (atom #{})]
+      (reify
+        AboutToChooseActionHandler
+        (about-to-choose [_ _]
+          (swap! game forget-names (difference (:used-names game)
+                                               @known-names)))
+        MultilineMessageHandler
+        (message-lines [this lines-all]
+          (swap! game add-discoveries
+                 (loop [section nil
+                        lines lines-all
+                        discoveries []]
+                   (if-let [line (first lines)]
+                     (let [[group id appearance]
+                           (->> (string/replace line
+                                  #"^(.*) called ([^(]+) \([^)]*\)" "$1 ($2)")
+                                (re-first-groups discoveries-re))]
+                       (if-let [called (re-first-group #"called ([^(]+)(?: |$)"
+                                                       line)]
+                         (swap! known-names conj called))
+                       (if group
+                         (recur group (rest lines) discoveries)
+                         (if (= section "Unique Items")
+                           (recur section (rest lines) discoveries)
+                           (if appearance
+                             (recur section (rest lines)
+                                    (conj discoveries
+                                          [(discovery-demangle
+                                             section appearance) id]))
+                             (recur section (rest lines) discoveries)))))
+                     discoveries))))))))
 
 (defn- discoveries-handler [anbf]
   (reify ActionHandler
