@@ -840,17 +840,21 @@
                   (seek game (set (straight-neighbors level leader))
                         {:explored true})))))
           (let [branch (branch-key game)
+                level (curlvl game)
                 [stairs action] (if (pos? (dlvl-compare (:dlvl game) new-dlvl))
                                   [:stairs-up (->Ascend)]
-                                  [(if (:castle (curlvl-tags game))
+                                  [(if (:castle (:tags level))
                                      :trapdoor
                                      :stairs-down) (descend game)])
-                step (with-reason "looking for the" stairs
-                       (seek game #(and (has-feature? % stairs)
-                                        (if-let [b (branch-key game %)]
-                                          (or (= b branch) (not (branches b)))
-                                          true))
-                             (if (= :stairs-down stairs) {:go-down true})))]
+                step (if (and (= :stairs-down stairs) (:medusa (:tags level)))
+                       (with-reason "bypass medusa"
+                         (go-down game level))
+                       (with-reason "looking for the" stairs
+                         (seek game #(and (has-feature? % stairs)
+                                          (if-let [b (branch-key game %)]
+                                            (or (= b branch) (not (branches b)))
+                                            true))
+                               (if (= :stairs-down stairs) {:go-down true}))))]
             (or step action))))))
 
 (defn- escape-branch [game]

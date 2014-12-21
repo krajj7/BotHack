@@ -534,7 +534,7 @@
                                  (unlockable-chest? game %)
                                  (some to-take? (concat (:items %)
                                                         (lootable-items %))))
-                       #{:no-fight})]
+                       #{:no-fight :no-levitation})]
       (with-reason "new or desired item at" target
         (or step (remove-levi game)))
       (log/debug "no desirable items anywhere"))))
