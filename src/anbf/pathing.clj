@@ -1042,16 +1042,20 @@
 
 (defn- shallower-unexplored
   ([game branch]
-   (shallower-unexplored game :main (or (some->> (get-level game :main branch)
+   (shallower-unexplored game :main (or (if (= :main (branch-key game branch))
+                                          :end)
+                                        (some->> (get-level game :main branch)
                                                  :dlvl (next-dlvl :main))
-                                        (if (= :main (branch-key game branch))
-                                          :end
-                                          branch))))
+                                        branch)))
   ([game branch tag-or-dlvl]
    (let [branch (branch-key game branch)
+         start (if (and (= :main branch) (below-medusa? game)
+                        (not (have-levi game)))
+                 (:dlvl (get-level game :main :medusa))
+                 (first (keys (get-branch game branch))))
          dlvl (or (get-dlvl game branch tag-or-dlvl)
                   (next-dlvl branch (:dlvl game)))]
-     (->> (get-branch game branch) keys first
+     (->> start
           (iterate (partial next-dlvl branch))
           (take-while (partial not= dlvl))
           (remove (partial explored? game branch))

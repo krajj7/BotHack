@@ -1681,7 +1681,8 @@
     (with-reason "randomly use unihorn" (->Apply slot))))
 
 (defn get-protection [{:keys [player] :as game}]
-  (if (and (want-protection? game) (> (gold game) (* 400 (:xplvl player))))
+  (if (and (want-protection? game) (> (gold game) (* 400 (:xplvl player)))
+           (or (not (below-medusa? game)) (below-castle? game)))
     (with-reason "get protection"
       (or (if-let [priest (find-first (every-pred priest? :peaceful
                                                   (partial adjacent? player))
