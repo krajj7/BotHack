@@ -244,3 +244,6 @@
 (defn charged? [item]
   (and (not= "empty" (:specific item))
        (not ((fnil zero? 1) (:charges item)))))
+
+(defn pick? [item]
+  (#{"pick-axe" "dwarvish mattock"} (:name item)))

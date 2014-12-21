@@ -172,12 +172,14 @@
   "Return a seq of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
   [{:keys [player] :as game} item]
   (or (if-let [subtype (item-subtype item)]
-        (for [btype (blocker-slots subtype)
-              :let [blocker (have game (every-pred :worn (comp (partial = btype)
-                                                               item-subtype)))]
-              :when blocker]
-          blocker))
-      (if (weapon? item) ; TODO consider cursed two-hander...
+        (if (not= :weapon subtype)
+          (for [btype (blocker-slots subtype)
+                :let [blocker (have game (every-pred :worn
+                                                     (comp (partial = btype)
+                                                           item-subtype)))]
+                :when blocker]
+            blocker)))
+      (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
         [(wielding game)])
       (if (ring? item)
         (concat (have-all game #(= :gloves (item-subtype %)) #{:in-use :cursed})
@@ -223,6 +225,7 @@
                    :when (and (selector item)
                               (not (and (:can-use opts)
                                         (or (and (or (armor? item)
+                                                     (pick? item)
                                                      (weapon? item))
                                                  (not (has-hands? player)))
                                             (cursed-blockers game slot))
