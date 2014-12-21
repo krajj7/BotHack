@@ -227,6 +227,9 @@
                                                  (not (has-hands? player)))
                                             (cursed-blockers game slot))
                                         (not (:in-use item))))
+                              (not (and (false? (:can-use opts))
+                                        (or (:in-use item)
+                                            (not (cursed-blockers game slot)))))
                               (not (and (false? (:can-remove opts))
                                         (or (not (:in-use item))
                                             (not (cursed-blockers game slot)))))
@@ -267,7 +270,7 @@
      :in-use - if false only non-used items, if true only used (worn/wielded)
      :bagged - return slot of bag containing the item if it is not present in main inventory
      :can-remove - returns only items that are unused or not blocked by anything cursed, for {:can-remove false} returns only worn blocked items
-     :can-use - returns only items that are already in use or not blocked by anything cursed
+     :can-use - returns only items that are already in use or not blocked by anything cursed, for {:can-use false} returns only currently unused items blocked by cursed items
      :nonempty - items not named empty"
   ([game map-or-name-or-set-or-fn]
    (if (map? map-or-name-or-set-or-fn)
@@ -343,7 +346,7 @@
 
 (defn count-candles [game]
   {:pre [(:player game)]}
-  (reduce +
+  (reduce (fnil + 0 0)
           (if-let [[_ candelabrum] (have game "Candelabrum of Invocation")]
             (:candles candelabrum))
           (for [[_ candles] (have-all game candle?)]

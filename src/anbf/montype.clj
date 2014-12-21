@@ -491,15 +491,18 @@
                                        (m glyph)))]))
     (assoc-in m [\space nil] (get-in m [\X nil]))))
 
-(def name->monster ; {name => MonsterType}, also all-lowercase name variants
+(def ^:private by-name-map ; {name => MonsterType}, also all-lowercase name variants
   (into {} (for [{:keys [name] :as m} monster-types
                  entry [[name m] [(string/lower-case name) m]]]
              entry)))
+
+(def name->monster (comp by-name-map string/lower-case))
 
 (def by-rank-map
   (reduce (fn [res [role ranks]]
             (reduce #(assoc %1 %2 role) res ranks))
           {} role-ranks))
+
 (def rank->monster (comp by-rank-map string/lower-case))
 
 (defn- strip-modifier [desc]

@@ -264,7 +264,7 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -450,6 +450,7 @@
              (worthwhile? game item)
              (let [id (item-name game item)]
                (and (or (> 16 (:qty item)) (not (rocks? item)))
+                    (or (not (candle? item)) (= 7 (:qty item)))
                     (or ((desired game) id)
                         (should-try? game item)
                         (and (if-let [wanted (some (desired game)
@@ -1355,8 +1356,11 @@
     (and (have-dsm game) (not (have game #{"amulet of reflection"
                                            "shield of reflection"})))
     "blessed greased fixed +3 shield of reflection"
-    (and (not (have-dsm game #{:can-use}))
-         (some->> (have-dsm game) firstv (cursed-blockers game)))
+    (and (not (have game "scroll of remove curse" #{:bagged :safe}))
+         (or (have-dsm game {:can-use false})
+             (and (have game "ring of levitation" #{:bagged})
+                  (not (have-levi game))
+                  (below-medusa? game))))
     "2 blessed scrolls of remove curse"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
@@ -1371,6 +1375,8 @@
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
+    (and (get-level game :main "Dlvl:1") (not (have-candles? game)))
+    "7 blessed wax candles"
     :else "3 blessed scrolls of enchant armor"))
 
 (defn- want-buc? [game item]
