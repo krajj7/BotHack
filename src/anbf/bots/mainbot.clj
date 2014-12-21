@@ -1375,7 +1375,7 @@
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    (and (get-level game :main "Dlvl:1") (not (have-candles? game)))
+    (and (get-level game :main "Dlvl:40") (not (have-candles? game)))
     "7 blessed wax candles"
     :else "3 blessed scrolls of enchant armor"))
 
