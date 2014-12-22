@@ -38,7 +38,6 @@
        (filter #(and (hostile? %)
                      (or (adjacent? player %)
                          (and (not (and (blind? player) (:remembered %)))
-                              (in-fov? game %)
                               (> 10 (- (:turn game) (:known %)))
                               (> (hostile-dist-thresh game) (distance player %))
                               (not (blind? player))
