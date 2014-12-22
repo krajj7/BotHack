@@ -1408,10 +1408,6 @@
       EngraveWhatHandler
       (write-what [_ _] what))))
 
-(defn- name-for [game item]
-  (->> item :name item-names
-       (find-first #(not ((:used-names game) %)))))
-
 (defn call-id-handler
   "Automatically disambiguate items like lamp, stone, harp etc. by calling them"
   [anbf]

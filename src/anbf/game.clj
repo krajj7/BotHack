@@ -284,7 +284,6 @@
 
 (defn itemid-handler [{:keys [game] :as anbf}]
   (reify FoundItemsHandler
-    ; TODO autoid castle WoW
     (found-items [_ items]
       (doseq [item items :when (:cost item)]
         ;; could be death drop

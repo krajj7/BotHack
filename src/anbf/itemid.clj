@@ -1,7 +1,8 @@
 (ns anbf.itemid
   "identifying items using some logic programming"
   (:refer-clojure :exclude [==])
-  (:require [clojure.tools.logging :as log]
+  (:require [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [clojure.core.logic :refer :all]
             [clojure.core.logic.pldb :refer :all]
             [anbf.itemtype :refer :all]
@@ -337,15 +338,27 @@
 
 (defn- forget-name [game name]
   (log/warn "forgot name" name)
-  (-> game
-      (update :used-names disj name)
-      (update :discoveries #(apply db-retractions % (facts-for-name % name)))))
+  (if ((:used-names game) name)
+    game
+    (update game :discoveries
+            #(apply db-retractions % (facts-for-name % name)))))
+
+(defn name-for [game item]
+  (->> item :name item-names
+       (find-first #(not ((:used-names game) %)))))
+
+(defn name-variants [name]
+  (item-names (string/replace name #"(.*)[0-9]+" "$1")))
 
 (defn forget-names [game names]
   (if (seq names)
     (reset-possibilities
       (reduce add-eliminated
-              (reduce forget-name game names)
+              (reduce forget-name
+                      (reduce #(update %1 :used-names disj %2) game names)
+                      (for [name names
+                            variant (name-variants name)]
+                        variant))
               names))
     game))
 
