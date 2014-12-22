@@ -1597,7 +1597,7 @@
 (defn use-items [{:keys [player] :as game}]
   (if-not (shop? (at-player game))
     (or (if-let [[excal i] (have game "Excalibur" #{:can-use})]
-          (if-let [[scroll _] (and (< (enchantment i) 7)
+          (if-let [[scroll _] (and (safe-enchant? i)
                                    (have game "scroll of enchant weapon"
                                          #{:bagged :noncursed}))]
             (or (with-reason "enchant excal"
