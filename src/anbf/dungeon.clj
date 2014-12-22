@@ -547,6 +547,20 @@
                       (rectangle-boundary NW-corner SE-corner)))
       res)))
 
+(defn- boundary? [tile]
+  (or (wall? tile) (door? tile) (:dug tile)))
+
+(defn- missing-wall? [level tile]
+  (if-not (boundary? tile)
+    (let [nbrs (neighbors level tile)
+          vert (filter #(= (:x %) (:x tile)) nbrs)
+          horiz (filter #(= (:y %) (:y tile)) nbrs)]
+      (or (and (less-than? 3 (filter boundary? nbrs))
+               (some boundary? vert)
+               (some boundary? horiz))
+          (every? boundary? vert)
+          (every? boundary? horiz)))))
+
 (defn- floodfill-room [game pos kind]
   (log/debug "room floodfill from:" pos "type:" kind)
   (let [level (curlvl game)
@@ -564,7 +578,7 @@
                 :y (min (:y NW-corner) (:y x))}
                {:x (max (:x SE-corner) (:x x))
                 :y (max (:y SE-corner) (:y x))}
-               (if (or (door? x) (wall? x))
+               (if (or (door? x) (wall? x) (missing-wall? level x))
                  (disj open x)
                  (into (disj open x)
                        ; walking triggers more refloods to mark unexplored tiles
