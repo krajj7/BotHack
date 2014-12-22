@@ -339,6 +339,8 @@
       (message [_ text]
         (let [door (in-direction (:player @game) dir)]
           (case text
+            "That door is closed." (swap! game update-at door
+                                          assoc :feature :door-closed)
             "This door is already closed." (swap! game update-at door
                                                   assoc :feature :door-closed)
             "This doorway has no door." (swap! game update-at door
