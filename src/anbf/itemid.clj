@@ -351,7 +351,8 @@
   (item-names (string/replace name #"(.*)[0-9]+" "$1")))
 
 (defn forget-names [game names]
-  (if (seq names)
+  (if (empty? names)
+    game
     (reset-possibilities
       (reduce add-eliminated
               (reduce forget-name
@@ -359,8 +360,7 @@
                       (for [name names
                             variant (name-variants name)]
                         variant))
-              names))
-    game))
+              names))))
 
 #_(-> (#'anbf.game/new-game)
       (assoc-in [:player :stats :cha] 9)
