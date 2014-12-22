@@ -551,6 +551,7 @@
 
 (defn- wield-weapon [{:keys [player] :as game}]
   (or (if-let [excal (and (not (overloaded? player))
+                          (has-hands? player)
                           (find-first #(= "Excalibur" (item-name game %))
                                       (:items (at-player game))))]
         (->PickUp (:label excal)))
