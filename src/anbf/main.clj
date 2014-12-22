@@ -73,26 +73,30 @@
                 (log/debug "making initial game state")
                 (new-game)))
 
-(defn- q [] (w (str esc esc esc esc "#quit\nyq")))
+(defn- q [] (do (w (str esc esc esc esc "#quit\nyq")) (System/exit 0)))
 
 (defn- quit-when-stuck [anbf]
   (reify ActionHandler
     (choose-action [_ game]
       (when-not (config-get (:config anbf) :no-exit false)
         (log/error "No action chosen - quitting")
-        (q)
-        (System/exit 0)
-        nil))))
+        (q)))))
 
-(defn- init-ui [anbf]
+(defn- init-ui [{:keys [config] :as anbf}]
   (-> anbf
       (register-handler (inc priority-bottom) (quit-when-stuck anbf))
       (register-handler (dec priority-top)
         (reify
+          ActionHandler
+          (choose-action [_ game]
+            (when (and (< 100 (:turn game)) (> 50 (:turn* game))
+                       (config-get config :quit-resumed false))
+              (log/error "Resumed game with :quit-resumed in config - quitting")
+              (q)))
           GameStateHandler
           (ended [_]
             (log/info "Game ended")
-            (when-not (config-get (:config anbf) :no-exit false)
+            (when-not (config-get config :no-exit false)
               (log/info "Exiting")
               (System/exit 0)))
           (started [_]
