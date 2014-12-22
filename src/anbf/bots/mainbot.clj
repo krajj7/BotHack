@@ -187,7 +187,8 @@
             (do-soko game))
           (explore game :main :quest)
           (let [minetown (get-level game :mines :minetown)]
-            (if (and (or (some->> game have-key secondv key?)
+            (if (and (not (below-medusa? game))
+                     (or (some->> game have-key secondv key?)
                          (not (:minetown-grotto (:tags minetown)))
                          (:seen (at minetown 48 5)))
                      (or (< -7 (:ac player)) (not (have-pick game))))
