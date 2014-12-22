@@ -86,7 +86,7 @@
 
 (defn- init-ui [anbf]
   (-> anbf
-      (register-handler (dec priority-bottom) (quit-when-stuck anbf))
+      (register-handler (inc priority-bottom) (quit-when-stuck anbf))
       (register-handler (dec priority-top)
         (reify
           GameStateHandler
