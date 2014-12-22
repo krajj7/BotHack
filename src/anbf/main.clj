@@ -34,67 +34,12 @@
   (log/info "current updated tile:" (at-player game))
   (log/info "monsters:" (curlvl-monsters game)))
 
-(defn- init-ui [anbf]
-  (register-handler anbf (dec priority-top)
-    (reify
-      GameStateHandler
-      (ended [_]
-        (log/info "Game ended")
-        (when-not (config-get (:config anbf) :no-exit false)
-          (log/info "Exiting")
-          (System/exit 0)))
-      (started [_]
-        (log/info "Game started"))
-      ToplineMessageHandler
-      (message [_ text]
-        (log/info "Topline message:" text))
-      MultilineMessageHandler
-      (message-lines [_ lines]
-        (log/info "Multiline message:" (with-out-str (pprint lines))))
-      FoundItemsHandler
-      (found-items [_ items]
-        (log/info "Found items:" items))
-      AboutToChooseActionHandler
-      (about-to-choose [_ game]
-        (log-state game))
-      ActionChosenHandler
-      (action-chosen [_ action]
-        (if (= :pray (typekw action))
-          (log/warn "praying"))
-        (log/info "Performing action:" (dissoc action :reason)
-                  "\n reasons:\n" (with-out-str (pprint (:reason action)))))
-      InventoryHandler
-      (inventory-list [_ inventory]
-        (log/spy inventory))
-      KnowPositionHandler
-      (know-position [_ frame]
-        (log/info "current player position:" (:cursor frame)))
-      BOTLHandler
-      (botl [_ status]
-        (log/info "new botl status:" status))
-      DlvlChangeHandler
-      (dlvl-changed [_ old-dlvl new-dlvl]
-        (log/info "dlvl changed from" old-dlvl "to" new-dlvl))
-      ConnectionStatusHandler
-      (online [_]
-        (log/info "Connection status: online"))
-      (offline [_]
-        (log/info "Connection status: offline"))
-      CommandResponseHandler
-      (response-chosen [_ method res]
-        (when (or (= genocide-class method)
-                  (= genocide-monster method))
-          (log/warn "genocided" res))
-        (when (= make-wish method)
-          (log/warn "wished for" res)))
-      RedrawHandler
-      (redraw [_ frame]
-        (println frame)))))
-
 (defn- register-javabot-jars []
   (doseq [l (file-seq (io/file "javabots/bot-jars"))
           :when (-> l .getName (.endsWith ".jar"))]
     (pom/add-classpath l)))
+
+(declare init-ui)
 
 (defn -main [& args] []
   (register-javabot-jars)
@@ -128,7 +73,75 @@
                 (log/debug "making initial game state")
                 (new-game)))
 
-(defn- q [] (w (str esc esc esc "#quit\nyq")))
+(defn- q [] (w (str esc esc esc esc "#quit\nyq")))
+
+(defn- quit-when-stuck [anbf]
+  (reify ActionHandler
+    (choose-action [_ game]
+      (when-not (config-get (:config anbf) :no-exit false)
+        (log/error "No action chosen - quitting")
+        (q)
+        (System/exit 0)
+        nil))))
+
+(defn- init-ui [anbf]
+  (-> anbf
+      (register-handler (dec priority-bottom) (quit-when-stuck anbf))
+      (register-handler (dec priority-top)
+        (reify
+          GameStateHandler
+          (ended [_]
+            (log/info "Game ended")
+            (when-not (config-get (:config anbf) :no-exit false)
+              (log/info "Exiting")
+              (System/exit 0)))
+          (started [_]
+            (log/info "Game started"))
+          ToplineMessageHandler
+          (message [_ text]
+            (log/info "Topline message:" text))
+          MultilineMessageHandler
+          (message-lines [_ lines]
+            (log/info "Multiline message:" (with-out-str (pprint lines))))
+          FoundItemsHandler
+          (found-items [_ items]
+            (log/info "Found items:" items))
+          AboutToChooseActionHandler
+          (about-to-choose [_ game]
+            (log-state game))
+          ActionChosenHandler
+          (action-chosen [_ action]
+            (if (= :pray (typekw action))
+              (log/warn "praying"))
+            (log/info "Performing action:" (dissoc action :reason)
+                      "\n reasons:\n" (with-out-str (pprint (:reason action)))))
+          InventoryHandler
+          (inventory-list [_ inventory]
+            (log/spy inventory))
+          KnowPositionHandler
+          (know-position [_ frame]
+            (log/info "current player position:" (:cursor frame)))
+          BOTLHandler
+          (botl [_ status]
+            (log/info "new botl status:" status))
+          DlvlChangeHandler
+          (dlvl-changed [_ old-dlvl new-dlvl]
+            (log/info "dlvl changed from" old-dlvl "to" new-dlvl))
+          ConnectionStatusHandler
+          (online [_]
+            (log/info "Connection status: online"))
+          (offline [_]
+            (log/info "Connection status: offline"))
+          CommandResponseHandler
+          (response-chosen [_ method res]
+            (when (or (= genocide-class method)
+                      (= genocide-monster method))
+              (log/warn "genocided" res))
+            (when (= make-wish method)
+              (log/warn "wished for" res)))
+          RedrawHandler
+          (redraw [_ frame]
+            (println frame))))))
 
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
