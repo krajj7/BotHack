@@ -1055,11 +1055,12 @@
                  (first (keys (get-branch game branch))))
          dlvl (or (get-dlvl game branch tag-or-dlvl)
                   (next-dlvl branch (:dlvl game)))]
-     (->> start
-          (iterate (partial next-dlvl branch))
-          (take-while (partial not= dlvl))
-          (remove (partial explored? game branch))
-          first))))
+     (if (neg? (dlvl-compare branch start dlvl))
+       (->> start
+            (iterate (partial next-dlvl branch))
+            (take-while (partial not= dlvl))
+            (remove (partial explored? game branch))
+            first)))))
 
 (defn explore-level [game branch tag-or-dlvl]
   (if-not (explored? game branch tag-or-dlvl)
