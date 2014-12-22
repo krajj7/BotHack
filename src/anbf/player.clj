@@ -108,7 +108,7 @@
   (if-let [poly (:polymorphed player)]
     (and (not (:nohands (:tags poly)))
          (not (:nolimbs (:tags poly)))
-         (not (werecreature? poly)))
+         (not (:were (:tags poly))))
     true))
 
 (defn light-radius [game]
