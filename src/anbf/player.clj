@@ -173,12 +173,14 @@
   [{:keys [player] :as game} item]
   (or (if-let [subtype (item-subtype item)]
         (if (not= :weapon subtype)
-          (for [btype (blocker-slots subtype)
-                :let [blocker (have game (every-pred :worn
-                                                     (comp (partial = btype)
-                                                           item-subtype)))]
-                :when blocker]
-            blocker)))
+          (as-> (for [btype (blocker-slots subtype)
+                      :let [blocker (have game #(and (= btype (item-subtype %))
+                                                     (:worn %)))]
+                      :when blocker]
+                  blocker) res
+            (if (and (= :gloves subtype) (cursed? (secondv (wielding game))))
+              (conj res (wielding game))
+              res))))
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
         [(wielding game)])
       (if (ring? item)
