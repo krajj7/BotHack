@@ -144,7 +144,8 @@
        (as-> % res
            (assoc-in res [:player :trapped] false)
            (if (-> res :last-state :player :grabbed)
-             (assoc-in res [:player :grabbed] false))))))
+             (assoc-in res [:player :grabbed] false)
+             res)))))
 
 (defn- update-narrow [game target]
   (as-> game res
