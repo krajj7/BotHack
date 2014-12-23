@@ -151,21 +151,24 @@
               (if-not (some stairs-up? (tile-seq level))
                 (seek game stairs-up?)))
             (with-reason "castle plan B"
-              (if-let [[slot scroll] (have game "scroll of earth"
-                                           #{:noncursed})]
-                (with-reason "using scroll of earth"
-                  (if-let [{:keys [step]} (navigate game (position 12 13))]
-                    (or step (->Read slot))))
-                (with-reason "using wand of cold"
+              (or (if-let [[slot scroll] (have game "scroll of earth"
+                                               #{:noncursed})]
+                    (with-reason "using scroll of earth"
+                      (if-let [{:keys [step]} (navigate game (position 12 13))]
+                        (or step (->Read slot)))))
                   (if-let [[slot _] (have game "wand of cold")]
-                    (if-let [pool (and (not-any? walkable? (for [y [11 12 13]]
-                                                             (at level 13 y)))
-                                       (find-first pool? (for [y [11 12 13]]
-                                                           (at level 13 y))))]
-                      (if-let [{:keys [step]}
-                               (navigate game #(and (= 2 (distance pool %))
-                                                    (in-line pool %)))]
-                        (or step (->ZapWandAt slot (towards player pool)))))))))
+                    (with-reason "using wand of cold"
+                      (if-let [pool (and (not-any? walkable? (for [y [11 12 13]]
+                                                               (at level 13 y)))
+                                         (find-first pool? (for [y [11 12 13]]
+                                                             (at level 13 y))))]
+                        (if-let [{:keys [step]}
+                                 (navigate game #(and (= 2 (distance pool %))
+                                                      (in-line pool %)))]
+                          (or step (->ZapWandAt slot (towards player pool)))))))
+                  (with-reason "no way to cross moat"
+                    (if-let [{:keys [step]} (navigate game {:x 12 :y 12})]
+                      (or step (->Move :E))))))
             (with-reason "visit Medusa"
               (if-let [{:keys [step]}
                        (navigate game #(and (stairs-up? %)
