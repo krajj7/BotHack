@@ -700,12 +700,15 @@
            (:undiggable-floor (:blueprint level))
            (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 
+(defn below-castle? [game]
+  (if-let [castle (get-dlvl game :main :castle)]
+    (pos? (dlvl-compare (:dlvl game) castle))))
+
 (defn in-gehennom?
   "Your god won't help you here (includes VoTD)"
   [game]
   (and (#{:wiztower :main} (branch-key game))
-       (some->> (get-dlvl game :main :castle)
-                (dlvl-compare (:dlvl game)) pos?)))
+       (below-castle? game)))
 
 (defn below-medusa?
   "Being on the right side of medusa's island is also considered below"
@@ -714,10 +717,6 @@
     (or (pos? (dlvl-compare (:dlvl game) medusa))
         (and (= (:dlvl game) medusa)
              (< 22 (:x (:player game)))))))
-
-(defn below-castle? [game]
-  (if-let [castle (get-dlvl game :main :castle)]
-    (pos? (dlvl-compare (:dlvl game) castle))))
 
 (defn apply-default-blueprint [game]
   (if (and (in-gehennom? game) (not (:votd (curlvl-tags game)))

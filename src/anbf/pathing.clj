@@ -852,15 +852,18 @@
                                   [(if (:castle (:tags level))
                                      :trapdoor
                                      :stairs-down) (descend game)])
-                step (if (and (= :stairs-down stairs) (:medusa (:tags level)))
-                       (with-reason "bypass medusa"
-                         (go-down game level))
-                       (with-reason "looking for the" stairs
-                         (seek game #(and (has-feature? % stairs)
-                                          (if-let [b (branch-key game %)]
-                                            (or (= b branch) (not (branches b)))
-                                            true))
-                               (if (= :stairs-down stairs) {:go-down true}))))]
+                step (or (if (and (= :stairs-down stairs)
+                                  (or (:medusa (:tags level))
+                                      (below-medusa? game)))
+                           (with-reason "dive" (go-down game level)))
+                         (with-reason "looking for the" stairs
+                           (seek game #(and (has-feature? % stairs)
+                                            (if-let [b (branch-key game %)]
+                                              (or (= b branch)
+                                                  (not (branches b)))
+                                              true))
+                                 (if (= :stairs-down stairs)
+                                   {:go-down true}))))]
             (or step action))))))
 
 (defn- escape-branch [game]
