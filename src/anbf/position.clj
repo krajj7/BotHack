@@ -43,6 +43,7 @@
 
 (defn neighbors
   ([level tile]
+   {:pre [(:tiles level)]}
    (map #(at level %) (neighbors tile)))
   ([pos]
    (for [d deltas

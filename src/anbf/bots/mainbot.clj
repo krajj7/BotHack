@@ -1709,7 +1709,7 @@
           (with-reason "rub-id" (->Rub slot)))))))
 
 (defn handle-drowning [{:keys [player] :as game}]
-  (if (and (:grabbed player) (some pool? (neighbors game player)))
+  (if (and (:grabbed player) (some pool? (neighbors (curlvl game) player)))
     (let [level (curlvl game)
           [drowner & _ :as drowners] (filter #(and (pool? %)
                                                    (monster-at level %))

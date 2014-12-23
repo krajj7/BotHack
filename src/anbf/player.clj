@@ -390,7 +390,7 @@
   (and (can-eat? player corpse)
        (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
              strength (get-in player [:stats :str*])]
-         (or (= #{"newt" "tengu" "wraith"} (:name monster))
+         (or (#{"newt" "wraith"} (:name monster))
              (and (or (not= "18/**" strength)
                       (some-> (parse-int strength) (< 18)))
                   (:str (:tags monster)))
