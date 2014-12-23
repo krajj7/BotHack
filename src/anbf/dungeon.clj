@@ -388,8 +388,10 @@
            (wall? (at level 8 17))) (add-curlvl-tag :medusa :medusa-2)
       (and (= :main branch) (<= 21 curdlvl 28) (not (tags :medusa))
            (= (:dlvl (:last-state game)) (:dlvl game))
-           (some medusa?
-                 (curlvl-monsters (:last-state game)))) (add-curlvl-tag :medusa)
+           (or (some medusa? (curlvl-monsters (:last-state game)))
+               (every? #(or (pool? (at level 2 %))
+                            (monster-at level (position 2 %)))
+                       (range 3 15)))) (add-curlvl-tag :medusa)
       (and (= :main branch) (<= 25 curdlvl 29)
            (not (tags :castle))
            (or (drawbridge? (at level 14 12))
