@@ -368,10 +368,10 @@
             (condp-all re-first-group text
               #"You have an eerie feeling|A shiver runs down your|You feel like you are being watched"
               (swap! game unmark-temple)
-              #"(?:grabs|swings itself around) you!"
-              (swap! game assoc-in [:player :grabbed] true)
               #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)|You kill"
               (swap! game assoc-in [:player :grabbed] false)
+              #"(?:grabs|swings itself around) you!"
+              (swap! game assoc-in [:player :grabbed] true)
               #"Nothing happens"
               (if (and (:stat-drained (:player @game))
                        (= :apply (typekw (:last-action* @game))))
