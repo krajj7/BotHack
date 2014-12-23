@@ -142,38 +142,40 @@
 
 (defn castle-plan-b [{:keys [player] :as game}]
   (let [level (curlvl game)]
-    (if (:castle (:tags level))
-      (if (and (not (get-level game :main :votd))
-               (or (not (have-levi game))
-                   (not-any? (:genocided game) #{";" "electric eel"})
-                   (not (reflection? game))) )
+    (if (and (:castle (:tags level))
+             (< (:x player) 13)
+             (not-any? walkable? (for [y [11 12 13]]
+                                   (at level 13 y)))
+             (or (not (have-levi game))
+                 (not-any? (:genocided game) #{";" "electric eel"})
+                 (not (reflection? game))))
+      (with-reason "castle plan B"
         (or (with-reason "find stairs"
               (if-not (some stairs-up? (tile-seq level))
                 (seek game stairs-up?)))
-            (with-reason "castle plan B"
-              (or (if-let [[slot scroll] (have game "scroll of earth"
-                                               #{:noncursed})]
-                    (with-reason "using scroll of earth"
-                      (if-let [{:keys [step]} (navigate game (position 12 13))]
-                        (or step (->Read slot)))))
-                  (if-let [[slot _] (have game "wand of cold")]
-                    (with-reason "using wand of cold"
-                      (if-let [pool (and (not-any? walkable? (for [y [11 12 13]]
-                                                               (at level 13 y)))
-                                         (find-first pool? (for [y [11 12 13]]
-                                                             (at level 13 y))))]
-                        (if-let [{:keys [step]}
-                                 (navigate game #(and (= 2 (distance pool %))
-                                                      (in-line pool %)))]
-                          (or step (->ZapWandAt slot (towards player pool)))))))
-                  (with-reason "no way to cross moat"
-                    (if-let [{:keys [step]} (navigate game {:x 12 :y 12})]
-                      (or step (->Move :E))))))
+            (if-let [[slot scroll] (have game "scroll of earth"
+                                         #{:noncursed})]
+              (with-reason "using scroll of earth"
+                (if-let [{:keys [step]} (navigate game (position 12 13))]
+                  (or step (->Read slot)))))
+            (if-let [[slot _] (have game "wand of cold")]
+              (with-reason "using wand of cold"
+                (if-let [pool (find-first pool? (for [y [11 12 13]]
+                                                  (at level 13 y)))]
+                  (if-let [{:keys [step]}
+                           (navigate game #(and (= 2 (distance pool %))
+                                                (in-line pool %)))]
+                    (or step (->ZapWandAt slot (towards player pool)))))))
             (with-reason "visit Medusa"
               (if-let [{:keys [step]}
                        (navigate game #(and (stairs-up? %)
                                             (not (visited-stairs? %))))]
-                (or step ->Ascend))))))))
+                (or step ->Ascend)))
+            (with-reason "no way to cross moat"
+              (if-let [{:keys [step target]}
+                       (and (not (drawbridge? (at-curlvl game 14 12)))
+                            (navigate game {:x 13 :y 12} #{:adjacent}))]
+                (or step (->Move (towards player target))))))))))
 
 (defn- have-dsm
   ([game] (have-dsm game {}))
@@ -1019,7 +1021,7 @@
            (not (:walked (at level 35 15))) (not (:walked (at level 35 14)))
            (not (:walked (at level 40 8))) (not (:walked (at level 40 16)))
            (= (position (at-player game)) (position 35 12))
-           (pos? (rand-int 20)))
+           (pos? (rand-int 16)))
     (with-reason "stay in fort" ->Search)))
 
 (defn castle-move [game level]
