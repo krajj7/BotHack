@@ -853,9 +853,7 @@
 
 (defn- engrave-slot [game perma?]
   (or (if perma?
-        (firstv (or (have game #{"wand of fire"
-                                 "wand of lightning"})
-                    (have game "wand of digging"))))
+        (firstv (have game #{"wand of fire" "wand of lightning"})))
       \-))
 
 (defn engrave-e
