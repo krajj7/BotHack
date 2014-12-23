@@ -710,7 +710,7 @@
   [game]
   (if-let [medusa (get-dlvl game :main :medusa)]
     (or (pos? (dlvl-compare (:dlvl game) medusa))
-        (and (= (:dlvl game) (:dlvl medusa))
+        (and (= (:dlvl game) medusa)
              (< 22 (:x (:player game)))))))
 
 (defn below-castle? [game]

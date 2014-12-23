@@ -141,7 +141,10 @@
     #(if (or (= (position (:player %)) old-pos)
              (trap? (at-player @game)))
        %
-       (assoc-in % [:player :trapped] false))))
+       (as-> % res
+           (assoc-in res [:player :trapped] false)
+           (if (-> res :last-state :player :grabbed)
+             (assoc-in res [:player :grabbed] false))))))
 
 (defn- update-narrow [game target]
   (as-> game res

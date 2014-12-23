@@ -713,7 +713,7 @@
   "Go through a hole or trapdoor or dig down if possible"
   [game level]
   (if-let [{:keys [step]} (navigate game (some-fn trapdoor? hole?)
-                                    #{:max-steps 15 :walking true})]
+                                    {:max-steps 15 :walking true})]
     (with-reason "going to a trapdoor/hole"
       (or step (descend game)))
     (if-let [pick (and (diggable-floor? game level)
