@@ -354,7 +354,7 @@
           0)))))
 
 (defn- want-protection? [game]
-  (< (:protection (:player game)) 3))
+  (and (< (:protection (:player game)) 3) (> 15 (:xplvl (:player game)))))
 
 (defn- want-gold? [game]
   (and (want-protection? game)
