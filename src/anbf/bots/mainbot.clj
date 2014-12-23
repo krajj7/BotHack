@@ -1715,7 +1715,7 @@
                                                    (monster-at level %))
                                              (neighbors level player))]
       (with-reason "grabbed - avoid drowning"
-        (if drowner
+        (if (and drowner (pos? (rand-int 60)))
           (or (pray game)
               (if-let [[slot ring] (have-levi-on game)]
                 (if (and (ring? ring) (walkable? (at-player game)))

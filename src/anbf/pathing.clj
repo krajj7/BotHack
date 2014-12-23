@@ -712,7 +712,7 @@
 (defn go-down
   "Go through a hole or trapdoor or dig down if possible"
   [game level]
-  (if-let [{:keys [step]} (navigate game #(#{:trapdoor :hole} (:feature %))
+  (if-let [{:keys [step]} (navigate game (some-fn trapdoor? hole?)
                                     #{:max-steps 15 :walking true})]
     (with-reason "going to a trapdoor/hole"
       (or step (descend game)))

@@ -370,7 +370,7 @@
               (swap! game unmark-temple)
               #"(?:grabs|swings itself around) you!"
               (swap! game assoc-in [:player :grabbed] true)
-              #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)"
+              #"can no longer hold you!|You get released!|(?:releases you!|grip relaxes\.)|You kill"
               (swap! game assoc-in [:player :grabbed] false)
               #"Nothing happens"
               (if (and (:stat-drained (:player @game))
