@@ -1426,7 +1426,7 @@
           (with-reason "dropping things on altar"
             (or (unbag game slot item)
                 (remove-use game slot)
-                (->Drop slot)))))
+                (->Drop slot (:qty item))))))
       ; TODO altars not on current level
       (if (have game (partial want-buc? game) #{:can-remove :bagged})
         (with-reason "going to altar" (:step (navigate game altar?))))

@@ -136,6 +136,11 @@
         (arbitrary-move game level :diagonal)
         (arbitrary-move game level))))
 
+(defn- drop-unpaid [game]
+  (if-let [[slot item] (have game :cost)]
+    (with-reason "drop unpaid items"
+      (->Drop slot (:qty item)))))
+
 (defn fidget
   "Move around randomly or wait to make a peaceful move out of the way"
   ([game] (fidget game (curlvl game)))
@@ -158,7 +163,7 @@
                              (find-first
                                (comp shopkeeper? (partial monster-at level))
                                (neighbors level player)))]
-             (->Pay shk))
+             (or (drop-unpaid game) (->Pay shk)))
            (arbitrary-move game level)
            (->Search))))))
 
