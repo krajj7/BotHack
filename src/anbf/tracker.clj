@@ -57,7 +57,8 @@
                        (not (mindless? unpaired))))
              (or (not (visible? game unpaired))
                  (and (#{\1 \2 \3 \4 \5} (:glyph unpaired))
-                      ((some-fn stairs? boulder? :new-items) tile))))
+                      ((some-fn stairs? boulder? fountain? altar? :new-items)
+                       tile))))
       (reset-monster game (assoc unpaired :remembered true))
       game)))
 
