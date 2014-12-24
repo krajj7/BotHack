@@ -671,8 +671,9 @@
                     (reify ActionHandler
                       (choose-action [this game]
                         (deregister-handler bh this)
-                        (if (inventory-slot game slot)
-                          (->Name slot name)
+                        (if-let [item (inventory-slot game slot)]
+                          (if (not= name (:specific item))
+                            (->Name slot name))
                           (log/warn "naming nonexistent slot"))))))
 
 (defn- identify-slot [game slot id]
