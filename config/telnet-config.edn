@@ -1,7 +1,7 @@
 {
- :bot "anbf.bots.explorebot"
+ :bot "bothack.bots.explorebot"
  :interface :telnet
- :menubot "anbf.bots.dgl-menu"
+ :menubot "bothack.bots.dgl-menu"
  :host "nethack.alt.org"
  :port 23
  :dgl-login "quitbot"

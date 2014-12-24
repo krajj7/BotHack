@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.wizbot"
+ :bot "bothack.bots.wizbot"
  :ttyrec true
  :interface :shell
  ;:start-paused true

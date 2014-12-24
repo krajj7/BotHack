@@ -1,6 +1,6 @@
-(defproject anbf "0.5.0-SNAPSHOT"
-  :description "A Nethack Bot Framework"
-  :url "https://github.com/krajj7/ANBF"
+(defproject BotHack "0.6.0-SNAPSHOT"
+  :description "BotHack – A NetHack Bot Framework"
+  :url "https://github.com/krajj7/BotHack"
   :license {:name "GPLv2"}
   :repositories {"local" "file:repo"}
   :java-source-paths ["jta26/de/mud" "java"]
@@ -19,5 +19,6 @@
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
   ;:global-vars {*warn-on-reflection* true}
-  :aot [anbf.bot anbf.delegator anbf.actions anbf.term anbf.ttyrec anbf.main]
-  :main anbf.main)
+  :aot [bothack.bot bothack.delegator bothack.actions bothack.term
+        bothack.ttyrec bothack.main]
+  :main bothack.main)

@@ -1,7 +1,7 @@
 {
- :bot "anbf.bots.mainbot"
+ :bot "bothack.bots.mainbot"
  :interface :ssh
- :menubot "anbf.bots.dgl-menu"
+ :menubot "bothack.bots.dgl-menu"
  :host "acehack.de"
  :port 22
  :ssh-user "acehack"

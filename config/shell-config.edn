@@ -1,5 +1,5 @@
 {
- :bot "anbf.bots.mainbot"
+ :bot "bothack.bots.mainbot"
  :ttyrec true
  :interface :shell
  :nh-command "/nh343/nethack.343-nao"
