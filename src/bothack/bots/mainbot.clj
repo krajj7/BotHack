@@ -70,8 +70,8 @@
         (with-reason "praying for food" ->Pray))))
 
 (defn- cursed-levi [{:keys [player] :as game}]
-  (if (and (have game #{"boots of levitation" "ring of levitation"}
-                 #{:cursed :in-use})
+  (if (and (have game #{"boots of levitation"
+                        "ring of levitation"} #{:cursed :worn})
            (not (have game holy-water? #{:bagged}))
            (not (have game "scroll of remove curse" #{:bagged :noncursed})))
     (with-reason "cursed levitation"
@@ -393,7 +393,7 @@
       (if-let [[slot _] (and (unihorn-recoverable? game)
                              (have-unihorn game))]
         (with-reason "applying unihorn to recover" (->Apply slot)))
-      (if-let [[slot _] (have game blind-tool #{:in-use :noncursed})]
+      (if-let [[slot _] (have game blind-tool #{:worn :noncursed})]
         (with-reason "unblinding self"
           (->Remove slot)))
       (if (or (impaired? player) (:polymorphed player))
@@ -566,7 +566,7 @@
 
 (defn- choose-amulet [{:keys [player] :as game}]
   (or (and (not (have game #{"silver dragon scale mail"
-                             "shield of reflection"} #{:in-use}))
+                             "shield of reflection"} #{:worn}))
            (have game "amulet of reflection" #{:can-use :bagged}))
       (have game "amulet of life saving" #{:can-use :bagged})
       (have game "amulet of ESP" #{:can-use :bagged})))
@@ -583,7 +583,7 @@
                          desired-suit desired-cloak desired-helmet
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
-               :when (and armor (not (:in-use armor))
+               :when (and armor (not (:worn armor))
                           (or (not= "cloak of invisibility"
                                     (item-name game armor))
                               (not (shop? (at-player game))))
@@ -647,11 +647,11 @@
 
 (defn remove-rings [{:keys [player] :as game}]
   (or (if-let [[slot _] (have game #{"ring of invisibility" "ring of conflict"}
-                              #{:in-use})]
+                              #{:worn})]
         (with-reason "don't need ring"
           (remove-use game slot)))
       (if-let [[slot _] (and (= (:hp player) (:maxhp player))
-                             (have game "ring of regeneration" #{:in-use}))]
+                             (have game "ring of regeneration" #{:worn}))]
         (with-reason "don't need regen"
           (remove-use game slot)))))
 
@@ -961,7 +961,7 @@
 
 (defn keep-away? [{:keys [player] :as game} m]
   (if (and (pool? (at-curlvl game m))
-           (not (have game "oilskin cloak" #{:in-use})))
+           (not (have game "oilskin cloak" #{:worn})))
     true
     (if-let [montype (typename m)]
       (or (some #(.contains montype %)
@@ -1608,10 +1608,10 @@
         (if-let [[scroll si] (have game "scroll of enchant armor"
                              #{:bagged :noncursed})]
           (with-reason "enchant armor"
-            (if (have game (every-pred safe-enchant? armor? :in-use))
+            (if (have game (every-pred safe-enchant? armor? :worn))
               (if-let [slots (->> (have-all game (every-pred
                                                    (complement safe-enchant?)
-                                                   armor? :in-use))
+                                                   armor? :worn))
                                   (map firstv) seq)]
                 (if (every? #(can-remove? game %) slots)
                   (remove-use game (first slots)))

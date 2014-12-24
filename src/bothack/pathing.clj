@@ -231,10 +231,10 @@
                               #{:can-remove})]
         [2 (with-reason "dropping pick to enter shop" (->Drop slot))])
       (if-let [[slot _] (have game "ring of invisibility" #{:can-remove
-                                                            :in-use})]
+                                                            :worn})]
         [2 (with-reason "removing invis to enter shop" (->Remove slot))])
       (if-let [[slot _] (have game "cloak of invisibility" #{:can-remove
-                                                             :in-use})]
+                                                             :worn})]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
 
 (defn blocked?
@@ -299,7 +299,7 @@
                                             (pass-monster game level to-tile
                                                           dir monster opts)
                                             [1 (->Move dir)])]
-                       (if (:in-use item)
+                       (if (:worn item)
                          [cost (with-reason "assuming levitation" move)]
                          [(+ 2 cost) (with-reason "need levi for next move"
                                        (make-use game slot))]))))
@@ -351,7 +351,7 @@
        (not (and (:castle (:tags level)) (door? from)))
        (or (safely-walkable? level to)
            (and ((some-fn pool? ice?) to)
-                (-> opts :levi secondv :in-use)))))
+                (-> opts :levi secondv :worn)))))
 
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))

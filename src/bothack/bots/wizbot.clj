@@ -245,7 +245,7 @@
   (first (for [category [desired-shield desired-boots
                          desired-suit desired-cloak]
                :let [[slot armor] (some (partial have-usable game) category)]
-               :when (and armor (not (:in-use armor)))]
+               :when (and armor (not (:worn armor)))]
            (with-reason "wearing better armor"
              (make-use game slot)))))
 

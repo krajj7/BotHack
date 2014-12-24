@@ -165,7 +165,7 @@
   "Does the player have a free ring-finger?"
   [player]
   {:pre [(:inventory player)]}
-  (less-than? 2 (filter (every-pred ring? :in-use)
+  (less-than? 2 (filter (every-pred ring? :worn)
                         (vals (:inventory player)))))
 
 (defn blockers
@@ -184,11 +184,11 @@
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
         [(wielding game)])
       (if (ring? item)
-        (concat (have-all game #(= :gloves (item-subtype %)) #{:in-use :cursed})
+        (concat (have-all game #(= :gloves (item-subtype %)) #{:worn :cursed})
                 (if-not (free-finger? player)
-                  (have-all game ring? #{:in-use}))))
+                  (have-all game ring? #{:worn}))))
       (if (amulet? item)
-        [(have game amulet? #{:in-use})])))
+        [(have game amulet? #{:worn})])))
 
 (defn cursed-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]
@@ -212,6 +212,7 @@
                        (if (:know-buc opts) (comp some? :buc))
                        (if (false? (:know-buc opts)) (comp nil? :buc))
                        (if (false? (:in-use opts)) (complement :in-use))
+                       (if (:worn opts) :worn)
                        (if (:in-use opts) :in-use)])))
 
 (defn have-all
@@ -273,6 +274,7 @@
      :safe-buc - same as :know-buc + :noncursed
      :unsafe-buc - complement of :safe-buc
      :in-use - if false only non-used items, if true only used (worn/wielded)
+     :worn - only worn (not wielded) items
      :bagged - return slot of bag containing the item if it is not present in main inventory
      :can-remove - returns only items that are unused or not blocked by anything cursed, for {:can-remove false} returns only worn blocked items
      :can-use - returns only items that are already in use or not blocked by anything cursed, for {:can-use false} returns only currently unused items blocked by cursed items
@@ -298,7 +300,7 @@
   (have game #{"skeleton key" "lock pick" "credit card"}))
 
 (defn have-levi-on [game]
-  (have game #{"boots of levitation" "ring of levitation"} #{:in-use}))
+  (have game #{"boots of levitation" "ring of levitation"} #{:worn}))
 
 (defn have-levi [game]
   (have game #(and (#{"boots of levitation" "ring of levitation"}
@@ -306,10 +308,10 @@
 
 (defn reflection? [game]
   (have game #{"amulet of reflection" "shield of reflection"
-               "silver dragon scale mail"} #{:in-use}))
+               "silver dragon scale mail"} #{:worn}))
 
 (defn free-action? [game]
-  (have game "ring of free action" #{:in-use}))
+  (have game "ring of free action" #{:worn}))
 
 (defn unihorn-recoverable? [{:keys [player] :as game}]
   (or (:stat-drained player)
@@ -317,7 +319,7 @@
       (and (:blind (:state player))
            (not (:ext-blind (:state player)))
            (not (have game #(and (#{"towel" "blindfold"} (item-name game %))
-                                 (:in-use %)))))))
+                                 (:worn %)))))))
 
 (defn can-remove? [game slot]
   (let [item (inventory-slot game slot)]
