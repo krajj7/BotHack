@@ -5,11 +5,11 @@ BotHack – A Nethack Bot Framework
 
 An attempt at an implementation of a NetHack bot framework as a base for my master's thesis (at http://www.mff.cuni.cz/to.en).
 
-Written in Clojure but will also provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (http://alt.org/nethack/).
+Written in Clojure but will also provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (like http://alt.org/nethack/).
 
 Inspired by previous bots and bot frameworks, in particular TAEB (http://taeb.github.io), Saiph (https://github.com/canidae/saiph) and Pogamut (http://pogamut.cuni.cz).
 
-**PLEASE NOTE**:  The project is in pre-alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
+**PLEASE NOTE**:  The project is in alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
 ### Screenshot
 
@@ -64,3 +64,11 @@ Source ttyrec: https://github.com/krajj7/BotHack/raw/master/ttyrec/wizmode-fulla
 **24.11.2014**: The framework now uses shop prices and other observed properties of items like results of wand-engrave to disambiguate random item appearances.  Bots can ask about the possible types of unidentified items and will only get results that match the gathered data.  A stroll through a shop is all that is needed to identify useful items (like the scroll of identify).  This is implemented using the Clojure core.logic library for logic programming (src/bothack/itemid.clj).
 
 **6.12.2014**: The bot can now solve every level of sokoban and makes use of some of the items that can be found there.  The sokoban solver module can deal with interruptions from monsters and other perils.  The prize and giant mimics on the last level are auto-identified.
+
+**25.12.2014**: The main example bot can reach the castle fairly regularly now, it has finished the quest and cleared the first few levels of gehennom without wizard mode or human intervetion, eventually dying by starvation due to a bug.  This makes it the most successful NetHack bot written as of yet (as far as I'm aware).
+
+Dumplog of the boẗ́'s best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419369702
+
+Listing of other bots for comparison: http://taeb.github.io/bots.html
+
+Special thanks goes to kerio and stenno, admins of the acehack.de public server, for their support and hosting an instance of the bot and to FIQ for running the bot on the nethack.alt.org server and trying out the framework even in the current unfinished state!

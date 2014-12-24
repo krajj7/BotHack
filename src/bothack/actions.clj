@@ -1115,6 +1115,7 @@
     (if (and blocker (not-any? cursed? (map secondv blockers)))
       ((remove-action blocker) blocker-slot))))
 
+; FIXME unwield wearables
 (defn make-use [game slot]
   (let [item (inventory-slot game slot)]
     (if-not (or (:in-use item) (cursed-blockers game slot)
