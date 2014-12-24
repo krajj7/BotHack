@@ -1452,7 +1452,7 @@
 (defn- medusa-action [{:keys [player] :as game} medusa]
   (with-reason "killing medusa"
     (if-let [[slot _] (have game blind-tool #{:noncursed})]
-      (if (= (:dlvl game) (:dlvl medusa))
+      (if (and (= (:dlvl game) (:dlvl medusa)) (medusa-spot medusa))
         (or (if (> 25 (distance player {:x 38 :y 11}) 3)
               (go-down game medusa))
             (:step (navigate game (medusa-spot medusa) #{:adjacent}))
