@@ -12,8 +12,10 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 /jta26/doc/source/
-anbf.log*
+*.log*
 /jta26/jni/linux/libjtapty.so
 /*.ttyrec
 video
 notes
+*.lo
+*.ttyrec

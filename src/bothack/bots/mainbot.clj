@@ -423,7 +423,7 @@
          (not (and (have-intrinsic? (:player game) :speed)
                    (= "wand of speed monster" id)))
          (or (charged? item) (= "wand of wishing" id)
-             (and (:castle (curlvl-tags game) (= "wand of striking" id))))
+             (and (:castle (curlvl-tags game)) (= "wand of striking" id)))
          (or (and (not= :cursed (:buc item))
                   (> 2 (or (:erosion item) 0)))
              (take-cursed? game item))
