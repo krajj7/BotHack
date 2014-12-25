@@ -420,6 +420,8 @@
               (swap! game assoc-in [:player :leg-hurt] false)
               #"It's a wall\."
               (swap! game assoc-in [:player :trapped] false)
+              #"Your.* is trapped"
+              (swap! game assoc-in [:player :trapped] true)
               #"You sink into the lava"
               (update-at-player-when-known bh assoc :feature :lava)
               #"You turn into a| slips from your"
@@ -434,7 +436,7 @@
                     (update-at-player-when-known bh assoc :feature :portal)))
               #"The walls around you begin to bend and crumble!"
               (swap! game update-at-player assoc :feature :stairs-down)
-              #"You now wield|.* turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode|rot|smoulder)| snatches |Take off your|let me run my fingers|a djinni emerges|A curse upon thee|murmurs in your ear|suddenly explores!|someone is helping you"
+              #"You now wield|.* turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode|rot|smoulder)| snatches |Take off your|let me run my fingers|a djinni emerges|A curse upon thee|murmurs in your ear|suddenly explores!|someone is helping you|feel as if you need some help"
               (update-inventory bh)
               #" reads a scroll | drinks a .*potion|Your brain is eaten!"
               (update-discoveries bh)

@@ -231,6 +231,8 @@
                                                      (pick? item)
                                                      (weapon? item))
                                                  (not (has-hands? player)))
+                                            (and (= :boots (item-subtype item))
+                                                 (:trapped player))
                                             (cursed-blockers game slot))
                                         (not (:in-use item))))
                               (not (and (false? (:can-use opts))
