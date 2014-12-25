@@ -700,9 +700,13 @@
            (:undiggable-floor (:blueprint level))
            (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 
-(defn below-castle? [game]
+(defn below-castle? [{:keys [player] :as game}]
+  "Being on the right side of the castle is also considered below"
   (if-let [castle (get-dlvl game :main :castle)]
-    (pos? (dlvl-compare (:dlvl game) castle))))
+    (or (pos? (dlvl-compare (:dlvl game) castle))
+        (and (= (:dlvl game) castle)
+             (or (< 69 (:x (:player game)))
+                 (and (< 64 (:x player)) (< 8 (:y player) 16)))))))
 
 (defn in-gehennom?
   "Your god won't help you here (includes VoTD)"

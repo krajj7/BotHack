@@ -278,6 +278,9 @@
                      (or (and (shop? to-tile) (not (shop? from-tile))
                               (enter-shop game))
                          (if-not (or (and (:levi opts) need-levi?)
+                                     (and (:castle (:tags level))
+                                          (= (position 60 12)
+                                             (position to-tile)))
                                      (and (polytrap? to-tile)
                                           (not (have-mr? game)))
                                      (and (= :sokoban (branch-key game))
@@ -1058,10 +1061,12 @@
                                         branch)))
   ([game branch tag-or-dlvl]
    (let [branch (branch-key game branch)
-         start (if (and (= :main branch) (below-medusa? game)
-                        (not (have-levi game)))
-                 (:dlvl (get-level game :main :medusa))
-                 (first (keys (get-branch game branch))))
+         start (if (and (= :main branch) (not (have-levi game)))
+                 (or (if (below-castle? game)
+                       (:dlvl (get-level game :main :castle)))
+                     (if (below-medusa? game)
+                       (:dlvl (get-level game :main :medusa)))
+                     (first (keys (get-branch game branch)))))
          dlvl (or (get-dlvl game branch tag-or-dlvl)
                   (next-dlvl branch (:dlvl game)))]
      (if (and start (neg? (dlvl-compare branch start dlvl)))
@@ -1170,9 +1175,11 @@
   (let [branch (branch-key game level)
         dlvl (:dlvl level)
         nbr-branch (or (bmap dlvl) :main)]
-      (for [nbr [(if-not (and (:medusa (:tags level))
-                              (not (have-levi game))
-                              (below-medusa? game))
+      (for [nbr [(if-not (and (not (have-levi game))
+                              (or (and (:medusa (:tags level))
+                                       (below-medusa? game))
+                                  (and (:castle (:tags level))
+                                       (below-castle? game))))
                    (get-level game branch (prev-dlvl branch dlvl))) ; upstairs
                  (if (and (not= :main branch) ; escape branch
                           (= dlvl (ffirst (get-branch game branch))))
