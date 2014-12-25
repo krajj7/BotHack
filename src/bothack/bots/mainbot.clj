@@ -304,7 +304,7 @@
    #{"wand of lightning"}
    #{"wand of teleportation"}
    #{"wand of striking"}
-   #{"wand of digging"}
+   ;#{"wand of digging"}
    desired-weapons])
 
 (def desired-singular (set (apply concat desired-items)))
