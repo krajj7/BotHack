@@ -688,6 +688,20 @@
     (with-reason "removing potentially unsafe item"
       (remove-use game slot))))
 
+(defn- enchant-gear [{:keys [player] :as game}]
+  (if-let [[slot item] (have game "slot of enchant armor"
+                             #{:bagged :noncursed})]
+    (with-reason "enchant armor"
+      (if (have game (every-pred safe-enchant? armor?))
+        (if-let [slots (->> (have-all game (every-pred
+                                             (complement safe-enchant?)
+                                             armor? :worn))
+                            (map firstv) seq)]
+          (if (every? #(can-remove? game %) slots)
+            (remove-use game (first slots)))
+          (or (unbag game slot item)
+              (->Read slot)))))))
+
 (defn reequip [game]
   (let [level (curlvl game)
         tile-path (mapv (partial at level) (:last-path game))
@@ -695,6 +709,7 @@
         branch (branch-key game)]
     (or (wear-amulet game)
         (drop-junk game)
+        (enchant-gear game)
         (bless-gear game)
         (wear-armor game)
         (remove-unsafe game)
@@ -1579,12 +1594,6 @@
                          (juxt (partial id-priority game)
                                :label) secondv) (want-id game :bagged)))
 
-(defn- safe-enchant? [item]
-  (case (item-type item)
-    :weapon (> 6 (enchantment item))
-    :armor (> 4 (enchantment item))
-    nil))
-
 (defn- recharge [game slot]
   (if-not (charged? (inventory-slot game slot))
     (if-let [[s item] (or (have game "scroll of charging" #{:blessed :bagged})
@@ -1605,18 +1614,6 @@
             (or (with-reason "enchant excal"
                   (or (make-use game excal)
                       (->Read scroll))))))
-        (if-let [[scroll si] (have game "scroll of enchant armor"
-                             #{:bagged :noncursed})]
-          (with-reason "enchant armor"
-            (if (have game (every-pred safe-enchant? armor? :worn))
-              (if-let [slots (->> (have-all game (every-pred
-                                                   (complement safe-enchant?)
-                                                   armor? :worn))
-                                  (map firstv) seq)]
-                (if (every? #(can-remove? game %) slots)
-                  (remove-use game (first slots)))
-                (or (unbag game scroll si)
-                    (->Read scroll))))))
         (if-let [[slot item] (have game #{"potion of gain level"
                                           "potion of see invisible"}
                                    #{:bagged})]
