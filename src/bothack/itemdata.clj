@@ -2218,6 +2218,7 @@
     :appearances cloaks
     :subtype :cloak}
    {:name "cloak of protection"
+    :autoid true
     :price 50
     :weight 10
     :ac 3

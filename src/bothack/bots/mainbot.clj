@@ -1529,6 +1529,7 @@
                                       #{:bagged}))]
         (with-reason "price id (sell)"
           (or (unbag game slot item)
+              (remove-use game slot)
               (->Drop slot))))
       (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
                              (mapcat (comp (partial shops-taking) secondv))
