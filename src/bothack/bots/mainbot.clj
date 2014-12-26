@@ -616,9 +616,13 @@
                 (or (if-not (cursed? (secondv (wielding game)))
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
-                          (->Wield slot))))
+                          (wield game slot))))
                     (unbag game slot scroll)
-                    (->Read slot))))))))
+                    (->Read slot))))
+            (if-let [[horn _] (have game "unicorn horn" #{:cursed})]
+              (with-reason "uncurse unihorn"
+                (or (unbag game slot scroll)
+                    (wield game horn))))))))
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))

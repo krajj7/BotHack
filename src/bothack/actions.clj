@@ -1539,6 +1539,14 @@
 (def ^:private -ApplyAt ->ApplyAt)
 (def ^:private -Drop ->DropSingle)
 
+(defn wield [game slot]
+  (if-let [item (and (has-hands? (:player game))
+                     (inventory-slot game slot))]
+    (if-not (or (:in-use item) (cursed? (secondv (wielding game))))
+      (if-let [[shield _] (and (two-handed? item) (have game shield? #{:worn}))]
+        (remove-use game shield)
+        (->Wield slot)))))
+
 ; factory functions for Java bots
 (gen-class
   :name bothack.bot.Actions

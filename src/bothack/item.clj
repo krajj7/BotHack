@@ -135,6 +135,9 @@
 
 (def-itemtype-preds)
 
+(defn shield? [item]
+  (= :shield (item-subtype item)))
+
 (defn container? [item]
   (some? (re-seq #"^bag\b|sack$|chest$|box$" (:name item))))
 
@@ -253,3 +256,6 @@
     :weapon (> 6 (enchantment item))
     :armor (> 4 (enchantment item))
     nil))
+
+(defn two-handed? [item]
+  (= 2 (:hands (item-id item))))

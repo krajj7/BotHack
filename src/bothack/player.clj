@@ -180,9 +180,17 @@
                   blocker) res
             (if (and (= :gloves subtype) (cursed? (secondv (wielding game))))
               (conj res (wielding game))
+              res)
+            (if (and (= :shield subtype) (wielding game)
+                     (two-handed? (secondv (wielding game))))
+              (conj res (wielding game))
               res))))
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
-        [(wielding game)])
+        (as-> [(wielding game)] res
+          (if-let [shield (and (two-handed? item)
+                               (have game shield? #{:worn}))]
+            (conj res shield)
+            res)))
       (if (ring? item)
         (concat (have-all game #(= :gloves (item-subtype %)) #{:worn :cursed})
                 (if-not (or (free-finger? player) (:in-use item))
