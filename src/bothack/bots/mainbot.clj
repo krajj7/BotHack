@@ -689,7 +689,7 @@
       (remove-use game slot))))
 
 (defn- enchant-gear [{:keys [player] :as game}]
-  (if-let [[slot item] (have game "slot of enchant armor"
+  (if-let [[slot item] (have game "scroll of enchant armor"
                              #{:bagged :noncursed})]
     (with-reason "enchant armor"
       (if (have game (every-pred safe-enchant? armor?))
