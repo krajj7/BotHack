@@ -167,6 +167,7 @@
         (update-dungeon frame)
         (update-fov (:cursor frame))
         (track-monsters game)
+        (remove-monster (:player game))
         update-explored)))
 
 (defn- level-msg [msg]

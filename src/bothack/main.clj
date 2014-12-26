@@ -32,7 +32,7 @@
 (defn- log-state [game]
   (log/info "current branch:" (branch-key game))
   (log/info "current updated tile:" (at-player game))
-  (log/info "monsters:" (curlvl-monsters game)))
+  #_(log/info "monsters:" (curlvl-monsters game)))
 
 (defn- register-javabot-jars []
   (doseq [l (file-seq (io/file "javabots/bot-jars"))

@@ -924,7 +924,9 @@
             (swap! game add-observed-cost (appearance-of item) bid :sell)
             nil)))
       DropSingleHandler
-      (drop-single [_ _] (str (if (pos? qty) qty) slot)))))
+      (drop-single [_ _] (str (if (pos? qty)
+                                qty)
+                              slot)))))
 
 (defaction Quiver [slot]
   (trigger [_] "Q")
@@ -1535,10 +1537,6 @@
     (reify PayWhomHandler
       (pay-whom [_] shk))))
 
-(def ^:private -withReason with-reason)
-(def ^:private -ApplyAt ->ApplyAt)
-(def ^:private -Drop ->DropSingle)
-
 (defn wield [game slot]
   (if-let [item (and (has-hands? (:player game))
                      (inventory-slot game slot))]
@@ -1546,6 +1544,10 @@
       (if-let [[shield _] (and (two-handed? item) (have game shield? #{:worn}))]
         (remove-use game shield)
         (->Wield slot)))))
+
+(def ^:private -withReason with-reason)
+(def ^:private -ApplyAt ->ApplyAt)
+(def ^:private -Drop ->DropSingle)
 
 ; factory functions for Java bots
 (gen-class

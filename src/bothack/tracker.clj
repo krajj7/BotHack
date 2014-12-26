@@ -73,7 +73,7 @@
            new-monsters (if (and (blind? (:player new-game))
                                  (not (have-intrinsic? (:player new-game)
                                                        :telepathy)))
-                          old-monsters
+                          (dissoc old-monsters (position (:player new-game)))
                           (:monsters (curlvl new-game)))
            dist 0]
       (if (and (> 4 dist) (seq old-monsters))

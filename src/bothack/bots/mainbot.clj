@@ -97,7 +97,6 @@
                 (->Eat slot))
             (pray game))))
       (if-let [[slot _] (and (unihorn-recoverable? game)
-                             ; rest can wait
                              (or (some (:state player) #{:conf :stun :ill})
                                  (and (not (have-intrinsic? player :telepathy))
                                       (blind? player)))
@@ -619,10 +618,11 @@
                           (wield game slot))))
                     (unbag game slot scroll)
                     (->Read slot))))
-            (if-let [[horn _] (have game "unicorn horn" #{:cursed})]
-              (with-reason "uncurse unihorn"
+            (if-let [[uslot _] (have game #{"unicorn horn"
+                                            "Orb of Fate"} #{:cursed})]
+              (with-reason "misc uncurse"
                 (or (unbag game slot scroll)
-                    (wield game horn))))))))
+                    (wield game uslot))))))))
 
 (defn lit-mines? [game level]
   (and (= :mines (branch-key game))
@@ -1474,7 +1474,7 @@
   (with-reason "killing medusa"
     (if-let [[slot _] (have game blind-tool #{:noncursed})]
       (if (and (= (:dlvl game) (:dlvl medusa)) (medusa-spot medusa))
-        (or (if (> 25 (distance player {:x 38 :y 11}) 3)
+        (or (if (> 25 (distance player {:x 38 :y 11}) 2)
               (go-down game medusa))
             (:step (navigate game (medusa-spot medusa) #{:adjacent}))
             (if (adjacent? player (medusa-spot medusa))
