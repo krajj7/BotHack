@@ -1132,12 +1132,14 @@
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation
-  (if-let [[slot _] (and action
-                         (not= :air (branch-key game))
-                         (have-levi-on game))]
-    (with-reason "action" (typekw action) "forbids levitation"
-      (remove-use game slot))
-    action))
+  (if-let [a (if (fn? action)
+               (action)
+               action)]
+    (if-let [[slot _] (and (not= :air (branch-key game))
+                           (have-levi-on game))]
+      (with-reason "action" (typekw a) "forbids levitation"
+        (remove-use game slot))
+      a)))
 
 (defaction Repeated [action n]
   (trigger [_] (str n (trigger action)))
@@ -1166,7 +1168,7 @@
     (->Wield slot)))
 
 (defn descend [game]
-  (without-levitation game (->Descend)))
+  (without-levitation game ->Descend))
 
 (defaction Offer [slot-or-label]
   (trigger [_] "#offer\n")

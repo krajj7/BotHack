@@ -77,7 +77,7 @@
     (with-reason "cursed levitation"
       ; won't work if we're in wiztower
       (or (pray game)
-          (if (below-castle? game)
+          (if (in-gehennom? game)
             (seek-level game :main :castle))
           (search 10)))))
 
@@ -484,7 +484,7 @@
 (defn examine-containers-here [game]
   (or (if (some explorable-container? (:items (at-player game)))
         (with-reason "learning contents of containers on ground"
-          ->Loot))
+          (without-levitation game ->Loot)))
       (if (unlockable-chest? game (at-player game))
         (without-levitation game
           (with-reason "unlock chest"
@@ -1445,7 +1445,8 @@
       (if-let [{:keys [step]}
                (and (or (not (:castle (curlvl-tags game)))
                         (< (:ac player) -3))
-                    (navigate game (every-pred throne? (comp empty? :items))))]
+                    (navigate game (every-pred throne? (comp empty? :items))
+                              #{:explored}))]
         ; TODO remove items from tile
         (or (with-reason "going to throne" step)
             ; TODO drop gold
@@ -1682,13 +1683,13 @@
 
 (defn get-protection [{:keys [player] :as game}]
   (if (and (want-protection? game) (> (gold game) (* 400 (:xplvl player)))
-           (or (not (below-medusa? game)) (below-castle? game)))
+           (or (not (below-medusa? game)) (in-gehennom? game)))
     (with-reason "get protection"
       (or (if-let [priest (find-first (every-pred priest? :peaceful
                                                   (partial adjacent? player))
                                       (curlvl-monsters game))]
             (->Contribute (towards player priest) (* 400 (:xplvl player))))
-          (if (:temple (:tags (curlvl game)))
+          (if (or (:temple (:tags (curlvl game))) (:votd (:tags (curlvl game))))
             (or (some->> (curlvl-monsters game)
                          (find-first (every-pred priest? :peaceful))
                          (navigate game) :step)

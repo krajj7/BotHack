@@ -706,13 +706,15 @@
     (or (pos? (dlvl-compare (:dlvl game) castle))
         (and (= (:dlvl game) castle)
              (or (< 69 (:x (:player game)))
-                 (and (< 64 (:x player)) (< 8 (:y player) 16)))))))
+                 (and (< 64 (:x player)) (< 8 (:y player) 16))
+                 (and (<= 60 (:x player)) (= 12 (:y player))))))))
 
 (defn in-gehennom?
   "Your god won't help you here (includes VoTD)"
   [game]
   (and (#{:wiztower :main} (branch-key game))
-       (below-castle? game)))
+       (if-let [castle (get-dlvl game :main :castle)]
+         (pos? (dlvl-compare (:dlvl game) castle)))))
 
 (defn below-medusa?
   "Being on the right side of medusa's island is also considered below"
