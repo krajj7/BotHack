@@ -646,8 +646,8 @@
           (with-reason "using any light source" (->Apply slot))))))
 
 (defn remove-rings [{:keys [player] :as game}]
-  (or (if-let [[slot _] (have game #{"ring of invisibility" "ring of conflict"}
-                              #{:worn})]
+  (or (if-let [[slot _] (have game #{"ring of invisibility"
+                                     "ring of conflict"} #{:worn})]
         (with-reason "don't need ring"
           (remove-use game slot)))
       (if-let [[slot _] (and (= (:hp player) (:maxhp player))

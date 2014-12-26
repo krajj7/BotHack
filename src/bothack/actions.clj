@@ -1110,25 +1110,27 @@
       :armor ->TakeOff)))
 
 (defn remove-blockers [game slot]
-  (if-let [[[blocker-slot blocker] & _ :as blockers]
-           (blockers game (inventory-slot game slot))]
-    (if (and blocker (not-any? cursed? (map secondv blockers)))
-      ((remove-action blocker) blocker-slot))))
+  (with-reason "removing blockers of" slot
+    (if-let [[[blocker-slot blocker] & _ :as blockers]
+             (blockers game (inventory-slot game slot))]
+      (if (and blocker (not-any? cursed? (map secondv blockers)))
+        ((remove-action blocker) blocker-slot)))))
 
-; FIXME unwield wearables
 (defn make-use [game slot]
-  (let [item (inventory-slot game slot)]
-    (if-not (or (:in-use item) (cursed-blockers game slot)
-                (not (has-hands? (:player game))))
-      (or (remove-blockers game slot)
-          ((use-action item) slot)))))
+  (with-reason "making use of" slot
+    (let [item (inventory-slot game slot)]
+      (if-not (or (:in-use item) (cursed-blockers game slot)
+                  (not (has-hands? (:player game))))
+        (or (remove-blockers game slot)
+            ((use-action item) slot))))))
 
 (defn remove-use [game slot]
-  (let [item (inventory-slot game slot)]
-    (if (:in-use item)
-      (or (remove-blockers game slot)
-          (if (can-remove? game slot)
-            ((remove-action item) slot))))))
+  (with-reason "removing use of" slot
+    (let [item (inventory-slot game slot)]
+      (if (:in-use item)
+        (or (remove-blockers game slot)
+            (if (can-remove? game slot)
+              ((remove-action item) slot)))))))
 
 (defn without-levitation [game action]
   ; XXX doesn't work for intrinsic levitation

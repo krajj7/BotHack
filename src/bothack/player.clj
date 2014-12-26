@@ -169,7 +169,7 @@
                         (vals (:inventory player)))))
 
 (defn blockers
-  "Return a seq of [slot item] of armor that needs to be removed before armor item can be worn (in possible order of removal)"
+  "Return a seq of [slot item] of stuff that needs to be removed before item can be used (in possible order of removal)"
   [{:keys [player] :as game} item]
   (or (if-let [subtype (item-subtype item)]
         (if (not= :weapon subtype)
@@ -185,7 +185,7 @@
         [(wielding game)])
       (if (ring? item)
         (concat (have-all game #(= :gloves (item-subtype %)) #{:worn :cursed})
-                (if-not (free-finger? player)
+                (if-not (or (free-finger? player) (:in-use item))
                   (have-all game ring? #{:worn}))))
       (if (amulet? item)
         [(have game amulet? #{:worn})])))
