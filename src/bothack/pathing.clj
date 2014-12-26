@@ -1056,20 +1056,20 @@
   ([game branch]
    (shallower-unexplored game :main (or (if (= :main (branch-key game branch))
                                           :end)
-                                        (some->> (get-level game :main branch)
-                                                 :dlvl (next-dlvl :main))
+                                        (some->> (get-dlvl game :main branch)
+                                                 (next-dlvl :main))
                                         branch)))
   ([game branch tag-or-dlvl]
    (let [branch (branch-key game branch)
-         start (if (and (= :main branch) (not (have-levi game)))
-                 (or (if (below-castle? game)
-                       (:dlvl (get-level game :main :castle)))
-                     (if (below-medusa? game)
-                       (:dlvl (get-level game :main :medusa)))
-                     (first (keys (get-branch game branch)))))
+         start (or (if (and (= :main branch) (not (have-levi game)))
+                     (cond (below-castle? game) (get-dlvl game :main :castle)
+                           (below-medusa? game) (get-dlvl game :main :medusa)))
+                   (some->> (get-branch game branch) first key))
          dlvl (or (get-dlvl game branch tag-or-dlvl)
-                  (next-dlvl branch (:dlvl game)))]
-     (if (and start (neg? (dlvl-compare branch start dlvl)))
+                  (if (= branch (branch-key game))
+                    (next-dlvl branch (:dlvl game))
+                    (some->> (get-branch game branch) last key next-dlvl)))]
+     (if (and start dlvl (neg? (dlvl-compare branch start dlvl)))
        (->> start
             (iterate (partial next-dlvl branch))
             (take-while (partial not= dlvl))
@@ -1140,7 +1140,7 @@
   ([game branch tag-or-dlvl exclusive?]
    (with-reason "exploring" branch "until" tag-or-dlvl
      (or (if-let [l (and (not= :main (branch-key game branch))
-                         (shallower-unexplored game :main branch))]
+                         (shallower-unexplored game branch))]
            (with-reason "first exploring main until branch entrance"
              (explore-level game :main l)))
          (if-let [l (shallower-unexplored game branch tag-or-dlvl)]
