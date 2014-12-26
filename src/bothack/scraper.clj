@@ -316,7 +316,7 @@
          head (ref nil)
          items (ref nil)
          menu-nextpage (ref nil)
-         prev (ref no-mark-prompt)]
+         prev (ref (if no-mark-prompt (string/trim no-mark-prompt)))]
      (letfn [(handle-game-start [frame]
                (when (game-beginning? frame)
                  (log/debug "Handling game start")

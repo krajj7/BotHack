@@ -67,7 +67,7 @@ Source ttyrec: https://github.com/krajj7/BotHack/raw/master/ttyrec/wizmode-fulla
 
 **25.12.2014**: The main example bot can reach the castle fairly regularly now, it has finished the quest and cleared the first few levels of gehennom without wizard mode or human intervetion, eventually dying by starvation due to a bug.  This makes it the most successful NetHack bot written as of yet (as far as I'm aware).
 
-Dumplog of the boẗ́'s best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419369702
+Dumplog of the bot's best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419369702
 
 Listing of other bots for comparison: http://taeb.github.io/bots.html
 
