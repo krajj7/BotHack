@@ -65,9 +65,9 @@ Source ttyrec: https://github.com/krajj7/BotHack/raw/master/ttyrec/wizmode-fulla
 
 **6.12.2014**: The bot can now solve every level of sokoban and makes use of some of the items that can be found there.  The sokoban solver module can deal with interruptions from monsters and other perils.  The prize and giant mimics on the last level are auto-identified.
 
-**25.12.2014**: The main example bot can reach the castle fairly regularly now, it has finished the quest and cleared the first few levels of gehennom without wizard mode or human intervetion, eventually dying by starvation due to a bug.  This makes it the most successful NetHack bot written as of yet (as far as I'm aware).
+**27.12.2014**: The main example bot can reach the castle fairly regularly now, it has finished the quest and cleared many levels of gehennom including Vlad's (without wizard mode or human intervetion), eventually dying to Orcus-spawned Demogorgon.  This makes it the most successful NetHack bot written as of yet.
 
-Dumplog of the bot's best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419369702
+Dumplog of the bot's best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419682524
 
 Listing of other bots for comparison: http://taeb.github.io/bots.html
 
