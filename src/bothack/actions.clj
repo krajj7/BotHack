@@ -511,8 +511,12 @@
     (reify
       ToplineMessageHandler
       (message [_ text]
-        (if (= text "Not carrying anything.")
-          (swap! game assoc-in [:player :inventory] {})))
+        (case text
+          "Not carrying anything."
+          (swap! game assoc-in [:player :inventory] {})
+          "Not carrying anything except gold."
+          (swap! game update-in [:player :inventory] select-keys [\$])
+          nil))
       InventoryHandler
       (inventory-list [_ inventory]
         (swap! game update-in [:player :inventory]
