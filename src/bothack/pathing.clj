@@ -354,7 +354,7 @@
        (not (and (:castle (:tags level)) (door? from)))
        (or (safely-walkable? level to)
            (and ((some-fn pool? ice?) to)
-                (-> opts :levi secondv :worn)))))
+                (-> opts :levi val :worn)))))
 
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))

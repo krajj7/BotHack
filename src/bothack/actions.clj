@@ -1119,7 +1119,7 @@
   (with-reason "removing blockers of" slot
     (if-let [[[blocker-slot blocker] & _ :as blockers]
              (blockers game (inventory-slot game slot))]
-      (if (and blocker (not-any? cursed? (map secondv blockers)))
+      (if (and blocker (not-any? cursed? (vals blockers)))
         ((remove-action blocker) blocker-slot)))))
 
 (defn make-use [game slot]
@@ -1544,7 +1544,7 @@
 (defn wield [game slot]
   (if-let [item (and (has-hands? (:player game))
                      (inventory-slot game slot))]
-    (if-not (or (:in-use item) (cursed? (secondv (wielding game))))
+    (if-not (or (:in-use item) (cursed? (val (wielding game))))
       (if-let [[shield _] (and (two-handed? item) (have game shield? #{:worn}))]
         (remove-use game shield)
         (->Wield slot)))))

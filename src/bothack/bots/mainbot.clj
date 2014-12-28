@@ -52,7 +52,7 @@
     (enhance-all)))
 
 (defn- choose-food [{:keys [player] :as game}]
-  (or (min-by (comp nw-ratio secondv)
+  (or (min-by (comp nw-ratio val)
               (have-all game (every-pred (partial can-eat? player)
                                          (comp (partial not= "lizard corpse")
                                                (partial item-name game))
@@ -191,7 +191,7 @@
           (explore game :main :quest)
           (let [minetown (get-level game :mines :minetown)]
             (if (and (not (below-medusa? game))
-                     (or (some->> game have-key secondv key?)
+                     (or (some->> game have-key val key?)
                          (not (:minetown-grotto (:tags minetown)))
                          (:seen (at minetown 48 5)))
                      (or (< -7 (:ac player)) (not (have-pick game))))
@@ -367,7 +367,7 @@
               desired-items)
          res always-desired]
     (if-let [c (first cs)]
-      (if-let [[slot i] (max-by (comp (partial utility game) secondv)
+      (if-let [[slot i] (max-by (comp (partial utility game) val)
                                 (have-all game c #{:bagged}))]
         (recur (rest cs)
                (into (conj res (:name i))
@@ -612,7 +612,7 @@
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
-                (or (if-not (cursed? (secondv (wielding game)))
+                (or (if-not (cursed? (val (wielding game)))
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
@@ -674,7 +674,7 @@
           (if (or (more-than? 2 cat-items)
                   (and (more-than? 1 cat-items)
                        (not (some stuck? cat-items))))
-            (if-let [[slot item] (min-by (comp (partial utility game) secondv)
+            (if-let [[slot item] (min-by (comp (partial utility game) val)
                                          (remove stuck? cat-items))]
               (with-reason "dropping less useful duplicate"
                 (or (remove-use game slot)
@@ -697,10 +697,9 @@
                              #{:bagged :noncursed})]
     (with-reason "enchant armor"
       (if (have game (every-pred safe-enchant? armor?))
-        (if-let [slots (->> (have-all game (every-pred
-                                             (complement safe-enchant?)
-                                             armor? :worn))
-                            (map firstv) seq)]
+        (if-let [slots (keys (have-all game (every-pred
+                                              (complement safe-enchant?)
+                                              armor? :worn)))]
           (if (every? #(can-remove? game %) slots)
             (remove-use game (first slots)))
           (or (unbag game slot item)
@@ -815,7 +814,7 @@
 
 (defn hit-leprechaun [game monster]
   (if-let [qty (and (leprechaun? monster)
-                    (some-> (have game "gold piece") secondv :qty))]
+                    (some-> (have game "gold piece") val :qty))]
     (->DropSingle \$ qty)))
 
 (defn- hit [{:keys [player] :as game} level monster]
@@ -873,7 +872,7 @@
 
 (defn- engrave-slot [game perma?]
   (or (if perma?
-        (firstv (have game #{"wand of fire" "wand of lightning"})))
+        (key (have game #{"wand of fire" "wand of lightning"})))
       \-))
 
 (defn engrave-e
@@ -1217,7 +1216,7 @@
   (let [tile (and (= :astral (:branch-id game))
                   (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (firstv (have game real-amulet?))))))
+      (->Offer (key (have game real-amulet?))))))
 
 (defn detect-portal [bh]
   (reify ActionHandler
@@ -1538,7 +1537,7 @@
               (remove-use game slot)
               (->Drop slot))))
       (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
-                             (mapcat (comp (partial shops-taking) secondv))
+                             (mapcat (comp (partial shops-taking) val))
                              (some (curlvl-tags game)))]
         (with-reason "visit shop" shoptype "to price id items"
           (:step (navigate game #(and (= shoptype (:room %))
@@ -1592,14 +1591,14 @@
   ([game bagged?]
    (->> (inventory game bagged?)
         (remove (every-pred (comp some? :buc) (comp some? :enchantment)))
-        (sort-by (comp (partial id-priority game) secondv))
+        (sort-by (comp (partial id-priority game) val))
         reverse)))
 
 #_(def game @(:game bothack.main/a))
 #_(log/debug "want identified\n"
               (map (comp #(str % \newline)
                          (juxt (partial id-priority game)
-                               :label) secondv) (want-id game :bagged)))
+                               :label) val) (want-id game :bagged)))
 
 (defn- recharge [game slot]
   (if-not (charged? (inventory-slot game slot))
@@ -1647,7 +1646,7 @@
         (if-let [[slot item] (have game "scroll of identify"
                                    #{:bagged :noncursed})]
           (when-let [want (seq (want-id game :bagged))]
-            (if (< 6 (id-priority game (secondv (first want))))
+            (if (< 6 (id-priority game (val (first want))))
               (or (keep-first (fn [[slot item]]
                                 (unbag game slot item)) want)
                   (with-reason "identify" (first want)
@@ -1662,7 +1661,7 @@
 
 (defn choose-identify [game options]
   (let [want (want-id game)]
-    (find-first options (map firstv want))))
+    (find-first options (keys want))))
 
 (defn- respond-geno [bh]
   (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))

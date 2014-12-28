@@ -120,7 +120,7 @@
   (for [[slot bag] (inventory game)
         :when (container? bag)
         item (:items bag)]
-    [slot item]))
+    (clojure.lang.MapEntry. slot item)))
 
 (defn inventory
   ([game bagged?]
@@ -178,11 +178,11 @@
                                                      (:worn %)))]
                       :when blocker]
                   blocker) res
-            (if (and (= :gloves subtype) (cursed? (secondv (wielding game))))
+            (if (and (= :gloves subtype) (cursed? (val (wielding game))))
               (conj res (wielding game))
               res)
             (if (and (= :shield subtype) (wielding game)
-                     (two-handed? (secondv (wielding game))))
+                     (two-handed? (val (wielding game))))
               (conj res (wielding game))
               res))))
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
@@ -201,8 +201,7 @@
 (defn cursed-blockers [game slot]
   (if-let [[[blocker-slot blocker] & _ :as blockers]
            (blockers game (inventory-slot game slot))]
-    (->> (map secondv blockers)
-         (filter cursed?) seq)))
+    (->> (vals blockers) (filter cursed?) seq)))
 
 (defn- have-selector [game name-or-set-or-fn opts]
   (apply every-pred (base-selector game name-or-set-or-fn)
@@ -232,7 +231,7 @@
           ((some-fn map? set?) opts)]}
    (let [opts (if (set? opts) (zipmap opts (repeat true)) opts)
          selector (have-selector game name-or-set-or-fn opts)]
-     (concat (for [[slot item] (inventory game)
+     (concat (for [[slot item :as entry] (inventory game)
                    :when (and (selector item)
                               (not (and (:can-use opts)
                                         (or (and (or (armor? item)
@@ -252,13 +251,13 @@
                               (not (and (:can-remove opts)
                                         (:in-use item)
                                         (cursed-blockers game slot))))]
-               [slot item])
+               entry)
              (if (:bagged opts)
                (for [[slot bag] (inventory game)
                      :when (container? bag)
                      :let [matches (filter selector (:items bag))]
                      match matches]
-                 [slot match]))))))
+                 (clojure.lang.MapEntry. slot match)))))))
 
 (defn have-sum
   "Returns sum of the quantities of matching items"
