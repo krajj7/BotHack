@@ -1,8 +1,8 @@
-package bothack.javabots;
+package bothack.javabots.javabot;
 
 import bothack.bot.*;
+import bothack.delegator.*;
 
-/** A dumb example bot.  Equivalent to simplebot.clj */
 public class JavaBot {
 	IBotHack bothack;
 	
@@ -13,18 +13,7 @@ public class JavaBot {
 		@Override
 		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
-			//return Actions.Contribute(smallCircle[next++]);
 			return Actions.Move(smallCircle[next++]);
-		}
-	}
-	
-	class PrayForFood implements IActionHandler {
-		@Override
-		public IAction chooseAction(IGame game) {
-			if (game.player().hunger() == Hunger.FAINTING)
-				return Actions.Pray();
-			else
-				return null;
 		}
 	}
 	
@@ -36,7 +25,7 @@ public class JavaBot {
 				return "nsm"; // choose samurai
 			}
 		});
-		bothack.registerHandler(0, new PrayForFood());
+		bothack.registerHandler(-25, new StarvationHandler());
 		bothack.registerHandler(1, new CircleMover());
 		System.out.println("bot initialized");
 	}

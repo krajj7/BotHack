@@ -26,46 +26,6 @@
 (defn satiated? [player]
   (= :satiated (:hunger player)))
 
-(defrecord Player
-  [nickname
-   title
-   role
-   race
-   hp
-   maxhp
-   pw
-   maxpw
-   ac
-   xp
-   xplvl
-   x y
-   inventory ; {char => Item}
-   hunger ; :fainting :weak :hungry :satiated
-   burden ; :overloaded :overtaxed :strained :stressed :burdened
-   intrinsics ; set of resistances, telepathy etc.
-   engulfed
-   trapped
-   leg-hurt
-   state ; subset #{:stun :conf :hallu :blind :ill :ext-blind}
-   stat-drained
-   polymorphed
-   lycantrophy
-   stoning
-   stats ; :dex :con :int :wis :cha :str (effective integer str) :str* (string like "18/**")
-   alignment ; :lawful :neutral :chaotic
-   protection
-   can-enhance]
-  bothack.bot.IPlayer
-  ; TODO expose stats etc.
-  (alignment [this] (kw->enum bothack.bot.Alignment (:alignment this)))
-  (hunger [this] (kw->enum bothack.bot.Hunger (:hunger this)))
-  (isHungry [this] (boolean (hungry? this)))
-  (isWeak [this] (boolean (weak? this))))
-
-(defn new-player []
-  (map->Player {:protection 0
-                :inventory {}}))
-
 (defn- selfpoly-monster [title]
   (if title
     (name->monster title)
@@ -510,3 +470,48 @@
 (defn have-mr? [game]
   (have game #{"gray dragon scale mail" "cloak of magic resistance"
                "Magicbane" "gray dragon scales"} #{:in-use}))
+
+(defn can-eat? [player]
+  (not (overtaxed? player)))
+
+(defrecord Player
+  [nickname
+   title
+   role
+   race
+   hp
+   maxhp
+   pw
+   maxpw
+   ac
+   xp
+   xplvl
+   x y
+   inventory ; {char => Item}
+   hunger ; :fainting :weak :hungry :satiated
+   burden ; :overloaded :overtaxed :strained :stressed :burdened
+   intrinsics ; set of resistances, telepathy etc.
+   engulfed
+   trapped
+   leg-hurt
+   state ; subset #{:stun :conf :hallu :blind :ill :ext-blind}
+   stat-drained
+   polymorphed
+   lycantrophy
+   stoning
+   stats ; :dex :con :int :wis :cha :str (effective integer str) :str* (string like "18/**")
+   alignment ; :lawful :neutral :chaotic
+   protection
+   can-enhance]
+  bothack.bot.IPlayer
+  ; TODO expose stats etc.
+  (alignment [player] (kw->enum bothack.bot.Alignment (:alignment player)))
+  (hunger [player] (kw->enum bothack.bot.Hunger (:hunger player)))
+  (isHungry [player] (boolean (hungry? player)))
+  (isOverloaded [player] (boolean (overloaded? player)))
+  (isOvertaxed [player] (boolean (overtaxed? player)))
+  (isWeak [player] (boolean (weak? player))))
+
+(defn new-player []
+  (map->Player {:protection 0
+                :inventory {}}))

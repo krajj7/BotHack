@@ -1,6 +1,7 @@
-package bothack.javabots;
+package bothack.javabots.simplebot;
 
 import bothack.bot.*;
+import bothack.delegator.*;
 
 /** A dumb example bot.  Equivalent to simplebot.clj */
 public class SimpleBot {
@@ -13,7 +14,6 @@ public class SimpleBot {
 		@Override
 		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
-			//return Actions.Contribute(smallCircle[next++]);
 			return Actions.Move(smallCircle[next++]);
 		}
 	}

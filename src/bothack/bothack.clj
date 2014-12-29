@@ -154,6 +154,8 @@
     (dump-core [_ _] "q")
     DoTeleportHandler
     (do-teleport [_ _] true)
+    ReallyAttackHandler
+    (really-attack [_ _] false)
     CreateWhatMonsterHandler
     (create-what-monster [_ _] esc)
     IdentifyWhatHandler

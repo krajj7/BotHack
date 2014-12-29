@@ -21,41 +21,6 @@
             [bothack.pathing :refer :all]
             [bothack.delegator :refer :all]))
 
-(defrecord Game
-  [frame
-   player
-   dungeon
-   branch-id ; current
-   dlvl ; current
-   discoveries ; database of facts about item identities and appearances
-   used-names
-   tried ; set of tried armor/scrolls/potions/rings/amulets appearances
-   fov
-   genocided
-   wishes
-   turn
-   turn* ; internal clock - increments per each action (unlike game turns)
-   score]
-  bothack.bot.IGame
-  (frame [this] (:frame this))
-  (player [this] (:player this)))
-
-(defmethod print-method Game [game w]
-  (.write w (str "#bothack.game.Game"
-                 (assoc (.without game :discoveries)
-                        :discoveries "<trimmed>"))))
-
-(defn new-game []
-  (map->Game {:player (new-player)
-              :dungeon (new-dungeon)
-              :branch-id :main
-              :used-names #{}
-              :tried #{}
-              :turn* 0
-              :wishes 0
-              :genocided #{}
-              :discoveries (new-discoveries)}))
-
 (defn- update-game-status [game status]
   (->> (keys game) (select-keys status) (into game)))
 
@@ -515,3 +480,39 @@
               #"You feel slower|You feel slow!|You slow down|Your quickness feels less natural"
               (swap! game remove-intrinsic :speed)
               nil))))))
+
+(defrecord Game
+  [frame
+   player
+   dungeon
+   branch-id ; current
+   dlvl ; current
+   discoveries ; database of facts about item identities and appearances
+   used-names
+   tried ; set of tried armor/scrolls/potions/rings/amulets appearances
+   fov
+   genocided
+   wishes
+   turn
+   turn* ; internal clock - increments per each action (unlike game turns)
+   score]
+  bothack.bot.IGame
+  (canPray [game] (can-pray? game))
+  (frame [game] (:frame game))
+  (player [game] (:player game)))
+
+(defmethod print-method Game [game w]
+  (.write w (str "#bothack.game.Game"
+                 (assoc (.without game :discoveries)
+                        :discoveries "<trimmed>"))))
+
+(defn new-game []
+  (map->Game {:player (new-player)
+              :dungeon (new-dungeon)
+              :branch-id :main
+              :used-names #{}
+              :tried #{}
+              :turn* 0
+              :wishes 0
+              :genocided #{}
+              :discoveries (new-discoveries)}))

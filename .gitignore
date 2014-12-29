@@ -19,3 +19,4 @@ video
 notes
 *.lo
 *.ttyrec
+.classpath

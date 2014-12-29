@@ -22,11 +22,6 @@
             [bothack.tracker :refer :all]
             [bothack.actions :refer :all]))
 
-(defn pray [game]
-  (with-reason "pray"
-    (if (can-pray? game)
-      (->Pray))))
-
 (defn- hostile-dist-thresh [game]
   (cond
     (planes (branch-key game)) 1
@@ -59,8 +54,13 @@
                                          (complement tin?)) #{:bagged}))
       (have game "lizard corpse" #{:bagged})))
 
+(defn pray [game]
+  (with-reason "pray"
+    (if (can-pray? game)
+      (->Pray))))
+
 (defn- handle-starvation [{:keys [player] :as game}]
-  (or (if (and (weak? player) (not (overloaded? player)))
+  (or (if (and (weak? player) (not (overtaxed? player)))
         (if-let [[slot food] (choose-food game)]
           (with-reason "weak or worse, eating" food
             (or (unbag game slot food)
@@ -1745,14 +1745,12 @@
                             (choose-identify @game options))
                           OfferHandler
                           (offer-how-much [_ _]
-                            (bribe-demon (:last-topline @(:game bh))))
-                          ReallyAttackHandler
-                          (really-attack [_ _] false)))
+                            (bribe-demon (:last-topline @(:game bh))))))
       (register-handler (reify VaultGuardHandler
                           (who-are-you [_ _]
                             (if (have @(:game bh) #{"pick-axe"
-                                                      "scroll of teleportation"
-                                                      "wand of teleportation"}
+                                                    "scroll of teleportation"
+                                                    "wand of teleportation"}
                                       #{:can-use})
                               "Croesus"))))
       (register-handler (respond-geno bh))

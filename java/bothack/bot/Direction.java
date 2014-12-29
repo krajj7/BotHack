@@ -10,7 +10,10 @@ public enum Direction {
     S(Keyword.intern(null, "S")),
     SW(Keyword.intern(null, "SW")),
     W(Keyword.intern(null, "W")),
-    NW(Keyword.intern(null, "NW"));
+    NW(Keyword.intern(null, "NW")),
+    DOWN(Keyword.intern(null, ">")),
+    UP(Keyword.intern(null, "<")),
+    HERE(Keyword.intern(null, "."));
 
     private final Keyword kw;
     private Direction(Keyword kw) {

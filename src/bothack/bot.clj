@@ -4,13 +4,13 @@
 ; note: delegator.clj, actions.clj and java code generate additional classes in the bothack.bot package
 
 (definterface IBotHack
-  (^bothack.bot.IBotHack registerHandler [handler])
-  (^bothack.bot.IBotHack registerHandler [^int priority handler])
-  (^bothack.bot.IBotHack deregisterHandler [handler])
-  (^bothack.bot.IBotHack replaceHandler [handler-old handler-new])
+  (^void registerHandler [handler])
+  (^void registerHandler [^int priority handler])
+  (^void deregisterHandler [handler])
+  (^void replaceHandler [handler-old handler-new])
+  (^void write [^String text])
   (^bothack.bot.IGame game [])
-  (^bothack.bot.IPlayer player [])
-  (^bothack.bot.IBotHack write [^String text]))
+  (^bothack.bot.IPlayer player []))
 
 (definterface IAction
   (handler [^bothack.bot.IBotHack bh])
@@ -21,11 +21,14 @@
   (^bothack.bot.Alignment alignment [])
   (^bothack.bot.Hunger hunger [])
   (^boolean isHungry [])
+  (^boolean isOverloaded [])
+  (^boolean isOvertaxed [])
   (^boolean isWeak []))
 
 (definterface IGame
   (^bothack.bot.IFrame frame [])
-  (^bothack.bot.IPlayer player []))
+  (^bothack.bot.IPlayer player [])
+  (^boolean canPray []))
 
 (definterface IPosition
   (^int x [])
