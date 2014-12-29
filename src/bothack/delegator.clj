@@ -142,9 +142,9 @@
 (defmacro ^:private defprotocol-delegated
   [return invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
-       (defnsinterface ~(symbol (str \I protocol)) "bothack.bot"
+       (defnsinterface ~(symbol (str \I protocol)) "bothack.delegator"
          ~@(map (partial interface-sig return) proto-methods))
-       (extend-type ~(symbol (str "bothack.bot.I" protocol))
+       (extend-type ~(symbol (str "bothack.delegator.I" protocol))
          ~protocol ~@(map interface-call proto-methods))
        (extend-type Delegator ~protocol
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))

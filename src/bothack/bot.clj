@@ -20,9 +20,11 @@
   (^bothack.bot.IPosition position [])
   (^bothack.bot.Alignment alignment [])
   (^bothack.bot.Hunger hunger [])
+  (^bothack.bot.Encumbrance encumbrance [])
   (^boolean isHungry [])
   (^boolean isOverloaded [])
   (^boolean isOvertaxed [])
+  (^boolean isBurdened [])
   (^boolean isWeak []))
 
 (definterface IGame

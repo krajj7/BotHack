@@ -1,3 +1,3 @@
 package bothack.bot;
 
-public enum Hunger {FAINTING, WEAK, HUNGRY, NORMAL, SATIATED}
+public enum Hunger {FAINTING, WEAK, HUNGRY, SATIATED}

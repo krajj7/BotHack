@@ -395,16 +395,19 @@
                food))))
 
 (defn overloaded? [player]
-  (= :overloaded (:burden player)))
+  (= :overloaded (:encumbrance player)))
 
 (defn overtaxed? [player]
-  (#{:overtaxed :overloaded} (:burden player)))
+  (#{:overtaxed :overloaded} (:encumbrance player)))
 
 (defn strained? [player]
-  (#{:strained :overtaxed :overloaded} (:burden player)))
+  (#{:strained :overtaxed :overloaded} (:encumbrance player)))
 
 (defn stressed? [player]
-  (#{:stressed :strained :overtaxed :overloaded} (:burden player)))
+  (#{:stressed :strained :overtaxed :overloaded} (:encumbrance player)))
+
+(defn burdened? [player]
+  (some? (:encumbrance player)))
 
 (defn can-engrave?
   "Checks if the player is capable of engraving (also for non-engravable planes)"
@@ -489,7 +492,7 @@
    x y
    inventory ; {char => Item}
    hunger ; :fainting :weak :hungry :satiated
-   burden ; :overloaded :overtaxed :strained :stressed :burdened
+   encumbrance ; :overloaded :overtaxed :strained :stressed :encumbranceed
    intrinsics ; set of resistances, telepathy etc.
    engulfed
    trapped
@@ -505,11 +508,14 @@
    can-enhance]
   bothack.bot.IPlayer
   ; TODO expose stats etc.
+  (encumbrance [player]
+    (kw->enum bothack.bot.Encumbrance (:encumbrance player)))
   (alignment [player] (kw->enum bothack.bot.Alignment (:alignment player)))
   (hunger [player] (kw->enum bothack.bot.Hunger (:hunger player)))
   (isHungry [player] (boolean (hungry? player)))
   (isOverloaded [player] (boolean (overloaded? player)))
   (isOvertaxed [player] (boolean (overtaxed? player)))
+  (isBurdened [player] (boolean (burdened? player)))
   (isWeak [player] (boolean (weak? player))))
 
 (defn new-player []

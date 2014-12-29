@@ -279,13 +279,13 @@
                                        " Foo" :ill " Ill" :ill " Hal" :hallu}
                        :when (.contains ^String botl2 substr)]
                    state))
-     :burden (condp #(.contains ^String %2 %1) botl2
-               " Overl" :overloaded
-               " Overt" :overtaxed
-               " Stra" :strained
-               " Stre" :stressed
-               " Bur" :burdened
-               nil)
+     :encumbrance (condp #(.contains ^String %2 %1) botl2
+                    " Overl" :overloaded
+                    " Overt" :overtaxed
+                    " Stra" :strained
+                    " Stre" :stressed
+                    " Bur" :burdened
+                    nil)
      :hunger (condp #(.contains ^String %2 %1) botl2
                " Sat" :satiated
                " Hun" :hungry
