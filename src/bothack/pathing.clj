@@ -120,7 +120,7 @@
    (some->> (if diagonal?
               (diagonal-neighbors level player)
               (neighbors level player))
-            (remove (partial monster-at level))
+            (remove (some-fn trap? (partial monster-at level)))
             (filterv #(or (passable-walking? game level (at level player) %)
                           (unexplored? %)))
             random-nth
