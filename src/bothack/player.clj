@@ -138,15 +138,18 @@
                                                      (:worn %)))]
                       :when blocker]
                   blocker) res
-            (if (and (= :gloves subtype) (cursed? (val (wielding game))))
+            (if (and (= :gloves subtype) (some-> (wielding game) val cursed?))
               (conj res (wielding game))
               res)
             (if (and (= :shield subtype) (wielding game)
-                     (two-handed? (val (wielding game))))
+                     (some-> (wielding game) val two-handed?))
               (conj res (wielding game))
               res))))
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
-        (as-> [(wielding game)] res
+        (as-> [] res
+          (if-let [weapon (wielding game)]
+            (conj res weapon)
+            res)
           (if-let [shield (and (two-handed? item)
                                (have game shield? #{:worn}))]
             (conj res shield)
@@ -156,12 +159,11 @@
                 (if-not (or (free-finger? player) (:in-use item))
                   (have-all game ring? #{:worn}))))
       (if (amulet? item)
-        [(have game amulet? #{:worn})])))
+        (have-all game amulet? #{:worn}))))
 
 (defn cursed-blockers [game slot]
-  (if-let [[[blocker-slot blocker] & _ :as blockers]
-           (blockers game (inventory-slot game slot))]
-    (->> (vals blockers) (filter cursed?) seq)))
+  (some->> (inventory-slot game slot) (blockers game)
+           (map secondv) (filter cursed?) seq))
 
 (defn- have-selector [game name-or-set-or-fn opts]
   (apply every-pred (base-selector game name-or-set-or-fn)
