@@ -1186,13 +1186,15 @@
             ->Move
             (with-reason "arbitrary direction"))))
 
-(defn untrap-move [{:keys [player] :as game} level]
-  (with-reason "untrap move"
-    (or (if-let [wall (find-first (some-fn wall? rock?)
-                                  (diagonal-neighbors level player))]
-          (->Move (towards player wall)))
-        (arbitrary-move game level :diagonal)
-        (arbitrary-move game level))))
+(defn untrap-move
+  ([game] (untrap-move game (curlvl game)))
+  ([{:keys [player] :as game} level]
+   (with-reason "untrap move"
+     (or (if-let [wall (find-first (some-fn wall? rock?)
+                                   (diagonal-neighbors level player))]
+           (->Move (towards player wall)))
+         (arbitrary-move game level :diagonal)
+         (arbitrary-move game level)))))
 
 (defn kick [{:keys [player] :as game} target-or-dir]
   (let [dir (if (keyword? target-or-dir)

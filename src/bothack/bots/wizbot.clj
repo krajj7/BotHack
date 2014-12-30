@@ -427,7 +427,7 @@
   (let [tile (and (= :astral (:branch-id game))
                   (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (key (have game real-amulet?))))))
+      (some-> (have game real-amulet?) key ->Offer))))
 
 (defn detect-portal [bh]
   (reify ActionHandler

@@ -399,7 +399,7 @@
         (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))))
 
 (defn- take-cursed? [game item]
-  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify"} (item-name game item))
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify"} (item-name game item))
       ((some-fn ring? amulet? tool? artifact?) item)))
 
 (defn want-buy? [game item]
@@ -801,6 +801,7 @@
            (#{"black pudding" "brown pudding" "dwarf" "mumak"}
                      (typename monster))
            (mobile? game monster)
+           (pos? (rand-int 20))
            (not (:just-moved monster)))
     (with-reason "kite"
       (:step (navigate game #(= 2 (distance monster %))
@@ -872,7 +873,7 @@
 
 (defn- engrave-slot [game perma?]
   (or (if perma?
-        (key (have game #{"wand of fire" "wand of lightning"})))
+        (some-> (have game #{"wand of fire" "wand of lightning"}) key))
       \-))
 
 (defn engrave-e
@@ -1216,7 +1217,7 @@
   (let [tile (and (= :astral (:branch-id game))
                   (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (->Offer (key (have game real-amulet?))))))
+      (some-> (have game real-amulet?) key ->Offer))))
 
 (defn detect-portal [bh]
   (reify ActionHandler
@@ -1298,7 +1299,10 @@
     (or (explore game)
         (search-level game 1)
         (:step (navigate game (->> (curlvl game) tile-seq
-                                   (filter :walked)
+                                   (filter (every-pred
+                                             (complement boulder?)
+                                             (some-fn floor? corridor?)
+                                             :walked))
                                    (min-by :walked)))))))
 
 (defn- hunt-action [{:keys [player] :as game} robbed-of]
@@ -1314,8 +1318,8 @@
                                    (have game blind-tool #{:noncursed}))]
               (make-use game slot))
             (if-let [step (:step (navigate game (nav-targets stealers)))]
-              step ; expect fight to take over when close enough
-              (wander game)))))))
+              step) ; expect fight to take over when close enough
+            (wander game))))))
 
 (defn- found-item? [found [_ _ _ item]]
   (some #(and (= (select-keys item [:specific :proof :name :enchantment])

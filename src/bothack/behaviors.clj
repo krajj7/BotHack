@@ -17,7 +17,7 @@
 (defn attach-candles
   [game]
   {:pre [(have game candelabrum)]}
-  (if-let [[slot _] (and (not= 7 (:candles (val (have game candelabrum))))
+  (if-let [[slot _] (and (some->> (have game candelabrum) val :candles (not= 7))
                          (have game candle?))]
     (with-reason "attaching candles to candelabrum"
       (->Apply slot))))
