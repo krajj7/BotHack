@@ -33,9 +33,6 @@
     (not (or (:dug tile) (:walked tile))) (+ 0.2)
     (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
 
-(defn diagonal-walkable? [game tile]
-  (not (door-open? tile)))
-
 (defn- a*
   "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
   ([from to move-fn] (a* from to move-fn nil))
@@ -85,56 +82,8 @@
                                          :when (some? action)]
                                      [nbr [(+ dist cost) node]]))))))))))
 
-(defn- unexplored? [tile]
-  (and (not (boulder? tile)) (unknown? tile)))
-
-(defn narrow?
-  ([game from to] (narrow? game (curlvl game) from to))
-  ([game level from to]
-   (if (and (adjacent? from to) (diagonal? from to))
-     (every? #(or (rock? %) (wall? %)
-                  (and (= :sokoban (branch-key game)) (boulder? %)))
-             (intersection (set (straight-neighbors level from))
-                           (set (straight-neighbors level to)))))))
-
-(defn- edge-passable-walking? [game level from-tile to-tile]
-  (or (straight (towards from-tile to-tile))
-      (and (diagonal-walkable? game from-tile)
-           (diagonal-walkable? game to-tile)
-           (or (and (not= :sokoban (branch-key game level))
-                    (not (:thick (:player game))))
-               (not (narrow? game level from-tile to-tile))))))
-
-(defn passable-walking?
-  "Only needs Move action, no door opening etc., will path through monsters and unexplored tiles"
-  [game level from-tile to-tile]
-  (and (walkable? to-tile)
-       (edge-passable-walking? game level from-tile to-tile)))
-
 (defn needs-levi? [tile]
   (#{:pool :lava :ice :hole :trapdoor :cloud} (:feature tile)))
-
-(defn arbitrary-move
-  ([game level] (arbitrary-move game level false))
-  ([{:keys [player] :as game} level diagonal?]
-   (some->> (if diagonal?
-              (diagonal-neighbors level player)
-              (neighbors level player))
-            (remove (some-fn trap? (partial monster-at level)))
-            (filterv #(or (passable-walking? game level (at level player) %)
-                          (unexplored? %)))
-            random-nth
-            (towards player)
-            ->Move
-            (with-reason "arbitrary direction"))))
-
-(defn untrap-move [{:keys [player] :as game} level]
-  (with-reason "untrap move"
-    (or (if-let [wall (find-first (some-fn wall? rock?)
-                                  (diagonal-neighbors level player))]
-          (->Move (towards player wall)))
-        (arbitrary-move game level :diagonal)
-        (arbitrary-move game level))))
 
 (defn- drop-unpaid [game]
   (if-let [[slot item] (have game :cost)]

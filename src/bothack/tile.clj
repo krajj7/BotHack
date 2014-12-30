@@ -160,6 +160,9 @@
               :grave :stairs-up :stairs-down :drawbridge-lowered :cloud}
                    (:feature tile)))))
 
+(defn diagonal-walkable? [game tile]
+  (not (door-open? tile)))
+
 (defn transparent?
   "For unexplored tiles just a guess"
   [{:keys [feature monster items] :as tile}]
@@ -345,3 +348,6 @@
 
 (defn visited-stairs? [tile]
   (and (stairs? tile) (:branch-id tile)))
+
+(defn unexplored? [tile]
+  (and (not (boulder? tile)) (unknown? tile)))

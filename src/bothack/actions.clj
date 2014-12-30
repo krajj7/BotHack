@@ -324,7 +324,7 @@
           (swap! game update-from-player dir reset-item)
           #"Your .* is in no shape for kicking."
           (swap! game assoc-in [:player :leg-hurt] true)
-          #"You can't move your leg!|There's not enough room to kick down here."
+          #"You can't move your leg!|There's not enough room to kick down here"
           (swap! game assoc-in [:player :trapped] true)
           #"A black ooze gushes up from the drain!"
           (swap! game update-from-player dir update :tags conj :pudding)
@@ -1158,6 +1158,42 @@
   ([] (search 1))
   ([n] (->Repeated (->Search) n)))
 
+(defn arbitrary-move
+  ([game level] (arbitrary-move game level false))
+  ([{:keys [player] :as game} level diagonal?]
+   (some->> (if diagonal?
+              (diagonal-neighbors level player)
+              (neighbors level player))
+            (remove (some-fn trap? (partial monster-at level)))
+            (filterv #(or (passable-walking? game level (at level player) %)
+                          (unexplored? %)))
+            random-nth
+            (towards player)
+            ->Move
+            (with-reason "arbitrary direction"))))
+
+(defn arbitrary-move
+  ([game level] (arbitrary-move game level false))
+  ([{:keys [player] :as game} level diagonal?]
+   (some->> (if diagonal?
+              (diagonal-neighbors level player)
+              (neighbors level player))
+            (remove (some-fn trap? (partial monster-at level)))
+            (filterv #(or (passable-walking? game level (at level player) %)
+                          (unexplored? %)))
+            random-nth
+            (towards player)
+            ->Move
+            (with-reason "arbitrary direction"))))
+
+(defn untrap-move [{:keys [player] :as game} level]
+  (with-reason "untrap move"
+    (or (if-let [wall (find-first (some-fn wall? rock?)
+                                  (diagonal-neighbors level player))]
+          (->Move (towards player wall)))
+        (arbitrary-move game level :diagonal)
+        (arbitrary-move game level))))
+
 (defn kick [{:keys [player] :as game} target-or-dir]
   (let [dir (if (keyword? target-or-dir)
               (enum->kw target-or-dir)
@@ -1165,10 +1201,11 @@
     (if-not (or (:thump (in-direction (curlvl game) player dir))
                 (stressed? player))
       (with-reason "kick"
-        (if (:leg-hurt player)
-          (with-reason "wait out leg hurt" (search 10))
-          (without-levitation game
-            (->Kick dir)))))))
+        (cond
+          (:leg-hurt player) (with-reason "wait out leg hurt" (search 10))
+          (:trapped player) (untrap-move game)
+          :else (without-levitation game
+                  (->Kick dir)))))))
 
 (defn dig [[slot item] dir]
   (if (:in-use item)

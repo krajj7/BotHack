@@ -1,6 +1,7 @@
 (ns bothack.dungeon
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
+            [clojure.set :refer [intersection]]
             [bothack.monster :refer :all]
             [bothack.util :refer :all]
             [bothack.level :refer :all]
@@ -729,3 +730,26 @@
            (some wall? (neighbors (curlvl game) (:player game))))
     (update-curlvl game apply-blueprint geh-maze)
     game))
+
+(defn narrow?
+  ([game from to] (narrow? game (curlvl game) from to))
+  ([game level from to]
+   (if (and (adjacent? from to) (diagonal? from to))
+     (every? #(or (rock? %) (wall? %)
+                  (and (= :sokoban (branch-key game)) (boulder? %)))
+             (intersection (set (straight-neighbors level from))
+                           (set (straight-neighbors level to)))))))
+
+(defn edge-passable-walking? [game level from-tile to-tile]
+  (or (straight (towards from-tile to-tile))
+      (and (diagonal-walkable? game from-tile)
+           (diagonal-walkable? game to-tile)
+           (or (and (not= :sokoban (branch-key game level))
+                    (not (:thick (:player game))))
+               (not (narrow? game level from-tile to-tile))))))
+
+(defn passable-walking?
+  "Only needs Move action, no door opening etc., will path through monsters and unexplored tiles"
+  [game level from-tile to-tile]
+  (and (walkable? to-tile)
+       (edge-passable-walking? game level from-tile to-tile)))
