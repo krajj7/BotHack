@@ -287,8 +287,11 @@
                  (not (neg? (dlvl-compare (branch-entry @game :mines)
                                           new-dlvl))))
           (swap! game assoc :branch-id :main))
-        (if @portal
-          (portal-handler bh (curlvl (:last-state @game)) new-dlvl)))
+        (when @portal
+          (portal-handler bh (curlvl (:last-state @game)) new-dlvl)
+          (swap! game update-in [:dungeon :levels
+                                 (branch-key (:last-state @game))
+                                 old-dlvl :tags] conj (branch-key @game))))
       RedrawHandler
       (redraw [_ frame]
         (swap! game assoc :frame frame))
