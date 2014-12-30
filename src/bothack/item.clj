@@ -34,7 +34,7 @@
       "thoroughly" 3
       1)))
 
-(def ^:private item-re #"^(?:([\w\#\$])\s[+-]\s)?\s*([Aa]n?|[Tt]he|\d+)?\s*(blessed|(?:un)?cursed|(?:un)?holy)?\s*(greased)?\s*(poisoned)?\s*((?:(?:very|thoroughly) )?(?:burnt|rusty))?\s*((?:(?:very|thoroughly) )?(?:rotted|corroded))?\s*(fixed|(?:fire|rust|corrode)proof)?\s*(partly used)?\s*(partly eaten)?\s*(diluted)?\s*([+-]\d+)?\s*(?:(?:pair|set) of)?\s*\b(.*?)\s*(?:called (.*?))?\s*(?:named (.*?))?\s*(?:\((\d+):(-?\d+)\))?\s*(?:\((no|[1-7]) candles?(, lit| attached)\))?\s*(\(lit\))?\s*(\(laid by you\))?\s*(\(chained to you\))?\s*(\(in quiver\))?\s*(\(alternate weapon; not wielded\))?\s*(\(wielded in other.*?\))?\s*(\((?:weapon|wielded).*?\))?\s*(\((?:being|embedded|on).*?\))?\s*(?:\(unpaid, (\d+) zorkmids?\)|\((\d+) zorkmids?\)|, no charge(?:, .*)?|, (?:price )?(\d+) zorkmids( each)?(?:, .*)?)?\.?\s*$")
+(def ^:private item-re #"^(?:([\w\#\$])\s[+-]\s)?\s*([Aa]n?|[Tt]he|\d+)?\s*(blessed|(?:un)?cursed|(?:un)?holy)?\s*(greased)?\s*(poisoned)?\s*((?:(?:very|thoroughly) )?(?:burnt|rusty))?\s*((?:(?:very|thoroughly) )?(?:rotted|corroded))?\s*(fixed|(?:fire|rust|corrode)proof)?\s*(partly used)?\s*(partly eaten)?\s*(diluted)?\s*([+-]\d+)?\s*(?:(?:pair|set) of)?\s*\b(.*?)\s*(?:called (.*?))?\s*(?:named (.*?))?\s*(?:\((\d+):(-?\d+)\))?\s*(?:\((no|[1-7]) candles?(, lit| attached)\))?\s*(\(lit\))?\s*(\(laid by you\))?\s*(\(chained to you\))?\s*(\(in quiver\))?\s*(\(altern.*?\)?)?\s*(\(wielded i.*?\))?\s*(\((?:weapo?n?|wield?e?d?).*?\)?)?\s*(\((?:bei?n?g?|emb?e?d?d?e?d?|on?).*?\)?)?\s*(?:\(unpaid, (\d+) zorkmids?\)|\((\d+) zorkmids?\)|, no charge(?:, .*)?|, (?:price )?(\d+) zorkmids( each)?(?:, .*)?)?\.?\s*$")
 
 (defn parse-label [label]
   (let [norm-label (string/replace label ; for uniques ("Lord Surtur's partly eaten corpse" => "partly eaten Lord Surtur's corpse"
@@ -54,8 +54,8 @@
       (assoc res :lit (or (:lit res)
                           (and (:lit-candelabrum res)
                                (.contains (:lit-candelabrum res) "lit"))))
-      (assoc res :in-use (find-first some? (map res [:wielded :worn])))
-      (assoc res :cost (find-first some? (map res [:cost1 :cost2 :cost3])))
+      (assoc res :in-use (first (keep res [:wielded :worn])))
+      (assoc res :cost (first (keep res [:cost1 :cost2 :cost3])))
       (update res :qty #(if (and % (re-seq #"[0-9]+" %))
                           (parse-int %)
                           1))
