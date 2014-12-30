@@ -346,7 +346,7 @@
                 ((some-fn :were :teleport :domestic) (:tags monster))
                 (re-seq #"bat$" (:name monster))))))
 
-(defn can-eat?
+(defn edible?
   "Only true for safe food or unknown tins"
   [player {:keys [name] :as food}]
   {:pre [(:intrinsics player)]}
@@ -362,7 +362,7 @@
 
 (defn want-to-eat? [player corpse]
   {:pre [(:intrinsics player)]}
-  (and (can-eat? player corpse)
+  (and (edible? player corpse)
        (let [{:keys [monster] :as corpse-type} (name->item (:name corpse))
              strength (get-in player [:stats :str*])]
          (or (#{"newt" "wraith"} (:name monster))

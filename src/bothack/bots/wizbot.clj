@@ -43,7 +43,7 @@
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (weak? player)
-        (if-let [[slot food] (have game (every-pred (partial can-eat? player)
+        (if-let [[slot food] (have game (every-pred (partial edible? player)
                                                     (complement tin?))
                                    #{:bagged})]
           (with-reason "weak or worse, eating" food
@@ -406,7 +406,7 @@
                          (partial want-to-eat? player))
           edible? #(every-pred
                      (partial fresh-corpse? game %)
-                     (partial can-eat? player))]
+                     (partial edible? player))]
       (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
             (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
