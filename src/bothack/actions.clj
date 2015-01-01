@@ -19,13 +19,11 @@
             [bothack.util :refer :all]))
 
 (defmacro ^:private defaction [action args & impl]
-  `(do (defrecord ~action ~args
-         bothack.util.Type
-         (~'typekw [~'_] ~(str->kw action))
-         bothack.bot.IAction
-         ~@impl)
-       (defn ~(symbol (str \- action)) ~args
-         (~(symbol (str action \.)) ~@args))))
+  `(defrecord ~action ~args
+     bothack.util.Type
+     (~'typekw [~'_] ~(str->kw action))
+     bothack.bot.IAction
+     ~@impl))
 
 (def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|ladder (?:up|down)|staircase (?:up|down)|spider web|web|ice|opulent throne|pool of water|hole|trap door|fountain|sink|grave|molten lava|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")
 
@@ -1198,7 +1196,7 @@
 
 (defn kick [{:keys [player] :as game} target-or-dir]
   (let [dir (if (keyword? target-or-dir)
-              (enum->kw target-or-dir)
+              target-or-dir
               (towards player target-or-dir))]
     (if-not (or (:thump (in-direction (curlvl game) player dir))
                 (stressed? player))
@@ -1359,7 +1357,7 @@
            (->Apply bag-slot)))))))
 
 (defn unbag
-  "Return action to take out 1 or qty of the item out of a bag, returns nil if item is already present in main inventory or not found in any bags"
+  "Return action to take out 1 or qty of the item out of a bag"
   ([game maybe-bag-slot item] (unbag game maybe-bag-slot item 1))
   ([game maybe-bag-slot item qty]
    (if (not= item (inventory-slot game maybe-bag-slot))
@@ -1587,67 +1585,3 @@
       (if-let [[shield _] (and (two-handed? item) (have game shield? #{:worn}))]
         (remove-use game shield)
         (->Wield slot)))))
-
-(def ^:private -withReason with-reason)
-(def ^:private -ApplyAt ->ApplyAt)
-(def ^:private -Drop ->DropSingle)
-
-; factory functions for Java bots
-(gen-class
-  :name bothack.bot.Actions
-  :methods [^:static [Attack [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Move [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Pray [] bothack.bot.IAction]
-            ^:static [Search [] bothack.bot.IAction]
-            ^:static [Wait [] bothack.bot.IAction]
-            ^:static [Ascend [] bothack.bot.IAction]
-            ^:static [Descend [] bothack.bot.IAction]
-            ^:static [Kick [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Close [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Look [] bothack.bot.IAction]
-            ^:static [FarLook [bothack.bot.IPosition] bothack.bot.IAction]
-            ^:static [Open [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Inventory [] bothack.bot.IAction]
-            ^:static [Discoveries [] bothack.bot.IAction]
-            ^:static [Name [char String] bothack.bot.IAction]
-            ^:static [Call [char String] bothack.bot.IAction]
-            ^:static [Apply [char] bothack.bot.IAction]
-            ^:static [ApplyAt [char bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [ForceLock [] bothack.bot.IAction]
-            ^:static [Unlock [char bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Wield [char] bothack.bot.IAction]
-            ^:static [Wear [char] bothack.bot.IAction]
-            ^:static [PutOn [char] bothack.bot.IAction]
-            ^:static [Remove [char] bothack.bot.IAction]
-            ^:static [TakeOff [char] bothack.bot.IAction]
-            ^:static [Drop [char] bothack.bot.IAction]
-            ^:static [Drop [char int] bothack.bot.IAction]
-            ^:static [Quiver [char] bothack.bot.IAction]
-            ^:static [PickUp [java.util.Set] bothack.bot.IAction]
-            ^:static [PickUp [String] bothack.bot.IAction]
-            ^:static [Autotravel [bothack.bot.IPosition] bothack.bot.IAction]
-            ^:static [Enhance [] bothack.bot.IAction]
-            ^:static [Read [char] bothack.bot.IAction]
-            ^:static [Sit [] bothack.bot.IAction]
-            ^:static [Eat [char] bothack.bot.IAction]
-            ^:static [Eat [String] bothack.bot.IAction]
-            ^:static [Quaff [char] bothack.bot.IAction]
-            ^:static [Offer [char] bothack.bot.IAction]
-            ^:static [Loot [] bothack.bot.IAction]
-            ^:static [Dip [char char] bothack.bot.IAction]
-            ^:static [Throw [char bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Engrave [char String boolean] bothack.bot.IAction]
-            ^:static [Wipe [] bothack.bot.IAction]
-            ^:static [ZapWand [char] bothack.bot.IAction]
-            ^:static [Rub [char] bothack.bot.IAction]
-            ^:static [Chat [bothack.bot.Direction] bothack.bot.IAction]
-            ^:static [Contribute [bothack.bot.Direction int]
-                      bothack.bot.IAction]
-            ^:static [Pay [bothack.bot.IPosition] bothack.bot.IAction]
-            ^:static [Repeated [bothack.bot.IAction int] bothack.bot.IAction]
-            ^:static [withReason [String bothack.bot.IAction]
-                      bothack.bot.IAction]
-            ^:static [withHandler [bothack.bot.IAction Object]
-                      bothack.bot.IAction]
-            ^:static [withHandler [bothack.bot.IAction int Object]
-                      bothack.bot.IAction]])

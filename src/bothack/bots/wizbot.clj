@@ -35,12 +35,6 @@
                               (not (digit? %))))))
        set))
 
-(defn enhance [game]
-  (if (:can-enhance (:player game))
-    (log/debug "TODO ->Enhance")
-    ; TODO EnhanceHandler
-    #_(->Enhance)))
-
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (weak? player)
         (if-let [[slot food] (have game (every-pred (partial edible? player)

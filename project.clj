@@ -5,6 +5,9 @@
   :repositories {"local" "file:repo"}
   :java-source-paths ["jta26/de/mud" "java"]
   :javac-options ["-target" "1.7" "-source" "1.7"]
+  :plugins [[lein-javadoc "0.1.1"]]
+  :javadoc-opts {:package-names ["bothack.bot" "bothack.events"
+                                 "bothack.prompts"]}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]
@@ -19,6 +22,6 @@
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
   ;:global-vars {*warn-on-reflection* true}
-  :aot [bothack.bot bothack.delegator bothack.actions bothack.term
+  :aot [bothack.delegator bothack.actions bothack.term
         bothack.ttyrec bothack.main]
   :main bothack.main)

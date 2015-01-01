@@ -5,6 +5,7 @@
             [bothack.dungeon :refer :all]
             [bothack.pathing :refer :all]
             [bothack.player :refer :all]
+            [bothack.game :refer :all]
             [bothack.item :refer :all]
             [bothack.itemid :refer :all]
             [bothack.position :refer :all]
@@ -80,3 +81,12 @@
     (seek game #(and (altar? %)
                      (or (= (:alignment player) (:alignment %))
                          (not (:walked %)))))))
+
+(defn pray [game]
+  (with-reason "pray"
+    (if (can-pray? game)
+      (->Pray))))
+
+(defn enhance [game]
+  (if (:can-enhance (:player game))
+    (enhance-all)))
