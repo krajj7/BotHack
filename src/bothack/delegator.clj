@@ -142,7 +142,7 @@
 (defmacro ^:private defprotocol-delegated
   [kind return invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
-       ~(if (= :internal* kind) ; XXX *
+       ~(if (= :internal kind)
           `(defnsinterface ~(symbol (str \I protocol)) "bothack.internal"
              ~@(map (partial interface-sig return) proto-methods)))
        (extend-type ~(symbol (str "bothack."
@@ -155,7 +155,7 @@
          ~@(map (partial delegation-impl invoke-fn protocol) proto-methods))))
 
 (defmacro ^:private defeventhandler [kind protocol & proto-methods]
-  `(defprotocol-delegated kind nil invoke-event ~protocol ~@proto-methods))
+  `(defprotocol-delegated ~kind nil invoke-event ~protocol ~@proto-methods))
 
 ; event protocols:
 
@@ -181,7 +181,7 @@
 (defeventhandler :public ToplineMessageHandler
   (message [handler ^String text]))
 
-(defeventhandler :private BOTLHandler
+(defeventhandler :internal BOTLHandler
   (botl [handler ^clojure.lang.IPersistentMap status]))
 
 (defeventhandler :public DlvlChangeHandler
@@ -193,10 +193,10 @@
 (defeventhandler :public ActionChosenHandler
   (action-chosen [handler ^bothack.bot.IAction action]))
 
-(defeventhandler :private PromptResponseHandler
+(defeventhandler :internal PromptResponseHandler
   (response-chosen [handler method response]))
 
-(defeventhandler :private InventoryHandler
+(defeventhandler :internal InventoryHandler
   (inventory-list [handler ^clojure.lang.IPersistentMap inventory]))
 
 (defeventhandler :public MultilineMessageHandler
@@ -208,29 +208,29 @@
 ; prompt protocols:
 
 (defmacro ^:private defchoicehandler [kind protocol & proto-methods]
-  `(defprotocol-delegated kind String (partial respond-escapable str)
+  `(defprotocol-delegated ~kind String (partial respond-escapable str)
      ~protocol ~@proto-methods))
 
 (defmacro ^:private defyesnohandler [kind protocol & proto-methods]
-  `(defprotocol-delegated kind Boolean (partial respond-escapable yesno)
+  `(defprotocol-delegated ~kind Boolean (partial respond-escapable yesno)
      ~protocol ~@proto-methods))
 
 (defmacro ^:private deflocationhandler [kind protocol & proto-methods]
-  `(defprotocol-delegated kind bothack.bot.IPosition (partial respond-escapable
+  `(defprotocol-delegated ~kind bothack.bot.IPosition (partial respond-escapable
                                                       enter-position)
      ~protocol ~@proto-methods))
 
 (defmacro ^:private defdirhandler [kind protocol & proto-methods]
-  `(defprotocol-delegated kind String (partial respond-escapable direction)
+  `(defprotocol-delegated ~kind String (partial respond-escapable direction)
      ~protocol ~@proto-methods))
 
 (deflocationhandler :public TeleportWhereHandler
   (teleport-where [handler]))
 
-(deflocationhandler :private AutotravelHandler
+(deflocationhandler :internal AutotravelHandler
   (travel-where [handler]))
 
-(deflocationhandler :private PayWhomHandler
+(deflocationhandler :internal PayWhomHandler
   (pay-whom [handler]))
 
 (defchoicehandler :public ChooseCharacterHandler
@@ -246,53 +246,53 @@
   (seduced-puton [handler ^String text])
   (seduced-remove [handler ^String text]))
 
-(defchoicehandler :private ApplyItemHandler
+(defchoicehandler :internal ApplyItemHandler
   (apply-what [handler ^String prompt]))
 
-(defchoicehandler :private WieldItemHandler
+(defchoicehandler :internal WieldItemHandler
   (wield-what [handler ^String text]))
 
-(defchoicehandler :private WearItemHandler
+(defchoicehandler :internal WearItemHandler
   (wear-what [handler ^String text]))
 
-(defchoicehandler :private TakeOffItemHandler
+(defchoicehandler :internal TakeOffItemHandler
   (take-off-what [handler ^String text]))
 
-(defchoicehandler :private PutOnItemHandler
+(defchoicehandler :internal PutOnItemHandler
   (put-on-what [handler ^String text]))
 
-(defchoicehandler :private RemoveItemHandler
+(defchoicehandler :internal RemoveItemHandler
   (remove-what [handler ^String text]))
 
-(defchoicehandler :private DropSingleHandler
+(defchoicehandler :internal DropSingleHandler
   (drop-single [handler ^String text]))
 
-(defchoicehandler :private QuiverHandler
+(defchoicehandler :internal QuiverHandler
   (ready-what [handler ^String text]))
 
-(defyesnohandler :private EnterGehennomHandler
+(defyesnohandler :internal EnterGehennomHandler
   (enter-gehennom [handler ^String text]))
 
-(defyesnohandler :private ForceGodHandler ; wizmode
+(defyesnohandler :internal ForceGodHandler ; wizmode
   (force-god [handler ^String text]))
 
-(defyesnohandler :private DieHandler ; wizmode
+(defyesnohandler :internal DieHandler ; wizmode
   (die [handler ^String text]))
 
-(defchoicehandler :private DumpCoreHandler ; wizmode
+(defchoicehandler :internal DumpCoreHandler ; wizmode
   (dump-core [handler ^String text]))
 
-(defyesnohandler :private KeepSaveHandler ; wizmode
+(defyesnohandler :internal KeepSaveHandler ; wizmode
   (keep-save [handler ^String text]))
 
-(defyesnohandler :private DryFountainHandler ; wizmode
+(defyesnohandler :internal DryFountainHandler ; wizmode
   (dry-fountain [handler ^String text]))
 
-(defyesnohandler :private LockHandler
+(defyesnohandler :internal LockHandler
   (lock-it [handler ^String text])
   (unlock-it [handler ^String text]))
 
-(defyesnohandler :private ForceLockHandler
+(defyesnohandler :internal ForceLockHandler
   (force-lock [handler ^String text]))
 
 (defyesnohandler :public PayDamageHandler
@@ -304,32 +304,33 @@
       (action-chosen delegator action)
       (->> action trigger (write delegator)))))
 
-(defmacro ^:private defactionhandler [protocol & proto-methods]
-  `(defprotocol-delegated bothack.bot.IAction respond-action
+(defmacro ^:private defactionhandler [kind protocol & proto-methods]
+  `(defprotocol-delegated ~kind bothack.bot.IAction respond-action
      ~protocol ~@proto-methods))
 
 (defactionhandler :public ActionHandler
   (choose-action [handler ^bothack.bot.IGame gamestate]))
 
-(defmacro ^:private defprompthandler [protocol & proto-methods]
-  `(defprotocol-delegated String (partial respond-escapable newline-terminate)
+(defmacro ^:private defprompthandler [kind protocol & proto-methods]
+  `(defprotocol-delegated ~kind String
+     (partial respond-escapable newline-terminate)
      ~protocol ~@proto-methods))
 
-(defmacro ^:private defmenuhandler [protocol & proto-methods]
-  `(defprotocol-delegated Object
+(defmacro ^:private defmenuhandler [kind protocol & proto-methods]
+  `(defprotocol-delegated ~kind Object
      (partial respond-escapable respond-menu)
      ~protocol ~@proto-methods))
 
-(defmenuhandler :private PickupHandler
+(defmenuhandler :internal PickupHandler
   (pick-up-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defmenuhandler :private NameMenuHandler
+(defmenuhandler :internal NameMenuHandler
   (name-menu [handler ^clojure.lang.IPersistentMap options]))
 
-(defchoicehandler :private NameWhatHandler
+(defchoicehandler :internal NameWhatHandler
   (name-what [handler ^String prompt]))
 
-(defprompthandler :private WhatNameHandler
+(defprompthandler :internal WhatNameHandler
   (what-name [handler ^String prompt]))
 
 (defprompthandler :public OfferHandler
@@ -341,86 +342,86 @@
 (defchoicehandler :public WhichRingFingerHandler
   (which-finger [handler ^String prompt]))
 
-(defchoicehandler :private ReadWhatHandler
+(defchoicehandler :internal ReadWhatHandler
   (read-what [handler ^String prompt]))
 
-(defchoicehandler :private DrinkWhatHandler
+(defchoicehandler :internal DrinkWhatHandler
   (drink-what [handler ^String prompt]))
 
-(defyesnohandler :private DrinkHereHandler
+(defyesnohandler :internal DrinkHereHandler
   (drink-here [handler ^String prompt]))
 
-(defchoicehandler :private ZapWhatHandler
+(defchoicehandler :internal ZapWhatHandler
   (zap-what [handler ^String prompt]))
 
-(defyesnohandler :private EatItHandler
+(defyesnohandler :internal EatItHandler
   (eat-it [handler ^String what]))
 
-(defyesnohandler :private SacrificeItHandler
+(defyesnohandler :internal SacrificeItHandler
   (sacrifice-it [handler ^String what]))
 
-(defyesnohandler :private AttachCandlesHandler
+(defyesnohandler :internal AttachCandlesHandler
   (attach-candelabrum-candles [handler ^String prompt]))
 
-(defyesnohandler :private StillClimbHandler
+(defyesnohandler :internal StillClimbHandler
   (still-climb [handler ^String prompt]))
 
-(defchoicehandler :private EatWhatHandler
+(defchoicehandler :internal EatWhatHandler
   (eat-what [handler ^String prompt]))
 
-(defchoicehandler :private SacrificeWhatHandler
+(defchoicehandler :internal SacrificeWhatHandler
   (sacrifice-what [handler ^String prompt]))
 
-(defchoicehandler :private DipHandler
+(defchoicehandler :internal DipHandler
   (dip-what [handler ^String prompt])
   (dip-into-what [handler ^String prompt]))
 
-(defyesnohandler :private DipHereHandler
+(defyesnohandler :internal DipHereHandler
   (dip-here [handler ^String prompt]))
 
-(defyesnohandler :private LiftBurdenHandler
+(defyesnohandler :internal LiftBurdenHandler
   (lift-burden [handler ^clojure.lang.Keyword burden ^String item-label]))
 
-(defyesnohandler :private LootItHandler
+(defyesnohandler :internal LootItHandler
   (loot-it [handler ^String what]))
 
-(defyesnohandler :private PutSomethingInHandler
+(defyesnohandler :internal PutSomethingInHandler
   (put-something-in [handler ^String prompt]))
 
-(defyesnohandler :private TakeSomethingOutHandler
+(defyesnohandler :internal TakeSomethingOutHandler
   (take-something-out [handler ^String prompt]))
 
 (defyesnohandler :public StopEatingHandler
   (stop-eating [handler ^String prompt]))
 
-(defmenuhandler :private TakeOutWhatHandler
+(defmenuhandler :internal TakeOutWhatHandler
   (take-out-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defmenuhandler :private PutInWhatHandler
+(defmenuhandler :internal PutInWhatHandler
   (put-in-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defmenuhandler :private LootWhatHandler
+(defmenuhandler :internal LootWhatHandler
   (loot-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defchoicehandler :private ThrowWhatHandler
+(defchoicehandler :internal ThrowWhatHandler
   (throw-what [handler ^String prompt]))
 
-(defprompthandler :private EngraveWhatHandler
+(defprompthandler :internal EngraveWhatHandler
   (write-what [handler ^String prompt]))
 
-(defchoicehandler :private EngraveWithWhatHandler
+(defchoicehandler :internal EngraveWithWhatHandler
   (write-with-what [handler ^String prompt]))
 
-(defyesnohandler :private EngraveAppendHandler
+(defyesnohandler :internal EngraveAppendHandler
   (append-engraving [handler ^String prompt]))
 
 (defyesnohandler :public SellItHandler
   (sell-it [handler ^Integer offer ^String what]))
 
-(defyesnohandler :private WizmodeEnhanceHandler ; wizmode
+(defyesnohandler :internal WizmodeEnhanceHandler ; wizmode
   (enhance-without-practice [handler ^String prompt]))
 
-(defprompthandler :private CreateWhatMonsterHandler ; wizmode
+(defprompthandler :internal CreateWhatMonsterHandler ; wizmode
   (create-what-monster [handler ^String text]))
 
 (defyesnohandler :public DoTeleportHandler
@@ -429,7 +430,7 @@
 (defmenuhandler :public EnhanceWhatHandler
   (enhance-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defmenuhandler :private CurrentSkillsHandler
+(defmenuhandler :internal CurrentSkillsHandler
   (current-skills [handler ^clojure.lang.IPersistentMap options]))
 
 (defprompthandler :public MakeWishHandler
@@ -445,7 +446,7 @@
 (defmenuhandler :public IdentifyWhatHandler
   (identify-what [handler ^clojure.lang.IPersistentMap options]))
 
-(defchoicehandler :private RubWhatHandler
+(defchoicehandler :internal RubWhatHandler
   (rub-what [handler ^String prompt]))
 
 (defchoicehandler :public ChargeWhatHandler
