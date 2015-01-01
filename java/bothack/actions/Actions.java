@@ -1,7 +1,12 @@
-package bothack.bot;
+package bothack.actions;
 
 import java.util.List;
 
+import bothack.bot.Direction;
+import bothack.bot.IGame;
+import bothack.bot.IItem;
+import bothack.bot.IPlayer;
+import bothack.bot.ITile;
 import clojure.java.api.Clojure;
 
 /**
@@ -42,7 +47,7 @@ public final class Actions {
 
 	/**
 	 * Search the around the current tile once.
-	 * @see Actions.Search(Long)
+	 * @see Actions#Search(Long)
 	 */
 	public static IAction Search() {
 		return (IAction) Clojure.var("bothack.actions", "->Search").invoke();
@@ -53,10 +58,7 @@ public final class Actions {
 		return (IAction) Clojure.var("bothack.actions", "search").invoke(num);
 	}
 
-	/**
-	 * Do nothing in the next turn.  You might as well Search.
-	 * @see Actions.Repeated(IAction, Long) 
-	 */
+	/** Do nothing in the next turn.  You might as well Search. */
 	public static IAction Wait() {
 		return (IAction) Clojure.var("bothack.actions", "->Wait").invoke();
 	}
@@ -74,7 +76,7 @@ public final class Actions {
 	/** 
 	 * Go down the stairs or a ladder. 
 	 * @see ITile#isDownstairs()
-	 * @see ActionsComplex#Descend(IGame)
+	 * @see ActionsComplex#descend(IGame)
 	 */
 	public static IAction Descend() {
 		return (IAction) Clojure.var("bothack.actions", "->Descend").invoke();
@@ -83,7 +85,7 @@ public final class Actions {
 	/** 
 	 * Kick in the given direction.
 	 * Note that you can't do this with hurt legs, when trapped or when stressed or worse.
-	 * @see ActionsComplex#Kick(IGame, Direction)
+	 * @see ActionsComplex#kick(IGame, Direction)
 	 * @see IPlayer#isStressed()
 	 * @see IPlayer#hasHurtLegs() 
 	 */
@@ -104,7 +106,7 @@ public final class Actions {
 	/**
 	 * #pray action.
 	 * @see IGame#canPray()
-	 * @see ActionsComplex#Pray()
+	 * @see ActionsComplex#pray(IGame)
 	 */
 	public static IAction Pray() {
 		return (IAction) Clojure.var("bothack.actions", "->Pray").invoke();
@@ -136,10 +138,10 @@ public final class Actions {
 	/**
 	 * Apply item at given inventory slot.  For handling containers and direction prompts use TakeOut, PutIn or ApplyAt.
 	 * @see IPlayer#hasHands()
-	 * @see Actions#TakeOut()
-	 * @see Actions#PutIn().
+	 * @see Actions#TakeOut
+	 * @see Actions#PutIn
 	 * @see Actions#ApplyAt(Character, Direction)
-	 * @see ActionsComplex#Unbag(IGame, Character, IItem)
+	 * @see ActionsComplex#unbag(IGame, java.util.Map.Entry)
 	 */
 	public static IAction Apply(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->Apply").invoke(slot);
@@ -148,7 +150,7 @@ public final class Actions {
 	/**
 	 * Take out all of item with label itemLabel from container at bagSlot.
 	 * @param bagSlot can be '.' for looting containers on the ground.
-	 * @see ActionsComplex#Unbag(IGame, Character, IItem)
+	 * @see ActionsComplex#unbag(IGame, java.util.Map.Entry)
 	 */
 	public static IAction TakeOut(Character bagSlot, String itemLabel) {
 		return (IAction) Clojure.var("bothack.actions", "take-out").invoke(bagSlot, itemLabel);
@@ -157,7 +159,7 @@ public final class Actions {
 	/**
 	 * Take out amount of item with label itemLabel from container at bagSlot.
 	 * @param bagSlot can be '.' for looting containers on the ground.
-	 * @see ActionsComplex#Unbag(IGame, Character, IItem)
+	 * @see ActionsComplex#unbag(IGame, java.util.Map.Entry)
 	 */
 	public static IAction TakeOut(Character bagSlot, String itemLabel, Long amount) {
 		return (IAction) Clojure.var("bothack.actions", "take-out").invoke(bagSlot, itemLabel, amount);
@@ -175,8 +177,8 @@ public final class Actions {
 
 	/** Apply the item in the given direction (if prompted).  For use with a key, a pickaxe...
 	 * With a pickaxe wielding it explicitly first is strongly recommended (anything can happen during the wielding). */
-	public static IAction ApplyAt(Direction dir) {
-		return (IAction) Clojure.var("bothack.actions", "->ApplyAt").invoke(dir);
+	public static IAction ApplyAt(Character slot, Direction dir) {
+		return (IAction) Clojure.var("bothack.actions", "->ApplyAt").invoke(slot, dir);
 	}
 	
 	/** Use current weapon to force a lock on a container. */
@@ -191,7 +193,7 @@ public final class Actions {
 	
 	/**
 	 * Wield item at slot as a weapon. 
-	 * @see ActionsComplex#Wield(IGame, Character)
+	 * @see ActionsComplex#wield(IGame, Character)
 	 */
 	public static IAction Wield(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->Wield").invoke(slot);
@@ -199,7 +201,7 @@ public final class Actions {
 	
 	/**
 	 * Wear item at slot (for armor).
-	 * @see ActionsComplex#MakeUse(IGame, Character)
+	 * @see ActionsComplex#makeUse(IGame, Character)
 	 */
 	public static IAction Wear(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->Wear").invoke(slot);
@@ -207,7 +209,7 @@ public final class Actions {
 	
 	/**
 	 * Put on item at slot (for jewelry).
-	 * @see ActionsComplex#MakeUse(IGame, Character)
+	 * @see ActionsComplex#makeUse(IGame, Character)
 	 */
 	public static IAction PutOn(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->PutOn").invoke(slot);
@@ -215,7 +217,7 @@ public final class Actions {
 	
 	/**
 	 * Take off item at slot (for armor).
-	 * @see ActionsComplex#RemoveUse(IGame, Character)
+	 * @see ActionsComplex#removeUse(IGame, Character)
 	 */
 	public static IAction TakeOff(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->TakeOff").invoke(slot);
@@ -223,7 +225,7 @@ public final class Actions {
 	
 	/**
 	 * Remove item at slot (for jewelry).
-	 * @see ActionsComplex#RemoveUse(IGame, Character)
+	 * @see ActionsComplex#removeUse(IGame, Character)
 	 */
 	public static IAction Remove(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->Remove").invoke(slot);
@@ -267,7 +269,7 @@ public final class Actions {
 	 * beforehand (or use EnhanceAll).
 	 * @see bothack.prompts.IEnhanceWhatHandler
 	 * @see IPlayer#canEnhance()
-	 * @see ActionsComplex#EnhanceAll(IGame)
+	 * @see ActionsComplex#enhanceAll(IGame)
 	 */
 	public static IAction Enhance() {
 		return (IAction) Clojure.var("bothack.actions", "->Enhance").invoke();

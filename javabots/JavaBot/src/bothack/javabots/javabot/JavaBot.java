@@ -1,7 +1,8 @@
 package bothack.javabots.javabot;
 
+import bothack.actions.*;
 import bothack.bot.*;
-import bothack.delegator.*;
+import bothack.prompts.*;
 
 public class JavaBot {
 	IBotHack bothack;
@@ -19,12 +20,6 @@ public class JavaBot {
 	
 	public JavaBot(IBotHack bothack) {
 		this.bothack = bothack;
-		bothack.registerHandler(new IChooseCharacterHandler() {
-			@Override
-			public String chooseCharacter() {
-				return "nsm"; // choose samurai
-			}
-		});
 		bothack.registerHandler(-25, new StarvationHandler());
 		bothack.registerHandler(1, new CircleMover());
 		System.out.println("bot initialized");

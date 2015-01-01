@@ -1,7 +1,8 @@
 package bothack.javabots.simplebot;
 
+import bothack.actions.*;
 import bothack.bot.*;
-import bothack.delegator.*;
+import bothack.prompts.*;
 
 /** A dumb example bot.  Equivalent to simplebot.clj */
 public class SimpleBot {

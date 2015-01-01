@@ -191,7 +191,7 @@
   (about-to-choose [handler ^bothack.bot.IGame gamestate]))
 
 (defeventhandler :public ActionChosenHandler
-  (action-chosen [handler ^bothack.bot.IAction action]))
+  (action-chosen [handler ^bothack.actions.IAction action]))
 
 (defeventhandler :internal PromptResponseHandler
   (response-chosen [handler method response]))
@@ -306,7 +306,7 @@
       (->> action trigger (write delegator)))))
 
 (defmacro ^:private defactionhandler [kind protocol & proto-methods]
-  `(defprotocol-delegated ~kind bothack.bot.IAction respond-action
+  `(defprotocol-delegated ~kind bothack.actions.IAction respond-action
      ~protocol ~@proto-methods))
 
 (defactionhandler :public ActionHandler

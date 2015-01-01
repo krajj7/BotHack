@@ -22,7 +22,7 @@
   `(defrecord ~action ~args
      bothack.util.Type
      (~'typekw [~'_] ~(str->kw action))
-     bothack.bot.IAction
+     bothack.actions.IAction
      ~@impl))
 
 (def ^:private feature-re #"^(?:You see|There is|You escape)(?: an?| your)?(?: \w+)* (falling rock trap|rolling boulder trap|rust trap|statue trap|magic trap|anti-magic field|polymorph trap|fire trap|arrow trap|dart trap|land mine|teleportation trap|sleeping gas trap|magic portal|level teleporter|bear trap|spiked pit|pit|ladder (?:up|down)|staircase (?:up|down)|spider web|web|ice|opulent throne|pool of water|hole|trap door|fountain|sink|grave|molten lava|doorway|squeaky board|open door|broken door)(?: here| below you)?\.")

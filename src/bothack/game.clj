@@ -500,9 +500,12 @@
    turn* ; internal clock - increments per each action (unlike game turns)
    score]
   bothack.bot.IGame
-  (canPray [game] (can-pray? game))
   (frame [game] (:frame game))
-  (player [game] (:player game)))
+  (player [game] (:player game))
+  (canPray [game] (boolean (can-pray? game)))
+  (canEngrave [game] (boolean (can-engrave? game)))
+  (haveLevitationItemOn [game] (have-levi-on game))
+  (genocided [game] (:genocided game)))
 
 (defmethod print-method Game [game w]
   (.write w (str "#bothack.game.Game"

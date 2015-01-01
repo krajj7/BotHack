@@ -7,7 +7,7 @@
   (trigger [this]
            "Returns the string to write to NetHack to perform the action."))
 
-(extend-type bothack.bot.IAction
+(extend-type bothack.actions.IAction
   Action
   (handler [this bh] (.handler this bh))
   (trigger [this] (.trigger this)))

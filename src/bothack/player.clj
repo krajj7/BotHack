@@ -510,14 +510,20 @@
    can-enhance]
   bothack.bot.IPlayer
   ; TODO expose stats etc.
-  (encumbrance [player]
-    (kw->enum bothack.bot.Encumbrance (:encumbrance player)))
   (alignment [player] (kw->enum bothack.bot.Alignment (:alignment player)))
   (hunger [player] (kw->enum bothack.bot.Hunger (:hunger player)))
+  (encumbrance [player]
+    (kw->enum bothack.bot.Encumbrance (:encumbrance player)))
+  (canEnhance [player] (boolean (:can-enhance player)))
+  (hasHands [player] (boolean (has-hands? player)))
+  (hasHurtLegs [player] (boolean (:leg-hurt player)))
   (isHungry [player] (boolean (hungry? player)))
   (isOverloaded [player] (boolean (overloaded? player)))
   (isOvertaxed [player] (boolean (overtaxed? player)))
+  (isStressed [player] (boolean (stressed? player)))
+  (isStrained [player] (boolean (strained? player)))
   (isBurdened [player] (boolean (burdened? player)))
+  (isBlindExternally [player] (boolean (:ext-blind (:state player))))
   (isWeak [player] (boolean (weak? player))))
 
 (defn new-player []

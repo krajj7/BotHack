@@ -1,6 +1,8 @@
 package bothack.prompts;
 
-import bothack.bot.IAction;
+import bothack.actions.Actions;
+import bothack.actions.ActionsComplex;
+import bothack.actions.IAction;
 import bothack.bot.IGame;
 
 /** 
