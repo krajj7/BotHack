@@ -233,7 +233,8 @@
 (deflocationhandler :internal PayWhomHandler
   (pay-whom [handler]))
 
-(defchoicehandler :public ChooseCharacterHandler
+; only valks supported
+(defchoicehandler :internal ChooseCharacterHandler
   (choose-character [handler]))
 
 (defdirhandler :public DirectionHandler

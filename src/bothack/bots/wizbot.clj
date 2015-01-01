@@ -453,10 +453,6 @@
 (defn init [bh]
   (-> bh
       (register-handler priority-bottom (pause-handler bh))
-      (register-handler (reify ChooseCharacterHandler
-                          (choose-character [this]
-                            (deregister-handler bh this)
-                            "nvd"))) ; choose a dwarven valk
       (register-handler (reify
                           OfferHandler
                           (offer-how-much [_ _]

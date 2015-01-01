@@ -30,12 +30,6 @@ public class SimpleBot {
 	
 	public SimpleBot(IBotHack bothack) {
 		this.bothack = bothack;
-		bothack.registerHandler(new IChooseCharacterHandler() {
-			@Override
-			public String chooseCharacter() {
-				return "nsm"; // choose samurai
-			}
-		});
 		bothack.registerHandler(0, new PrayForFood());
 		bothack.registerHandler(1, new CircleMover());
 		System.out.println("bot initialized");

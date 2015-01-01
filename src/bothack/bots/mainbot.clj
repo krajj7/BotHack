@@ -42,10 +42,6 @@
 (defn- threat-map [game]
   (into {} (for [m (hostile-threats game)] [(position m) m])))
 
-(defn enhance [game]
-  (if (:can-enhance (:player game))
-    (enhance-all)))
-
 (defn- choose-food [{:keys [player] :as game}]
   (or (min-by (comp nw-ratio val)
               (have-all game (every-pred (partial edible? player)
@@ -53,11 +49,6 @@
                                                (partial item-name game))
                                          (complement tin?)) #{:bagged}))
       (have game "lizard corpse" #{:bagged})))
-
-(defn pray [game]
-  (with-reason "pray"
-    (if (can-pray? game)
-      (->Pray))))
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (and (weak? player) (not (overtaxed? player)))

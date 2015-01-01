@@ -21,9 +21,5 @@
 
 (defn init [bh]
   (-> bh
-      (register-handler (reify ChooseCharacterHandler
-                          (choose-character [this]
-                            (deregister-handler bh this)
-                            "nsm"))) ; choose samurai
       (register-handler 0 (pray-for-food))
       (register-handler 1 (circle-mover))))
