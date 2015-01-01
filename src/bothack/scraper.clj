@@ -1,5 +1,5 @@
 (ns bothack.scraper
-  "The screen scraper handles redraw events, tries to determine when the frame is completely drawn and sends off higher-level events.  It looks for prompts and menus and triggers appropriate action selection commands."
+  "The screen scraper handles redraw events, tries to determine when the frame is completely drawn and sends off higher-level events.  It looks for prompts and menus and triggers appropriate action selection prompts."
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [bothack.util :refer :all]
@@ -154,7 +154,7 @@
 (defn- prompt-fn [msg]
   (condp re-seq msg
     #"^What do you want to name " what-name
-    #"^Call .*:" call-what-name
+    #"^Call .*:" what-name
     #"^How much will you offer\?" offer-how-much
     #"^To what level do you want to teleport\?" leveltele
     #"^What do you want to (?:write|engrave|burn|scribble|scrawl|melt) (?:in|into|on) the (.*?) here\?" write-what
@@ -187,8 +187,7 @@
     #"^Advance skills without practice\?" enhance-without-practice
     #"^Do you want to keep the save file\?" keep-save
     #"^What do you want to use or apply" apply-what
-    #"^What do you want to name\?" name-what
-    #"^What do you want to call\?" call-what
+    #"^What do you want to (?:name|call)\?" name-what
     #"There is .*force its lock\?" force-lock
     #"[Uu]nlock it\? |pick its lock\?" unlock-it
     #"[Ll]ock it\? " lock-it
@@ -443,7 +442,7 @@
                      (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
                        (send delegator know-position frame))
                      (flush-more-list delegator items)
-                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple commands; this may cause "Can't find dungeon feature" errors on Juiblex's or the planes, but they are unimportant
+                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple prompts; this may cause "Can't find dungeon feature" errors on Juiblex's or the planes, but they are unimportant
                      (send delegator ev)
                      initial)))
              (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)

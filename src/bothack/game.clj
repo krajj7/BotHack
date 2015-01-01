@@ -314,7 +314,7 @@
       FullFrameHandler
       (full-frame [_ frame]
         (swap! game update-map frame))
-      CommandResponseHandler
+      PromptResponseHandler
       (response-chosen [_ method res]
         (when (or (= genocide-class method) ;FIXME doesn't consider cursed geno!
                   (= genocide-monster method))

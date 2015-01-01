@@ -663,10 +663,10 @@
     (reify
       NameMenuHandler
       (name-menu [_ _] \c)
-      CallWhatHandler
-      (call-what [_ _] slot)
-      CallWhatNameHandler
-      (call-what-name [_ _] name))))
+      NameWhatHandler
+      (name-what [_ _] slot)
+      WhatNameHandler
+      (what-name [_ _] name))))
 
 (defn name-item [bh slot name]
   {:pre [(:game bh) (char? slot) (string? name)]}
@@ -1003,7 +1003,7 @@
   []
   (with-handler
     (reify EnhanceWhatHandler ; enhance anything
-      (enhance-what [_ _] #{\a}))
+      (enhance-what [_ _] \a))
     (->Enhance)))
 
 (defn- -withHandler
@@ -1478,7 +1478,7 @@
   (let [wish (atom nil)
         slot (atom nil)]
     (reify
-      CommandResponseHandler
+      PromptResponseHandler
       (response-chosen [_ method res]
         (when (and (= make-wish method) (not= "nothing" res))
           (update-inventory bh)
@@ -1502,7 +1502,7 @@
             (reset! slot s)))))))
 
 (defn mark-recharge-handler [{:keys [game] :as bh}]
-  (reify CommandResponseHandler
+  (reify PromptResponseHandler
     (response-chosen [_ method res]
       (when (= charge-what method)
         (name-item bh (if (string? res) (first res) res) "recharged")))))

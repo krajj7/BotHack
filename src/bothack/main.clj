@@ -136,7 +136,7 @@
             (log/info "Connection status: online"))
           (offline [_]
             (log/info "Connection status: offline"))
-          CommandResponseHandler
+          PromptResponseHandler
           (response-chosen [_ method res]
             (when (or (= genocide-class method)
                       (= genocide-monster method))

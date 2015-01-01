@@ -142,10 +142,9 @@
     (lift-burden [_ _ _] true)
     ForceGodHandler
     (force-god [_ _] true)
-    SeducedEquipRemoveHandler
-    (seduced-remove [_ _] false)
-    SeducedPutOnHandler
+    SeducedHandler
     (seduced-puton [_ _] false)
+    (seduced-remove [_ _] false)
     StopEatingHandler
     (stop-eating [_ _] true)
     WizmodeEnhanceHandler
@@ -201,8 +200,8 @@
     (die [_ _] (log/warn "died") "")
     KeepSaveHandler
     (keep-save [_ _] "y")
-    CallWhatNameHandler
-    (call-what-name [_ _] "")))
+    WhatNameHandler
+    (what-name [_ _] "")))
 
 (defn new-bh
   ([] (new-bh "config/shell-config.edn"))
