@@ -14,6 +14,8 @@ import clojure.lang.IFn;
  * @see Actions 
  */
 public final class ActionsComplex {
+	private ActionsComplex() {}
+
 	static {
 		IFn require = Clojure.var("clojure.core", "require");
 		require.invoke(Clojure.read("bothack.actions"));

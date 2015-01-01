@@ -24,6 +24,9 @@
    deaths ; [ turn Monster ], deaths that left no corpse are ignored
    tags
    room]
+  bothack.bot.IPosition
+  (x [pos] (:x pos))
+  (y [pos] (:y pos))
   bothack.bot.ITile)
 
 (defn initial-tile [x y]

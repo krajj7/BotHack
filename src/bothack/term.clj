@@ -68,8 +68,8 @@
                      (take-last 24 (.charArray ^vt320 buf)))
            (mapv unpack-colors
                      (take-last 24 (.charAttributes ^vt320 buf)))
-           {:x (.getCursorColumn ^vt320 buf)
-            :y (.getCursorRow ^vt320 buf)}))
+           {:x (long (.getCursorColumn ^vt320 buf))
+            :y (long (.getCursorRow ^vt320 buf))}))
 
 (defn- changed-rows
   "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
@@ -91,8 +91,8 @@
                                        .charAttributes (nth %2) unpack-colors))
                      (:colors f)
                      updated-rows)
-             {:x (.getCursorColumn ^vt320 newbuf)
-              :y (.getCursorRow ^vt320 newbuf)})))
+             {:x (long (.getCursorColumn ^vt320 newbuf))
+              :y (long (.getCursorRow ^vt320 newbuf))})))
 
 (defn -init [bus id]
   [[bus id] (atom

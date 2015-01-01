@@ -23,6 +23,8 @@ import clojure.java.api.Clojure;
  * @see ActionsComplex 
  */
 public final class Actions {
+	private Actions() {}
+
 	static {
 		Clojure.var("clojure.core", "require").invoke(Clojure.read("bothack.actions"));
 	}

@@ -508,6 +508,9 @@
    alignment ; :lawful :neutral :chaotic
    protection
    can-enhance]
+  bothack.bot.IPosition
+  (x [pos] (:x pos))
+  (y [pos] (:y pos))
   bothack.bot.IPlayer
   ; TODO expose stats etc.
   (alignment [player] (kw->enum bothack.bot.Alignment (:alignment player)))

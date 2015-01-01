@@ -30,3 +30,7 @@ The only supported version of NetHack is 3.4.3 with the nethack.alt.org patchset
 * Make a copy of `config/shell-config.edn`, set the command to run NetHack on your system.
 * Make sure the provided nethackrc (`bothack.nethackrc`) is used when you run the command manually (you should NOT get the initial "It is written in the Book of $DEITY" message when you start a game).
 * Run `LD_LIBRARY_PATH=jta26/jni/linux/ lein run config/<your-config-file.edn>`
+
+## Configuration options and logging
+
+TODO

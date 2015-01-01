@@ -13,7 +13,10 @@
    awake
    friendly
    peaceful ; nil while undetermined
-   remembered]) ; not currently known
+   remembered] ; not currently known
+  bothack.bot.IPosition
+  (x [pos] (:x pos))
+  (y [pos] (:y pos)))
 
 (defmethod print-method Monster [m w]
   (.write w (str "#bothack.monster.Monster"
