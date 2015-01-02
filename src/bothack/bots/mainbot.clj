@@ -217,7 +217,6 @@
   "For debugging - pause the game when something occurs"
   [game]
   #_(< 3205 (:turn game))
-  #_(= {:x 33 :y 14} (position (:player game)))
   #_(soko-done? game)
   #_(:oracle (curlvl-tags game))
   #_(= :astral (branch-key game))

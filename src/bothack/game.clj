@@ -80,7 +80,7 @@
                    (boulder? (at-curlvl (:last-state game) player))
                    (= (in-direction player (:dir last-action*)) (position tile))
                    (adjacent? player tile)))
-         (not ((initial-boulders sokotag) (position tile))))))
+         (not ((initial-boulders sokotag) (position-map tile))))))
 
 (defn- gather-monsters [game frame]
   (let [level (curlvl game)

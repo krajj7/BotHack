@@ -11,6 +11,11 @@
   ([x y] (Position. x y))
   ([of] {:post [(:x %) (:y %)]} (map->Position (select-keys of [:x :y]))))
 
+(defn position-map
+  "When an actual map is desired (position records are not completely equal to {:x X :y Y})"
+  [of]
+  (select-keys of [:x :y]))
+
 (defn valid-position?
   ([x y] (and (<= 0 x 79) (<= 1 y 21)))
   ([{:keys [x y]}] (valid-position? x y)))
