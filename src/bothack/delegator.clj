@@ -3,6 +3,7 @@
   (:require [clojure.data.priority-map :refer [priority-map]]
             [clojure.pprint :refer [pprint]]
             [bothack.action :refer :all]
+            [bothack.position :refer :all]
             [bothack.util :refer :all]
             [clojure.string :as string]
             [clojure.tools.logging :as log]))
@@ -74,12 +75,7 @@
                  (str "No handler responded to prompt of "
                       (:on-interface protocol))))))))
 
-(defn- position-map [s]
-  (if (instance? bothack.bot.IPosition s)
-    {:x (.x ^bothack.bot.IPosition s) :y (.y ^bothack.bot.IPosition s)}
-    s))
-
-(defn- enter-position [s] (str (to-position (position-map s)) \.))
+(defn- enter-position [s] (str (to-position s) \.))
 
 (defn- newline-terminate [s]
   (let [t (str s)]

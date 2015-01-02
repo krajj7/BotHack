@@ -79,12 +79,6 @@
   (if (seq coll)
     (apply (partial min-key f) (reverse coll))))
 
-(defn to-position
-  "Sequence of keys to move the cursor from the corner to the given position"
-  [pos]
-  (string/join (concat (repeat 10 \H) (repeat 4 \K) ; to corner
-                       (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))
-
 (defn find-first [p s] (first (filter p s)))
 
 (defn keep-first [p s] (first (keep p s)))

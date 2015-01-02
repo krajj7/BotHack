@@ -1,5 +1,6 @@
 (ns bothack.position
   (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
             [bothack.util :refer :all]))
 
 (defrecord Position [x y]
@@ -7,14 +8,14 @@
   (x [pos] (:x pos))
   (y [pos] (:y pos)))
 
-(defn position
-  ([x y] (Position. x y))
-  ([of] {:post [(:x %) (:y %)]} (map->Position (select-keys of [:x :y]))))
-
 (defn position-map
   "When an actual map is desired (position records are not completely equal to {:x X :y Y})"
   [of]
   (select-keys of [:x :y]))
+
+(defn position
+  ([x y] (Position. x y))
+  ([of] {:post [(:x %) (:y %)]} (map->Position (position-map of))))
 
 (defn valid-position?
   ([x y] (and (<= 0 x 79) (<= 1 y 21)))
@@ -115,3 +116,10 @@
 (defn in-line [from to]
   (or (= (:x from) (:x to))
       (= (:y from) (:y to))))
+
+(defn to-position
+  "Sequence of keys to move the cursor from the corner to the given position"
+  [pos]
+  {:pre (valid-position? pos)}
+  (string/join (concat (repeat 10 \H) (repeat 4 \K) ; to corner
+                       (repeat (dec (:y pos)) \j) (repeat (:x pos) \l))))
