@@ -448,9 +448,8 @@
              (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
                (log/debug "sink discarding redraw"))
              (initial [frame]
-                 (or (log/debug "initial scraper, prev =" @prev)
-                   (and (= @prev (topline+ frame))
-                        (topline-cursor? frame))
+               (or (log/debug "initial scraper, prev =" @prev)
+                   (= @prev (topline+ frame))
                    (ref-set prev nil)
                    (handle-game-start frame)
                    (handle-game-end frame)
@@ -470,8 +469,7 @@
              (no-mark [frame]
                (log/debug "no-mark maybe direction/location prompt, prev ="
                           @prev)
-               (or (and (= @prev (topline frame))
-                        (zero? (-> frame :cursor :y)))
+               (or (= @prev (topline frame))
                    (ref-set prev nil)
                    (log/debug "no-mark - new topline:" (topline frame))
                    (handle-direction frame)
