@@ -139,6 +139,8 @@
   [kind return invoke-fn protocol & proto-methods]
   `(do (defprotocol ~protocol ~@proto-methods)
        ~(if (= :internal kind)
+          ; :internal = interface will be auto-generated from clojure (no javadoc, no parametrized types)
+          ; anything other than :internal needs to have an interface pre-defined in the java sources (bothack.events or bothack.prompts package)
           `(defnsinterface ~(symbol (str \I protocol)) "bothack.internal"
              ~@(map (partial interface-sig return) proto-methods)))
        (extend-type ~(symbol (str "bothack."

@@ -4,6 +4,8 @@ import clojure.java.api.Clojure;
 
 /** Position factory */
 final public class Position {
+	private Position() {};
+	
 	static {
 		Clojure.var("clojure.core", "require").invoke(Clojure.read("bothack.position"));
 	}
