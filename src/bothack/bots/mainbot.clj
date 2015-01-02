@@ -905,11 +905,12 @@
              (make-use game slot)))
          (if safe?
            (with-reason "recovering - exploring nearby items"
-             (without-levitation game
-               (:step (navigate game :new-items {:no-fight true :no-autonav true
-                                                 :no-traps true :explored true
-                                                 :no-levitation true
-                                                 :max-steps 10})))))
+             (if-let [{:keys [step]}
+                      (navigate game :new-items
+                                {:no-fight true :no-autonav true
+                                 :no-traps true :explored true
+                                 :no-levitation true :max-steps 10})]
+               (or step (remove-levi game)))))
          (with-reason "moving to safer position"
            (:step (navigate game
                             (complement (partial exposed? game (curlvl game)))
