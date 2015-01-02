@@ -13,7 +13,9 @@
                  :additional-args ["-overview" "doc/overview.html"
                                    "-docencoding" "utf-8"
                                    "-charset" "utf-8"
-                                   "-encoding" "utf-8"]}
+                                   "-windowtitle" "BotHack JavaDoc"
+                                   "-encoding" "utf-8"
+                                   "-notimestamp"]}
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/tools.logging "0.2.6"]
