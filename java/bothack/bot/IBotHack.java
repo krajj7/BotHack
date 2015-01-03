@@ -2,21 +2,22 @@ package bothack.bot;
 
 /** 
  * The root of BotHack functionality.
- * This represents a handle for the BotHack framework, through which you can
- * register custom handlers, get the current game state etc. 
+ * <p>This represents a handle for the BotHack framework, through which you can
+ * register custom handlers, get the current game state etc. </p>
+ * <p>Unlike other BotHack interfaces this is the only mutable one.</p>
  */
 public interface IBotHack {
 	/**
 	 * Register a custom handler with the default priority.  
 	 * @param handler The handler object should implement one or more interfaces
-	 * from bothack.events or bothack.prompts
+	 * from {@link bothack.events} or {@link bothack.prompts}.
 	 */
 	void registerHandler(Object handler);
 	/** 
 	 * Register a custom handler with the specified priority. 
-	 * @param priority Lower number = processed earlier
+	 * @param priority Lower number = processed earlier.
 	 * @param handler The handler object should implement one or more interfaces
-	 * from bothack.events or bothack.prompts
+	 * from {@link bothack.events} or {@link bothack.prompts}.
 	 */
 	void registerHandler(Integer priority, Object handler);
 	/**
@@ -31,6 +32,4 @@ public interface IBotHack {
 	void replaceHandler(Object oldHandler, Object newHandler);
 	/** Returns the current game state snapshot. */
 	IGame game();
-	/** Shorthand for .game().player() */
-	IPlayer player();
 }

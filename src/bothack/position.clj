@@ -8,6 +8,9 @@
   (x [pos] (:x pos))
   (y [pos] (:y pos)))
 
+(defmethod print-method Position [pos w]
+  (.write w (str "#Position{:x " (:x pos) ", :y " (:y pos) "}")))
+
 (defn position-map
   "When an actual map is desired (position records are not completely equal to {:x X :y Y})"
   [of]

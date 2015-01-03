@@ -299,10 +299,9 @@
                       (update-in [:dungeon :levels old-branch old-dlvl :tags]
                                  conj new-branch)
                       (assoc :branch-id new-branch))))
-        (log/debug "choosing branch-id" (:branch-id @(:game bh))
-                   "for dlvl" new-dlvl)
-        (if-let [no (->> (:branch-id @(:game bh)) name
-                         (re-first-group #"unknown_([0-9]+)")
+        (log/debug "choosing branch-id" (:branch-id @game) "for dlvl" new-dlvl)
+        (if-let [no (->> (:branch-id @game) name
+                         (re-first-group #"unknown-([0-9]+)")
                          parse-int)]
           (swap! game assoc :last-branch-no no))))))
 

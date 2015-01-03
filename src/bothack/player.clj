@@ -489,7 +489,6 @@
    pw
    maxpw
    ac
-   xp
    xplvl
    x y
    inventory ; {char => Item}
@@ -512,7 +511,6 @@
   (x [pos] (:x pos))
   (y [pos] (:y pos))
   bothack.bot.IPlayer
-  ; TODO expose stats etc.
   (alignment [player] (kw->enum bothack.bot.Alignment (:alignment player)))
   (hunger [player] (kw->enum bothack.bot.Hunger (:hunger player)))
   (encumbrance [player]
@@ -527,7 +525,9 @@
   (isStrained [player] (boolean (strained? player)))
   (isBurdened [player] (boolean (burdened? player)))
   (isBlindExternally [player] (boolean (:ext-blind (:state player))))
-  (isWeak [player] (boolean (weak? player))))
+  (isWeak [player] (boolean (weak? player)))
+  (isEngulfed [player] (boolean (:engulfed player)))
+  (polymorphed [player] (:polymorphed player)))
 
 (defn new-player []
   (map->Player {:protection 0

@@ -27,8 +27,7 @@
     (deregister-handler this handler))
   (replaceHandler [this handler-old handler-new]
     (replace-handler this handler-old handler-new))
-  (game [this] @(:game this))
-  (player [this] (:player @(:game this))))
+  (game [this] @(:game this)))
 
 (defmethod print-method BotHack [bh w]
   (.write w "<BotHack instance>"))

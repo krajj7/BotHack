@@ -500,6 +500,7 @@
    turn* ; internal clock - increments per each action (unlike game turns)
    score]
   bothack.bot.IGame
+  (currentLevel [game] (curlvl game))
   (frame [game] (:frame game))
   (player [game] (:player game))
   (canPray [game] (boolean (can-pray? game)))

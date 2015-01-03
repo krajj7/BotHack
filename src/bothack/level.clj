@@ -5,27 +5,17 @@
             [bothack.util :refer :all]
             [bothack.tile :refer :all]))
 
-(defrecord Level
-  [dlvl
-   branch-id
-   tags ; subset #{:shop :oracle :minetown :vault :medusa :castle :votd ...}
-   blueprint ; for special levels
-   tiles
-   monsters] ; { {:x X :y Y} => Monster }
-  bothack.bot.ILevel)
-
-(defmethod print-method Level [level w]
-  (.write w (str "#bothack.level.Level"
-                 (assoc (.without level :tiles) :tiles "<trimmed>"))))
-
 (defn- initial-tiles []
   (->> (for [y (range 21)
              x (range 80)]
          (initial-tile x (inc y)))
        (partition 80) (mapv vec)))
 
-(defn new-level [dlvl branch-id]
-  (Level. dlvl branch-id #{} nil (initial-tiles) {}))
+(defn diggable-floor? [level]
+  (not (or (#{:quest :wiztower :vlad :astral :earth :fire :air :water :sokoban}
+            (:branch-id level))
+           (:undiggable-floor (:blueprint level))
+           (some #{:undiggable-floor :end :sanctum} (:tags level)))))
 
 (defn tile-seq
   "a seq of all 80x20 tiles on the level, left to right, top to bottom"
@@ -497,3 +487,29 @@
     :monsters {{:y 6, :x 22} (name->monster "Lord Sato")}
     :features {{:x 29 :y 6} :door-secret
                {:x 52 :y 6} :door-secret}}])
+
+(defrecord Level
+  [dlvl
+   branch-id
+   tags ; subset #{:shop :oracle :minetown :vault :medusa :castle :votd ...}
+   blueprint ; for special levels
+   tiles
+   monsters] ; { Position => Monster }
+  bothack.bot.ILevel
+  (hasDiggableFloor [level]
+    (diggable-floor? level))
+  (hasShop [level] (boolean (:shop (:tags level))))
+  (hasAltar [level] (boolean (:altar (:tags level))))
+  (hasTemple [level] (boolean (:temple (:tags level))))
+  (neighbors [level pos] (vec (neighbors level pos)))
+  (at [level pos] (at level pos))
+  (monsterAt [level pos] (get-in level [:monsters (position pos)]))
+  (branch [level] (:branch-id level))
+  (dlvl [level] (:dlvl level)))
+
+(defmethod print-method Level [level w]
+  (.write w (str "#bothack.level.Level"
+                 (assoc (.without level :tiles) :tiles "<trimmed>"))))
+
+(defn new-level [dlvl branch-id]
+  (Level. dlvl branch-id #{} nil (initial-tiles) {}))

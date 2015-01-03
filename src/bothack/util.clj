@@ -89,7 +89,7 @@
 
 (defn parse-int [x]
   (if x
-    (Integer/parseInt x)))
+    (Long/parseLong x)))
 
 (defprotocol Type (typekw [this]))
 

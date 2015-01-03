@@ -3,21 +3,36 @@ package bothack.bot;
 import java.util.List;
 
 /**
- *  The immutable interface representing a tile of the dungeon.
+ *  Immutable representation of a tile of the dungeon.
  *  This doesn't include monsters present on the tile.
  *  @see ILevel#monsters()
  *  @see ILevel#monsterAt(IPosition)
  */
 public interface ITile extends IPosition,IAppearance {
-	/** True if it is possible to engrave on this tile by some means. */
+	/** 
+	 * True if there is an undamaged Elbereth engraving on the tile. 
+	 * @see ITile#engravingType()
+	 */
+	Boolean hasElbereth();
+	/**
+	 * True if it is possible to engrave on this tile by some means. 
+	 * @see IGame#canEngrave()
+	 */
 	Boolean isEngravable();
 	/** The dungeon feature present on this tile or null. */
 	Feature feature();
+	/** 
+	 * True if the tile has a trap.
+	 * @see ITile#feature()
+	 */
+	Boolean isTrap();
+	/** True if there appears to be a boulder on the tile. */
+	Boolean hasBoulder();
 	/** True if the player was adjacent to the tile when not blind. */
 	Boolean wasSeen();
-	/** First turn the tile has been stepped on. */
+	/** First game turn the tile has been stepped on. */
 	Long firstWalkedTurn();
-	/** Last turn the tile has been stepped on. */
+	/** Last game turn the tile has been stepped on. */
 	Long lastWalkedTurn();
 	/** 
 	 * True if the player dug the tile or it is assumed it has been dug.  
@@ -46,4 +61,6 @@ public interface ITile extends IPosition,IAppearance {
 	Branch leadsTo();
 	/** For altars - returns the altar's alignment. */
 	Alignment altarAlignment();
+	/** True for the vibrating square. */
+	Boolean isVibrating();
 }

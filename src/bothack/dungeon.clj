@@ -9,15 +9,8 @@
             [bothack.position :refer :all]
             [bothack.delegator :refer :all]))
 
-; branch ID is either a branch keyword from branches or random keyword that will map (via id->branch) to a standard branch keyword when the level branch is recognized.
-; a Level should be permanently uniquely identified by its branch-id + dlvl.
-(defrecord Dungeon
-  [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
-   id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
-  bothack.bot.IDungeon)
-
 (defn- next-branch-id [game]
-  (keyword (str "unknown_" ((fnil inc 0) (:last-branch-no game)))))
+  (keyword (str "unknown-" ((fnil inc 0) (:last-branch-no game)))))
 
 (def branches
   #{:main :mines :sokoban :quest :ludios :vlad :wiztower :earth :fire :air
@@ -62,9 +55,6 @@
   (assoc-in (ensure-branch game branch-id)
             [:dungeon :levels branch-id (:dlvl level)]
             level))
-
-(defn new-dungeon []
-  (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)))
 
 (defn change-dlvl
   "Apply function to dlvl number if there is one, otherwise no change.  The result dlvl may not actually exist."
@@ -695,12 +685,6 @@
        (or (:orcus (:tags level)) (not (:undiggable (:blueprint level))))
        (not (#{:vlad :astral :sokoban :quest} (branch-key game level)))))
 
-(defn diggable-floor? [game level]
-  (not (or (#{:quest :wiztower :vlad :astral :earth :fire :air :water :sokoban}
-                     (branch-key game level))
-           (:undiggable-floor (:blueprint level))
-           (some #{:undiggable-floor :end :sanctum} (:tags level)))))
-
 (defn below-castle? [{:keys [player] :as game}]
   "Being on the right side of the castle is also considered below"
   (if-let [castle (get-dlvl game :main :castle)]
@@ -753,3 +737,21 @@
   [game level from-tile to-tile]
   (and (walkable? to-tile)
        (edge-passable-walking? game level from-tile to-tile)))
+
+; branch ID is either a branch keyword from branches or random keyword that will map (via id->branch) to a standard branch keyword when the level branch is recognized.
+; a Level should be permanently uniquely identified by its branch-id + dlvl.
+(defrecord Dungeon
+  [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
+   id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
+  bothack.bot.IDungeon
+  (^bothack.bot.ILevel
+    getLevel [dungeon ^bothack.bot.Branch branch-id ^bothack.bot.LevelTag tag]
+    (get-level {:dungeon dungeon} (.getKeyword branch-id) (.getKeyword tag)))
+  (^bothack.bot.ILevel
+    getLevel [dungeon ^bothack.bot.Branch branch-id ^String dlvl]
+    (get-level {:dungeon dungeon} (.getKeyword branch-id) dlvl))
+  (getBranch [dungeon branch-id]
+    (get-branch {:dungeon dungeon} (.getKeyword branch-id))))
+
+(defn new-dungeon []
+  (Dungeon. {} (reduce #(assoc %1 %2 %2) {} branches)))

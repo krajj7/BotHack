@@ -673,7 +673,7 @@
                                     {:max-steps 15 :walking true})]
     (with-reason "going to a trapdoor/hole"
       (or step (descend game)))
-    (if-let [pick (and (diggable-floor? game level)
+    (if-let [pick (and (diggable-floor? level)
                        (have-pick game))]
       (if-let [{:keys [step]}
                (or (navigate game #(and (#{:pit :floor} (:feature %))
@@ -693,7 +693,7 @@
             (with-reason "digging down"
               (without-levitation game
                 (dig pick :>)))))
-      (if-let [[slot item] (and (diggable-floor? game (curlvl game))
+      (if-let [[slot item] (and (diggable-floor? (curlvl game))
                                 (#{:floor :corridor}
                                           (:feature (at-player game)))
                                 (have game "wand of digging" #{:bagged}))]

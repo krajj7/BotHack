@@ -5,43 +5,6 @@
             [bothack.item :refer :all]
             [bothack.util :refer :all]))
 
-(defrecord Tile
-  [x y
-   glyph
-   color
-   item-glyph
-   item-color
-   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :pool :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
-   seen
-   first-walked ; turn no.
-   walked ; turn no.
-   dug
-   searched ; no. of times searched
-   items ; [Item]
-   new-items ; flag if some items changed
-   engraving
-   engraving-type ; :dust :semi :permanent
-   deaths ; [ turn Monster ], deaths that left no corpse are ignored
-   tags
-   room]
-  bothack.bot.IPosition
-  (x [pos] (:x pos))
-  (y [pos] (:y pos))
-  bothack.bot.IAppearance
-  bothack.bot.ITile)
-
-(defn initial-tile [x y]
-  (map->Tile {:x x
-              :y y
-              :glyph \space
-              :seen false
-              :dug false
-              :searched 0
-              :items []
-              :deaths []
-              :new-items false
-              :tags #{}}))
-
 (defn digit? [tile]
   (Character/isDigit ^Character (:glyph tile)))
 
@@ -355,3 +318,64 @@
 
 (defn unexplored? [tile]
   (and (not (boulder? tile)) (unknown? tile)))
+
+(defrecord Tile
+  [x y
+   glyph
+   color
+   item-glyph
+   item-color
+   feature ; :rock :floor :wall :stairs-up :stairs-down :corridor :altar :pool :door-open :door-closed :door-locked :door-secret :sink :fountain :grave :throne :bars :tree :drawbridge-raised :drawbridge-lowered :lava :ice + traps
+   seen
+   first-walked ; turn no.
+   walked ; turn no.
+   dug
+   searched ; no. of times searched
+   items ; [Item]
+   new-items ; flag if some items changed
+   engraving
+   engraving-type ; :dust :semi :permanent
+   deaths ; [ turn Monster ], deaths that left no corpse are ignored
+   tags
+   room]
+  bothack.bot.IPosition
+  (x [pos] (:x pos))
+  (y [pos] (:y pos))
+  bothack.bot.IAppearance
+  (glyph [tile] (:glyph tile))
+  (color [tile] (kw->enum bothack.bot.Color (:color tile)))
+  bothack.bot.ITile
+  (hasElbereth [tile] (boolean (e? tile)))
+  (hasBoulder [tile] (boolean (boulder? tile)))
+  (isEngravable [tile] (boolean (engravable? tile)))
+  (isTrap [tile] (boolean (trap? tile)))
+  (isVibrating [tile] (boolean (:vibrating tile)))
+  (feature [tile] (kw->enum bothack.bot.Feature (:feature tile)))
+  (wasSeen [tile] (boolean (:seen tile)))
+  (firstWalkedTurn [tile] (:first-walked tile))
+  (lastWalkedTurn [tile] (:walked tile))
+  (dug [tile] (boolean (:dug tile)))
+  (searched [tile] (:searched tile))
+  (items [tile] (:items tile))
+  (hasNewItems [tile] (boolean (:new-items tile)))
+  (engraving [tile] (:engraving tile))
+  (engravingType [tile] (kw->enum bothack.bot.EngravingType
+                                  (:engraving-type tile)))
+  (room [tile] (kw->enum bothack.bot.RoomType (:room tile)))
+  (sinkGaveRing [tile] (some? (:ring (:tags tile))))
+  (sinkGaveFoocubus [tile] (some? (:foocubus (:tags tile))))
+  (sinkGavePudding [tile] (some? (:pudding (:tags tile))))
+  (leadsTo [tile] (kw->enum bothack.bot.Branch (:branch-id tile)))
+  (altarAlignment [tile] (kw->enum bothack.bot.Alignment (:alignment tile))))
+
+(defn initial-tile [x y]
+  (map->Tile {:x x
+              :y y
+              :glyph \space
+              :seen false
+              :dug false
+              :searched 0
+              :items []
+              :deaths []
+              :new-items false
+              :tags #{}}))

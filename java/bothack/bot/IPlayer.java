@@ -1,9 +1,12 @@
 package bothack.bot;
 
+import java.util.Map;
+import java.util.Set;
+
 import bothack.actions.Actions;
 import bothack.actions.ActionsComplex;
 
-/** The immutable interface representing player-related state and functionality. */
+/** Immutable representation of player-related state and functionality. */
 public interface IPlayer extends IPosition {
 	/** Returns the player's current alignment.
 	 * Not to be confused with <i>alignment record</i>, which is currently untracked. */
@@ -44,4 +47,63 @@ public interface IPlayer extends IPosition {
 	Boolean isHungry();
 	/** True if the player is blinded by a cream pie or venom. */
 	Boolean isBlindExternally();
+	/** True if the player is engulfed by a monster. */
+	Boolean isEngulfed();
+	/** Returns the monster type into which the player is currently polymorphed. */
+	IMonsterType polymorphed();
+	/** Returns the set of intrinsics the player has. */
+	Set<Intrinsic> intrinsics();
+	/** Name displayed on the status line. */
+	String nickname();
+	/** Title displayed on the status line. */
+	String title();
+	/** The amount of hit points remanining. */
+	Long HP();
+	/** The maximum amount of hit points. */
+	Long maxHP();
+	/** The amount of magic power. */
+	Long PW();
+	/** The maximum amount of magic power. */
+	Long maxPW();
+	/** Armor class – lower is better. */
+	Long AC();
+	/** The player's level.  You need at least 14 to be able to enter the quest. */
+	Long experienceLevel();
+	/** The player's inventory. */
+	Map<Character, IItem> inventory();
+	/** True if the player is stuck in a trap. */
+	Boolean isTrapped();
+	/** True if the player has restorable drained stats. */
+	Boolean isStatDrained();
+	Boolean hasLycantrophy();
+	/** True if the player is about to turn into stone. */
+	Boolean isStoning();
+	/** True if the player is blinded.
+	 * @see IPlayer#isBlindExternally() */
+	Boolean isBlind();
+	/** True if the player is stunned. */
+	Boolean isStunned();
+	/** True if the player is deathly sick (including food poisoning). */
+	Boolean isIll();
+	/** True if the player is confused or stunned. */
+	Boolean isDizzy();
+	/** True if the player can eat the food with no ill effects. */
+	Boolean canEat(IItem food);
+	/** True if the player can gain intrinsics or stats by eating the corpse. */
+	Boolean canEatWithBenefit(IItem corpse);
+	/** Estimate of the sum of weight of all carried items. */
+	Long weightSum();
+	/** How much weight the player can carry before getting burdened. */
+	Long carryingCapacity();
+	/** How much gold the player is carrying in total (including bagged gold). */
+	Long gold();
+	/** How much gold the player is carrying in main inventory. */
+	Long goldAvailable();
+	/** Get the effective integer value of stat.
+	 * @see IPlayer#getDisplayedStr() */
+	Long getStat(Stat stat);
+	/** The displayed value of strenght – may be something like 18/10 or 18/** */
+	Long getDisplayedStr();
+	//Role role();
+	//Race race();
 }

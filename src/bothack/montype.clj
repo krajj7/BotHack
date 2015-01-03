@@ -3,6 +3,19 @@
             [clojure.string :as string]
             [bothack.util :refer :all]))
 
+(defn passive-type? [monster]
+  (every? #(= :passive (:type %)) (:attacks monster)))
+
+(defn corrosive-type?
+  "Corrodes weapon passively when hit?"
+  [montype]
+  (some #(and (= :passive (:type %))
+              (#{:corrode :acid} (:damage-type %)))
+        (:attacks montype)))
+
+(defn has-drowning-attack? [m]
+  (some #(= :wrap (:damage-type %)) (:attacks m)))
+
 (defrecord MonsterType
   [name
    glyph
@@ -20,7 +33,44 @@
    size
    resistances
    resistances-conferred
-   tags])
+   tags]
+  bothack.bot.IMonsterType
+  (name [m] (:name m))
+  (difficulty [m] (:difficulty m))
+  (speed [m] (:speed m))
+  (AC [m] (:ac m))
+  (MR [m] (:mr m))
+  (alignment [m] (:alignment m))
+  (nutrition [m] (:nutrition m))
+  (resistances [m] (:resistances m))
+  (conferredResistances [m] (:resistances-conferred m))
+  (isPoisonous [m] (boolean (:poisonous (:tags m))))
+  (isUnique [m] (boolean (:unique (:gen-flags m))))
+  (hasHands [m] (not (or (:nohands (:tags m)) (:nolimbs (:tags m)))))
+  (isHostile [m] (boolean (:hostile (:tags m))))
+  (isCovetous [m] (boolean (:covetous (:tags m))))
+  (respectsElbereth [m] (not (:elbereth (:resistances m))))
+  (seesInvisible [m] (boolean (:see-invis (:tags m))))
+  (isFollower [m] (boolean (:follows (:tags m))))
+  (isWerecreature [m] (boolean (:were (:tags m))))
+  (isMimic [m] (.contains (:name m) " mimic"))
+  (isPriest [m] (.contains (:name m) "priest"))
+  (isShopkeeper [m] (= "shopkeeper" (:name m)))
+  (isPassive [m] (boolean (passive-type? m)))
+  (isCorrosive [m] (boolean (corrosive-type? m)))
+  (isSessile [m] (boolean (:sessile (:tags m))))
+  (hasDrowningAttack [m] (boolean (has-drowning-attack? m)))
+  (isRider [m] (boolean (:rider (:tags m))))
+  (isUndead [m] (boolean (:undead (:tags m))))
+  (isStrong [m] (boolean (:strong (:tags m))))
+  (isNasty [m] (boolean (:nasty (:tags m))))
+  (isHuman [m] (boolean (:human (:tags m))))
+  (isGuard [m] (boolean (:guard (:tags m))))
+  (isMindless [m] (boolean (:mindless (:tags m))))
+  (canBeSeenByInfravision [m] (boolean (:infravisible (:tags m))))
+  bothack.bot.IAppearance
+  (glyph [tile] (:glyph tile))
+  (color [tile] (kw->enum bothack.bot.Color (:color tile))))
 
 (defrecord MonsterAttack
   [type

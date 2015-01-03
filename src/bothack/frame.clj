@@ -2,22 +2,6 @@
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]))
 
-; an immutable representation of a terminal window contents
-; character attributes underline or blink etc. are not represented, only the foreground colors (affected by boldness) are important for NetHack
-(defrecord Frame
-  [lines ; vector of 24 Strings representing text on each row of the terminal
-   colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
-   cursor]
-  bothack.bot.IFrame)
-
-(defmethod print-method Frame [f w]
-  (.write w "==== <Frame> ====\n")
-  (doseq [l (:lines f)]
-    (.write w l)
-    (.write w "\n"))
-  (.write w (format "\nCursor: %s %s\n" (-> f :cursor :x) (-> f :cursor :y)))
-  (.write w "=================\n"))
-
 (def colormap
   [nil :red :green :brown :blue ; non-bold
    :magenta :cyan :gray
@@ -110,3 +94,22 @@
            (re-seq #"\|.\|" (subs line-at row-before (inc row-after)))
            (or (= "\\-/" (subs line-below row-before (inc row-after)))
                (= 21 (:y cursor)))))))
+
+; character attributes underline or blink etc. are not represented, only the foreground colors (affected by boldness) are important for NetHack
+(defrecord Frame
+  [lines ; vector of 24 Strings representing text on each row of the terminal
+   colors ; vector of 24 vectors of keywords representing the FG color for the corresponding character (80 per line)
+   cursor]
+  bothack.bot.IFrame
+  (cursor [frame] (:cursor frame))
+  (line [frame y] (get-in frame [:lines y]))
+  (glyphAt [frame pos] (get-in frame [:lines (:y pos) (:x pos)]))
+  (colorAt [frame pos] (get-in frame [:colors (:y pos) (:x pos)])))
+
+(defmethod print-method Frame [f w]
+  (.write w "==== <Frame> ====\n")
+  (doseq [l (:lines f)]
+    (.write w l)
+    (.write w "\n"))
+  (.write w (format "\nCursor: %s %s\n" (-> f :cursor :x) (-> f :cursor :y)))
+  (.write w "=================\n"))
