@@ -23,19 +23,19 @@
    :magenta :cyan :gray
    :bold :orange :bright-green :yellow ; bold
    :bright-blue :bright-magenta :bright-cyan :white
-   :inverse :inv-red :inv-green :inv-brown ; inverse
-   :inv-blue :inv-magenta :inv-cyan :inv-gray
-   :inv-bold :inv-orange :inv-bright-green :inv-yellow ; inverse+bold
-   :inv-bright-blue :inv-bright-magenta :inv-bright-cyan :inv-white])
+   :inverse :inverse-red :inverse-green :inverse-brown ; inverse
+   :inverse-blue :inverse-magenta :inverse-cyan :inverse-gray
+   :inverse-bold :inverse-orange :inverse-bright-green :inverse-yellow ; inverse+bold
+   :inverse-bright-blue :inverse-bright-magenta :inverse-bright-cyan :inverse-white])
 
 (defn inverse? [color]
-  (#{:inverse :inv-red :inv-green :inv-brown :inv-blue :inv-magenta
-     :inv-cyan :inv-gray :inv-bold :inv-orange :inv-bright-green
-     :inv-yellow :inv-bright-blue :inv-bright-magenta :inv-bright-cyan
-     :inv-white} color))
+  (#{:inverse :inverse-red :inverse-green :inverse-brown :inverse-blue
+     :inverse-magenta :inverse-cyan :inverse-gray :inverse-bold :inverse-orange
+     :inverse-bright-green :inverse-yellow :inverse-bright-blue
+     :inverse-bright-magenta :inverse-bright-cyan :inverse-white} color))
 
 (defn non-inverse [color]
-  (get {:inv-bright-green :bright-green, :inv-green :green, :inverse nil, :inv-brown :brown, :inv-orange :orange, :inv-magenta :magenta, :inv-blue :blue, :inv-bright-cyan :bright-cyan, :inv-cyan :cyan, :inv-red :red, :inv-bold :white, :inv-bright-magenta :bright-magenta, :inv-yellow :yellow, :inv-bright-blue :bright-blue, :inv-gray :gray, :inv-white :white} color color))
+  (get {:inverse-bright-green :bright-green, :inverse-green :green, :inverse nil, :inverse-brown :brown, :inverse-orange :orange, :inverse-magenta :magenta, :inverse-blue :blue, :inverse-bright-cyan :bright-cyan, :inverse-cyan :cyan, :inverse-red :red, :inverse-bold :white, :inverse-bright-magenta :bright-magenta, :inverse-yellow :yellow, :inverse-bright-blue :bright-blue, :inverse-gray :gray, :inverse-white :white} color color))
 
 (defn print-colors [f]
   (println "Colors:")

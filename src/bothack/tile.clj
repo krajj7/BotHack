@@ -27,6 +27,7 @@
   bothack.bot.IPosition
   (x [pos] (:x pos))
   (y [pos] (:y pos))
+  bothack.bot.IAppearance
   bothack.bot.ITile)
 
 (defn initial-tile [x y]

@@ -69,7 +69,7 @@ public final class Actions {
 	 * Go up the stairs or climb a ladder.
 	 * Note that you can't do this when stressed or worse.
 	 * @see IPlayer#isStressed()
-	 * @see ITile#isUpstairs()
+	 * @see ITile#feature()
 	 */
 	public static IAction Ascend() {
 		return (IAction) Clojure.var("bothack.actions", "->Ascend").invoke();
@@ -77,7 +77,7 @@ public final class Actions {
 
 	/** 
 	 * Go down the stairs or a ladder. 
-	 * @see ITile#isDownstairs()
+	 * @see ITile#feature()
 	 * @see ActionsComplex#descend(IGame)
 	 */
 	public static IAction Descend() {
@@ -284,7 +284,7 @@ public final class Actions {
 	
 	/** 
 	 * Sit down (only useful on thrones). 
-	 * @see ITile#isThrone() 
+	 * @see ITile#feature() 
 	 */
 	public static IAction Sit() {
 		return (IAction) Clojure.var("bothack.actions", "->Sit").invoke();
@@ -307,7 +307,7 @@ public final class Actions {
 	
 	/** 
 	 * Offer item at slot as sacrifice.
-	 * @see ITile#isAltar()
+	 * @see ITile#feature()
 	 */
 	public static IAction Offer(Character slot) {
 		return (IAction) Clojure.var("bothack.actions", "->Offer").invoke(slot);
@@ -315,7 +315,7 @@ public final class Actions {
 	
 	/**
 	 * Offer item from the ground by label. 
-	 * @see ITile#isAltar()
+	 * @see ITile#feature()
 	 */
 	public static IAction Offer(String label) {
 		return (IAction) Clojure.var("bothack.actions", "->Offer").invoke(label);

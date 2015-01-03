@@ -13,4 +13,6 @@ public interface IGame {
 	Map.Entry<Character,IItem> haveLevitationItemOn();
 	/** Returns the set of monster types and classes that have been genocided in the game. */
 	Set<String> genocided();
+	/** Returns the current dungeon level. */
+	ILevel currentLevel();
 }
