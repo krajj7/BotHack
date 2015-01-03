@@ -16,8 +16,8 @@
    id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
   bothack.bot.IDungeon)
 
-(defn- gen-branch-id []
-  (-> "branch#" gensym keyword))
+(defn- next-branch-id [game]
+  (keyword (str "unknown_" ((fnil inc 0) (:last-branch-no game)))))
 
 (def branches
   #{:main :mines :sokoban :quest :ludios :vlad :wiztower :earth :fire :air
@@ -501,7 +501,7 @@
   (or (if (= "End Game" dlvl) :earth)
       (subbranches (branch-key game))
       (if-not (<= 3 (dlvl-number dlvl) 9) :main)
-      (gen-branch-id)))
+      (next-branch-id game)))
 
 (defn dlvl-range
   "Only works for :main and :mines"

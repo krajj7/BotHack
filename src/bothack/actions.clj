@@ -300,7 +300,11 @@
                                  conj new-branch)
                       (assoc :branch-id new-branch))))
         (log/debug "choosing branch-id" (:branch-id @(:game bh))
-                   "for dlvl" new-dlvl)))))
+                   "for dlvl" new-dlvl)
+        (if-let [no (->> (:branch-id @(:game bh)) name
+                         (re-first-group #"unknown_([0-9]+)")
+                         parse-int)]
+          (swap! game assoc :last-branch-no no))))))
 
 (defaction Ascend []
   (trigger [_] "<")
