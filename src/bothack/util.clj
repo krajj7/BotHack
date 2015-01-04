@@ -12,15 +12,17 @@
 (def priority-top (dec Integer/MIN_VALUE))
 (def priority-bottom (inc Integer/MAX_VALUE))
 
-(defn kw->enum [cls kw]
-  (if kw
-    (as-> (name kw) res
-      (string/replace res #"-" "_")
-      (string/upper-case res)
-      (Enum/valueOf cls res))))
+(def kw->enum
+  (memoize (fn [cls kw]
+             (if kw
+               (as-> (name kw) res
+                 (string/replace res #"-" "_")
+                 (string/upper-case res)
+                 (Enum/valueOf cls res))))))
 
-(defn enum->kw [v]
-  (if (or (nil? v) (keyword? v)) v (.getKeyword v)))
+(def enum->kw
+  (memoize (fn [v]
+             (if (or (nil? v) (keyword? v)) v (.getKeyword v)))))
 
 (defn ctrl
   "Returns a char representing CTRL+<ch>"
