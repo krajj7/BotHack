@@ -325,14 +325,14 @@
 (defn count-candles [game]
   {:pre [(:player game)]}
   (reduce (fnil + 0 0)
-          (if-let [[_ candelabrum] (have game "Candelabrum of Invocation")]
+          (if-let [[_ candelabrum] (have game candelabrum)]
             (:candles candelabrum))
           (for [[_ candles] (have-all game candle?)]
             (:qty candles))))
 
 (defn have-candles? [game]
   {:pre [(:player game)]}
-  (= 7 (count-candles game)))
+  (<= 7 (count-candles game)))
 
 (def taboo-corpses #{"chickatrice" "cockatrice" "green slime" "stalker" "quantum mechanic" "elf" "human" "dwarf" "giant" "violet fungus" "yellow mold" "chameleon" "Medusa" "doppelganger" "Pestilence" "Death" "Famine"})
 

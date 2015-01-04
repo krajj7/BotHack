@@ -69,9 +69,8 @@
         res)
       (reduce #(update %1 %2 parse-int) res
               (filter (comp seq res) [:cost :enchantment :charges :recharges]))
-      (assoc res :erosion (if-let [deg (+ (or (erosion (:erosion1 res)) 0)
-                                          (or (erosion (:erosion2 res)) 0))]
-                            (if (pos? deg) deg)))
+      (assoc res :erosion ((fnil max 0 0) (erosion (:erosion1 res))
+                                          (erosion (:erosion2 res))))
       (dissoc res :cost1 :cost2 :cost3 :lit-candelabrum :erosion1 :erosion2 :slot)
       (into {:label label} (filter (comp some? val) res)))))
 
