@@ -62,13 +62,13 @@
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_top">
@@ -87,6 +87,110 @@
 <hr>
 <br>
 <pre>public interface <span class="strong">IDungeon</span></pre>
+<div class="block">Immutable representation of the dungeon level tree.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,<a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IDungeon.html#getBranch(bothack.bot.Branch)">getBranch</a></strong>(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch)</code>
+<div class="block">Returns the Dlvl => ILevel map for the branch.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IDungeon.html#getLevel(bothack.bot.Branch,%20bothack.bot.LevelTag)">getLevel</a></strong>(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch,
+        <a href="../../bothack/bot/LevelTag.html" title="enum in bothack.bot">LevelTag</a>&nbsp;tag)</code>
+<div class="block">Returns a level by Branch and tag, if such was already visited and identified.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IDungeon.html#getLevel(bothack.bot.Branch,%20java.lang.String)">getLevel</a></strong>(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch,
+        java.lang.String&nbsp;dlvl)</code>
+<div class="block">Returns a level by Branch and Dlvl, if such was already visited.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IDungeon.html#hasDiggableFloor()">hasDiggableFloor</a></strong>()</code>
+<div class="block">Returns true if the floor is not too hard to dig.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="getBranch(bothack.bot.Branch)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getBranch</h4>
+<pre>java.util.Map&lt;java.lang.String,<a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&gt;&nbsp;getBranch(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch)</pre>
+<div class="block">Returns the Dlvl => ILevel map for the branch.</div>
+</li>
+</ul>
+<a name="getLevel(bothack.bot.Branch, java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getLevel</h4>
+<pre><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&nbsp;getLevel(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch,
+              java.lang.String&nbsp;dlvl)</pre>
+<div class="block">Returns a level by Branch and Dlvl, if such was already visited.</div>
+</li>
+</ul>
+<a name="getLevel(bothack.bot.Branch, bothack.bot.LevelTag)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getLevel</h4>
+<pre><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&nbsp;getLevel(<a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch,
+              <a href="../../bothack/bot/LevelTag.html" title="enum in bothack.bot">LevelTag</a>&nbsp;tag)</pre>
+<div class="block">Returns a level by Branch and tag, if such was already visited and identified.</div>
+</li>
+</ul>
+<a name="hasDiggableFloor()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>hasDiggableFloor</h4>
+<pre>java.lang.Boolean&nbsp;hasDiggableFloor()</pre>
+<div class="block">Returns true if the floor is not too hard to dig.</div>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 </div>
@@ -138,13 +242,13 @@
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_bottom">

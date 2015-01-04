@@ -34,7 +34,7 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
 <li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -86,13 +86,13 @@
 <li class="blockList">
 <dl>
 <dt>All Superinterfaces:</dt>
-<dd>clojure.lang.Associative, clojure.lang.Counted, clojure.lang.ILookup, clojure.lang.IPersistentCollection, clojure.lang.IPersistentMap, <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>, java.lang.Iterable, clojure.lang.Seqable</dd>
+<dd><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public interface <span class="strong">IPlayer</span>
 extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></pre>
-<div class="block">The immutable interface representing player-related state and functionality.</div>
+<div class="block">Immutable representation of player-related state and functionality.</div>
 </li>
 </ul>
 </div>
@@ -112,15 +112,39 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#AC()">AC</a></strong>()</code>
+<div class="block">Armor class – lower is better.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../bothack/bot/Alignment.html" title="enum in bothack.bot">Alignment</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#alignment()">alignment</a></strong>()</code>
 <div class="block">Returns the player's current alignment.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEat(bothack.bot.IItem)">canEat</a></strong>(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;food)</code>
+<div class="block">True if the player can eat the food with no ill effects.</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEatWithBenefit(bothack.bot.IItem)">canEatWithBenefit</a></strong>(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;corpse)</code>
+<div class="block">True if the player can gain intrinsics or stats by eating the corpse.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEnhance()">canEnhance</a></strong>()</code>
 <div class="block">True if there are skills that can be Enhanced.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#carryingCapacity()">carryingCapacity</a></strong>()</code>
+<div class="block">How much weight the player can carry before getting burdened.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -130,21 +154,79 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#experienceLevel()">experienceLevel</a></strong>()</code>
+<div class="block">The player's level.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#getDisplayedStr()">getDisplayedStr</a></strong>()</code>
+<div class="block">The displayed value of strenght – may be something like 18/10 or 18/**</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#getStat(bothack.bot.Stat)">getStat</a></strong>(<a href="../../bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a>&nbsp;stat)</code>
+<div class="block">Get the effective integer value of stat.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#gold()">gold</a></strong>()</code>
+<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#goldAvailable()">goldAvailable</a></strong>()</code>
+<div class="block">How much gold the player is carrying in main inventory.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasHands()">hasHands</a></strong>()</code>
 <div class="block">False when polymorphed into a handless or limbless monster.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasHurtLegs()">hasHurtLegs</a></strong>()</code>
 <div class="block">True if the player has wounded legs.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasLycantrophy()">hasLycantrophy</a></strong>()</code>&nbsp;</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#HP()">HP</a></strong>()</code>
+<div class="block">The amount of hit points remanining.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot">Hunger</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hunger()">hunger</a></strong>()</code>
 <div class="block">Returns the current hunger status (possibly null).</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Set&lt;<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#intrinsics()">intrinsics</a></strong>()</code>
+<div class="block">Returns the set of intrinsics the player has.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#inventory()">inventory</a></strong>()</code>
+<div class="block">The player's inventory.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isBlind()">isBlind</a></strong>()</code>
+<div class="block">True if the player is blinded.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -161,38 +243,122 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isDizzy()">isDizzy</a></strong>()</code>
+<div class="block">True if the player is confused or stunned.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isEngulfed()">isEngulfed</a></strong>()</code>
+<div class="block">True if the player is engulfed by a monster.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isHungry()">isHungry</a></strong>()</code>
 <div class="block">True if the player is hungry or worse.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isIll()">isIll</a></strong>()</code>
+<div class="block">True if the player is deathly sick (including food poisoning).</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isOverloaded()">isOverloaded</a></strong>()</code>
 <div class="block">True if the player is overloaded.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isOvertaxed()">isOvertaxed</a></strong>()</code>
 <div class="block">True if the player is overtaxed or worse.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isStatDrained()">isStatDrained</a></strong>()</code>
+<div class="block">True if the player has restorable drained stats.</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isStoning()">isStoning</a></strong>()</code>
+<div class="block">True if the player is about to turn into stone.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isStrained()">isStrained</a></strong>()</code>
 <div class="block">True if the player is strained or worse.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isStressed()">isStressed</a></strong>()</code>
 <div class="block">True if the player is stressed or worse.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isStunned()">isStunned</a></strong>()</code>
+<div class="block">True if the player is stunned.</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isTrapped()">isTrapped</a></strong>()</code>
+<div class="block">True if the player is stuck in a trap.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#isWeak()">isWeak</a></strong>()</code>
 <div class="block">True if the hunger status is WEAK or worse</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#maxHP()">maxHP</a></strong>()</code>
+<div class="block">The maximum amount of hit points.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#maxPW()">maxPW</a></strong>()</code>
+<div class="block">The maximum amount of magic power.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#nickname()">nickname</a></strong>()</code>
+<div class="block">Name displayed on the status line.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#polymorphed()">polymorphed</a></strong>()</code>
+<div class="block">Returns the monster type into which the player is currently polymorphed.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#PW()">PW</a></strong>()</code>
+<div class="block">The amount of magic power.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#title()">title</a></strong>()</code>
+<div class="block">Title displayed on the status line.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#weightSum()">weightSum</a></strong>()</code>
+<div class="block">Estimate of the sum of weight of all carried items.</div>
 </td>
 </tr>
 </table>
@@ -202,55 +368,6 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </a>
 <h3>Methods inherited from interface&nbsp;bothack.bot.<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></h3>
 <code><a href="../../bothack/bot/IPosition.html#x()">x</a>, <a href="../../bothack/bot/IPosition.html#y()">y</a></code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentMap">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentMap</h3>
-<code>assoc, assocEx, without</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_java.lang.Iterable">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;java.lang.Iterable</h3>
-<code>iterator</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Associative">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Associative</h3>
-<code>containsKey, entryAt</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentCollection">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentCollection</h3>
-<code>cons, count, empty, equiv</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Seqable">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Seqable</h3>
-<code>seq</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.ILookup">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.ILookup</h3>
-<code>valAt, valAt</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Counted">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Counted</h3>
-<code>count</code></li>
 </ul>
 </li>
 </ul>
@@ -408,11 +525,292 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <a name="isBlindExternally()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>isBlindExternally</h4>
 <pre>java.lang.Boolean&nbsp;isBlindExternally()</pre>
 <div class="block">True if the player is blinded by a cream pie or venom.</div>
+</li>
+</ul>
+<a name="isEngulfed()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isEngulfed</h4>
+<pre>java.lang.Boolean&nbsp;isEngulfed()</pre>
+<div class="block">True if the player is engulfed by a monster.</div>
+</li>
+</ul>
+<a name="polymorphed()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>polymorphed</h4>
+<pre><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a>&nbsp;polymorphed()</pre>
+<div class="block">Returns the monster type into which the player is currently polymorphed.</div>
+</li>
+</ul>
+<a name="intrinsics()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>intrinsics</h4>
+<pre>java.util.Set&lt;<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&gt;&nbsp;intrinsics()</pre>
+<div class="block">Returns the set of intrinsics the player has.</div>
+</li>
+</ul>
+<a name="nickname()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>nickname</h4>
+<pre>java.lang.String&nbsp;nickname()</pre>
+<div class="block">Name displayed on the status line.</div>
+</li>
+</ul>
+<a name="title()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>title</h4>
+<pre>java.lang.String&nbsp;title()</pre>
+<div class="block">Title displayed on the status line.</div>
+</li>
+</ul>
+<a name="HP()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>HP</h4>
+<pre>java.lang.Long&nbsp;HP()</pre>
+<div class="block">The amount of hit points remanining.</div>
+</li>
+</ul>
+<a name="maxHP()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>maxHP</h4>
+<pre>java.lang.Long&nbsp;maxHP()</pre>
+<div class="block">The maximum amount of hit points.</div>
+</li>
+</ul>
+<a name="PW()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>PW</h4>
+<pre>java.lang.Long&nbsp;PW()</pre>
+<div class="block">The amount of magic power.</div>
+</li>
+</ul>
+<a name="maxPW()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>maxPW</h4>
+<pre>java.lang.Long&nbsp;maxPW()</pre>
+<div class="block">The maximum amount of magic power.</div>
+</li>
+</ul>
+<a name="AC()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>AC</h4>
+<pre>java.lang.Long&nbsp;AC()</pre>
+<div class="block">Armor class – lower is better.</div>
+</li>
+</ul>
+<a name="experienceLevel()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>experienceLevel</h4>
+<pre>java.lang.Long&nbsp;experienceLevel()</pre>
+<div class="block">The player's level.  You need at least 14 to be able to enter the quest.</div>
+</li>
+</ul>
+<a name="inventory()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>inventory</h4>
+<pre>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;&nbsp;inventory()</pre>
+<div class="block">The player's inventory.</div>
+</li>
+</ul>
+<a name="isTrapped()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isTrapped</h4>
+<pre>java.lang.Boolean&nbsp;isTrapped()</pre>
+<div class="block">True if the player is stuck in a trap.</div>
+</li>
+</ul>
+<a name="isStatDrained()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStatDrained</h4>
+<pre>java.lang.Boolean&nbsp;isStatDrained()</pre>
+<div class="block">True if the player has restorable drained stats.</div>
+</li>
+</ul>
+<a name="hasLycantrophy()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasLycantrophy</h4>
+<pre>java.lang.Boolean&nbsp;hasLycantrophy()</pre>
+</li>
+</ul>
+<a name="isStoning()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStoning</h4>
+<pre>java.lang.Boolean&nbsp;isStoning()</pre>
+<div class="block">True if the player is about to turn into stone.</div>
+</li>
+</ul>
+<a name="isBlind()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isBlind</h4>
+<pre>java.lang.Boolean&nbsp;isBlind()</pre>
+<div class="block">True if the player is blinded.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IPlayer.html#isBlindExternally()"><code>isBlindExternally()</code></a></dd></dl>
+</li>
+</ul>
+<a name="isStunned()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStunned</h4>
+<pre>java.lang.Boolean&nbsp;isStunned()</pre>
+<div class="block">True if the player is stunned.</div>
+</li>
+</ul>
+<a name="isIll()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isIll</h4>
+<pre>java.lang.Boolean&nbsp;isIll()</pre>
+<div class="block">True if the player is deathly sick (including food poisoning).</div>
+</li>
+</ul>
+<a name="isDizzy()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isDizzy</h4>
+<pre>java.lang.Boolean&nbsp;isDizzy()</pre>
+<div class="block">True if the player is confused or stunned.</div>
+</li>
+</ul>
+<a name="canEat(bothack.bot.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>canEat</h4>
+<pre>java.lang.Boolean&nbsp;canEat(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;food)</pre>
+<div class="block">True if the player can eat the food with no ill effects.</div>
+</li>
+</ul>
+<a name="canEatWithBenefit(bothack.bot.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>canEatWithBenefit</h4>
+<pre>java.lang.Boolean&nbsp;canEatWithBenefit(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;corpse)</pre>
+<div class="block">True if the player can gain intrinsics or stats by eating the corpse.</div>
+</li>
+</ul>
+<a name="weightSum()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>weightSum</h4>
+<pre>java.lang.Long&nbsp;weightSum()</pre>
+<div class="block">Estimate of the sum of weight of all carried items.</div>
+</li>
+</ul>
+<a name="carryingCapacity()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>carryingCapacity</h4>
+<pre>java.lang.Long&nbsp;carryingCapacity()</pre>
+<div class="block">How much weight the player can carry before getting burdened.</div>
+</li>
+</ul>
+<a name="gold()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>gold</h4>
+<pre>java.lang.Long&nbsp;gold()</pre>
+<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
+</li>
+</ul>
+<a name="goldAvailable()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>goldAvailable</h4>
+<pre>java.lang.Long&nbsp;goldAvailable()</pre>
+<div class="block">How much gold the player is carrying in main inventory.</div>
+</li>
+</ul>
+<a name="getStat(bothack.bot.Stat)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getStat</h4>
+<pre>java.lang.Long&nbsp;getStat(<a href="../../bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a>&nbsp;stat)</pre>
+<div class="block">Get the effective integer value of stat.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IPlayer.html#getDisplayedStr()"><code>getDisplayedStr()</code></a></dd></dl>
+</li>
+</ul>
+<a name="getDisplayedStr()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>getDisplayedStr</h4>
+<pre>java.lang.Long&nbsp;getDisplayedStr()</pre>
+<div class="block">The displayed value of strenght – may be something like 18/10 or 18/**</div>
 </li>
 </ul>
 </li>
@@ -440,7 +838,7 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
 <li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">

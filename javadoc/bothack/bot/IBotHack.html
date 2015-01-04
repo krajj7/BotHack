@@ -34,7 +34,7 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
 <li><a href="../../bothack/bot/IDungeon.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -88,8 +88,9 @@
 <br>
 <pre>public interface <span class="strong">IBotHack</span></pre>
 <div class="block">The root of BotHack functionality.
- This represents a handle for the BotHack framework, through which you can
- register custom handlers, get the current game state etc.</div>
+ <p>This represents a handle for the BotHack framework, through which you can
+ register custom handlers, get the current game state etc. </p>
+ <p>Unlike other BotHack interfaces this is the only mutable one.</p></div>
 </li>
 </ul>
 </div>
@@ -121,25 +122,19 @@
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#player()">player</a></strong>()</code>
-<div class="block">Shorthand for .game().player()</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Integer,%20java.lang.Object)">registerHandler</a></strong>(java.lang.Integer&nbsp;priority,
                java.lang.Object&nbsp;handler)</code>
 <div class="block">Register a custom handler with the specified priority.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Object)">registerHandler</a></strong>(java.lang.Object&nbsp;handler)</code>
 <div class="block">Register a custom handler with the default priority.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#replaceHandler(java.lang.Object,%20java.lang.Object)">replaceHandler</a></strong>(java.lang.Object&nbsp;oldHandler,
               java.lang.Object&nbsp;newHandler)</code>
@@ -170,7 +165,7 @@
 <pre>void&nbsp;registerHandler(java.lang.Object&nbsp;handler)</pre>
 <div class="block">Register a custom handler with the default priority.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>handler</code> - The handler object should implement one or more interfaces
- from bothack.events or bothack.prompts</dd></dl>
+ from <a href="../../bothack/events/package-summary.html"><code>bothack.events</code></a> or <a href="../../bothack/prompts/package-summary.html"><code>bothack.prompts</code></a>.</dd></dl>
 </li>
 </ul>
 <a name="registerHandler(java.lang.Integer, java.lang.Object)">
@@ -182,8 +177,8 @@
 <pre>void&nbsp;registerHandler(java.lang.Integer&nbsp;priority,
                    java.lang.Object&nbsp;handler)</pre>
 <div class="block">Register a custom handler with the specified priority.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>priority</code> - Lower number = processed earlier</dd><dd><code>handler</code> - The handler object should implement one or more interfaces
- from bothack.events or bothack.prompts</dd></dl>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>priority</code> - Lower number = processed earlier.</dd><dd><code>handler</code> - The handler object should implement one or more interfaces
+ from <a href="../../bothack/events/package-summary.html"><code>bothack.events</code></a> or <a href="../../bothack/prompts/package-summary.html"><code>bothack.prompts</code></a>.</dd></dl>
 </li>
 </ul>
 <a name="deregisterHandler(java.lang.Object)">
@@ -213,21 +208,11 @@
 <a name="game()">
 <!--   -->
 </a>
-<ul class="blockList">
+<ul class="blockListLast">
 <li class="blockList">
 <h4>game</h4>
 <pre><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game()</pre>
 <div class="block">Returns the current game state snapshot.</div>
-</li>
-</ul>
-<a name="player()">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>player</h4>
-<pre><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a>&nbsp;player()</pre>
-<div class="block">Shorthand for .game().player()</div>
 </li>
 </ul>
 </li>
@@ -255,7 +240,7 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
 <li><a href="../../bothack/bot/IDungeon.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">

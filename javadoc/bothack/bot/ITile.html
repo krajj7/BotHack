@@ -35,7 +35,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/LevelTag.html" title="enum in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/ITile.html" target="_top">Frames</a></li>
@@ -86,12 +86,16 @@
 <li class="blockList">
 <dl>
 <dt>All Superinterfaces:</dt>
-<dd>clojure.lang.Associative, clojure.lang.Counted, clojure.lang.ILookup, clojure.lang.IPersistentCollection, clojure.lang.IPersistentMap, <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>, java.lang.Iterable, clojure.lang.Seqable</dd>
+<dd><a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>, <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></dd>
 </dl>
 <hr>
 <br>
 <pre>public interface <span class="strong">ITile</span>
-extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></pre>
+extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>, <a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a></pre>
+<div class="block">Immutable representation of a tile of the dungeon.
+  This doesn't include monsters present on the tile.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/ILevel.html#monsters()"><code>ILevel.monsters()</code></a>, 
+<a href="../../bothack/bot/ILevel.html#monsterAt(bothack.bot.IPosition)"><code>ILevel.monsterAt(IPosition)</code></a></dd></dl>
 </li>
 </ul>
 </div>
@@ -111,33 +115,129 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isAltar()">isAltar</a></strong>()</code>
-<div class="block">True if the tile is an altar.</div>
+<td class="colFirst"><code><a href="../../bothack/bot/Alignment.html" title="enum in bothack.bot">Alignment</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#altarAlignment()">altarAlignment</a></strong>()</code>
+<div class="block">For altars - returns the altar's alignment.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isDownstairs()">isDownstairs</a></strong>()</code>
-<div class="block">True if the tile is a staircase down or a ladder down.</div>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#dug()">dug</a></strong>()</code>
+<div class="block">True if the player dug the tile or it is assumed it has been dug.</div>
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#engraving()">engraving</a></strong>()</code>
+<div class="block">Returns the text engraved on this tile.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/EngravingType.html" title="enum in bothack.bot">EngravingType</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#engravingType()">engravingType</a></strong>()</code>
+<div class="block">If there is an engraving returns the longevity type.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/Feature.html" title="enum in bothack.bot">Feature</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#feature()">feature</a></strong>()</code>
+<div class="block">The dungeon feature present on this tile or null.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#firstWalkedTurn()">firstWalkedTurn</a></strong>()</code>
+<div class="block">First game turn the tile has been stepped on.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#hasBoulder()">hasBoulder</a></strong>()</code>
+<div class="block">True if there appears to be a boulder on the tile.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#hasElbereth()">hasElbereth</a></strong>()</code>
+<div class="block">True if there is an undamaged Elbereth engraving on the tile.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#hasNewItems()">hasNewItems</a></strong>()</code>
+<div class="block">True if items on the tile seem to have changed since it was last examined.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isEngravable()">isEngravable</a></strong>()</code>
 <div class="block">True if it is possible to engrave on this tile by some means.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isTrap()">isTrap</a></strong>()</code>
+<div class="block">True if the tile has a trap.</div>
+</td>
+</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isThrone()">isThrone</a></strong>()</code>
-<div class="block">True if the tile is a throne.</div>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isVibrating()">isVibrating</a></strong>()</code>
+<div class="block">True for the vibrating square.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#items()">items</a></strong>()</code>
+<div class="block">Items laying on the ground on the tile</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#lastWalkedTurn()">lastWalkedTurn</a></strong>()</code>
+<div class="block">Last game turn the tile has been stepped on.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#leadsTo()">leadsTo</a></strong>()</code>
+<div class="block">For visited stairs or portals - returns the target branch.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/RoomType.html" title="enum in bothack.bot">RoomType</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#room()">room</a></strong>()</code>
+<div class="block">If the tile is in a recognized room returns the room type.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#searched()">searched</a></strong>()</code>
+<div class="block">Number of times the tile has been searched (est.)</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#sinkGaveFoocubus()">sinkGaveFoocubus</a></strong>()</code>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a succubus or an incubus.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#isUpstairs()">isUpstairs</a></strong>()</code>
-<div class="block">True if the tile is a staircase up or a ladder up.</div>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#sinkGavePudding()">sinkGavePudding</a></strong>()</code>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a pudding.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#sinkGaveRing()">sinkGaveRing</a></strong>()</code>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a ring.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ITile.html#wasSeen()">wasSeen</a></strong>()</code>
+<div class="block">True if the player was adjacent to the tile when not blind.</div>
 </td>
 </tr>
 </table>
@@ -149,53 +249,11 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <code><a href="../../bothack/bot/IPosition.html#x()">x</a>, <a href="../../bothack/bot/IPosition.html#y()">y</a></code></li>
 </ul>
 <ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentMap">
+<li class="blockList"><a name="methods_inherited_from_class_bothack.bot.IAppearance">
 <!--   -->
 </a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentMap</h3>
-<code>assoc, assocEx, without</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_java.lang.Iterable">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;java.lang.Iterable</h3>
-<code>iterator</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Associative">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Associative</h3>
-<code>containsKey, entryAt</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentCollection">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentCollection</h3>
-<code>cons, count, empty, equiv</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Seqable">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Seqable</h3>
-<code>seq</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.ILookup">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.ILookup</h3>
-<code>valAt, valAt</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Counted">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;clojure.lang.Counted</h3>
-<code>count</code></li>
+<h3>Methods inherited from interface&nbsp;bothack.bot.<a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a></h3>
+<code><a href="../../bothack/bot/IAppearance.html#color()">color</a>, <a href="../../bothack/bot/IAppearance.html#glyph()">glyph</a></code></li>
 </ul>
 </li>
 </ul>
@@ -211,6 +269,17 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="hasElbereth()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasElbereth</h4>
+<pre>java.lang.Boolean&nbsp;hasElbereth()</pre>
+<div class="block">True if there is an undamaged Elbereth engraving on the tile.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/ITile.html#engravingType()"><code>engravingType()</code></a></dd></dl>
+</li>
+</ul>
 <a name="isEngravable()">
 <!--   -->
 </a>
@@ -219,46 +288,199 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <h4>isEngravable</h4>
 <pre>java.lang.Boolean&nbsp;isEngravable()</pre>
 <div class="block">True if it is possible to engrave on this tile by some means.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#canEngrave()"><code>IGame.canEngrave()</code></a></dd></dl>
 </li>
 </ul>
-<a name="isThrone()">
+<a name="feature()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>isThrone</h4>
-<pre>java.lang.Boolean&nbsp;isThrone()</pre>
-<div class="block">True if the tile is a throne.</div>
+<h4>feature</h4>
+<pre><a href="../../bothack/bot/Feature.html" title="enum in bothack.bot">Feature</a>&nbsp;feature()</pre>
+<div class="block">The dungeon feature present on this tile or null.</div>
 </li>
 </ul>
-<a name="isAltar()">
+<a name="isTrap()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>isAltar</h4>
-<pre>java.lang.Boolean&nbsp;isAltar()</pre>
-<div class="block">True if the tile is an altar.</div>
+<h4>isTrap</h4>
+<pre>java.lang.Boolean&nbsp;isTrap()</pre>
+<div class="block">True if the tile has a trap.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/ITile.html#feature()"><code>feature()</code></a></dd></dl>
 </li>
 </ul>
-<a name="isUpstairs()">
+<a name="hasBoulder()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>isUpstairs</h4>
-<pre>java.lang.Boolean&nbsp;isUpstairs()</pre>
-<div class="block">True if the tile is a staircase up or a ladder up.</div>
+<h4>hasBoulder</h4>
+<pre>java.lang.Boolean&nbsp;hasBoulder()</pre>
+<div class="block">True if there appears to be a boulder on the tile.</div>
 </li>
 </ul>
-<a name="isDownstairs()">
+<a name="wasSeen()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>wasSeen</h4>
+<pre>java.lang.Boolean&nbsp;wasSeen()</pre>
+<div class="block">True if the player was adjacent to the tile when not blind.</div>
+</li>
+</ul>
+<a name="firstWalkedTurn()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>firstWalkedTurn</h4>
+<pre>java.lang.Long&nbsp;firstWalkedTurn()</pre>
+<div class="block">First game turn the tile has been stepped on.</div>
+</li>
+</ul>
+<a name="lastWalkedTurn()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>lastWalkedTurn</h4>
+<pre>java.lang.Long&nbsp;lastWalkedTurn()</pre>
+<div class="block">Last game turn the tile has been stepped on.</div>
+</li>
+</ul>
+<a name="dug()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>dug</h4>
+<pre>java.lang.Boolean&nbsp;dug()</pre>
+<div class="block">True if the player dug the tile or it is assumed it has been dug.  
+ Not 100% reliable.</div>
+</li>
+</ul>
+<a name="searched()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>searched</h4>
+<pre>java.lang.Long&nbsp;searched()</pre>
+<div class="block">Number of times the tile has been searched (est.)</div>
+</li>
+</ul>
+<a name="items()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>items</h4>
+<pre>java.util.List&lt;<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;&nbsp;items()</pre>
+<div class="block">Items laying on the ground on the tile</div>
+</li>
+</ul>
+<a name="hasNewItems()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasNewItems</h4>
+<pre>java.lang.Boolean&nbsp;hasNewItems()</pre>
+<div class="block">True if items on the tile seem to have changed since it was last examined.</div>
+</li>
+</ul>
+<a name="engraving()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>engraving</h4>
+<pre>java.lang.String&nbsp;engraving()</pre>
+<div class="block">Returns the text engraved on this tile.</div>
+</li>
+</ul>
+<a name="engravingType()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>engravingType</h4>
+<pre><a href="../../bothack/bot/EngravingType.html" title="enum in bothack.bot">EngravingType</a>&nbsp;engravingType()</pre>
+<div class="block">If there is an engraving returns the longevity type.</div>
+</li>
+</ul>
+<a name="room()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>room</h4>
+<pre><a href="../../bothack/bot/RoomType.html" title="enum in bothack.bot">RoomType</a>&nbsp;room()</pre>
+<div class="block">If the tile is in a recognized room returns the room type.</div>
+</li>
+</ul>
+<a name="sinkGaveRing()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sinkGaveRing</h4>
+<pre>java.lang.Boolean&nbsp;sinkGaveRing()</pre>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a ring.</div>
+</li>
+</ul>
+<a name="sinkGaveFoocubus()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sinkGaveFoocubus</h4>
+<pre>java.lang.Boolean&nbsp;sinkGaveFoocubus()</pre>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a succubus or an incubus.</div>
+</li>
+</ul>
+<a name="sinkGavePudding()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>sinkGavePudding</h4>
+<pre>java.lang.Boolean&nbsp;sinkGavePudding()</pre>
+<div class="block">For tiles with the SINK feature - true if kicking it already yielded a pudding.</div>
+</li>
+</ul>
+<a name="leadsTo()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>leadsTo</h4>
+<pre><a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;leadsTo()</pre>
+<div class="block">For visited stairs or portals - returns the target branch.</div>
+</li>
+</ul>
+<a name="altarAlignment()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>altarAlignment</h4>
+<pre><a href="../../bothack/bot/Alignment.html" title="enum in bothack.bot">Alignment</a>&nbsp;altarAlignment()</pre>
+<div class="block">For altars - returns the altar's alignment.</div>
+</li>
+</ul>
+<a name="isVibrating()">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>isDownstairs</h4>
-<pre>java.lang.Boolean&nbsp;isDownstairs()</pre>
-<div class="block">True if the tile is a staircase down or a ladder down.</div>
+<h4>isVibrating</h4>
+<pre>java.lang.Boolean&nbsp;isVibrating()</pre>
+<div class="block">True for the vibrating square.</div>
 </li>
 </ul>
 </li>
@@ -287,7 +509,7 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/LevelTag.html" title="enum in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/ITile.html" target="_top">Frames</a></li>

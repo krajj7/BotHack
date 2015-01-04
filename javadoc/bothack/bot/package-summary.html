@@ -78,50 +78,76 @@
 </tr>
 <tbody>
 <tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a></td>
+<td class="colLast">
+<div class="block">Immutable representation of anything that has a screen appearance.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a></td>
 <td class="colLast">
 <div class="block">The root of BotHack functionality.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><a href="../../bothack/bot/IDungeon.html" title="interface in bothack.bot">IDungeon</a></td>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Immutable representation of the dungeon level tree.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot">IFrame</a></td>
+<td class="colLast">
+<div class="block">Immutable representation of a 80x24 virtual terminal.</div>
+</td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot">IFrame</a></td>
-<td class="colLast">&nbsp;</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></td>
 <td class="colLast">
-<div class="block">The immutable interface representing a snapshot of all game state at some point.</div>
+<div class="block">Immutable representation of the game state at some point.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a></td>
 <td class="colLast">
-<div class="block">The immutable interface representing an item.</div>
+<div class="block">Immutable representation of an item.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></td>
+<td class="colLast">
+<div class="block">Immutable representation of a dungeon level with its inhabitants.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></td>
-<td class="colLast">&nbsp;</td>
+<td class="colFirst"><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a></td>
+<td class="colLast">
+<div class="block">Immutable representation a monster on a level.</div>
+</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a></td>
+<td class="colLast">
+<div class="block">Immutable representation of one of the 375 NetHack monsters.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></td>
 <td class="colLast">
-<div class="block">The immutable interface representing player-related state and functionality.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></td>
-<td class="colLast">
-<div class="block">Implemented by anything that has a position on the screen.</div>
+<div class="block">Immutable representation of player-related state and functionality.</div>
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></td>
+<td class="colLast">
+<div class="block">Immutable representation of a position on the screen.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a></td>
-<td class="colLast">&nbsp;</td>
+<td class="colLast">
+<div class="block">Immutable representation of a tile of the dungeon.</div>
+</td>
 </tr>
 </tbody>
 </table>
@@ -137,7 +163,7 @@
 <tr class="altColor">
 <td class="colFirst"><a href="../../bothack/bot/Position.html" title="class in bothack.bot">Position</a></td>
 <td class="colLast">
-<div class="block">Position factory</div>
+<div class="block">Position factory and utility functions.</div>
 </td>
 </tr>
 </tbody>
@@ -156,6 +182,14 @@
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/Color.html" title="enum in bothack.bot">Color</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a></td>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -164,7 +198,31 @@
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><a href="../../bothack/bot/EngravingType.html" title="enum in bothack.bot">EngravingType</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/Feature.html" title="enum in bothack.bot">Feature</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot">Hunger</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../bothack/bot/LevelTag.html" title="enum in bothack.bot">LevelTag</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/RoomType.html" title="enum in bothack.bot">RoomType</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><a href="../../bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a></td>
 <td class="colLast">&nbsp;</td>
 </tr>
 </tbody>
@@ -175,7 +233,11 @@
 <!--   -->
 </a>
 <h2 title="Package bothack.bot Description">Package bothack.bot Description</h2>
-<div class="block">Interfaces that represent the game world.</div>
+<div class="block">Interfaces that represent the game world.
+ <p>All interfaces except for IBotHack are backed by immutable objects and can
+ be used as keys in a Map, shared freely between threads etc.</p>
+ <p>None of these are meant to be implemented by user code.</p></div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IBotHack.html#game()"><code>IBotHack.game()</code></a></dd></dl>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
 <div class="bottomNav"><a name="navbar_bottom">

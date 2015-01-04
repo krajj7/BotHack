@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
-<title>IFrame (BotHack JavaDoc)</title>
+<title>IAppearance (BotHack JavaDoc)</title>
 <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="IFrame (BotHack JavaDoc)";
+        parent.document.title="IAppearance (BotHack JavaDoc)";
     }
 //-->
 </script>
@@ -34,12 +34,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/IDungeon.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/bot/IFrame.html" target="_top">Frames</a></li>
-<li><a href="IFrame.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IAppearance.html" target="_top">Frames</a></li>
+<li><a href="IAppearance.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>
@@ -78,16 +78,20 @@
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="subTitle">bothack.bot</div>
-<h2 title="Interface IFrame" class="title">Interface IFrame</h2>
+<h2 title="Interface IAppearance" class="title">Interface IAppearance</h2>
 </div>
 <div class="contentContainer">
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Known Subinterfaces:</dt>
+<dd><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a>, <a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a>, <a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a></dd>
+</dl>
 <hr>
 <br>
-<pre>public interface <span class="strong">IFrame</span></pre>
-<div class="block">Immutable representation of a 80x24 virtual terminal.</div>
+<pre>public interface <span class="strong">IAppearance</span></pre>
+<div class="block">Immutable representation of anything that has a screen appearance.</div>
 </li>
 </ul>
 </div>
@@ -108,27 +112,11 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../bothack/bot/Color.html" title="enum in bothack.bot">Color</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IFrame.html#colorAt(bothack.bot.IPosition)">colorAt</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
-<div class="block">The color of the glyph at given position on the virtual terminal.</div>
-</td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IAppearance.html#color()">color</a></strong>()</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IFrame.html#cursor()">cursor</a></strong>()</code>
-<div class="block">Cursor position on the virtual terminal.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>java.lang.Character</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IFrame.html#glyphAt(bothack.bot.IPosition)">glyphAt</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
-<div class="block">The glyph at given position on the virtual terminal.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IFrame.html#line(java.lang.Long)">line</a></strong>(java.lang.Long&nbsp;y)</code>
-<div class="block">The row of text at the given y-coordinate on the virtual terminal.</div>
-</td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IAppearance.html#glyph()">glyph</a></strong>()</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -145,45 +133,22 @@
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="cursor()">
+<a name="glyph()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>cursor</h4>
-<pre><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;cursor()</pre>
-<div class="block">Cursor position on the virtual terminal.</div>
+<h4>glyph</h4>
+<pre>java.lang.Character&nbsp;glyph()</pre>
 </li>
 </ul>
-<a name="colorAt(bothack.bot.IPosition)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>colorAt</h4>
-<pre><a href="../../bothack/bot/Color.html" title="enum in bothack.bot">Color</a>&nbsp;colorAt(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
-<div class="block">The color of the glyph at given position on the virtual terminal.</div>
-</li>
-</ul>
-<a name="glyphAt(bothack.bot.IPosition)">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>glyphAt</h4>
-<pre>java.lang.Character&nbsp;glyphAt(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
-<div class="block">The glyph at given position on the virtual terminal.</div>
-</li>
-</ul>
-<a name="line(java.lang.Long)">
+<a name="color()">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>line</h4>
-<pre>java.lang.String&nbsp;line(java.lang.Long&nbsp;y)</pre>
-<div class="block">The row of text at the given y-coordinate on the virtual terminal.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>y</code> - 0 to 23 inclusive.</dd></dl>
+<h4>color</h4>
+<pre><a href="../../bothack/bot/Color.html" title="enum in bothack.bot">Color</a>&nbsp;color()</pre>
 </li>
 </ul>
 </li>
@@ -211,12 +176,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/IDungeon.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/bot/IFrame.html" target="_top">Frames</a></li>
-<li><a href="IFrame.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IAppearance.html" target="_top">Frames</a></li>
+<li><a href="IAppearance.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>

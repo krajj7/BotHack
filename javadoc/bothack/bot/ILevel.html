@@ -35,7 +35,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/ILevel.html" target="_top">Frames</a></li>
@@ -62,13 +62,13 @@
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_top">
@@ -87,6 +87,202 @@
 <hr>
 <br>
 <pre>public interface <span class="strong">ILevel</span></pre>
+<div class="block">Immutable representation of a dungeon level with its inhabitants.</div>
+</li>
+</ul>
+</div>
+<div class="summary">
+<ul class="blockList">
+<li class="blockList">
+<!-- ========== METHOD SUMMARY =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_summary">
+<!--   -->
+</a>
+<h3>Method Summary</h3>
+<table class="overviewSummary" border="0" cellpadding="3" cellspacing="0" summary="Method Summary table, listing methods, and an explanation">
+<caption><span>Methods</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Method and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#at(bothack.bot.IPosition)">at</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
+<div class="block">Returns the tile at given position on the level.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#branch()">branch</a></strong>()</code>
+<div class="block">Returns the branch this level belongs to.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#dlvl()">dlvl</a></strong>()</code>
+<div class="block">Returns the Dlvl string for the level.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#hasAltar()">hasAltar</a></strong>()</code>
+<div class="block">True if the level contains an altar.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#hasDiggableFloor()">hasDiggableFloor</a></strong>()</code>
+<div class="block">True if the level floor can be dug through (until proven otherwise).</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#hasShop()">hasShop</a></strong>()</code>
+<div class="block">True if the level contains a shop.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#hasTemple()">hasTemple</a></strong>()</code>
+<div class="block">True if the level contains a temple.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#monsterAt(bothack.bot.IPosition)">monsterAt</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
+<div class="block">Returns the monster representation at the given position.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>,<a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#monsters()">monsters</a></strong>()</code>
+<div class="block">Returns the map of all monsters known or remembered to be on the level.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/ILevel.html#neighbors(bothack.bot.IPosition)">neighbors</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
+<div class="block">Returns the list of tiles on the level adjacent to position pos.</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="details">
+<ul class="blockList">
+<li class="blockList">
+<!-- ============ METHOD DETAIL ========== -->
+<ul class="blockList">
+<li class="blockList"><a name="method_detail">
+<!--   -->
+</a>
+<h3>Method Detail</h3>
+<a name="dlvl()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>dlvl</h4>
+<pre>java.lang.String&nbsp;dlvl()</pre>
+<div class="block">Returns the Dlvl string for the level.</div>
+</li>
+</ul>
+<a name="branch()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>branch</h4>
+<pre><a href="../../bothack/bot/Branch.html" title="enum in bothack.bot">Branch</a>&nbsp;branch()</pre>
+<div class="block">Returns the branch this level belongs to.</div>
+</li>
+</ul>
+<a name="at(bothack.bot.IPosition)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>at</h4>
+<pre><a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a>&nbsp;at(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
+<div class="block">Returns the tile at given position on the level.</div>
+</li>
+</ul>
+<a name="monsters()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>monsters</h4>
+<pre>java.util.Map&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>,<a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a>&gt;&nbsp;monsters()</pre>
+<div class="block">Returns the map of all monsters known or remembered to be on the level.</div>
+</li>
+</ul>
+<a name="monsterAt(bothack.bot.IPosition)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>monsterAt</h4>
+<pre><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot">IMonster</a>&nbsp;monsterAt(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
+<div class="block">Returns the monster representation at the given position.</div>
+</li>
+</ul>
+<a name="neighbors(bothack.bot.IPosition)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>neighbors</h4>
+<pre>java.util.List&lt;<a href="../../bothack/bot/ITile.html" title="interface in bothack.bot">ITile</a>&gt;&nbsp;neighbors(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
+<div class="block">Returns the list of tiles on the level adjacent to position pos.</div>
+</li>
+</ul>
+<a name="hasTemple()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasTemple</h4>
+<pre>java.lang.Boolean&nbsp;hasTemple()</pre>
+<div class="block">True if the level contains a temple.</div>
+</li>
+</ul>
+<a name="hasAltar()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasAltar</h4>
+<pre>java.lang.Boolean&nbsp;hasAltar()</pre>
+<div class="block">True if the level contains an altar.</div>
+</li>
+</ul>
+<a name="hasShop()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>hasShop</h4>
+<pre>java.lang.Boolean&nbsp;hasShop()</pre>
+<div class="block">True if the level contains a shop.</div>
+</li>
+</ul>
+<a name="hasDiggableFloor()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>hasDiggableFloor</h4>
+<pre>java.lang.Boolean&nbsp;hasDiggableFloor()</pre>
+<div class="block">True if the level floor can be dug through (until proven otherwise).</div>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 </div>
@@ -111,7 +307,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/IMonster.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/ILevel.html" target="_top">Frames</a></li>
@@ -138,13 +334,13 @@
 <li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li>Constr&nbsp;|&nbsp;</li>
-<li>Method</li>
+<li><a href="#method_detail">Method</a></li>
 </ul>
 </div>
 <a name="skip-navbar_bottom">

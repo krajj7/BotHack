@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
-<title>IGame (BotHack JavaDoc)</title>
+<title>IMonster (BotHack JavaDoc)</title>
 <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="IGame (BotHack JavaDoc)";
+        parent.document.title="IMonster (BotHack JavaDoc)";
     }
 //-->
 </script>
@@ -34,12 +34,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/bot/IGame.html" target="_top">Frames</a></li>
-<li><a href="IGame.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IMonster.html" target="_top">Frames</a></li>
+<li><a href="IMonster.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>
@@ -78,16 +78,23 @@
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="subTitle">bothack.bot</div>
-<h2 title="Interface IGame" class="title">Interface IGame</h2>
+<h2 title="Interface IMonster" class="title">Interface IMonster</h2>
 </div>
 <div class="contentContainer">
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt>All Superinterfaces:</dt>
+<dd><a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>, <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></dd>
+</dl>
 <hr>
 <br>
-<pre>public interface <span class="strong">IGame</span></pre>
-<div class="block">Immutable representation of the game state at some point.</div>
+<pre>public interface <span class="strong">IMonster</span>
+extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>, <a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a></pre>
+<div class="block">Immutable representation a monster on a level.
+ It may be currently seen or otherwise known or just remembered by the monster tracker.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IMonster.html#isRemembered()"><code>isRemembered()</code></a></dd></dl>
 </li>
 </ul>
 </div>
@@ -108,47 +115,61 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#canEngrave()">canEngrave</a></strong>()</code>
-<div class="block">True if the player is capable of engraving and is not currently on the plane of air or water.</div>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#hasJustMoved()">hasJustMoved</a></strong>()</code>
+<div class="block">True if the monster moved in the last turn</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#canPray()">canPray</a></strong>()</code>
-<div class="block">True if the player can safely pray (95% confidence)</div>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#isAwake()">isAwake</a></strong>()</code>
+<div class="block">True if the monster was seen moving.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#currentLevel()">currentLevel</a></strong>()</code>
-<div class="block">Returns the current dungeon level.</div>
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#isFriendly()">isFriendly</a></strong>()</code>
+<div class="block">True for tame monsters</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot">IFrame</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#frame()">frame</a></strong>()</code>
-<div class="block">Returns the last snapshot of the virtual terminal screen.</div>
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#isPeaceful()">isPeaceful</a></strong>()</code>
+<div class="block">True for peaceful monsters</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#genocided()">genocided</a></strong>()</code>
-<div class="block">Returns the set of monster types and classes that have been genocided in the game.</div>
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#isRemembered()">isRemembered</a></strong>()</code>
+<div class="block">True if the monster is not currently known to be there.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#haveLevitationItemOn()">haveLevitationItemOn</a></strong>()</code>
-<div class="block">Returns the slot-item pair of a levitation item currently in use (or null)</div>
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#lastKnown()">lastKnown</a></strong>()</code>
+<div class="block">Turn number when the monster was last seen or otherwise known.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#player()">player</a></strong>()</code>
-<div class="block">Returns the player representation.</div>
+<td class="colFirst"><code><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IMonster.html#type()">type</a></strong>()</code>
+<div class="block">Type of the monster if known, else null</div>
 </td>
 </tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_bothack.bot.IPosition">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;bothack.bot.<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></h3>
+<code><a href="../../bothack/bot/IPosition.html#x()">x</a>, <a href="../../bothack/bot/IPosition.html#y()">y</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_bothack.bot.IAppearance">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;bothack.bot.<a href="../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a></h3>
+<code><a href="../../bothack/bot/IAppearance.html#color()">color</a>, <a href="../../bothack/bot/IAppearance.html#glyph()">glyph</a></code></li>
+</ul>
 </li>
 </ul>
 </li>
@@ -163,74 +184,74 @@
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="frame()">
+<a name="lastKnown()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>frame</h4>
-<pre><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot">IFrame</a>&nbsp;frame()</pre>
-<div class="block">Returns the last snapshot of the virtual terminal screen.</div>
+<h4>lastKnown</h4>
+<pre>java.lang.Long&nbsp;lastKnown()</pre>
+<div class="block">Turn number when the monster was last seen or otherwise known.</div>
 </li>
 </ul>
-<a name="player()">
+<a name="type()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>player</h4>
-<pre><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a>&nbsp;player()</pre>
-<div class="block">Returns the player representation.</div>
+<h4>type</h4>
+<pre><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a>&nbsp;type()</pre>
+<div class="block">Type of the monster if known, else null</div>
 </li>
 </ul>
-<a name="canPray()">
+<a name="isAwake()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>canPray</h4>
-<pre>java.lang.Boolean&nbsp;canPray()</pre>
-<div class="block">True if the player can safely pray (95% confidence)</div>
+<h4>isAwake</h4>
+<pre>java.lang.Boolean&nbsp;isAwake()</pre>
+<div class="block">True if the monster was seen moving.</div>
 </li>
 </ul>
-<a name="canEngrave()">
+<a name="isFriendly()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>canEngrave</h4>
-<pre>java.lang.Boolean&nbsp;canEngrave()</pre>
-<div class="block">True if the player is capable of engraving and is not currently on the plane of air or water.</div>
+<h4>isFriendly</h4>
+<pre>java.lang.Boolean&nbsp;isFriendly()</pre>
+<div class="block">True for tame monsters</div>
 </li>
 </ul>
-<a name="haveLevitationItemOn()">
+<a name="isPeaceful()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>haveLevitationItemOn</h4>
-<pre>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;&nbsp;haveLevitationItemOn()</pre>
-<div class="block">Returns the slot-item pair of a levitation item currently in use (or null)</div>
+<h4>isPeaceful</h4>
+<pre>java.lang.Boolean&nbsp;isPeaceful()</pre>
+<div class="block">True for peaceful monsters</div>
 </li>
 </ul>
-<a name="genocided()">
+<a name="isRemembered()">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>genocided</h4>
-<pre>java.util.Set&lt;java.lang.String&gt;&nbsp;genocided()</pre>
-<div class="block">Returns the set of monster types and classes that have been genocided in the game.</div>
+<h4>isRemembered</h4>
+<pre>java.lang.Boolean&nbsp;isRemembered()</pre>
+<div class="block">True if the monster is not currently known to be there.</div>
 </li>
 </ul>
-<a name="currentLevel()">
+<a name="hasJustMoved()">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>currentLevel</h4>
-<pre><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&nbsp;currentLevel()</pre>
-<div class="block">Returns the current dungeon level.</div>
+<h4>hasJustMoved</h4>
+<pre>java.lang.Boolean&nbsp;hasJustMoved()</pre>
+<div class="block">True if the monster moved in the last turn</div>
 </li>
 </ul>
 </li>
@@ -258,12 +279,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/bot/IGame.html" target="_top">Frames</a></li>
-<li><a href="IGame.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IMonster.html" target="_top">Frames</a></li>
+<li><a href="IMonster.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>
