@@ -4,7 +4,7 @@ import java.util.Map;
 
 import bothack.bot.Direction;
 import bothack.bot.IGame;
-import bothack.bot.IItem;
+import bothack.bot.items.IItem;
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
 

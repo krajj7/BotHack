@@ -506,6 +506,9 @@
   (canPray [game] (boolean (can-pray? game)))
   (canEngrave [game] (boolean (can-engrave? game)))
   (haveLevitationItemOn [game] (have-levi-on game))
+  (weightSum [game] (weight-sum game))
+  (gold [game] (gold game))
+  (goldAvailable [game] (available-gold game))
   (genocided [game] (:genocided game)))
 
 (defmethod print-method Game [game w]

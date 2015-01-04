@@ -1,8 +1,12 @@
-package bothack.bot;
+package bothack.bot.monsters;
 
 import java.util.Set;
 
-/** Immutable representation of one of the 375 NetHack monsters. */
+import bothack.bot.IAppearance;
+import bothack.bot.Intrinsic;
+
+/** Immutable representation of one of the 375 NetHack monsters. 
+ * @see MonsterType */
 public interface IMonsterType extends IAppearance {
 	/** Name of the monster type */
 	String name();

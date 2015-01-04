@@ -1,4 +1,4 @@
-package bothack.bot;
+package bothack.bot.dungeon;
 
 import java.util.Map;
 
@@ -10,6 +10,4 @@ public interface IDungeon {
 	ILevel getLevel(Branch branch, String dlvl);
 	/** Returns a level by Branch and tag, if such was already visited and identified. */
 	ILevel getLevel(Branch branch, LevelTag tag);
-	/** Returns true if the floor is not too hard to dig. */
-	Boolean hasDiggableFloor();
 }

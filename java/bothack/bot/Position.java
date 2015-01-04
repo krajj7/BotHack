@@ -2,6 +2,7 @@ package bothack.bot;
 
 import java.util.List;
 
+import bothack.bot.dungeon.ILevel;
 import clojure.java.api.Clojure;
 
 /** Position factory and utility functions. */

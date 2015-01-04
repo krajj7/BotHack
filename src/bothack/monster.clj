@@ -89,7 +89,7 @@
    friendly
    peaceful ; nil while undetermined
    remembered] ; not currently known
-  bothack.bot.IMonster
+  bothack.bot.monsters.IMonster
   (lastKnown [m] (:known m))
   (type [m] (:type m))
   (isAwake [m] (boolean (:awake m)))

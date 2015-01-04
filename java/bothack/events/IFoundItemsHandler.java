@@ -1,6 +1,6 @@
 package bothack.events;
 
-import bothack.bot.IItem;
+import bothack.bot.items.IItem;
 
 /** Called every time the player encounters items on his current tile and in containers on the tile. */
 public interface IFoundItemsHandler {

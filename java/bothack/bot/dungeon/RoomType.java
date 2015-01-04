@@ -1,4 +1,4 @@
-package bothack.bot;
+package bothack.bot.dungeon;
 
 import clojure.lang.Keyword;
 

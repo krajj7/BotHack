@@ -8,7 +8,6 @@
   "{keyword => some ItemType map factory function}"
   identity)
 
-; TODO gen interface for java
 (defmacro ^:private defitemtype
   "Defines a record for the item type and a var with a list of all possible items of the type according to the data map with defaults filled in"
   ([recname varname recfields datamap]

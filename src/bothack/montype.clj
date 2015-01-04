@@ -34,7 +34,7 @@
    resistances
    resistances-conferred
    tags]
-  bothack.bot.IMonsterType
+  bothack.bot.monsters.IMonsterType
   (name [m] (:name m))
   (difficulty [m] (:difficulty m))
   (speed [m] (:speed m))

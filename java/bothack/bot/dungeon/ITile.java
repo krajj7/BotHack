@@ -1,6 +1,12 @@
-package bothack.bot;
+package bothack.bot.dungeon;
 
 import java.util.List;
+
+import bothack.bot.Alignment;
+import bothack.bot.IAppearance;
+import bothack.bot.IGame;
+import bothack.bot.IPosition;
+import bothack.bot.items.IItem;
 
 /**
  *  Immutable representation of a tile of the dungeon.

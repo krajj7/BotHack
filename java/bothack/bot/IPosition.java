@@ -1,7 +1,5 @@
 package bothack.bot;
 
-import clojure.lang.IPersistentMap;
-
 /**
  * Immutable representation of a position on the screen.
  * @see bothack.bot.Position#create(Long, Long) 

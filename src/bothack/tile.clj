@@ -344,13 +344,13 @@
   bothack.bot.IAppearance
   (glyph [tile] (:glyph tile))
   (color [tile] (kw->enum bothack.bot.Color (:color tile)))
-  bothack.bot.ITile
+  bothack.bot.dungeon.ITile
   (hasElbereth [tile] (boolean (e? tile)))
   (hasBoulder [tile] (boolean (boulder? tile)))
   (isEngravable [tile] (boolean (engravable? tile)))
   (isTrap [tile] (boolean (trap? tile)))
   (isVibrating [tile] (boolean (:vibrating tile)))
-  (feature [tile] (kw->enum bothack.bot.Feature (:feature tile)))
+  (feature [tile] (kw->enum bothack.bot.dungeon.Feature (:feature tile)))
   (wasSeen [tile] (boolean (:seen tile)))
   (firstWalkedTurn [tile] (:first-walked tile))
   (lastWalkedTurn [tile] (:walked tile))
@@ -359,13 +359,13 @@
   (items [tile] (:items tile))
   (hasNewItems [tile] (boolean (:new-items tile)))
   (engraving [tile] (:engraving tile))
-  (engravingType [tile] (kw->enum bothack.bot.EngravingType
+  (engravingType [tile] (kw->enum bothack.bot.dungeon.EngravingType
                                   (:engraving-type tile)))
-  (room [tile] (kw->enum bothack.bot.RoomType (:room tile)))
+  (room [tile] (kw->enum bothack.bot.dungeon.RoomType (:room tile)))
   (sinkGaveRing [tile] (some? (:ring (:tags tile))))
   (sinkGaveFoocubus [tile] (some? (:foocubus (:tags tile))))
   (sinkGavePudding [tile] (some? (:pudding (:tags tile))))
-  (leadsTo [tile] (kw->enum bothack.bot.Branch (:branch-id tile)))
+  (leadsTo [tile] (kw->enum bothack.bot.dungeon.Branch (:branch-id tile)))
   (altarAlignment [tile] (kw->enum bothack.bot.Alignment (:alignment tile))))
 
 (defn initial-tile [x y]

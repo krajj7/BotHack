@@ -1,33 +1,44 @@
 package bothack.bot;
 
+import clojure.lang.Keyword;
+
 public enum Intrinsic {
-	TELEPATHY, 
+	TELEPATHY(Keyword.intern(null, "telepathy")),
 	/** Teleport control */
-	TELECONTROL,
+	TELECONTROL(Keyword.intern(null, "telecontrol")),
 	/** Fire resistance */
-	FIRE,
+	FIRE(Keyword.intern(null, "fire")),
 	/** Cold resistance */
-	COLD,
+	COLD(Keyword.intern(null, "cold")),
 	/** Sleep resistance */
-	SLEEP,
+	SLEEP(Keyword.intern(null, "sleep")),
 	/** Shock resistance */
-	SHOCK,
+	SHOCK(Keyword.intern(null, "shock")),
 	/** Poison resistance */
-	POISON, 
+	POISON(Keyword.intern(null, "poison")),
 	/** Teleportitis */
-	TELEPORT,
+	TELEPORT(Keyword.intern(null, "teleport")),
 	/** Disintegration resistance */
-	DISINTEGRATION,
+	DISINTEGRATION(Keyword.intern(null, "disintegration")),
 	/** Warning (numbers for nearby unseen monsters) */
-	WARNING,
+	WARNING(Keyword.intern(null, "warning")),
 	/** Doesn't wake up monsters */
-	STEALTH, 
+	STEALTH(Keyword.intern(null, "stealth")),
 	/** Aggravate monster */
-	AGGRAVATE,
-	INVISIBILITY, 
+	AGGRAVATE(Keyword.intern(null, "aggravate")),
+	INVISIBILITY(Keyword.intern(null, "invisibility")),
 	/** See invisible */
-	SEE_INVIS, 
+	SEE_INVIS(Keyword.intern(null, "see-invis")),
 	/** Automatic searching */
-	SEARCH,
-	SPEED;
+	SEARCH(Keyword.intern(null, "search")),
+	SPEED(Keyword.intern(null, "speed"));
+
+    private final Keyword kw;
+    private Intrinsic(Keyword kw) {
+        this.kw = kw;
+    }
+
+    public Keyword getKeyword() {
+        return kw;
+    }
 }

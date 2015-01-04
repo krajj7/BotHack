@@ -5,6 +5,8 @@ import java.util.Set;
 
 import bothack.actions.Actions;
 import bothack.actions.ActionsComplex;
+import bothack.bot.items.IItem;
+import bothack.bot.monsters.IMonsterType;
 
 /** Immutable representation of player-related state and functionality. */
 public interface IPlayer extends IPosition {
@@ -51,8 +53,8 @@ public interface IPlayer extends IPosition {
 	Boolean isEngulfed();
 	/** Returns the monster type into which the player is currently polymorphed. */
 	IMonsterType polymorphed();
-	/** Returns the set of intrinsics the player has. */
-	Set<Intrinsic> intrinsics();
+	/** Returns true if the player has the given intrinsic. */
+	Boolean hasIntrinsic(Intrinsic intrinsic);
 	/** Name displayed on the status line. */
 	String nickname();
 	/** Title displayed on the status line. */
@@ -75,6 +77,8 @@ public interface IPlayer extends IPosition {
 	Boolean isTrapped();
 	/** True if the player has restorable drained stats. */
 	Boolean isStatDrained();
+	/** True if the player is a were-something.
+	 * @see IPlayer#polymorphed() */
 	Boolean hasLycantrophy();
 	/** True if the player is about to turn into stone. */
 	Boolean isStoning();
@@ -87,18 +91,16 @@ public interface IPlayer extends IPosition {
 	Boolean isIll();
 	/** True if the player is confused or stunned. */
 	Boolean isDizzy();
-	/** True if the player can eat the food with no ill effects. */
+	/** True if the player can eat the food with no ill effects.
+	 * Does not check corpse freshness!
+	 * @see IGame#isCorpseFresh(IPosition, IItem) */
 	Boolean canEat(IItem food);
-	/** True if the player can gain intrinsics or stats by eating the corpse. */
+	/** True if the player can gain intrinsics or stats by eating the corpse.
+	 * Does not check corpse freshness!
+	 * @see IGame#isCorpseFresh(IPosition, IItem) */
 	Boolean canEatWithBenefit(IItem corpse);
-	/** Estimate of the sum of weight of all carried items. */
-	Long weightSum();
 	/** How much weight the player can carry before getting burdened. */
 	Long carryingCapacity();
-	/** How much gold the player is carrying in total (including bagged gold). */
-	Long gold();
-	/** How much gold the player is carrying in main inventory. */
-	Long goldAvailable();
 	/** Get the effective integer value of stat.
 	 * @see IPlayer#getDisplayedStr() */
 	Long getStat(Stat stat);

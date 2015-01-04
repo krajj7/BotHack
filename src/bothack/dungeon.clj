@@ -743,12 +743,12 @@
 (defrecord Dungeon
   [levels ; {:branch-id => sorted{"dlvl" => Level}}, recognized branches merged
    id->branch] ; {:branch-id => :branch}, only ids of recognized levels included
-  bothack.bot.IDungeon
-  (^bothack.bot.ILevel
-    getLevel [dungeon ^bothack.bot.Branch branch-id ^bothack.bot.LevelTag tag]
+  bothack.bot.dungeon.IDungeon
+  (^bothack.bot.dungeon.ILevel
+    getLevel [dungeon ^bothack.bot.dungeon.Branch branch-id ^bothack.bot.dungeon.LevelTag tag]
     (get-level {:dungeon dungeon} (.getKeyword branch-id) (.getKeyword tag)))
-  (^bothack.bot.ILevel
-    getLevel [dungeon ^bothack.bot.Branch branch-id ^String dlvl]
+  (^bothack.bot.dungeon.ILevel
+    getLevel [dungeon ^bothack.bot.dungeon.Branch branch-id ^String dlvl]
     (get-level {:dungeon dungeon} (.getKeyword branch-id) dlvl))
   (getBranch [dungeon branch-id]
     (get-branch {:dungeon dungeon} (.getKeyword branch-id))))

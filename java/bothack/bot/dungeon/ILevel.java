@@ -1,7 +1,10 @@
-package bothack.bot;
+package bothack.bot.dungeon;
 
 import java.util.List;
 import java.util.Map;
+
+import bothack.bot.IPosition;
+import bothack.bot.monsters.IMonster;
 
 /** Immutable representation of a dungeon level with its inhabitants. */
 public interface ILevel {

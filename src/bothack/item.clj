@@ -6,21 +6,6 @@
             [bothack.itemid :refer :all]
             [bothack.util :refer :all]))
 
-(defrecord Item
-  [label
-   name
-   generic ; called
-   specific ; named
-   qty
-   buc ; nil :uncursed :cursed :blessed
-   erosion ; nil or 1-6
-   proof ; :fixed :rustproof :fireproof ...
-   enchantment ; nil or number
-   charges
-   recharges
-   in-use ; worn / wielded
-   cost]) ; not to be confused with ItemType price
-
 (def ^:private item-fields
   [:slot :qty :buc :grease :poison :erosion1 :erosion2 :proof :used :eaten
    :diluted :enchantment :name :generic :specific :recharges :charges :candles
@@ -73,17 +58,6 @@
                                           (erosion (:erosion2 res))))
       (dissoc res :cost1 :cost2 :cost3 :lit-candelabrum :erosion1 :erosion2 :slot)
       (into {:label label} (filter (comp some? val) res)))))
-
-(defn label->item [label]
-  (map->Item (parse-label label)))
-
-(defn slot-item
-  "Turns a string 'h - an octagonal amulet (being worn)' or [char String] pair into a [char Item] pair"
-  ([s]
-   (if-let [[slot label] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
-     (slot-item (.charAt slot 0) label)))
-  ([chr label]
-   [chr (label->item label)]))
 
 (defn safe-buc?
   "Known not to be cursed?"
@@ -247,6 +221,10 @@
   (and (not= "empty" (:specific item))
        (not ((fnil zero? 1) (:charges item)))))
 
+(defn recharged? [item]
+  (or (= "recharged" (:specific item))
+      (not ((fnil zero? 1) (:recharges item)))))
+
 (defn pick? [item]
   (#{"pick-axe" "dwarvish mattock"} (:name item)))
 
@@ -258,3 +236,30 @@
 
 (defn two-handed? [item]
   (= 2 (:hands (item-id item))))
+
+(defrecord Item
+  [label
+   name
+   generic ; called
+   specific ; named
+   qty
+   buc ; nil :uncursed :cursed :blessed
+   erosion ; 0-3
+   proof ; :fixed :rustproof :fireproof ...
+   enchantment ; nil or number
+   charges
+   recharges
+   in-use ; worn / wielded
+   cost] ; not to be confused with ItemType price
+  bothack.bot.items.IItemType)
+
+(defn label->item [label]
+  (map->Item (parse-label label)))
+
+(defn slot-item
+  "Turns a string 'h - an octagonal amulet (being worn)' or [char String] pair into a [char Item] pair"
+  ([s]
+   (if-let [[slot label] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
+     (slot-item (.charAt slot 0) label)))
+  ([chr label]
+   [chr (label->item label)]))

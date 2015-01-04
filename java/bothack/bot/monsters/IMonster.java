@@ -1,4 +1,7 @@
-package bothack.bot;
+package bothack.bot.monsters;
+
+import bothack.bot.IAppearance;
+import bothack.bot.IPosition;
 
 /** Immutable representation a monster on a level.
  * It may be currently seen or otherwise known or just remembered by the monster tracker.

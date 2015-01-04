@@ -4,9 +4,9 @@ import java.util.List;
 
 import bothack.bot.Direction;
 import bothack.bot.IGame;
-import bothack.bot.IItem;
 import bothack.bot.IPlayer;
-import bothack.bot.ITile;
+import bothack.bot.dungeon.ITile;
+import bothack.bot.items.IItem;
 import clojure.java.api.Clojure;
 
 /**

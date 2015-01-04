@@ -495,7 +495,7 @@
    blueprint ; for special levels
    tiles
    monsters] ; { Position => Monster }
-  bothack.bot.ILevel
+  bothack.bot.dungeon.ILevel
   (hasDiggableFloor [level]
     (diggable-floor? level))
   (hasShop [level] (boolean (:shop (:tags level))))
