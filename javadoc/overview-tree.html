@@ -66,6 +66,9 @@
 <ul class="horizontal">
 <li><a href="bothack/actions/package-tree.html">bothack.actions</a>, </li>
 <li><a href="bothack/bot/package-tree.html">bothack.bot</a>, </li>
+<li><a href="bothack/bot/dungeon/package-tree.html">bothack.bot.dungeon</a>, </li>
+<li><a href="bothack/bot/items/package-tree.html">bothack.bot.items</a>, </li>
+<li><a href="bothack/bot/monsters/package-tree.html">bothack.bot.monsters</a>, </li>
 <li><a href="bothack/events/package-tree.html">bothack.events</a>, </li>
 <li><a href="bothack/prompts/package-tree.html">bothack.prompts</a></li>
 </ul>
@@ -77,6 +80,8 @@
 <ul>
 <li type="circle">bothack.actions.<a href="bothack/actions/Actions.html" title="class in bothack.actions"><span class="strong">Actions</span></a></li>
 <li type="circle">bothack.actions.<a href="bothack/actions/ActionsComplex.html" title="class in bothack.actions"><span class="strong">ActionsComplex</span></a></li>
+<li type="circle">bothack.bot.items.<a href="bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><span class="strong">ItemType</span></a></li>
+<li type="circle">bothack.bot.monsters.<a href="bothack/bot/monsters/MonsterType.html" title="class in bothack.bot.monsters"><span class="strong">MonsterType</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Position</span></a></li>
 </ul>
 </li>
@@ -89,9 +94,9 @@
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IActionHandler.html" title="interface in bothack.prompts"><span class="strong">IActionHandler</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/IAppearance.html" title="interface in bothack.bot"><span class="strong">IAppearance</span></a>
 <ul>
-<li type="circle">bothack.bot.<a href="bothack/bot/IMonster.html" title="interface in bothack.bot"><span class="strong">IMonster</span></a> (also extends bothack.bot.<a href="bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>)</li>
-<li type="circle">bothack.bot.<a href="bothack/bot/IMonsterType.html" title="interface in bothack.bot"><span class="strong">IMonsterType</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/ITile.html" title="interface in bothack.bot"><span class="strong">ITile</span></a> (also extends bothack.bot.<a href="bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>)</li>
+<li type="circle">bothack.bot.monsters.<a href="bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters"><span class="strong">IMonster</span></a> (also extends bothack.bot.<a href="bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>)</li>
+<li type="circle">bothack.bot.monsters.<a href="bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters"><span class="strong">IMonsterType</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon"><span class="strong">ITile</span></a> (also extends bothack.bot.<a href="bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>)</li>
 </ul>
 </li>
 <li type="circle">bothack.bot.<a href="bothack/bot/IBotHack.html" title="interface in bothack.bot"><span class="strong">IBotHack</span></a></li>
@@ -99,7 +104,7 @@
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IDirectionHandler.html" title="interface in bothack.prompts"><span class="strong">IDirectionHandler</span></a></li>
 <li type="circle">bothack.events.<a href="bothack/events/IDlvlChangeHandler.html" title="interface in bothack.events"><span class="strong">IDlvlChangeHandler</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IDoTeleportHandler.html" title="interface in bothack.prompts"><span class="strong">IDoTeleportHandler</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/IDungeon.html" title="interface in bothack.bot"><span class="strong">IDungeon</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/IDungeon.html" title="interface in bothack.bot.dungeon"><span class="strong">IDungeon</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IEnhanceWhatHandler.html" title="interface in bothack.prompts"><span class="strong">IEnhanceWhatHandler</span></a></li>
 <li type="circle">bothack.events.<a href="bothack/events/IFoundItemsHandler.html" title="interface in bothack.events"><span class="strong">IFoundItemsHandler</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/IFrame.html" title="interface in bothack.bot"><span class="strong">IFrame</span></a></li>
@@ -108,9 +113,10 @@
 <li type="circle">bothack.events.<a href="bothack/events/IGameStateHandler.html" title="interface in bothack.events"><span class="strong">IGameStateHandler</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IGenocideHandler.html" title="interface in bothack.prompts"><span class="strong">IGenocideHandler</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IIdentifyWhatHandler.html" title="interface in bothack.prompts"><span class="strong">IIdentifyWhatHandler</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">IItem</span></a></li>
+<li type="circle">bothack.bot.items.<a href="bothack/bot/items/IItem.html" title="interface in bothack.bot.items"><span class="strong">IItem</span></a></li>
+<li type="circle">bothack.bot.items.<a href="bothack/bot/items/IItemType.html" title="interface in bothack.bot.items"><span class="strong">IItemType</span></a></li>
 <li type="circle">bothack.events.<a href="bothack/events/IKnowPositionHandler.html" title="interface in bothack.events"><span class="strong">IKnowPositionHandler</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/ILevel.html" title="interface in bothack.bot"><span class="strong">ILevel</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/ILevel.html" title="interface in bothack.bot.dungeon"><span class="strong">ILevel</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/ILevelTeleportHandler.html" title="interface in bothack.prompts"><span class="strong">ILevelTeleportHandler</span></a></li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IMakeWishHandler.html" title="interface in bothack.prompts"><span class="strong">IMakeWishHandler</span></a></li>
 <li type="circle">bothack.events.<a href="bothack/events/IMultilineMessageHandler.html" title="interface in bothack.events"><span class="strong">IMultilineMessageHandler</span></a></li>
@@ -118,9 +124,9 @@
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IPayDamageHandler.html" title="interface in bothack.prompts"><span class="strong">IPayDamageHandler</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">IPosition</span></a>
 <ul>
-<li type="circle">bothack.bot.<a href="bothack/bot/IMonster.html" title="interface in bothack.bot"><span class="strong">IMonster</span></a> (also extends bothack.bot.<a href="bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>)</li>
+<li type="circle">bothack.bot.monsters.<a href="bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters"><span class="strong">IMonster</span></a> (also extends bothack.bot.<a href="bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>)</li>
 <li type="circle">bothack.bot.<a href="bothack/bot/IPlayer.html" title="interface in bothack.bot"><span class="strong">IPlayer</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/ITile.html" title="interface in bothack.bot"><span class="strong">ITile</span></a> (also extends bothack.bot.<a href="bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>)</li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon"><span class="strong">ITile</span></a> (also extends bothack.bot.<a href="bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>)</li>
 </ul>
 </li>
 <li type="circle">bothack.prompts.<a href="bothack/prompts/IReallyAttackHandler.html" title="interface in bothack.prompts"><span class="strong">IReallyAttackHandler</span></a></li>
@@ -139,18 +145,19 @@
 <ul>
 <li type="circle">java.lang.Enum&lt;E&gt; (implements java.lang.Comparable&lt;T&gt;, java.io.Serializable)
 <ul>
-<li type="circle">bothack.bot.<a href="bothack/bot/Branch.html" title="enum in bothack.bot"><span class="strong">Branch</span></a></li>
+<li type="circle">bothack.bot.items.<a href="bothack/bot/items/BUC.html" title="enum in bothack.bot.items"><span class="strong">BUC</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Color.html" title="enum in bothack.bot"><span class="strong">Color</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Stat.html" title="enum in bothack.bot"><span class="strong">Stat</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/LevelTag.html" title="enum in bothack.bot"><span class="strong">LevelTag</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/EngravingType.html" title="enum in bothack.bot"><span class="strong">EngravingType</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Intrinsic.html" title="enum in bothack.bot"><span class="strong">Intrinsic</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/RoomType.html" title="enum in bothack.bot"><span class="strong">RoomType</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Alignment.html" title="enum in bothack.bot"><span class="strong">Alignment</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Hunger.html" title="enum in bothack.bot"><span class="strong">Hunger</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Direction.html" title="enum in bothack.bot"><span class="strong">Direction</span></a></li>
 <li type="circle">bothack.bot.<a href="bothack/bot/Encumbrance.html" title="enum in bothack.bot"><span class="strong">Encumbrance</span></a></li>
-<li type="circle">bothack.bot.<a href="bothack/bot/Feature.html" title="enum in bothack.bot"><span class="strong">Feature</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon"><span class="strong">Branch</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/LevelTag.html" title="enum in bothack.bot.dungeon"><span class="strong">LevelTag</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/EngravingType.html" title="enum in bothack.bot.dungeon"><span class="strong">EngravingType</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/RoomType.html" title="enum in bothack.bot.dungeon"><span class="strong">RoomType</span></a></li>
+<li type="circle">bothack.bot.dungeon.<a href="bothack/bot/dungeon/Feature.html" title="enum in bothack.bot.dungeon"><span class="strong">Feature</span></a></li>
 </ul>
 </li>
 </ul>

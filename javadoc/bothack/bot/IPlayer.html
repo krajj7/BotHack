@@ -125,13 +125,13 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEat(bothack.bot.IItem)">canEat</a></strong>(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;food)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEat(bothack.bot.items.IItem)">canEat</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;food)</code>
 <div class="block">True if the player can eat the food with no ill effects.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEatWithBenefit(bothack.bot.IItem)">canEatWithBenefit</a></strong>(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;corpse)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#canEatWithBenefit(bothack.bot.items.IItem)">canEatWithBenefit</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</code>
 <div class="block">True if the player can gain intrinsics or stats by eating the corpse.</div>
 </td>
 </tr>
@@ -172,18 +172,6 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.lang.Long</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#gold()">gold</a></strong>()</code>
-<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.Long</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#goldAvailable()">goldAvailable</a></strong>()</code>
-<div class="block">How much gold the player is carrying in main inventory.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasHands()">hasHands</a></strong>()</code>
 <div class="block">False when polymorphed into a handless or limbless monster.</div>
@@ -197,28 +185,30 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasLycantrophy()">hasLycantrophy</a></strong>()</code>&nbsp;</td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasIntrinsic(bothack.bot.Intrinsic)">hasIntrinsic</a></strong>(<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&nbsp;intrinsic)</code>
+<div class="block">Returns true if the player has the given intrinsic.</div>
+</td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hasLycantrophy()">hasLycantrophy</a></strong>()</code>
+<div class="block">True if the player is a were-something.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#HP()">HP</a></strong>()</code>
 <div class="block">The amount of hit points remanining.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot">Hunger</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#hunger()">hunger</a></strong>()</code>
 <div class="block">Returns the current hunger status (possibly null).</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.util.Set&lt;<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&gt;</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#intrinsics()">intrinsics</a></strong>()</code>
-<div class="block">Returns the set of intrinsics the player has.</div>
-</td>
-</tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;</code></td>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#inventory()">inventory</a></strong>()</code>
 <div class="block">The player's inventory.</div>
 </td>
@@ -338,7 +328,7 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a></code></td>
+<td class="colFirst"><code><a href="../../bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#polymorphed()">polymorphed</a></strong>()</code>
 <div class="block">Returns the monster type into which the player is currently polymorphed.</div>
 </td>
@@ -353,12 +343,6 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#title()">title</a></strong>()</code>
 <div class="block">Title displayed on the status line.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.Long</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPlayer.html#weightSum()">weightSum</a></strong>()</code>
-<div class="block">Estimate of the sum of weight of all carried items.</div>
 </td>
 </tr>
 </table>
@@ -548,18 +532,18 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <ul class="blockList">
 <li class="blockList">
 <h4>polymorphed</h4>
-<pre><a href="../../bothack/bot/IMonsterType.html" title="interface in bothack.bot">IMonsterType</a>&nbsp;polymorphed()</pre>
+<pre><a href="../../bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a>&nbsp;polymorphed()</pre>
 <div class="block">Returns the monster type into which the player is currently polymorphed.</div>
 </li>
 </ul>
-<a name="intrinsics()">
+<a name="hasIntrinsic(bothack.bot.Intrinsic)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>intrinsics</h4>
-<pre>java.util.Set&lt;<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&gt;&nbsp;intrinsics()</pre>
-<div class="block">Returns the set of intrinsics the player has.</div>
+<h4>hasIntrinsic</h4>
+<pre>java.lang.Boolean&nbsp;hasIntrinsic(<a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a>&nbsp;intrinsic)</pre>
+<div class="block">Returns true if the player has the given intrinsic.</div>
 </li>
 </ul>
 <a name="nickname()">
@@ -648,7 +632,7 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <ul class="blockList">
 <li class="blockList">
 <h4>inventory</h4>
-<pre>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;&nbsp;inventory()</pre>
+<pre>java.util.Map&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;inventory()</pre>
 <div class="block">The player's inventory.</div>
 </li>
 </ul>
@@ -679,6 +663,8 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <li class="blockList">
 <h4>hasLycantrophy</h4>
 <pre>java.lang.Boolean&nbsp;hasLycantrophy()</pre>
+<div class="block">True if the player is a were-something.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IPlayer.html#polymorphed()"><code>polymorphed()</code></a></dd></dl>
 </li>
 </ul>
 <a name="isStoning()">
@@ -732,34 +718,28 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <div class="block">True if the player is confused or stunned.</div>
 </li>
 </ul>
-<a name="canEat(bothack.bot.IItem)">
+<a name="canEat(bothack.bot.items.IItem)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>canEat</h4>
-<pre>java.lang.Boolean&nbsp;canEat(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;food)</pre>
-<div class="block">True if the player can eat the food with no ill effects.</div>
+<pre>java.lang.Boolean&nbsp;canEat(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;food)</pre>
+<div class="block">True if the player can eat the food with no ill effects.
+ Does not check corpse freshness!</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)"><code>IGame.isCorpseFresh(IPosition, IItem)</code></a></dd></dl>
 </li>
 </ul>
-<a name="canEatWithBenefit(bothack.bot.IItem)">
+<a name="canEatWithBenefit(bothack.bot.items.IItem)">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>canEatWithBenefit</h4>
-<pre>java.lang.Boolean&nbsp;canEatWithBenefit(<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&nbsp;corpse)</pre>
-<div class="block">True if the player can gain intrinsics or stats by eating the corpse.</div>
-</li>
-</ul>
-<a name="weightSum()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>weightSum</h4>
-<pre>java.lang.Long&nbsp;weightSum()</pre>
-<div class="block">Estimate of the sum of weight of all carried items.</div>
+<pre>java.lang.Boolean&nbsp;canEatWithBenefit(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</pre>
+<div class="block">True if the player can gain intrinsics or stats by eating the corpse.
+ Does not check corpse freshness!</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)"><code>IGame.isCorpseFresh(IPosition, IItem)</code></a></dd></dl>
 </li>
 </ul>
 <a name="carryingCapacity()">
@@ -770,26 +750,6 @@ extends <a href="../../bothack/bot/IPosition.html" title="interface in bothack.b
 <h4>carryingCapacity</h4>
 <pre>java.lang.Long&nbsp;carryingCapacity()</pre>
 <div class="block">How much weight the player can carry before getting burdened.</div>
-</li>
-</ul>
-<a name="gold()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>gold</h4>
-<pre>java.lang.Long&nbsp;gold()</pre>
-<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
-</li>
-</ul>
-<a name="goldAvailable()">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>goldAvailable</h4>
-<pre>java.lang.Long&nbsp;goldAvailable()</pre>
-<div class="block">How much gold the player is carrying in main inventory.</div>
 </li>
 </ul>
 <a name="getStat(bothack.bot.Stat)">

@@ -1,4 +1,7 @@
 bothack.actions
 bothack.bot
+bothack.bot.dungeon
+bothack.bot.items
+bothack.bot.monsters
 bothack.events
 bothack.prompts

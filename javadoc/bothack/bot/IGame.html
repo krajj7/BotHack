@@ -35,7 +35,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/IGame.html" target="_top">Frames</a></li>
@@ -107,45 +107,89 @@
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#actionTurn()">actionTurn</a></strong>()</code>
+<div class="block">Return the number of actions performed since the bot started.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#canEngrave()">canEngrave</a></strong>()</code>
 <div class="block">True if the player is capable of engraving and is not currently on the plane of air or water.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#canPray()">canPray</a></strong>()</code>
 <div class="block">True if the player can safely pray (95% confidence)</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a></code></td>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/dungeon/ILevel.html" title="interface in bothack.bot.dungeon">ILevel</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#currentLevel()">currentLevel</a></strong>()</code>
 <div class="block">Returns the current dungeon level.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot">IFrame</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#frame()">frame</a></strong>()</code>
 <div class="block">Returns the last snapshot of the virtual terminal screen.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.util.Set&lt;java.lang.String&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#genocided()">genocided</a></strong>()</code>
 <div class="block">Returns the set of monster types and classes that have been genocided in the game.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#gold()">gold</a></strong>()</code>
+<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
+</td>
+</tr>
 <tr class="rowColor">
-<td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;</code></td>
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#goldAvailable()">goldAvailable</a></strong>()</code>
+<div class="block">How much gold the player is carrying in main inventory.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#haveLevitationItemOn()">haveLevitationItemOn</a></strong>()</code>
 <div class="block">Returns the slot-item pair of a levitation item currently in use (or null)</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)">isCorpseFresh</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos,
+             <a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</code>
+<div class="block">Corpse freshness tracker – checks if the corpse at given position is likely
+ good to eat.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#player()">player</a></strong>()</code>
 <div class="block">Returns the player representation.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#score()">score</a></strong>()</code>
+<div class="block">Return the current game score.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#turn()">turn</a></strong>()</code>
+<div class="block">Return the number of game turns passed since the bot started.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#weightSum()">weightSum</a></strong>()</code>
+<div class="block">Estimate of the sum of weight of all carried items.</div>
 </td>
 </tr>
 </table>
@@ -209,7 +253,7 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>haveLevitationItemOn</h4>
-<pre>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/IItem.html" title="interface in bothack.bot">IItem</a>&gt;&nbsp;haveLevitationItemOn()</pre>
+<pre>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;haveLevitationItemOn()</pre>
 <div class="block">Returns the slot-item pair of a levitation item currently in use (or null)</div>
 </li>
 </ul>
@@ -226,11 +270,84 @@
 <a name="currentLevel()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>currentLevel</h4>
-<pre><a href="../../bothack/bot/ILevel.html" title="interface in bothack.bot">ILevel</a>&nbsp;currentLevel()</pre>
+<pre><a href="../../bothack/bot/dungeon/ILevel.html" title="interface in bothack.bot.dungeon">ILevel</a>&nbsp;currentLevel()</pre>
 <div class="block">Returns the current dungeon level.</div>
+</li>
+</ul>
+<a name="weightSum()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>weightSum</h4>
+<pre>java.lang.Long&nbsp;weightSum()</pre>
+<div class="block">Estimate of the sum of weight of all carried items.</div>
+</li>
+</ul>
+<a name="gold()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>gold</h4>
+<pre>java.lang.Long&nbsp;gold()</pre>
+<div class="block">How much gold the player is carrying in total (including bagged gold).</div>
+</li>
+</ul>
+<a name="goldAvailable()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>goldAvailable</h4>
+<pre>java.lang.Long&nbsp;goldAvailable()</pre>
+<div class="block">How much gold the player is carrying in main inventory.</div>
+</li>
+</ul>
+<a name="isCorpseFresh(bothack.bot.IPosition, bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isCorpseFresh</h4>
+<pre>java.lang.Boolean&nbsp;isCorpseFresh(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos,
+                              <a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</pre>
+<div class="block">Corpse freshness tracker – checks if the corpse at given position is likely
+ good to eat. May return false even for safe corpses if there is any
+ uncertainity.</div>
+</li>
+</ul>
+<a name="turn()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>turn</h4>
+<pre>java.lang.Long&nbsp;turn()</pre>
+<div class="block">Return the number of game turns passed since the bot started.</div>
+</li>
+</ul>
+<a name="actionTurn()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>actionTurn</h4>
+<pre>java.lang.Long&nbsp;actionTurn()</pre>
+<div class="block">Return the number of actions performed since the bot started.</div>
+</li>
+</ul>
+<a name="score()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>score</h4>
+<pre>java.lang.Long&nbsp;score()</pre>
+<div class="block">Return the current game score.</div>
 </li>
 </ul>
 </li>
@@ -259,7 +376,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../bothack/bot/IFrame.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/bot/IItem.html" title="interface in bothack.bot"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../index.html?bothack/bot/IGame.html" target="_top">Frames</a></li>
