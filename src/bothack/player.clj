@@ -324,9 +324,10 @@
 
 (defn count-candles [game]
   {:pre [(:player game)]}
-  (reduce (fnil + 0 0)
+  (reduce +
           (if-let [[_ candelabrum] (have game candelabrum)]
-            (:candles candelabrum))
+            (:candles candelabrum)
+            0)
           (for [[_ candles] (have-all game candle?)]
             (:qty candles))))
 
