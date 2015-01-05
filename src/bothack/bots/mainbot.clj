@@ -415,7 +415,7 @@
              (and (:castle (curlvl-tags game)) (= "wand of striking" id)))
          (or (and (not= :cursed (:buc item))
                   (> 2 (:erosion item)))
-             (< 2 (:enchantment item))
+             (< 2 (enchantment item))
              (take-cursed? game item))
          (if (:cost item)
            (want-buy? game item)
