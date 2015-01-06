@@ -75,6 +75,8 @@
     #"Pick a skill to advance" enhance-what
     #"Current skills" current-skills
     #"What would you like to identify " identify-what
+    #"Contents of " inventory-list
+    #"possesions:" inventory-list
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
