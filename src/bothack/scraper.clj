@@ -76,7 +76,7 @@
     #"Current skills" current-skills
     #"What would you like to identify " identify-what
     #"Contents of " inventory-list
-    #"possesions:" inventory-list
+    #"possessions:" inventory-list
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
