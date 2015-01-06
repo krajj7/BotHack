@@ -118,8 +118,9 @@
 
 (defn wielding
   "Return the wielded [slot item] or nil"
-  [game]
-  (have game :wielded))
+  [game-or-player]
+  (let [player (or (:player game-or-player) game-or-player)]
+    (find-first (comp :wielded val) (inventory player))))
 
 (defn free-finger?
   "Does the player have a free ring-finger?"
@@ -551,6 +552,7 @@
   (canEatWithBenefit [player item] (boolean (want-to-eat? player item)))
   (carryingCapacity [player] (capacity player))
   (getStat [player stat] ((:stats player) (.getKeyword stat)))
+  (wielding [player] (wielding player))
   (getDisplayedStr [player] (:str* (:stats player))))
 
 (defn new-player []

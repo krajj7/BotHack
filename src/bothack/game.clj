@@ -509,7 +509,8 @@
   (weightSum [game] (weight-sum game))
   (gold [game] (gold game))
   (goldAvailable [game] (available-gold game))
-  (genocided [game] (:genocided game)))
+  (genocided [game] (:genocided game))
+  (knowIdentity [game item] (know-id? game item)))
 
 (defmethod print-method Game [game w]
   (.write w (str "#bothack.game.Game"

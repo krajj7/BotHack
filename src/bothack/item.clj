@@ -251,7 +251,31 @@
    recharges
    in-use ; worn / wielded
    cost] ; not to be confused with ItemType price
-  bothack.bot.items.IItemType)
+  bothack.bot.items.IItem
+  (quantity [item] (:qty item))
+  (label [item] (:label item))
+  (name [item] (:name item))
+  (buc [item] (kw->enum bothack.bot.items.BUC (:buc item)))
+  (erosion [item] (:erosion item))
+  (isFixed [item] (boolean (:proof item)))
+  (enchantment [item] (:enchantment item))
+  (charges [item] (:charges item))
+  (recharges [item] (:recharges item))
+  (isRecharged [item] (boolean (recharged? item)))
+  (isCharged [item] (boolean (charged? item)))
+  (isTwohanded [item] (boolean (two-handed? item)))
+  (isSafeToEnchant [item] (boolean (safe-enchant? item)))
+  (isArtifact [item] (boolean (artifact? item)))
+  (type [item] (item-id item))
+  (possibilities [item] (initial-ids item))
+  (cost [item] (:cost item))
+  (isInUse [item] (boolean (:in-use item)))
+  (isWorn [item] (boolean (:worn item)))
+  (isContainer [item] (container? item))
+  (knowContents [item] (know-contents? item))
+  (contents [item] (:items item))
+  (isCorpse [item] (boolean (corpse? item)))
+  (isWielded [item] (boolean (:wielded item))))
 
 (defn label->item [label]
   (map->Item (parse-label label)))

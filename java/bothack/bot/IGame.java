@@ -1,10 +1,12 @@
 package bothack.bot;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import bothack.bot.dungeon.ILevel;
 import bothack.bot.items.IItem;
+import bothack.bot.items.IItemType;
 
 /** Immutable representation of the game state at some point. */
 public interface IGame {
@@ -40,4 +42,23 @@ public interface IGame {
 	Long actionTurn();
 	/** Return the current game score. */
 	Long score();
+	/** Returns IItemType with properties of the item that can be determined
+	* considering the current game discoveries.  If the item can be unambiguously
+	* identified this will return the full IItemType.
+	* @see IGame#knowIdentity(IItem) */
+	IItemType identifyType(IItem item);
+	/**
+	 * Returns the list of possible item types for the item considering the
+	 * current game discoveries. 
+	 */
+	List<IItemType> identifyPossibilities(IItem item);
+	/** 
+	 * Returns true if the IItemType for the item can be determined unambiguously
+	 * from current discoveries (the item is identified for practical purposes).
+	 */
+	Boolean knowIdentity(IItem item);
+	/**
+	 * True if trying to buy or sell the item would help its identification.
+	 */
+	Boolean wantPriceId(IItem item);
 }

@@ -14,12 +14,12 @@ public final class ItemType {
 	
 	/** If the name is a recognized NetHack item returns its IItemType.
 	 * @see IItem#name() */
-	public IItemType byName(String name) {
+	public static IItemType byName(String name) {
 		return (IItemType) Clojure.var("bothack.itemtype", "name->item").invoke(name);
 	}
 	
 	/** Return the list of all item types in NetHack. */
-	public List<IItemType> allItems() {
+	public static List<IItemType> allItems() {
 		return (List<IItemType>) Clojure.var("clojure.core", "vec").invoke(Clojure.var("bothack.itemtype", "items"));
 	}
 }

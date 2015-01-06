@@ -73,6 +73,8 @@ public interface IPlayer extends IPosition {
 	Long experienceLevel();
 	/** The player's inventory. */
 	Map<Character, IItem> inventory();
+	/** The slot-item pair for item wielded in hand. */
+	Map.Entry<Character, IItem> wielding();
 	/** True if the player is stuck in a trap. */
 	Boolean isTrapped();
 	/** True if the player has restorable drained stats. */
