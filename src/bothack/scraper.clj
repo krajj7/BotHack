@@ -80,7 +80,7 @@
 (defn- multi-menu?
   "Do we need to confirm menu selections (=> true), or does single selection close the menu? (=> false)"
   [head]
-  (re-seq #"What do you wish to do\?" head))
+  (not (re-seq #"What do you wish to do\?" head)))
 
 (defn- merge-menu?
   "Present all options as on one page?"
@@ -382,7 +382,7 @@
                                       @items
                                       (menu-options frame))]
                        (send delegator (menu-fn @head) options))
-                     (when-not (multi-menu? @head)
+                     (when (multi-menu? @head)
                        (send delegator write \space))
                      (alter menu-nextpage inc)
                      (when (menu-end? frame)
@@ -469,7 +469,9 @@
              (no-mark [frame]
                (log/debug "no-mark maybe direction/location prompt, prev ="
                           @prev)
-               (or (= @prev (topline frame))
+               (or (and (= @prev (topline frame))
+                        (or (not (re-seq #"What do you want to zap\?" @prev))
+                            (zero? (:y (:cursor frame)))))
                    (ref-set prev nil)
                    (log/debug "no-mark - new topline:" (topline frame))
                    (handle-direction frame)
