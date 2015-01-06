@@ -585,7 +585,7 @@
   (and (not= "empty" (:specific item))
        (not (:cost item))
        (= :light (item-subtype item))
-       (= :copper (item-id item))))
+       (= :copper (:material (item-id item)))))
 
 (defn- wearable? [item]
   ((some-fn armor? ring? amulet?) item))
