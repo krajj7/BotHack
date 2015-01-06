@@ -76,18 +76,19 @@
 
 (declare inventory)
 
-(defn bagged-items [game]
-  (for [[slot bag] (inventory game)
+(defn bagged-items [game-or-player]
+  (for [[slot bag] (inventory game-or-player)
         :when (container? bag)
         item (:items bag)]
     (clojure.lang.MapEntry. slot item)))
 
 (defn inventory
-  ([game bagged?]
-   (concat (-> game :player :inventory)
-           (if bagged? (bagged-items game))))
-  ([game]
-   (inventory game false)))
+  ([game-or-player bagged?]
+   (let [player (or (:player game-or-player) game-or-player)]
+     (concat (:inventory player)
+             (if bagged? (bagged-items player)))))
+  ([game-or-player]
+   (inventory game-or-player false)))
 
 (defn- base-selector [game name-or-set-or-fn]
   (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
