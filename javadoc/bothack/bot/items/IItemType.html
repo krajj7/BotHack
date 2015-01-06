@@ -35,7 +35,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../../bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><span class="strong">Next Class</span></a></li>
+<li><a href="../../../bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?bothack/bot/items/IItemType.html" target="_top">Frames</a></li>
@@ -87,8 +87,9 @@
 <hr>
 <br>
 <pre>public interface <span class="strong">IItemType</span></pre>
-<div class="block">Representation of item "prototypes".</div>
-<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><code>ItemType</code></a></dd></dl>
+<div class="block">Representation of item "prototypes" of all kinds.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><code>ItemType</code></a>, 
+<a href="../../../bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items"><code>ItemKind</code></a></dd></dl>
 </li>
 </ul>
 </div>
@@ -108,21 +109,101 @@
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.lang.String&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#appearances()">appearances</a></strong>()</code>
+<div class="block">Initial possible appearances of the item.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#baseType()">baseType</a></strong>()</code>
 <div class="block">For artifact items – return the base type.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#getAC()">getAC</a></strong>()</code>
+<div class="block">How much the item lowers your AC (lower AC = better).</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#getMC()">getMC</a></strong>()</code>
+<div class="block">Magic cancellation – how well the item protects against magical attack
+ effects</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Character</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#glyph()">glyph</a></strong>()</code>
 <div class="block">Glyph representation of the item type.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#isArtifact()">isArtifact</a></strong>()</code>
+<div class="block">True if the item type is an artifact.</div>
+</td>
+</tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#isSafe()">isSafe</a></strong>()</code>
+<div class="block">If true generally won't cause any immediate bad effects upon use.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#isStackable()">isStackable</a></strong>()</code>
+<div class="block">True if items of this type may stack.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#isTwohanded()">isTwohanded</a></strong>()</code>
+<div class="block">True if the item requires both hands to wield.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items">ItemKind</a></code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#kind()">kind</a></strong>()</code>
+<div class="block">Returns the item category.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#monster()">monster</a></strong>()</code>
+<div class="block">For corpses, tins, eggs, statues and figurines may return the monster type
+ if known.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#name()">name</a></strong>()</code>
+<div class="block">Name of the item type.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#nutrition()">nutrition</a></strong>()</code>
+<div class="block">For edible items.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#price()">price</a></strong>()</code>
 <div class="block">Base price for items of this type.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../bothack/bot/items/ItemSubtype.html" title="enum in bothack.bot.items">ItemSubtype</a></code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#subtype()">subtype</a></strong>()</code>
+<div class="block">Armor slot or item category.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Long</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItemType.html#weight()">weight</a></strong>()</code>
+<div class="block">How much the item weights.</div>
 </td>
 </tr>
 </table>
@@ -140,6 +221,16 @@
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="name()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>name</h4>
+<pre>java.lang.String&nbsp;name()</pre>
+<div class="block">Name of the item type.</div>
+</li>
+</ul>
 <a name="baseType()">
 <!--   -->
 </a>
@@ -163,11 +254,134 @@
 <a name="price()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>price</h4>
 <pre>java.lang.Long&nbsp;price()</pre>
 <div class="block">Base price for items of this type.</div>
+</li>
+</ul>
+<a name="kind()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>kind</h4>
+<pre><a href="../../../bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items">ItemKind</a>&nbsp;kind()</pre>
+<div class="block">Returns the item category.</div>
+</li>
+</ul>
+<a name="weight()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>weight</h4>
+<pre>java.lang.Long&nbsp;weight()</pre>
+<div class="block">How much the item weights.</div>
+</li>
+</ul>
+<a name="appearances()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>appearances</h4>
+<pre>java.util.List&lt;java.lang.String&gt;&nbsp;appearances()</pre>
+<div class="block">Initial possible appearances of the item.</div>
+</li>
+</ul>
+<a name="isStackable()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isStackable</h4>
+<pre>java.lang.Boolean&nbsp;isStackable()</pre>
+<div class="block">True if items of this type may stack.</div>
+</li>
+</ul>
+<a name="isArtifact()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isArtifact</h4>
+<pre>java.lang.Boolean&nbsp;isArtifact()</pre>
+<div class="block">True if the item type is an artifact.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/IItemType.html#baseType()"><code>baseType()</code></a></dd></dl>
+</li>
+</ul>
+<a name="isSafe()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isSafe</h4>
+<pre>java.lang.Boolean&nbsp;isSafe()</pre>
+<div class="block">If true generally won't cause any immediate bad effects upon use.</div>
+</li>
+</ul>
+<a name="isTwohanded()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isTwohanded</h4>
+<pre>java.lang.Boolean&nbsp;isTwohanded()</pre>
+<div class="block">True if the item requires both hands to wield.</div>
+</li>
+</ul>
+<a name="getAC()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getAC</h4>
+<pre>java.lang.Long&nbsp;getAC()</pre>
+<div class="block">How much the item lowers your AC (lower AC = better).</div>
+</li>
+</ul>
+<a name="getMC()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getMC</h4>
+<pre>java.lang.Long&nbsp;getMC()</pre>
+<div class="block">Magic cancellation – how well the item protects against magical attack
+ effects</div>
+</li>
+</ul>
+<a name="subtype()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>subtype</h4>
+<pre><a href="../../../bothack/bot/items/ItemSubtype.html" title="enum in bothack.bot.items">ItemSubtype</a>&nbsp;subtype()</pre>
+<div class="block">Armor slot or item category.</div>
+</li>
+</ul>
+<a name="monster()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>monster</h4>
+<pre><a href="../../../bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a>&nbsp;monster()</pre>
+<div class="block">For corpses, tins, eggs, statues and figurines may return the monster type
+ if known.</div>
+</li>
+</ul>
+<a name="nutrition()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>nutrition</h4>
+<pre>java.lang.Long&nbsp;nutrition()</pre>
+<div class="block">For edible items.</div>
 </li>
 </ul>
 </li>
@@ -196,7 +410,7 @@
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../../bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><span class="strong">Next Class</span></a></li>
+<li><a href="../../../bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?bothack/bot/items/IItemType.html" target="_top">Frames</a></li>

@@ -101,17 +101,21 @@
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#alignment()">alignment()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="strong"><a href="./bothack/bot/items/ItemType.html#allItems()">allItems()</a></span> - Method in class bothack.bot.items.<a href="./bothack/bot/items/ItemType.html" title="class in bothack.bot.items">ItemType</a></dt>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemType.html#allItems()">allItems()</a></span> - Static method in class bothack.bot.items.<a href="./bothack/bot/items/ItemType.html" title="class in bothack.bot.items">ItemType</a></dt>
 <dd>
 <div class="block">Return the list of all item types in NetHack.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/bot/monsters/MonsterType.html#allMonsters()">allMonsters()</a></span> - Method in class bothack.bot.monsters.<a href="./bothack/bot/monsters/MonsterType.html" title="class in bothack.bot.monsters">MonsterType</a></dt>
+<dt><span class="strong"><a href="./bothack/bot/monsters/MonsterType.html#allMonsters()">allMonsters()</a></span> - Static method in class bothack.bot.monsters.<a href="./bothack/bot/monsters/MonsterType.html" title="class in bothack.bot.monsters">MonsterType</a></dt>
 <dd>
 <div class="block">Return the list of all monster types recognized by BotHack.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/ITile.html#altarAlignment()">altarAlignment()</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a></dt>
 <dd>
 <div class="block">For altars - returns the altar's alignment.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#appearances()">appearances()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">Initial possible appearances of the item.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/actions/Actions.html#Apply(java.lang.Character)">Apply(Character)</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/Actions.html" title="class in bothack.actions">Actions</a></dt>
 <dd>
@@ -185,11 +189,11 @@
 <dd>
 <div class="block">Blessedness of the item (if known).</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/bot/items/ItemType.html#byName(java.lang.String)">byName(String)</a></span> - Method in class bothack.bot.items.<a href="./bothack/bot/items/ItemType.html" title="class in bothack.bot.items">ItemType</a></dt>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemType.html#byName(java.lang.String)">byName(String)</a></span> - Static method in class bothack.bot.items.<a href="./bothack/bot/items/ItemType.html" title="class in bothack.bot.items">ItemType</a></dt>
 <dd>
 <div class="block">If the name is a recognized NetHack item returns its IItemType.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/bot/monsters/MonsterType.html#byName(java.lang.String)">byName(String)</a></span> - Method in class bothack.bot.monsters.<a href="./bothack/bot/monsters/MonsterType.html" title="class in bothack.bot.monsters">MonsterType</a></dt>
+<dt><span class="strong"><a href="./bothack/bot/monsters/MonsterType.html#byName(java.lang.String)">byName(String)</a></span> - Static method in class bothack.bot.monsters.<a href="./bothack/bot/monsters/MonsterType.html" title="class in bothack.bot.monsters">MonsterType</a></dt>
 <dd>
 <div class="block">If the name is a NetHack monster returns its IMonsterType.</div>
 </dd>
@@ -258,6 +262,10 @@
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#conferredResistances()">conferredResistances()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>
 <div class="block">Intrinsics the player can gain when eating the corpse</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#contents()">contents()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">If the item is a container returns the contents.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/actions/Actions.html#Contribute(bothack.bot.Direction,%20java.lang.Long)">Contribute(Direction, Long)</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/Actions.html" title="class in bothack.actions">Actions</a></dt>
 <dd>
@@ -465,6 +473,10 @@
 <dd>
 <div class="block">Called when the player can choose a single monster type to genocide.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#getAC()">getAC()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">How much the item lowers your AC (lower AC = better).</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/IDungeon.html#getBranch(bothack.bot.dungeon.Branch)">getBranch(Branch)</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/IDungeon.html" title="interface in bothack.bot.dungeon">IDungeon</a></dt>
 <dd>
 <div class="block">Returns the Dlvl => ILevel map for the branch.</div>
@@ -487,6 +499,8 @@
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/RoomType.html#getKeyword()">getKeyword()</a></span> - Method in enum bothack.bot.dungeon.<a href="./bothack/bot/dungeon/RoomType.html" title="enum in bothack.bot.dungeon">RoomType</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="./bothack/bot/Intrinsic.html#getKeyword()">getKeyword()</a></span> - Method in enum bothack.bot.<a href="./bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/Stat.html#getKeyword()">getKeyword()</a></span> - Method in enum bothack.bot.<a href="./bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/IDungeon.html#getLevel(bothack.bot.dungeon.Branch,%20java.lang.String)">getLevel(Branch, String)</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/IDungeon.html" title="interface in bothack.bot.dungeon">IDungeon</a></dt>
@@ -496,6 +510,11 @@
 <dt><span class="strong"><a href="./bothack/bot/dungeon/IDungeon.html#getLevel(bothack.bot.dungeon.Branch,%20bothack.bot.dungeon.LevelTag)">getLevel(Branch, LevelTag)</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/IDungeon.html" title="interface in bothack.bot.dungeon">IDungeon</a></dt>
 <dd>
 <div class="block">Returns a level by Branch and tag, if such was already visited and identified.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#getMC()">getMC()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">Magic cancellation – how well the item protects against magical attack
+ effects</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/IPlayer.html#getStat(bothack.bot.Stat)">getStat(Stat)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></dt>
 <dd>
@@ -635,6 +654,16 @@
 <div class="block">Called when the player may choose an item to charge after reading
  a scroll of charging.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/IGame.html#identifyPossibilities(bothack.bot.items.IItem)">identifyPossibilities(IItem)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
+<dd>
+<div class="block">Returns the list of possible item types for the item considering the
+ current game discoveries.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/IGame.html#identifyType(bothack.bot.items.IItem)">identifyType(IItem)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
+<dd>
+<div class="block">Returns IItemType with properties of the item that can be determined
+ considering the current game discoveries.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/prompts/IIdentifyWhatHandler.html#identifyWhat(java.util.Map)">identifyWhat(Map&lt;Character, String&gt;)</a></span> - Method in interface bothack.prompts.<a href="./bothack/prompts/IIdentifyWhatHandler.html" title="interface in bothack.prompts">IIdentifyWhatHandler</a></dt>
 <dd>
 <div class="block">Called when the player can choose items to identify.</div>
@@ -694,7 +723,7 @@
 </dd>
 <dt><a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items"><span class="strong">IItemType</span></a> - Interface in <a href="./bothack/bot/items/package-summary.html">bothack.bot.items</a></dt>
 <dd>
-<div class="block">Representation of item "prototypes".</div>
+<div class="block">Representation of item "prototypes" of all kinds.</div>
 </dd>
 <dt><a href="./bothack/events/IKnowPositionHandler.html" title="interface in bothack.events"><span class="strong">IKnowPositionHandler</span></a> - Interface in <a href="./bothack/events/package-summary.html">bothack.events</a></dt>
 <dd>
@@ -761,6 +790,10 @@
 <dd>
 <div class="block">True if the item is an artifact.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#isArtifact()">isArtifact()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">True if the item type is an artifact.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonster.html#isAwake()">isAwake()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters">IMonster</a></dt>
 <dd>
 <div class="block">True if the monster was seen moving.</div>
@@ -780,6 +813,14 @@
 <dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isCharged()">isCharged()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
 <dd>
 <div class="block">True if the item is not known to be empty.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isContainer()">isContainer()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">True if the item may contain other items.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isCorpse()">isCorpse()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">True if the item is a monster's corpse.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)">isCorpseFresh(IPosition, IItem)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
 <dd>
@@ -848,6 +889,10 @@
 <dd>
 <div class="block">True if the player is deathly sick (including food poisoning).</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isInUse()">isInUse()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">True if the item is worn or wielded.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isMimic()">isMimic()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isMindless()">isMindless()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
@@ -892,6 +937,10 @@
 <dd>
 <div class="block">Riders of the apocalypse on Astral</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#isSafe()">isSafe()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">If true generally won't cause any immediate bad effects upon use.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isSafeToEnchant()">isSafeToEnchant()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
 <dd>
 <div class="block">True if the item can be safely enchanted.</div>
@@ -902,6 +951,10 @@
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isShopkeeper()">isShopkeeper()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#isStackable()">isStackable()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">True if items of this type may stack.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/IPlayer.html#isStatDrained()">isStatDrained()</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></dt>
 <dd>
 <div class="block">True if the player has restorable drained stats.</div>
@@ -942,6 +995,10 @@
 <dd>
 <div class="block">True if the item requires both hands to wield.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#isTwohanded()">isTwohanded()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">True if the item requires both hands to wield.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isUndead()">isUndead()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isUnique()">isUnique()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
@@ -956,14 +1013,26 @@
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#isWerecreature()">isWerecreature()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isWielded()">isWielded()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">True if the item wielded by the player.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isWorn()">isWorn()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">True if the item worn by the player.</div>
+</dd>
 <dt><a href="./bothack/prompts/ITeleportWhereHandler.html" title="interface in bothack.prompts"><span class="strong">ITeleportWhereHandler</span></a> - Interface in <a href="./bothack/prompts/package-summary.html">bothack.prompts</a></dt>
 <dd>
 <div class="block">Called when the player can teleport in a controlled way.</div>
 </dd>
+<dt><a href="./bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items"><span class="strong">ItemKind</span></a> - Enum in <a href="./bothack/bot/items/package-summary.html">bothack.bot.items</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/ITile.html#items()">items()</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a></dt>
 <dd>
 <div class="block">Items laying on the ground on the tile</div>
 </dd>
+<dt><a href="./bothack/bot/items/ItemSubtype.html" title="enum in bothack.bot.items"><span class="strong">ItemSubtype</span></a> - Enum in <a href="./bothack/bot/items/package-summary.html">bothack.bot.items</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="./bothack/bot/items/ItemType.html" title="class in bothack.bot.items"><span class="strong">ItemType</span></a> - Class in <a href="./bothack/bot/items/package-summary.html">bothack.bot.items</a></dt>
 <dd>
 <div class="block">Factory and utility functions for item types.</div>
@@ -998,6 +1067,19 @@
 <dd>
 <div class="block">Kick in the given direction if the player is capable of kicking
  and there don't seem to be heavy objects.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#kind()">kind()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">Returns the item category.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#knowContents()">knowContents()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">False if the item is a container with unknown contents.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/IGame.html#knowIdentity(bothack.bot.items.IItem)">knowIdentity(IItem)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
+<dd>
+<div class="block">Returns true if the IItemType for the item can be determined unambiguously
+ from current discoveries (the item is identified for practical purposes).</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/events/IKnowPositionHandler.html#knowPosition(bothack.bot.IFrame)">knowPosition(IFrame)</a></span> - Method in interface bothack.events.<a href="./bothack/events/IKnowPositionHandler.html" title="interface in bothack.events">IKnowPositionHandler</a></dt>
 <dd>
@@ -1067,6 +1149,11 @@
 <dd>
 <div class="block">Called when a fullscreen message is presented to the player.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#monster()">monster()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">For corpses, tins, eggs, statues and figurines may return the monster type
+ if known.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/ILevel.html#monsterAt(bothack.bot.IPosition)">monsterAt(IPosition)</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/ILevel.html" title="interface in bothack.bot.dungeon">ILevel</a></dt>
 <dd>
 <div class="block">Returns the monster representation at the given position.</div>
@@ -1097,6 +1184,10 @@
 <dd>
 <div class="block">The stripped base name of the item.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#name()">name()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">Name of the item type.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#name()">name()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>
 <div class="block">Name of the monster type</div>
@@ -1112,6 +1203,10 @@
 <dt><span class="strong"><a href="./bothack/bot/IPlayer.html#nickname()">nickname()</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></dt>
 <dd>
 <div class="block">Name displayed on the status line.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#nutrition()">nutrition()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">For edible items.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonsterType.html#nutrition()">nutrition()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonsterType.html" title="interface in bothack.bot.monsters">IMonsterType</a></dt>
 <dd>&nbsp;</dd>
@@ -1170,6 +1265,11 @@
 <dt><a href="./bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Position</span></a> - Class in <a href="./bothack/bot/package-summary.html">bothack.bot</a></dt>
 <dd>
 <div class="block">Position factory and utility functions.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItem.html#possibilities()">possibilities()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
+<dd>
+<div class="block">Returns the list of all possible item types for the item <b>without
+ considering the current game context (discoveries)</b>.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/actions/Actions.html#Pray()">Pray()</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/Actions.html" title="class in bothack.actions">Actions</a></dt>
 <dd>
@@ -1336,6 +1436,10 @@
 <dd>
 <div class="block">Called when the player is close to dying from overeating.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#subtype()">subtype()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">Armor slot or item category.</div>
+</dd>
 </dl>
 <a name="_T_">
 <!--   -->
@@ -1376,8 +1480,8 @@
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/items/IItem.html#type()">type()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
 <dd>
-<div class="block">Returns the item type if it can be determined <b>without the current game
- context (discoveries)</b>.</div>
+<div class="block">Returns properties of the item that can be determined <b>without the
+ current game context (discoveries)</b>.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/monsters/IMonster.html#type()">type()</a></span> - Method in interface bothack.bot.monsters.<a href="./bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters">IMonster</a></dt>
 <dd>
@@ -1455,6 +1559,14 @@
 <dd>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemKind.html#valueOf(java.lang.String)">valueOf(String)</a></span> - Static method in enum bothack.bot.items.<a href="./bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items">ItemKind</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemSubtype.html#valueOf(java.lang.String)">valueOf(String)</a></span> - Static method in enum bothack.bot.items.<a href="./bothack/bot/items/ItemSubtype.html" title="enum in bothack.bot.items">ItemSubtype</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this type with the specified name.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/Stat.html#valueOf(java.lang.String)">valueOf(String)</a></span> - Static method in enum bothack.bot.<a href="./bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
@@ -1519,6 +1631,16 @@ the order they are declared.</div>
 <div class="block">Returns an array containing the constants of this enum type, in
 the order they are declared.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemKind.html#values()">values()</a></span> - Static method in enum bothack.bot.items.<a href="./bothack/bot/items/ItemKind.html" title="enum in bothack.bot.items">ItemKind</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/ItemSubtype.html#values()">values()</a></span> - Static method in enum bothack.bot.items.<a href="./bothack/bot/items/ItemSubtype.html" title="enum in bothack.bot.items">ItemSubtype</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum type, in
+the order they are declared.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/Stat.html#values()">values()</a></span> - Static method in enum bothack.bot.<a href="./bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum type, in
@@ -1534,6 +1656,10 @@ the order they are declared.</div>
 <dd>
 <div class="block">Do nothing in the next turn.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/IGame.html#wantPriceId(bothack.bot.items.IItem)">wantPriceId(IItem)</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
+<dd>
+<div class="block">True if trying to buy or sell the item would help its identification.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/bot/dungeon/ITile.html#wasSeen()">wasSeen()</a></span> - Method in interface bothack.bot.dungeon.<a href="./bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a></dt>
 <dd>
 <div class="block">True if the player was adjacent to the tile when not blind.</div>
@@ -1541,6 +1667,10 @@ the order they are declared.</div>
 <dt><span class="strong"><a href="./bothack/actions/Actions.html#Wear(java.lang.Character)">Wear(Character)</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/Actions.html" title="class in bothack.actions">Actions</a></dt>
 <dd>
 <div class="block">Wear item at slot (for armor).</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/items/IItemType.html#weight()">weight()</a></span> - Method in interface bothack.bot.items.<a href="./bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></dt>
+<dd>
+<div class="block">How much the item weights.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/bot/IGame.html#weightSum()">weightSum()</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></dt>
 <dd>
@@ -1565,6 +1695,10 @@ the order they are declared.</div>
 <dt><span class="strong"><a href="./bothack/actions/ActionsComplex.html#wield(bothack.bot.IGame,%20java.lang.Character)">wield(IGame, Character)</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/ActionsComplex.html" title="class in bothack.actions">ActionsComplex</a></dt>
 <dd>
 <div class="block">If it is possible for the player, wield item at slot as a weapon, otherwise returns null.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/bot/IPlayer.html#wielding()">wielding()</a></span> - Method in interface bothack.bot.<a href="./bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></dt>
+<dd>
+<div class="block">The slot-item pair for item wielded in hand.</div>
 </dd>
 <dt><span class="strong"><a href="./bothack/actions/Actions.html#Wipe()">Wipe()</a></span> - Static method in class bothack.actions.<a href="./bothack/actions/Actions.html" title="class in bothack.actions">Actions</a></dt>
 <dd>

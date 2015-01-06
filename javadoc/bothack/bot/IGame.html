@@ -161,6 +161,20 @@
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#identifyPossibilities(bothack.bot.items.IItem)">identifyPossibilities</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
+<div class="block">Returns the list of possible item types for the item considering the
+ current game discoveries.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#identifyType(bothack.bot.items.IItem)">identifyType</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
+<div class="block">Returns IItemType with properties of the item that can be determined
+ considering the current game discoveries.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)">isCorpseFresh</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos,
              <a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</code>
@@ -169,21 +183,34 @@
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#knowIdentity(bothack.bot.items.IItem)">knowIdentity</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
+<div class="block">Returns true if the IItemType for the item can be determined unambiguously
+ from current discoveries (the item is identified for practical purposes).</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#player()">player</a></strong>()</code>
 <div class="block">Returns the player representation.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#score()">score</a></strong>()</code>
 <div class="block">Return the current game score.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#turn()">turn</a></strong>()</code>
 <div class="block">Return the number of game turns passed since the bot started.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#wantPriceId(bothack.bot.items.IItem)">wantPriceId</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
+<div class="block">True if trying to buy or sell the item would help its identification.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -343,11 +370,56 @@
 <a name="score()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>score</h4>
 <pre>java.lang.Long&nbsp;score()</pre>
 <div class="block">Return the current game score.</div>
+</li>
+</ul>
+<a name="identifyType(bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>identifyType</h4>
+<pre><a href="../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&nbsp;identifyType(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
+<div class="block">Returns IItemType with properties of the item that can be determined
+ considering the current game discoveries.  If the item can be unambiguously
+ identified this will return the full IItemType.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#knowIdentity(bothack.bot.items.IItem)"><code>knowIdentity(IItem)</code></a></dd></dl>
+</li>
+</ul>
+<a name="identifyPossibilities(bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>identifyPossibilities</h4>
+<pre>java.util.List&lt;<a href="../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&gt;&nbsp;identifyPossibilities(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
+<div class="block">Returns the list of possible item types for the item considering the
+ current game discoveries.</div>
+</li>
+</ul>
+<a name="knowIdentity(bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>knowIdentity</h4>
+<pre>java.lang.Boolean&nbsp;knowIdentity(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
+<div class="block">Returns true if the IItemType for the item can be determined unambiguously
+ from current discoveries (the item is identified for practical purposes).</div>
+</li>
+</ul>
+<a name="wantPriceId(bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>wantPriceId</h4>
+<pre>java.lang.Boolean&nbsp;wantPriceId(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
+<div class="block">True if trying to buy or sell the item would help its identification.</div>
 </li>
 </ul>
 </li>

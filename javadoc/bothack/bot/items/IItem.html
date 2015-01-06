@@ -120,39 +120,63 @@
 </td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#contents()">contents</a></strong>()</code>
+<div class="block">If the item is a container returns the contents.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#cost()">cost</a></strong>()</code>
 <div class="block">Price demanded at a shop.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#enchantment()">enchantment</a></strong>()</code>
 <div class="block">Positive or negative enchantment.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#erosion()">erosion</a></strong>()</code>
 <div class="block">How corroded/burnt/rusty the item is (0-3).</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isArtifact()">isArtifact</a></strong>()</code>
 <div class="block">True if the item is an artifact.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isCharged()">isCharged</a></strong>()</code>
 <div class="block">True if the item is not known to be empty.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isContainer()">isContainer</a></strong>()</code>
+<div class="block">True if the item may contain other items.</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isCorpse()">isCorpse</a></strong>()</code>
+<div class="block">True if the item is a monster's corpse.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isFixed()">isFixed</a></strong>()</code>
 <div class="block">True for rustproof/fireproof/fixed items.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isInUse()">isInUse</a></strong>()</code>
+<div class="block">True if the item is worn or wielded.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -174,15 +198,40 @@
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isWielded()">isWielded</a></strong>()</code>
+<div class="block">True if the item wielded by the player.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#isWorn()">isWorn</a></strong>()</code>
+<div class="block">True if the item worn by the player.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#knowContents()">knowContents</a></strong>()</code>
+<div class="block">False if the item is a container with unknown contents.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#label()">label</a></strong>()</code>
 <div class="block">How the item appears in the inventory.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#name()">name</a></strong>()</code>
 <div class="block">The stripped base name of the item.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.List&lt;<a href="../../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#possibilities()">possibilities</a></strong>()</code>
+<div class="block">Returns the list of all possible item types for the item <b>without
+ considering the current game context (discoveries)</b>.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -200,8 +249,8 @@
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a></code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/items/IItem.html#type()">type</a></strong>()</code>
-<div class="block">Returns the item type if it can be determined <b>without the current game
- context (discoveries)</b>.</div>
+<div class="block">Returns properties of the item that can be determined <b>without the
+ current game context (discoveries)</b>.</div>
 </td>
 </tr>
 </table>
@@ -246,7 +295,10 @@
 <li class="blockList">
 <h4>name</h4>
 <pre>java.lang.String&nbsp;name()</pre>
-<div class="block">The stripped base name of the item.  Japanese names are converted to english.</div>
+<div class="block">The stripped base name of the item.  Japanese names are converted to english. 
+ This may not be the same as the item's <a href="../../../bothack/bot/items/IItemType.html#name()"><code>IItemType.name()</code></a>!
+ It may be an unidentified appearance like "buckled boots", which
+ is not an existing IItemType name.</div>
 </li>
 </ul>
 <a name="buc()">
@@ -286,7 +338,7 @@
 <li class="blockList">
 <h4>enchantment</h4>
 <pre>java.lang.Long&nbsp;enchantment()</pre>
-<div class="block">Positive or negative enchantment.</div>
+<div class="block">Positive or negative enchantment.  Null if unknown.</div>
 </li>
 </ul>
 <a name="charges()">
@@ -296,7 +348,8 @@
 <li class="blockList">
 <h4>charges</h4>
 <pre>java.lang.Long&nbsp;charges()</pre>
-<div class="block">Displayed number of charges.</div>
+<div class="block">Displayed number of charges.  Null if unknown.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/IItem.html#isCharged()"><code>isCharged()</code></a></dd></dl>
 </li>
 </ul>
 <a name="recharges()">
@@ -306,7 +359,8 @@
 <li class="blockList">
 <h4>recharges</h4>
 <pre>java.lang.Long&nbsp;recharges()</pre>
-<div class="block">Displayed number of recharges.</div>
+<div class="block">Displayed number of recharges.  Null if unknown.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/IItem.html#isRecharged()"><code>isRecharged()</code></a></dd></dl>
 </li>
 </ul>
 <a name="isCharged()">
@@ -367,19 +421,103 @@
 <li class="blockList">
 <h4>type</h4>
 <pre><a href="../../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&nbsp;type()</pre>
-<div class="block">Returns the item type if it can be determined <b>without the current game
- context (discoveries)</b>.</div>
+<div class="block">Returns properties of the item that can be determined <b>without the
+ current game context (discoveries)</b>.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/IGame.html#identifyType(bothack.bot.items.IItem)"><code>IGame.identifyType(IItem)</code></a></dd></dl>
+</li>
+</ul>
+<a name="possibilities()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>possibilities</h4>
+<pre>java.util.List&lt;<a href="../../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&gt;&nbsp;possibilities()</pre>
+<div class="block">Returns the list of all possible item types for the item <b>without
+ considering the current game context (discoveries)</b>.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/IGame.html#identifyPossibilities(bothack.bot.items.IItem)"><code>IGame.identifyPossibilities(IItem)</code></a></dd></dl>
 </li>
 </ul>
 <a name="cost()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>cost</h4>
 <pre>java.lang.Long&nbsp;cost()</pre>
-<div class="block">Price demanded at a shop.</div>
+<div class="block">Price demanded at a shop.  Null if none.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/IItemType.html#price()"><code>IItemType.price()</code></a></dd></dl>
+</li>
+</ul>
+<a name="isInUse()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isInUse</h4>
+<pre>java.lang.Boolean&nbsp;isInUse()</pre>
+<div class="block">True if the item is worn or wielded.</div>
+</li>
+</ul>
+<a name="isWielded()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isWielded</h4>
+<pre>java.lang.Boolean&nbsp;isWielded()</pre>
+<div class="block">True if the item wielded by the player.</div>
+</li>
+</ul>
+<a name="isWorn()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isWorn</h4>
+<pre>java.lang.Boolean&nbsp;isWorn()</pre>
+<div class="block">True if the item worn by the player.</div>
+</li>
+</ul>
+<a name="isContainer()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isContainer</h4>
+<pre>java.lang.Boolean&nbsp;isContainer()</pre>
+<div class="block">True if the item may contain other items.</div>
+</li>
+</ul>
+<a name="knowContents()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>knowContents</h4>
+<pre>java.lang.Boolean&nbsp;knowContents()</pre>
+<div class="block">False if the item is a container with unknown contents.</div>
+</li>
+</ul>
+<a name="contents()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>contents</h4>
+<pre>java.util.List&lt;<a href="../../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;contents()</pre>
+<div class="block">If the item is a container returns the contents.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../../bothack/bot/items/IItem.html#isContainer()"><code>isContainer()</code></a></dd></dl>
+</li>
+</ul>
+<a name="isCorpse()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isCorpse</h4>
+<pre>java.lang.Boolean&nbsp;isCorpse()</pre>
+<div class="block">True if the item is a monster's corpse.</div>
 </li>
 </ul>
 </li>
