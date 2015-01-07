@@ -629,7 +629,7 @@
            (lit-mines? game level))))
 
 (defn use-light [game level]
-  (or (if-let [[slot item] (have game (every-pred :lit light? game))]
+  (or (if-let [[slot item] (have game (every-pred :lit light?))]
         (if (and (not (could-be? game "magic lamp" item))
                  (not (want-light? game level)))
           (with-reason "saving energy" (->Apply slot))))
