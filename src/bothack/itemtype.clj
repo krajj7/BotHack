@@ -8,13 +8,34 @@
   "{keyword => some ItemType map factory function}"
   identity)
 
+(declare name->item)
+
+(def itemtype-impl
+  '[(name [i] (:name i))
+    (baseType [i] (name->item (:base i)))
+    (glyph [i] (:glyph i))
+    (price [i] (:price i))
+    (kind [i] (kw->enum bothack.bot.items.ItemKind (typekw i)))
+    (weight [i] (:weight i))
+    (appearances [i] (:appearances i))
+    (isStackable [i] (boolean (:stackable i)))
+    (isArtifact [i] (boolean (:base i)))
+    (isSafe [i] (boolean (:safe i)))
+    (isTwohanded [i] (= 2 (:hands i)))
+    (AC [i] (:ac i))
+    (MC [i] (:mc i))
+    (subtype [i] (kw->enum bothack.bot.items.ItemSubtype (:subtype i)))
+    (monster [i] (:monster i))
+    (nutrition [i] (:nutrition i))])
+
 (defmacro ^:private defitemtype
   "Defines a record for the item type and a var with a list of all possible items of the type according to the data map with defaults filled in"
   ([recname varname recfields datamap]
    `(defitemtype ~recname ~varname ~recfields ~datamap {}))
   ([recname varname recfields datamap defaults]
    `(do (defrecord ~recname ~recfields
-          bothack.util.Type (typekw [~'_] ~(str->kw recname)))
+          bothack.util.Type (typekw [~'_] ~(str->kw recname))
+          bothack.bot.items.IItemType ~@itemtype-impl)
         (defmethod kw->itemtype
           ~(keyword (string/replace varname #"s$" "")) [~'_]
           ~(symbol (str "map->" recname)))

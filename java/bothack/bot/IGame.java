@@ -42,10 +42,13 @@ public interface IGame {
 	Long actionTurn();
 	/** Return the current game score. */
 	Long score();
-	/** Returns IItemType with properties of the item that can be determined
-	* considering the current game discoveries.  If the item can be unambiguously
-	* identified this will return the full IItemType.
-	* @see IGame#knowIdentity(IItem) */
+	/** 
+	 * Returns IItemType with properties of the item that can be determined
+	 * considering the current game discoveries.  Undeterminable properties will be
+	 * null.  If the item can be unambiguously identified will return the full
+	 * IItemType.
+	 * @see IGame#knowIdentity(IItem) 
+	 */
 	IItemType identifyType(IItem item);
 	/**
 	 * Returns the list of possible item types for the item considering the

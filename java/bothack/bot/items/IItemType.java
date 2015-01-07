@@ -32,10 +32,10 @@ public interface IItemType {
 	/** True if the item requires both hands to wield. */
 	Boolean isTwohanded();
 	/** How much the item lowers your AC (lower AC = better). */
-	Long getAC();
+	Long AC();
 	/** Magic cancellation – how well the item protects against magical attack
 	 * effects */
-	Long getMC();
+	Long MC();
 	/** Armor slot or item category. */
 	ItemSubtype subtype();
 	/**
