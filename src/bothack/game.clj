@@ -276,6 +276,8 @@
         (reset! portal nil)
         (reset! levelport nil)
         (swap! game filter-visible-uniques)
+        (when (sink? (at-player @game))
+          (swap! game add-curlvl-tag :sink))
         (when (altar? (at-player @game))
           (swap! game add-curlvl-tag :altar)
           (swap! game mark-temple)))

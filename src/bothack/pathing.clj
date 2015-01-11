@@ -811,7 +811,8 @@
                                      :stairs-down) (descend game)])
                 step (or (if (and (= :stairs-down stairs)
                                   (or (:medusa (:tags level))
-                                      (below-medusa? game)))
+                                      (below-medusa? game))
+                                  (not (below-castle? game)))
                            (with-reason "dive" (go-down game level)))
                          (with-reason "looking for the" stairs
                            (seek game #(and (has-feature? % stairs)

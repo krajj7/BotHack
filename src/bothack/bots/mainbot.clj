@@ -195,11 +195,11 @@
             (explore-level game :main :castle))
           (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
                    (have-dsm game))
-            (explore game :quest))
-          (explore game :main :castle :exclusive)
-          (explore game :vlad)
-          (explore game :main)
-          (explore game :wiztower)
+            (explore-level game :quest :end))
+          ;(explore game :main :castle :exclusive)
+          (explore-level game :vlad :end)
+          (explore-level game :main :end)
+          (explore-level game :wiztower :end)
           (invocation game)))))
 
 (defn endgame? [game]
@@ -1390,7 +1390,7 @@
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    (and (get-level game :main "Dlvl:31") (not (have-candles? game)))
+    (not (have-candles? game))
     "7 blessed wax candles"
     :else "3 blessed scrolls of enchant armor"))
 
