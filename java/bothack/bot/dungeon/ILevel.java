@@ -28,4 +28,7 @@ public interface ILevel {
 	Boolean hasShop();
 	/** True if the level floor can be dug through (until proven otherwise). */
 	Boolean hasDiggableFloor();
+	/** True if the level has no reachable explorable tiles (or had none
+	 * when it was left). */
+	Boolean isExplored();
 }

@@ -31,7 +31,7 @@
        (remove #(= 1 (count (val %))))
        (into {})))
 
-(def names (into #{} (apply concat (vals item-names))))
+(def names (set (apply concat (vals item-names))))
 
 (def ^:private cost-data
   (for [cost #_[60 300] (range 501)

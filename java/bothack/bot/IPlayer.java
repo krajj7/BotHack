@@ -1,7 +1,6 @@
 package bothack.bot;
 
 import java.util.Map;
-import java.util.Set;
 
 import bothack.actions.Actions;
 import bothack.actions.ActionsComplex;
@@ -108,6 +107,8 @@ public interface IPlayer extends IPosition {
 	Long getStat(Stat stat);
 	/** The displayed value of strenght – may be something like 18/10 or 18/** */
 	Long getDisplayedStr();
+	/** How many times the player bought divine protection. */
+	Long protection();
 	//Role role();
 	//Race race();
 }

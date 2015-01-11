@@ -484,6 +484,9 @@
               (swap! game remove-intrinsic :speed)
               nil))))))
 
+(defn- optset [opts]
+  (->> opts (map #(.getKeyword %)) set))
+
 (defrecord Game
   [frame
    player
@@ -500,17 +503,44 @@
    turn* ; internal clock - increments per each action (unlike game turns)
    score]
   bothack.bot.IGame
-  (currentLevel [game] (curlvl game))
   (frame [game] (:frame game))
   (player [game] (:player game))
   (canPray [game] (boolean (can-pray? game)))
   (canEngrave [game] (boolean (can-engrave? game)))
-  (haveLevitationItemOn [game] (have-levi-on game))
+  (genocided [game] (:genocided game))
+  (currentLevel [game] (curlvl game))
   (weightSum [game] (weight-sum game))
   (gold [game] (gold game))
   (goldAvailable [game] (available-gold game))
-  (genocided [game] (:genocided game))
-  (knowIdentity [game item] (know-id? game item)))
+  (isCorpseFresh [game pos corpse] (fresh-corpse? game pos corpse))
+  (turn [game] (:turn game))
+  (actionTurn [game] (:turn* game))
+  (score [game] (:score game))
+  (identifyType [game i] (item-id game i))
+  (identifyPossibilities [game i] (possible-ids game i))
+  (knowIdentity [game item] (boolean (know-id? game item)))
+  (wantPriceId [game item] (boolean (price-id? game item)))
+  (wasTried [game item] (boolean (tried? game item)))
+  (previousGamestate [game] (:last-state game))
+  (isInGehennom [game] (boolean (in-gehennom? game)))
+  (isBelowCastle [game] (boolean (below-castle? game)))
+  (isBelowMedusa [game] (boolean (below-medusa? game)))
+  (^java.util.Map$Entry have [^bothack.bot.IGame game
+                              ^bothack.bot.IPredicate sel
+                              ^"[Lbothack.bot.HaveOption;" opts]
+    (have game #(.apply sel %) (optset opts)))
+  (^java.util.Map$Entry have [^bothack.bot.IGame game
+                              ^String sel
+                              ^"[Lbothack.bot.HaveOption;" opts]
+    (have game sel (optset opts)))
+  (^java.util.List haveAll [^bothack.bot.IGame game
+                            ^bothack.bot.IPredicate sel
+                            ^"[Lbothack.bot.HaveOption;" opts]
+    (have-all game #(.apply sel %) (optset opts)))
+  (^java.util.List haveAll [^bothack.bot.IGame game
+                            ^String sel
+                            ^"[Lbothack.bot.HaveOption;" opts]
+    (have-all game sel (optset opts))))
 
 (defmethod print-method Game [game w]
   (.write w (str "#bothack.game.Game"

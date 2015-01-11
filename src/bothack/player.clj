@@ -206,10 +206,12 @@
                                                  (:trapped player))
                                             (cursed-blockers game slot))
                                         (not (:in-use item))))
-                              (not (and (false? (:can-use opts))
+                              (not (and (or (false? (:can-use opts))
+                                            (:no-can-use opts))
                                         (or (:in-use item)
                                             (not (cursed-blockers game slot)))))
-                              (not (and (false? (:can-remove opts))
+                              (not (and (or (false? (:can-remove opts))
+                                            (:no-can-remove opts))
                                         (or (not (:in-use item))
                                             (not (cursed-blockers game slot)))))
                               (not (and (:can-remove opts)
@@ -554,6 +556,7 @@
   (carryingCapacity [player] (capacity player))
   (getStat [player stat] ((:stats player) (.getKeyword stat)))
   (wielding [player] (wielding player))
+  (protection [player] (:protection player))
   (getDisplayedStr [player] (:str* (:stats player))))
 
 (defn new-player []

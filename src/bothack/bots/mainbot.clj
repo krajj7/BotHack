@@ -298,9 +298,6 @@
 
 (def desired-singular (set (apply concat desired-items)))
 
-(defn entering-shop? [game]
-  (some->> (:last-path game) firstv (at-curlvl game) shop?))
-
 (defn desired-food [game]
   (let [min-nw (if (< 2000 (nutrition-sum game))
                  (nw-ratio-avg game)

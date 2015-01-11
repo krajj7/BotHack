@@ -172,7 +172,7 @@
     [(if (:leg-hurt player) 30 6) (kick game dir)]))
 
 (defn can-unlock? [game]
-  true) ; not poly'd...
+  (has-hands? (:player game)))
 
 (defn- enter-shop [game]
   ; TODO stash rather than drop pick if we have a bag
@@ -185,11 +185,6 @@
       (if-let [[slot _] (have game "cloak of invisibility" #{:can-remove
                                                              :worn})]
         [2 (with-reason "taking off invis to enter shop" (->TakeOff slot))])))
-
-(defn blocked?
-  "Stubborn peacefuls"
-  [tile]
-  (> (or (:blocked tile) 0) 12))
 
 (defn pass-monster [game level to-tile dir monster opts]
   (if (or (:peaceful monster)
@@ -294,7 +289,11 @@
 (defrecord Path
   [step ; next Action to perform to move along path
    path ; vector of remaining positions
-   target]) ; position of target
+   target] ; position of target
+  bothack.actions.Navigation$IPath
+  (step [p] (:step p))
+  (path [p] (:path p))
+  (target [p] (:target p)))
 
 (defn autonavigable? [game level opts [from to]]
   (and (not (shop? from))
@@ -345,6 +344,12 @@
                            (path-step game level from move-fn path opts))]
           (->Path step path to)))
       (->Path nil [] to))))
+
+(defn navopts
+  ([s] (navopts s nil))
+  ([s steps]
+   (cond-> (zipmap (map #(.getKeyword %) s) (repeat true))
+     steps (assoc :max-steps steps :max-delta steps))))
 
 (defn navigate
   "Return shortest Path for given target position or predicate (a set of positions or any fn that takes a tile and returns boolean), will use A* or Dijkstra's algorithm as appropriate.
@@ -772,7 +777,7 @@
 
 (defn seek
   "Like explore but also searches and always tries to return an action until the target is found
-   options: same as explore and the following:
+   options: same as navigate and the following:
      :no-explore - directly skips to searching"
   ([game smth]
    (seek game smth {}))
@@ -1179,3 +1184,7 @@
 (defn seek-feature [game feature]
   (with-reason "seeking feature" feature
     (seek-tile game #(has-feature? % feature))))
+
+(defn entering-shop? [game]
+  (some->> (:last-path game) firstv (at-curlvl game) shop?))
+

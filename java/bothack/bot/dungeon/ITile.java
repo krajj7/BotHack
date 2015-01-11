@@ -69,4 +69,7 @@ public interface ITile extends IPosition,IAppearance {
 	Alignment altarAlignment();
 	/** True for the vibrating square. */
 	Boolean isVibrating();
+	/** True for tiles where navigation failed many times due to a stubborn
+	 * peaceful monster. */
+	Boolean isBlocked();
 }

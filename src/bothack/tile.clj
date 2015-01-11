@@ -319,6 +319,11 @@
 (defn unexplored? [tile]
   (and (not (boulder? tile)) (unknown? tile)))
 
+(defn blocked?
+  "Stubborn peacefuls"
+  [tile]
+  (> (or (:blocked tile) 0) 12))
+
 (defrecord Tile
   [x y
    glyph
@@ -365,6 +370,7 @@
   (sinkGaveRing [tile] (some? (:ring (:tags tile))))
   (sinkGaveFoocubus [tile] (some? (:foocubus (:tags tile))))
   (sinkGavePudding [tile] (some? (:pudding (:tags tile))))
+  (isBlocked [tile] (boolean (blocked? tile)))
   (leadsTo [tile] (kw->enum bothack.bot.dungeon.Branch (:branch-id tile)))
   (altarAlignment [tile] (kw->enum bothack.bot.Alignment (:alignment tile))))
 

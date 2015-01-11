@@ -4,7 +4,7 @@ package bothack.bot;
  * Immutable representation of a position on the screen.
  * @see bothack.bot.Position#create(Long, Long) 
  */
-public interface IPosition {
+public interface IPosition extends clojure.lang.IPersistentMap {
 	/** X coordinate on the screen – 0 to 79 */
 	Long x();
 	/** Y coordinate on the screen – 1 to 21 */
