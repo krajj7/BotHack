@@ -1,8 +1,7 @@
-(defproject BotHack "0.6.0-SNAPSHOT"
+(defproject bothack "0.6.0-SNAPSHOT"
   :description "BotHack – A NetHack Bot Framework"
   :url "https://github.com/krajj7/BotHack"
   :license {:name "GPLv2"}
-  :repositories {"local" "file:repo"}
   :java-source-paths ["jta26/de/mud" "java"]
   :javac-options ["-target" "1.7" "-source" "1.7"]
   :plugins [[lein-javadoc "0.1.1"]]
