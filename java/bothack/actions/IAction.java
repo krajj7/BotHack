@@ -3,7 +3,7 @@ package bothack.actions;
 import bothack.bot.IBotHack;
 
 /** 
- * Interface representing a primitive BotHack action.
+ * Representation of a primitive BotHack action.
  * This is not meant to be implemented by user code.
  * @see Actions
  */

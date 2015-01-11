@@ -1,4 +1,4 @@
 /**
- * Representation of items and item types.
+ * Representations of items and item types.
  */
 package bothack.bot.items;

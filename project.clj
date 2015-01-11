@@ -12,6 +12,7 @@
                                  "bothack.prompts"]
                  :additional-args ["-overview" "doc/overview.html"
                                    "-docencoding" "utf-8"
+                                   "-noqualifier" "all"
                                    "-charset" "utf-8"
                                    "-windowtitle" "BotHack JavaDoc"
                                    "-encoding" "utf-8"

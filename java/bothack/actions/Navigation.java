@@ -14,12 +14,12 @@ import clojure.lang.IFn;
 /** 
  * Utility functions for navigation and dungeon exploration.
  * <p>Note that navigation is one of the most computationally expensive functions
- * the bot will likely use.  You can limit the cost by specifying a low maxDistance.
+ * the bot will likely use.  You can limit the search by specifying a low maxSteps.
  * When using the IPredicate function variants, efficient implementation of the
  * predicate is crucial.
  * </p><p>
  * By default the functions will automatically make use of safe items like a 
- * pick-axe, ring of levitation, wands and scrolls of teleportation (when stuck).
+ * pick-axe or rings of levitation.
  * Furthermore:
  * <ul>
  * <li> shorter paths will be dug through walls and rock when possible
@@ -30,30 +30,35 @@ import clojure.lang.IFn;
  * <li> traps will be escaped automatically, bot may wait for legs to heal
  * <li> levitation items will be used to cross water, ice, lava, trapdoors and holes, also on the planes of air and water
  * </ul>
- * Most of these features can be disabled using some {@link NavOption} when using Navigation#navigate.
+ * Most of these features can be disabled using some {@link NavOption} when using {@link Navigation#navigate}.
  * Exploration and seeking will however always use the listed behaviors.
  * </p><p>
  * When seeking/searching, the bot will generally:
+ * <ul>
  * <li> search dead ends and towards blanks on the map, eventually also corridors (where appropriate)
  * <li> push boulders around
  * <li> attempt to dig downwards or teleport when stuck
+ * </ul>
  * </p><p>
- * Navigation behaves poorly in unsolved sokoban levels and may get the bot stuck.
+ * Seaching in sokoban levels is not recommended and may get the bot stuck.
  * You should use {@link ActionsComplex#doSokoban(IGame)} in sokoban.
  * </p><p>
  * All level navigation functions automatically choose A* or Dijkstra's algorithm
- * depending on the number of targets.</p>*/
+ * depending on the number of targets.
+ * The step cost function currently can't be influenced by the user.
+ * </p>
+ */
 public final class Navigation {
 	private Navigation() {};
 	
 	/** Representation of a navigation result. */
 	public interface IPath {
-		/** Returns the next action that will lead towards reaching the target. */
+		/** The next action that will lead towards reaching the target. */
 		IAction step();
-		/** Returns the list of positions that are going to be stepped on along the
+		/** The list of positions that are going to be stepped on along the
 		 * way towards target. */
 		List<IPosition> path();
-		/** Returns the target tile position.
+		/** The target tile position.
 		 * When using {@link NavOption#ADJACENT} this is not the adjacent tile but
 		 * the matching target itself. */
 		IPosition target();
@@ -63,101 +68,153 @@ public final class Navigation {
 	private static final IFn SEEK = Clojure.var("bothack.pathing", "seek");
 	private static final IFn NAVOPTS = Clojure.var("bothack.pathing", "navopts");
 	
-	/** Makes IPredicate callable natively from clojure (by implementing IFn via AFn) */
-	private final class Predicate extends clojure.lang.AFn {
-		final IPredicate p;
-
-		Predicate(IPredicate p) {
-			this.p = p;
-		}
-		
-		@Override
-		public Object invoke(Object x) {
-			return p.apply(x);
-		}
-	}
-	
 	static {
 		IFn require = Clojure.var("clojure.core", "require");
 		require.invoke(Clojure.read("bothack.pathing"));
 	}
 
-	/** Intralevel navigation. */
-	IPath navigate(IGame game, IPosition target, NavOption... opts) {
+	/**
+	 * Returns the shortest path to the given target and an action to perform to move along it.
+	 * Returns null if the target is not reachable.
+	 * @param opts Additional modifiers
+	 */
+	public static IPath navigate(IGame game, IPosition target, NavOption... opts) {
 		return (IPath) NAVIGATE.invoke(game, target, NAVOPTS.invoke(opts));
 	}
 
-	IPath navigate(IGame game, IPosition target, Long maxDistance, NavOption... opts) {
-		return (IPath) NAVIGATE.invoke(game, target, NAVOPTS.invoke(opts, maxDistance));
+	/**
+	 * Returns the shortest path to the given target and an action to perform to move along it.
+	 * Returns null if the target is not reachable.
+	 * @param maxSteps Maximum number of steps
+	 * @param opts Additional modifiers
+	 */
+	public static IPath navigate(IGame game, IPosition target, Long maxSteps, NavOption... opts) {
+		return (IPath) NAVIGATE.invoke(game, target, NAVOPTS.invoke(opts, maxSteps));
 	}
 
-	IPath navigate(IGame game, IPredicate<ITile> target, NavOption... opts) {
+	/**
+	 * Returns the shortest path to a matching target and an action to perform to move along it.
+	 * Returns null if no target is reachable.
+	 * @param opts Additional modifiers
+	 */
+	public static IPath navigate(IGame game, IPredicate<ITile> target, NavOption... opts) {
 		return (IPath) NAVIGATE.invoke(game, new Predicate(target), NAVOPTS.invoke(opts));
 	}
 
-	IPath navigate(IGame game, IPredicate<ITile> target, Long maxDistance, NavOption... opts) {
-		return (IPath) NAVIGATE.invoke(game, new Predicate(target), NAVOPTS.invoke(opts, maxDistance));
+	/**
+	 * Returns the shortest path to a matching target and an action to perform to move along it.
+	 * Returns null if no target is reachable.
+	 * @param maxSteps Maximum number of steps
+	 * @param opts Additional modifiers
+	 */
+	public static IPath navigate(IGame game, IPredicate<ITile> target, Long maxSteps, NavOption... opts) {
+		return (IPath) NAVIGATE.invoke(game, new Predicate(target), NAVOPTS.invoke(opts, maxSteps));
 	}
 
-	IAction seek(IGame game, IPosition target, Long maxDistance, NavOption... opts) {
-		return (IAction) SEEK.invoke(game, target, NAVOPTS.invoke(opts, maxDistance));
+	/**
+	 * Returns an action to look for the specified tile on the current level or
+	 * null if already standing at a matching tile.  You should only use this to
+	 * look for tiles that you <i>know</i> are present on the current level and
+	 * reachable, otherwise if you loop this the bot will get stuck searching endlessly.
+	 * @see Navigation#navigate(IGame, IPosition, NavOption...)
+	 */
+	public static IAction seek(IGame game, IPosition target) {
+		return (IAction) SEEK.invoke(game, target);
 	}
 
-	IAction seek(IGame game, IPredicate<ITile> target, Long maxDistance, NavOption... opts) {
-		return (IAction) SEEK.invoke(game, new Predicate(target), NAVOPTS.invoke(opts, maxDistance));
-	}
-
-	IAction seek(IGame game, IPosition target, NavOption... opts) {
-		return (IAction) SEEK.invoke(game, target, NAVOPTS.invoke(opts));
-	}
-
-	IAction seek(IGame game, IPredicate<ITile> target, NavOption... opts) {
-		return (IAction) SEEK.invoke(game, new Predicate(target), NAVOPTS.invoke(opts));
+	/**
+	 * Returns an action to look for the specified tile on the current level or
+	 * null if already standing at a matching tile.  You should only use this to
+	 * look for tiles that you <i>know</i> are present on the current level and
+	 * reachable, otherwise if you loop this the bot will get stuck searching endlessly.
+	 * @see Navigation#navigate(IGame, IPosition, NavOption...)
+	 */
+	public static IAction seek(IGame game, IPredicate<ITile> target) {
+		return (IAction) SEEK.invoke(game, new Predicate(target));
 	}
 	
-	IAction seekBranch(IGame game, Branch branch) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-branch").invoke(game, branch);
+	/** Returns an action to look for the specified branch or null if already there. */
+	public static IAction seekBranch(IGame game, Branch branch) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-branch").invoke(game, branch.getKeyword());
 	}
 	
-	IAction seekLevel(IGame game, Branch branch, String dlvl) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-level").invoke(game, branch, dlvl);
+	/** Returns an action to go to the specified level or null if already there. */
+	public static IAction seekLevel(IGame game, Branch branch, String dlvl) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-level").invoke(game, branch.getKeyword(), dlvl);
 	}
 	
-	IAction seekLevel(IGame game, Branch branch, LevelTag tag) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-level").invoke(game, branch, tag);
+	/** Returns an action to go to the specified level or null if already there. */
+	public static IAction seekLevel(IGame game, Branch branch, LevelTag tag) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-level").invoke(game, branch.getKeyword(), tag.getKeyword());
 	}
 
-	IAction exploreLevel(IGame game, Branch branch, String dlvl) {
-		return (IAction) Clojure.var("bothack.pathing", "explore-level").invoke(game, branch, dlvl);
+	/** Unless the specified level already seems fully explored, returns an
+	 * action to go to that level or explore it. */
+	public static IAction exploreLevel(IGame game, Branch branch, String dlvl) {
+		return (IAction) Clojure.var("bothack.pathing", "explore-level").invoke(game, branch.getKeyword(), dlvl);
 	}
 
-	IAction exploreLevel(IGame game, Branch branch, LevelTag tag) {
-		return (IAction) Clojure.var("bothack.pathing", "explore-level").invoke(game, branch, tag);
+	/** Unless the specified level already seems fully explored, returns an
+	 * action to go to that level or explore it. */
+	public static IAction exploreLevel(IGame game, Branch branch, LevelTag tag) {
+		return (IAction) Clojure.var("bothack.pathing", "explore-level").invoke(game, branch.getKeyword(), tag.getKeyword());
 	}
 	
-	IAction exploreCurrentLevel(IGame game) {
+	/**
+	 * Returns an action to explore the current level and items or null if it seems fully explored.
+	 * @see Navigation#searchCurrentLevel(IGame)
+	 */
+	public static IAction exploreCurrentLevel(IGame game) {
 		return (IAction) Clojure.var("bothack.pathing", "explore").invoke(game);
 	}
 	
-	IAction searchCurrentLevel(IGame game) {
+	/**
+	 * Returns an action to explore or search the current level repeatedly.
+ * <ul>
+ * <li> search dead ends and towards blanks on the map, eventually also corridors (where appropriate)
+ * <li> push boulders around
+ * <li> attempt to dig downwards or teleport when stuck
+ * </ul>
+ * If all tiles of the level become extremely thoroughly searched an IllegalStateException will
+ * be thrown as the bot is likely stuck.
+	 */
+	public static IAction searchCurrentLevelRepeatedly(IGame game) {
 		return (IAction) Clojure.var("bothack.pathing", "search-level").invoke(game);
 	}
-	
-	IAction visitBranch(IGame game, Branch branch) {
-		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch);
+
+	/**
+	 * Returns an action to explore or search the current level or null if the first
+	 * round of searching is already done.
+ * <ul>
+ * <li> search dead ends and towards blanks on the map, eventually also corridors (where appropriate)
+ * <li> push boulders around
+ * <li> attempt to dig downwards or teleport when stuck
+ * </ul>
+ * @see Navigation#searchCurrentLevelRepeatedly(IGame)
+	 */
+	public static IAction searchCurrentLevel(IGame game) {
+		return (IAction) Clojure.var("bothack.pathing", "search-level").invoke(game, 1L);
 	}
 	
-	IAction visitLevel(IGame game, Branch branch, String dlvl) {
-		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch, dlvl);
+	/** If the specified branch has never been visited, returns the action to navigate to it
+	 * and possibly explore it until identified. */
+	public static IAction visitBranch(IGame game, Branch branch) {
+		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch.getKeyword());
+	}
+	
+	/** If the specified level has never been visited, returns the action to navigate to it. */
+	public static IAction visitLevel(IGame game, Branch branch, String dlvl) {
+		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch.getKeyword(), dlvl);
 	}
 
-	IAction visitLevel(IGame game, Branch branch, LevelTag tag) {
-		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch, tag);
+	/** If the specified level has never been visited, returns the action to navigate to it. */
+	public static IAction visitLevel(IGame game, Branch branch, LevelTag tag) {
+		return (IAction) Clojure.var("bothack.pathing", "visit").invoke(game, branch.getKeyword(), tag.getKeyword());
 	}
 
-	/** Return Dlvl of the main branch containing entrance to branch, if static or already visited */
-	IAction branchEntrance(IGame game, Branch branch) {
-		return (IAction) Clojure.var("bothack.pathing", "branch-entry").invoke(game, branch);
+	/** Return Dlvl of {@link Branch#MAIN} containing the entrance to branch, if static or already visited */
+	public static IAction branchEntrance(IGame game, Branch branch) {
+		return (IAction) Clojure.var("bothack.pathing", "branch-entry").invoke(game, branch.getKeyword());
 	}
 	
 	/** 
@@ -166,17 +223,17 @@ public final class Navigation {
 	 * otherwise assumes all levels are passable and unit distance.  Only runs tile-based navigation on the current level.
 	 * @param maxDelta limits the number of traversed levels
 	 */
-	IAction seekInterlevel(IGame game, IPredicate<ITile> target, Long maxDelta) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {NavOption.UP}, maxDelta));
+	public static IAction seekInterlevel(IGame game, IPredicate<ITile> target, Long maxDelta) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {}, maxDelta));
 	}
 	
 	/** 
 	 * Interlevel navigation to the nearest matching tile.
-	 * Will not traverse the castle or medusa's if the player is lacking a safe levitation source.
-	 * Otherwise assumes all levels are passable and unit distance.  
+	 * Will not attempt to traverse the castle or medusa's if the player is lacking a safe levitation source.
+	 * Otherwise assumes all levels are passable and uniform distance (cost).  
 	 * Only runs tile-based navigation on the current level.
 	 */
-	IAction seekInterlevel(IGame game, IPredicate<ITile> target) {
+	public static IAction seekInterlevel(IGame game, IPredicate<ITile> target) {
 		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target));
 	}
 
@@ -184,8 +241,8 @@ public final class Navigation {
 	 * Like {@link Navigation#seekInterlevel(IGame, IPredicate)} but will only change levels
 	 * upwards and avoid subbranches.
 	 */
-	IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), Clojure.read("#{:up}"));
+	public static IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {NavOption.UP}));
 	}
 
 	/**
@@ -193,18 +250,18 @@ public final class Navigation {
 	 * upwards and avoid subbranches.
 	 * @param maxDelta limits the number of traversed levels
 	 */
-	IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target, Long maxDelta) {
-		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), Clojure.read("{:up true :max-delta "+maxDelta+"}"));
+	public static IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target, Long maxDelta) {
+		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {NavOption.UP}, maxDelta));
 	}
 
 	/** Returns the intended path of the last performed action – if it was
 	 * generated by some of the methods of this class. */
-	List<IPosition> lastPath(IGame game) {
-		return (List<IPosition>) clojure.lang.Keyword.intern(null, ":last-path").invoke(game);
+	public static List<IPosition> lastPath(IGame game) {
+		return (List<IPosition>) clojure.lang.Keyword.intern(null, "last-path").invoke(game);
 	}
 
 	/** Returns true if the player is just about to enter a shop and should not pick up pickaxes. */
-	Boolean isEnteringShop(IGame game) {
+	public static Boolean isEnteringShop(IGame game) {
 		return Clojure.var("bothack.pathing", "entering-shop?").invoke(game) != null;
 	}
 }

@@ -1,8 +1,10 @@
 package bothack.javabots.javabot;
 
-import bothack.actions.*;
-import bothack.bot.*;
-import bothack.prompts.*;
+import bothack.actions.Actions;
+import bothack.actions.IAction;
+import bothack.bot.Hunger;
+import bothack.bot.IGame;
+import bothack.prompts.IActionHandler;
 
 class StarvationHandler implements IActionHandler {
 	@Override
