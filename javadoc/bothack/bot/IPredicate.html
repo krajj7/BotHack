@@ -3,13 +3,13 @@
 <html lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html" charset="utf-8">
-<title>IAction (BotHack JavaDoc)</title>
+<title>IPredicate (BotHack JavaDoc)</title>
 <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style">
 </head>
 <body>
 <script type="text/javascript"><!--
     if (location.href.indexOf('is-external=true') == -1) {
-        parent.document.title="IAction (BotHack JavaDoc)";
+        parent.document.title="IPredicate (BotHack JavaDoc)";
     }
 //-->
 </script>
@@ -34,12 +34,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/actions/ActionsComplex.html" title="class in bothack.actions"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/actions/Navigation.html" title="class in bothack.actions"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/actions/IAction.html" target="_top">Frames</a></li>
-<li><a href="IAction.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IPredicate.html" target="_top">Frames</a></li>
+<li><a href="IPredicate.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_top">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>
@@ -77,8 +77,8 @@
 <!-- ========= END OF TOP NAVBAR ========= -->
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
-<div class="subTitle">bothack.actions</div>
-<h2 title="Interface IAction" class="title">Interface IAction</h2>
+<div class="subTitle">bothack.bot</div>
+<h2 title="Interface IPredicate" class="title">Interface IPredicate&lt;T&gt;</h2>
 </div>
 <div class="contentContainer">
 <div class="description">
@@ -86,10 +86,10 @@
 <li class="blockList">
 <hr>
 <br>
-<pre>public interface <span class="strong">IAction</span></pre>
-<div class="block">Interface representing a primitive BotHack action.
- This is not meant to be implemented by user code.</div>
-<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/Actions.html" title="class in bothack.actions"><code>Actions</code></a></dd></dl>
+<pre>public interface <span class="strong">IPredicate&lt;T&gt;</span></pre>
+<div class="block">Custom filter function.  Implement this for use with
+ <a href="../../bothack/bot/IGame.html#have(bothack.bot.IPredicate,%20bothack.bot.HaveOption...)"><code>IGame.have(bothack.bot.IPredicate&lt;bothack.bot.items.IItem&gt;, bothack.bot.HaveOption...)</code></a>,
+ <a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20bothack.actions.NavOption...)"><code>Navigation.navigate(bothack.bot.IGame, bothack.bot.IPosition, bothack.actions.NavOption...)</code></a>, <a href="../../bothack/actions/Navigation.html#seek(bothack.bot.IGame,%20bothack.bot.IPosition,%20java.lang.Long,%20bothack.actions.NavOption...)"><code>Navigation.seek(bothack.bot.IGame, bothack.bot.IPosition, java.lang.Long, bothack.actions.NavOption...)</code></a> etc.</div>
 </li>
 </ul>
 </div>
@@ -109,18 +109,8 @@
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.lang.Object</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/IAction.html#handler(bothack.bot.IBotHack)">handler</a></strong>(<a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a>&nbsp;bh)</code>
-<div class="block">Retuns null or an event/prompt handler that will be registered just
- before executing the action and deregistered when the next action is
- chosen.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/IAction.html#trigger()">trigger</a></strong>()</code>
-<div class="block">Returns the string to write to NetHack to trigger the action.</div>
-</td>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPredicate.html#apply(T)">apply</a></strong>(<a href="../../bothack/bot/IPredicate.html" title="type parameter in IPredicate">T</a>&nbsp;input)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -137,27 +127,15 @@
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="handler(bothack.bot.IBotHack)">
+<a name="apply(java.lang.Object)">
 <!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>handler</h4>
-<pre>java.lang.Object&nbsp;handler(<a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a>&nbsp;bh)</pre>
-<div class="block">Retuns null or an event/prompt handler that will be registered just
- before executing the action and deregistered when the next action is
- chosen.  May also modify the game state immediately without returning
- a handler.</div>
-</li>
-</ul>
-<a name="trigger()">
+</a><a name="apply(T)">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>trigger</h4>
-<pre>java.lang.String&nbsp;trigger()</pre>
-<div class="block">Returns the string to write to NetHack to trigger the action.</div>
+<h4>apply</h4>
+<pre>boolean&nbsp;apply(<a href="../../bothack/bot/IPredicate.html" title="type parameter in IPredicate">T</a>&nbsp;input)</pre>
 </li>
 </ul>
 </li>
@@ -185,12 +163,12 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../bothack/actions/ActionsComplex.html" title="class in bothack.actions"><span class="strong">Prev Class</span></a></li>
-<li><a href="../../bothack/actions/Navigation.html" title="class in bothack.actions"><span class="strong">Next Class</span></a></li>
+<li><a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot"><span class="strong">Prev Class</span></a></li>
+<li><a href="../../bothack/bot/Position.html" title="class in bothack.bot"><span class="strong">Next Class</span></a></li>
 </ul>
 <ul class="navList">
-<li><a href="../../index.html?bothack/actions/IAction.html" target="_top">Frames</a></li>
-<li><a href="IAction.html" target="_top">No Frames</a></li>
+<li><a href="../../index.html?bothack/bot/IPredicate.html" target="_top">Frames</a></li>
+<li><a href="IPredicate.html" target="_top">No Frames</a></li>
 </ul>
 <ul class="navList" id="allclasses_navbar_bottom">
 <li><a href="../../allclasses-noframe.html">All Classes</a></li>

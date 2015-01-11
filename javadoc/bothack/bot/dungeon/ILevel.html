@@ -149,18 +149,25 @@
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ILevel.html#isExplored()">isExplored</a></strong>()</code>
+<div class="block">True if the level has no reachable explorable tiles (or had none
+ when it was left).</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../../bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters">IMonster</a></code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ILevel.html#monsterAt(bothack.bot.IPosition)">monsterAt</a></strong>(<a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
 <div class="block">Returns the monster representation at the given position.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.util.Map&lt;<a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>,<a href="../../../bothack/bot/monsters/IMonster.html" title="interface in bothack.bot.monsters">IMonster</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ILevel.html#monsters()">monsters</a></strong>()</code>
 <div class="block">Returns the map of all monsters known or remembered to be on the level.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ILevel.html#neighbors(bothack.bot.IPosition)">neighbors</a></strong>(<a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
 <div class="block">Returns the list of tiles on the level adjacent to position pos.</div>
@@ -274,11 +281,22 @@
 <a name="hasDiggableFloor()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>hasDiggableFloor</h4>
 <pre>java.lang.Boolean&nbsp;hasDiggableFloor()</pre>
 <div class="block">True if the level floor can be dug through (until proven otherwise).</div>
+</li>
+</ul>
+<a name="isExplored()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isExplored</h4>
+<pre>java.lang.Boolean&nbsp;isExplored()</pre>
+<div class="block">True if the level has no reachable explorable tiles (or had none
+ when it was left).</div>
 </li>
 </ul>
 </li>

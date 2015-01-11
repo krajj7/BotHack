@@ -86,7 +86,7 @@
 <li class="blockList">
 <dl>
 <dt>All Superinterfaces:</dt>
-<dd><a href="../../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>, <a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></dd>
+<dd>clojure.lang.Associative, clojure.lang.Counted, <a href="../../../bothack/bot/IAppearance.html" title="interface in bothack.bot">IAppearance</a>, clojure.lang.ILookup, clojure.lang.IPersistentCollection, clojure.lang.IPersistentMap, <a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>, java.lang.Iterable, clojure.lang.Seqable</dd>
 </dl>
 <hr>
 <br>
@@ -170,71 +170,78 @@ extends <a href="../../../bothack/bot/IPosition.html" title="interface in bothac
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#isBlocked()">isBlocked</a></strong>()</code>
+<div class="block">True for tiles where navigation failed many times due to a stubborn
+ peaceful monster.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#isEngravable()">isEngravable</a></strong>()</code>
 <div class="block">True if it is possible to engrave on this tile by some means.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#isTrap()">isTrap</a></strong>()</code>
 <div class="block">True if the tile has a trap.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#isVibrating()">isVibrating</a></strong>()</code>
 <div class="block">True for the vibrating square.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;<a href="../../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#items()">items</a></strong>()</code>
 <div class="block">Items laying on the ground on the tile</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#lastWalkedTurn()">lastWalkedTurn</a></strong>()</code>
 <div class="block">Last game turn the tile has been stepped on.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../../bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon">Branch</a></code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#leadsTo()">leadsTo</a></strong>()</code>
 <div class="block">For visited stairs or portals - returns the target branch.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../../bothack/bot/dungeon/RoomType.html" title="enum in bothack.bot.dungeon">RoomType</a></code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#room()">room</a></strong>()</code>
 <div class="block">If the tile is in a recognized room returns the room type.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#searched()">searched</a></strong>()</code>
 <div class="block">Number of times the tile has been searched (est.)</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#sinkGaveFoocubus()">sinkGaveFoocubus</a></strong>()</code>
 <div class="block">For tiles with the SINK feature - true if kicking it already yielded a succubus or an incubus.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#sinkGavePudding()">sinkGavePudding</a></strong>()</code>
 <div class="block">For tiles with the SINK feature - true if kicking it already yielded a pudding.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#sinkGaveRing()">sinkGaveRing</a></strong>()</code>
 <div class="block">For tiles with the SINK feature - true if kicking it already yielded a ring.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../../bothack/bot/dungeon/ITile.html#wasSeen()">wasSeen</a></strong>()</code>
 <div class="block">True if the player was adjacent to the tile when not blind.</div>
@@ -247,6 +254,55 @@ extends <a href="../../../bothack/bot/IPosition.html" title="interface in bothac
 </a>
 <h3>Methods inherited from interface&nbsp;bothack.bot.<a href="../../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></h3>
 <code><a href="../../../bothack/bot/IPosition.html#x()">x</a>, <a href="../../../bothack/bot/IPosition.html#y()">y</a></code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentMap">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentMap</h3>
+<code>assoc, assocEx, without</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_java.lang.Iterable">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;java.lang.Iterable</h3>
+<code>iterator</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Associative">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.Associative</h3>
+<code>containsKey, entryAt</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.IPersistentCollection">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.IPersistentCollection</h3>
+<code>cons, count, empty, equiv</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Seqable">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.Seqable</h3>
+<code>seq</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.ILookup">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.ILookup</h3>
+<code>valAt, valAt</code></li>
+</ul>
+<ul class="blockList">
+<li class="blockList"><a name="methods_inherited_from_class_clojure.lang.Counted">
+<!--   -->
+</a>
+<h3>Methods inherited from interface&nbsp;clojure.lang.Counted</h3>
+<code>count</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods_inherited_from_class_bothack.bot.IAppearance">
@@ -476,11 +532,22 @@ extends <a href="../../../bothack/bot/IPosition.html" title="interface in bothac
 <a name="isVibrating()">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>isVibrating</h4>
 <pre>java.lang.Boolean&nbsp;isVibrating()</pre>
 <div class="block">True for the vibrating square.</div>
+</li>
+</ul>
+<a name="isBlocked()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isBlocked</h4>
+<pre>java.lang.Boolean&nbsp;isBlocked()</pre>
+<div class="block">True for tiles where navigation failed many times due to a stubborn
+ peaceful monster.</div>
 </li>
 </ul>
 </li>

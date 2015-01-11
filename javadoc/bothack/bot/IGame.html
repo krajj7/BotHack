@@ -156,6 +156,34 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#have(bothack.bot.IPredicate,%20bothack.bot.HaveOption...)">have</a></strong>(<a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;selector,
+    <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</code>
+<div class="block">Return an inventory slot-item pair of an item accepted by a custom predicate.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#have(java.lang.String,%20bothack.bot.HaveOption...)">have</a></strong>(java.lang.String&nbsp;itemName,
+    <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</code>
+<div class="block">Return an inventory slot-item pair of an item with the given name.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.List&lt;java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#haveAll(bothack.bot.IPredicate,%20bothack.bot.HaveOption...)">haveAll</a></strong>(<a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;selector,
+       <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</code>
+<div class="block">Return all inventory slot-item pairs of items accepted by a custom predicate.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&gt;</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#haveAll(java.lang.String,%20bothack.bot.HaveOption...)">haveAll</a></strong>(java.lang.String&nbsp;itemName,
+       <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</code>
+<div class="block">Return all inventory slot-item pairs of items with the given name.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#haveLevitationItemOn()">haveLevitationItemOn</a></strong>()</code>
 <div class="block">Returns the slot-item pair of a levitation item currently in use (or null)</div>
 </td>
@@ -176,6 +204,20 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isBelowCastle()">isBelowCastle</a></strong>()</code>
+<div class="block">True when the player is below the castle or on the right
+ side of the castle moat.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isBelowMedusa()">isBelowMedusa</a></strong>()</code>
+<div class="block">True when the player is below the medusa's level or on the right
+ side of the island.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem)">isCorpseFresh</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos,
              <a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</code>
 <div class="block">Corpse freshness tracker – checks if the corpse at given position is likely
@@ -184,15 +226,27 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#isInGehennom()">isInGehennom</a></strong>()</code>
+<div class="block">Gehennom including the valley excluding Vlad's – prayers will be redirected to Moloch</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#knowIdentity(bothack.bot.items.IItem)">knowIdentity</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
 <div class="block">Returns true if the IItemType for the item can be determined unambiguously
  from current discoveries (the item is identified for practical purposes).</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code><a href="../../bothack/bot/IPlayer.html" title="interface in bothack.bot">IPlayer</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#player()">player</a></strong>()</code>
 <div class="block">Returns the player representation.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#previousGamestate()">previousGamestate</a></strong>()</code>
+<div class="block">Returns the IGame snapshot from previous action turn.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -214,6 +268,12 @@
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.lang.Boolean</code></td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#wasTried(bothack.bot.items.IItem)">wasTried</a></strong>(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</code>
+<div class="block">True if trying to use the item may help with identification.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>java.lang.Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/IGame.html#weightSum()">weightSum</a></strong>()</code>
 <div class="block">Estimate of the sum of weight of all carried items.</div>
@@ -343,8 +403,9 @@
 <pre>java.lang.Boolean&nbsp;isCorpseFresh(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos,
                               <a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;corpse)</pre>
 <div class="block">Corpse freshness tracker – checks if the corpse at given position is likely
- good to eat. May return false even for safe corpses if there is any
+ good to eat. May return false even for fresh corpses if there is any
  uncertainity.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IPlayer.html#canEat(bothack.bot.items.IItem)"><code>IPlayer.canEat(IItem)</code></a></dd></dl>
 </li>
 </ul>
 <a name="turn()">
@@ -385,8 +446,9 @@
 <h4>identifyType</h4>
 <pre><a href="../../bothack/bot/items/IItemType.html" title="interface in bothack.bot.items">IItemType</a>&nbsp;identifyType(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
 <div class="block">Returns IItemType with properties of the item that can be determined
- considering the current game discoveries.  If the item can be unambiguously
- identified this will return the full IItemType.</div>
+ considering the current game discoveries.  Undeterminable properties will be
+ null.  If the item can be unambiguously identified will return the full
+ IItemType.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#knowIdentity(bothack.bot.items.IItem)"><code>knowIdentity(IItem)</code></a></dd></dl>
 </li>
 </ul>
@@ -415,11 +477,116 @@
 <a name="wantPriceId(bothack.bot.items.IItem)">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>wantPriceId</h4>
 <pre>java.lang.Boolean&nbsp;wantPriceId(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
 <div class="block">True if trying to buy or sell the item would help its identification.</div>
+</li>
+</ul>
+<a name="wasTried(bothack.bot.items.IItem)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>wasTried</h4>
+<pre>java.lang.Boolean&nbsp;wasTried(<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&nbsp;item)</pre>
+<div class="block">True if trying to use the item may help with identification.</div>
+<dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#makeUse(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.makeUse(IGame, Character)</code></a></dd></dl>
+</li>
+</ul>
+<a name="previousGamestate()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>previousGamestate</h4>
+<pre><a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;previousGamestate()</pre>
+<div class="block">Returns the IGame snapshot from previous action turn.</div>
+</li>
+</ul>
+<a name="have(bothack.bot.IPredicate, bothack.bot.HaveOption...)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>have</h4>
+<pre>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;have(<a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;selector,
+                                                  <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</pre>
+<div class="block">Return an inventory slot-item pair of an item accepted by a custom predicate.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>selector</code> - Custom-implemented filter</dd></dl>
+</li>
+</ul>
+<a name="have(java.lang.String, bothack.bot.HaveOption...)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>have</h4>
+<pre>java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;have(java.lang.String&nbsp;itemName,
+                                                  <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</pre>
+<div class="block">Return an inventory slot-item pair of an item with the given name.  
+ Tries to match both <a href="../../bothack/bot/items/IItem.html#name()"><code>IItem.name()</code></a> and the <a href="../../bothack/bot/items/IItemType.html#name()"><code>IItemType.name()</code></a> if the item
+ can be identified.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>itemName</code> - The sought item or type name</dd><dd><code>opts</code> - Additional restrictions</dd></dl>
+</li>
+</ul>
+<a name="haveAll(bothack.bot.IPredicate, bothack.bot.HaveOption...)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>haveAll</h4>
+<pre>java.util.List&lt;java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&gt;&nbsp;haveAll(<a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;selector,
+                                                                     <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</pre>
+<div class="block">Return all inventory slot-item pairs of items accepted by a custom predicate.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>selector</code> - Custom-implemented filter</dd><dd><code>opts</code> - Additional restrictions</dd></dl>
+</li>
+</ul>
+<a name="haveAll(java.lang.String, bothack.bot.HaveOption...)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>haveAll</h4>
+<pre>java.util.List&lt;java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&gt;&nbsp;haveAll(java.lang.String&nbsp;itemName,
+                                                                     <a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a>...&nbsp;opts)</pre>
+<div class="block">Return all inventory slot-item pairs of items with the given name.
+ Tries to match both <a href="../../bothack/bot/items/IItem.html#name()"><code>IItem.name()</code></a> and the <a href="../../bothack/bot/items/IItemType.html#name()"><code>IItemType.name()</code></a> if the item
+ can be identified.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>itemName</code> - The sought item or type name</dd><dd><code>opts</code> - Additional restrictions</dd></dl>
+</li>
+</ul>
+<a name="isInGehennom()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isInGehennom</h4>
+<pre>java.lang.Boolean&nbsp;isInGehennom()</pre>
+<div class="block">Gehennom including the valley excluding Vlad's – prayers will be redirected to Moloch</div>
+</li>
+</ul>
+<a name="isBelowMedusa()">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isBelowMedusa</h4>
+<pre>java.lang.Boolean&nbsp;isBelowMedusa()</pre>
+<div class="block">True when the player is below the medusa's level or on the right
+ side of the island.</div>
+</li>
+</ul>
+<a name="isBelowCastle()">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>isBelowCastle</h4>
+<pre>java.lang.Boolean&nbsp;isBelowCastle()</pre>
+<div class="block">True when the player is below the castle or on the right
+ side of the castle moat.</div>
 </li>
 </ul>
 </li>

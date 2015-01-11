@@ -113,6 +113,12 @@
 <div class="block">Immutable representation of a position on the screen.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;T&gt;</td>
+<td class="colLast">
+<div class="block">Custom filter function.</div>
+</td>
+</tr>
 </tbody>
 </table>
 </li>
@@ -158,14 +164,18 @@
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot">Hunger</a></td>
+<td class="colFirst"><a href="../../bothack/bot/HaveOption.html" title="enum in bothack.bot">HaveOption</a></td>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a></td>
+<td class="colFirst"><a href="../../bothack/bot/Hunger.html" title="enum in bothack.bot">Hunger</a></td>
 <td class="colLast">&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><a href="../../bothack/bot/Intrinsic.html" title="enum in bothack.bot">Intrinsic</a></td>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><a href="../../bothack/bot/Stat.html" title="enum in bothack.bot">Stat</a></td>
 <td class="colLast">&nbsp;</td>
 </tr>
@@ -180,7 +190,7 @@
 <div class="block">Representations of elements of the game world.
  <p>All interfaces except for IBotHack are backed by immutable objects and can
  be used as keys in a Map, shared freely between threads etc.</p>
- <p>None of these are meant to be implemented by user code.</p></div>
+ <p>None of these except IPredicate are meant to be implemented by user code.</p></div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IBotHack.html#game()"><code>IBotHack.game()</code></a></dd></dl>
 </div>
 <!-- ======= START OF BOTTOM NAVBAR ====== -->
