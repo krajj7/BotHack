@@ -1,0 +1,10 @@
+{
+ :bot "bothack.javabots.simplebot.SimpleBot"
+ :interface :telnet
+ :menubot "bothack.bots.dgl-menu"
+ :host "nethack.alt.org"
+ :port 23
+ :dgl-login "quitbot"
+ :dgl-pass "tops3cr3t"
+ :ttyrec true
+}

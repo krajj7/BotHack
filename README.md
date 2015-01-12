@@ -15,11 +15,13 @@ Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.g
 
 **WORK IN PROGRESS**
 
-[Setup instructions](https://github.com/krajj7/BotHack/blob/master/doc/setup.md)
+[Running Java bots](https://github.com/krajj7/BotHack/blob/master/doc/running.md)
 
 [BotHack Java API reference (JavaDoc)](http://krajj7.github.io/BotHack/javadoc/)
 
-[Java bot skeleton](https://github.com/krajj7/BotHack/blob/master/javabots/SimpleBot/src/bothack/javabots/simplebot/SimpleBot.java)
+[Configuration options, logging](https://github.com/krajj7/BotHack/blob/master/doc/config.md)
+
+[Compiling BotHack from source and running Clojure bots](https://github.com/krajj7/BotHack/blob/master/doc/compiling.md)
 
 ## Screenshot
 
