@@ -12,7 +12,6 @@ public class SimpleBot {
 		Direction[] smallCircle = {Direction.N, Direction.E, Direction.S, Direction.W};
 		int next = 0;
 		
-		@Override
 		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
 			return Actions.Move(smallCircle[next++]);
@@ -20,7 +19,6 @@ public class SimpleBot {
 	}
 	
 	class PrayForFood implements IActionHandler {
-		@Override
 		public IAction chooseAction(IGame game) {
 			if (game.player().hunger() == Hunger.FAINTING)
 				return Actions.Pray();

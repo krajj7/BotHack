@@ -7,7 +7,6 @@ import bothack.bot.IGame;
 import bothack.prompts.IActionHandler;
 
 class StarvationHandler implements IActionHandler {
-	@Override
 	public IAction chooseAction(IGame game) {
 		if (game.player().isWeak() && !game.player().isOverloaded()) {
 			// TODO food

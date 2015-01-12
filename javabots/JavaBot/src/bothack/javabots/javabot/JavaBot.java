@@ -11,7 +11,6 @@ public class JavaBot {
 		Direction[] smallCircle = {Direction.N, Direction.E, Direction.S, Direction.W};
 		int next = 0;
 		
-		@Override
 		public IAction chooseAction(IGame game) {
 			next = next % smallCircle.length;
 			return Actions.Move(smallCircle[next++]);

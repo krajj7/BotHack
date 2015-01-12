@@ -1,0 +1,12 @@
+{
+ :bot "bothack.javabots.javabot.JavaBot"
+ :interface :ssh
+ :menubot "bothack.bots.dgl-menu"
+ :host "acehack.de"
+ :port 22
+ :ssh-user "acehack"
+ :ssh-pass ""
+ :dgl-login "quitbot"
+ :dgl-pass "tops3cr3t"
+ :ttyrec true
+}
