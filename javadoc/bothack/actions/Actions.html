@@ -82,10 +82,10 @@
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
-<li>java.lang.Object</li>
+<li>Object</li>
 <li>
 <ul class="inheritance">
-<li>bothack.actions.Actions</li>
+<li>Actions</li>
 </ul>
 </li>
 </ul>
@@ -95,7 +95,7 @@
 <hr>
 <br>
 <pre>public final class <span class="strong">Actions</span>
-extends java.lang.Object</pre>
+extends Object</pre>
 <div class="block">Factories for primitive BotHack actions.
  
  <p>When using these actions you should first make sure the action can actually
@@ -126,13 +126,13 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Apply(java.lang.Character)">Apply</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Apply(java.lang.Character)">Apply</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Apply item at given inventory slot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ApplyAt(java.lang.Character,%20bothack.bot.Direction)">ApplyAt</a></strong>(java.lang.Character&nbsp;slot,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ApplyAt(java.lang.Character,%20bothack.bot.Direction)">ApplyAt</a></strong>(Character&nbsp;slot,
        <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</code>
 <div class="block">Apply the item in the given direction (if prompted).</div>
 </td>
@@ -164,7 +164,7 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Contribute(bothack.bot.Direction,%20java.lang.Long)">Contribute</a></strong>(<a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir,
-          java.lang.Long&nbsp;amount)</code>
+          Long&nbsp;amount)</code>
 <div class="block">Offer a donation to a priest at dir.</div>
 </td>
 </tr>
@@ -176,47 +176,47 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Dip(java.lang.Character,%20java.lang.Character)">Dip</a></strong>(java.lang.Character&nbsp;itemSlot,
-   java.lang.Character&nbsp;potionSlot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Dip(java.lang.Character,%20java.lang.Character)">Dip</a></strong>(Character&nbsp;itemSlot,
+   Character&nbsp;potionSlot)</code>
 <div class="block">Dip item at itemSlot into potion at potionSlot (or a fountain if it is '.')</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Drop(java.lang.Character)">Drop</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Drop(java.lang.Character)">Drop</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Drop one of item at slot.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Drop(java.lang.Character,%20java.lang.Long)">Drop</a></strong>(java.lang.Character&nbsp;slot,
-    java.lang.Long&nbsp;num)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Drop(java.lang.Character,%20java.lang.Long)">Drop</a></strong>(Character&nbsp;slot,
+    Long&nbsp;num)</code>
 <div class="block">Drop a specific amount of item at slot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Eat(java.lang.Character)">Eat</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Eat(java.lang.Character)">Eat</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Eat item at slot.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Eat(java.lang.String)">Eat</a></strong>(java.lang.String&nbsp;label)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Eat(java.lang.String)">Eat</a></strong>(String&nbsp;label)</code>
 <div class="block">Eat item from the ground by label.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#EngraveAppending(java.lang.Character,%20java.lang.String)">EngraveAppending</a></strong>(java.lang.Character&nbsp;slot,
-                java.lang.String&nbsp;engraving)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#EngraveAppending(java.lang.Character,%20java.lang.String)">EngraveAppending</a></strong>(Character&nbsp;slot,
+                String&nbsp;engraving)</code>
 <div class="block">Engrave action overwriting the current engraving (if prompted).</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#EngraveOverwriting(java.lang.Character,%20java.lang.String)">EngraveOverwriting</a></strong>(java.lang.Character&nbsp;slot,
-                  java.lang.String&nbsp;engraving)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#EngraveOverwriting(java.lang.Character,%20java.lang.String)">EngraveOverwriting</a></strong>(Character&nbsp;slot,
+                  String&nbsp;engraving)</code>
 <div class="block">Engrave action appending to the current engraving (if prompted).</div>
 </td>
 </tr>
@@ -246,13 +246,13 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Offer(java.lang.Character)">Offer</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Offer(java.lang.Character)">Offer</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Offer item at slot as sacrifice.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Offer(java.lang.String)">Offer</a></strong>(java.lang.String&nbsp;label)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Offer(java.lang.String)">Offer</a></strong>(String&nbsp;label)</code>
 <div class="block">Offer item from the ground by label.</div>
 </td>
 </tr>
@@ -264,13 +264,13 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PickUp(java.util.List)">PickUp</a></strong>(java.util.List&lt;java.lang.String&gt;&nbsp;labels)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PickUp(java.util.List)">PickUp</a></strong>(List&lt;String&gt;&nbsp;labels)</code>
 <div class="block">Pick up all items in the list by label.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PickUp(java.lang.String)">PickUp</a></strong>(java.lang.String&nbsp;label)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PickUp(java.lang.String)">PickUp</a></strong>(String&nbsp;label)</code>
 <div class="block">Pick up all of item by label.</div>
 </td>
 </tr>
@@ -282,46 +282,46 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutIn(java.lang.Character,%20java.lang.Character)">PutIn</a></strong>(java.lang.Character&nbsp;bagSlot,
-     java.lang.Character&nbsp;itemSlot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutIn(java.lang.Character,%20java.lang.Character)">PutIn</a></strong>(Character&nbsp;bagSlot,
+     Character&nbsp;itemSlot)</code>
 <div class="block">Put all of item at itemSlot into the container at bagSlot.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutIn(java.lang.Character,%20java.lang.Character,%20java.lang.Long)">PutIn</a></strong>(java.lang.Character&nbsp;bagSlot,
-     java.lang.Character&nbsp;itemSlot,
-     java.lang.Long&nbsp;amount)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutIn(java.lang.Character,%20java.lang.Character,%20java.lang.Long)">PutIn</a></strong>(Character&nbsp;bagSlot,
+     Character&nbsp;itemSlot,
+     Long&nbsp;amount)</code>
 <div class="block">Put amount of item at itemSlot into the container at bagSlot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutOn(java.lang.Character)">PutOn</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#PutOn(java.lang.Character)">PutOn</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Put on item at slot (for jewelry).</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Quaff(java.lang.Character)">Quaff</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Quaff(java.lang.Character)">Quaff</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Drink a potion at slot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Read(java.lang.Character)">Read</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Read(java.lang.Character)">Read</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Read scrolls or spellbooks.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Remove(java.lang.Character)">Remove</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Remove(java.lang.Character)">Remove</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Remove item at slot (for jewelry).</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Rub(java.lang.Character)">Rub</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Rub(java.lang.Character)">Rub</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Rub a lamp at slot.</div>
 </td>
 </tr>
@@ -333,7 +333,7 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Search(java.lang.Long)">Search</a></strong>(java.lang.Long&nbsp;num)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Search(java.lang.Long)">Search</a></strong>(Long&nbsp;num)</code>
 <div class="block">Shorthand for searching multiple times</div>
 </td>
 </tr>
@@ -345,35 +345,35 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOff(java.lang.Character)">TakeOff</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOff(java.lang.Character)">TakeOff</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Take off item at slot (for armor).</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOut(java.lang.Character,%20java.lang.String)">TakeOut</a></strong>(java.lang.Character&nbsp;bagSlot,
-       java.lang.String&nbsp;itemLabel)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOut(java.lang.Character,%20java.lang.String)">TakeOut</a></strong>(Character&nbsp;bagSlot,
+       String&nbsp;itemLabel)</code>
 <div class="block">Take out all of item with label itemLabel from container at bagSlot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOut(java.lang.Character,%20java.lang.String,%20java.lang.Long)">TakeOut</a></strong>(java.lang.Character&nbsp;bagSlot,
-       java.lang.String&nbsp;itemLabel,
-       java.lang.Long&nbsp;amount)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#TakeOut(java.lang.Character,%20java.lang.String,%20java.lang.Long)">TakeOut</a></strong>(Character&nbsp;bagSlot,
+       String&nbsp;itemLabel,
+       Long&nbsp;amount)</code>
 <div class="block">Take out amount of item with label itemLabel from container at bagSlot.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Throw(java.lang.Character,%20bothack.bot.Direction)">Throw</a></strong>(java.lang.Character&nbsp;slot,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Throw(java.lang.Character,%20bothack.bot.Direction)">Throw</a></strong>(Character&nbsp;slot,
      <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</code>
 <div class="block">Throw item at slot in direction dir.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Unlock(java.lang.Character,%20bothack.bot.Direction)">Unlock</a></strong>(java.lang.Character&nbsp;slot,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Unlock(java.lang.Character,%20bothack.bot.Direction)">Unlock</a></strong>(Character&nbsp;slot,
       <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</code>
 <div class="block">Use key, lockpick or credit card at slot to unlock a door.</div>
 </td>
@@ -386,13 +386,13 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Wear(java.lang.Character)">Wear</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Wear(java.lang.Character)">Wear</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Wear item at slot (for armor).</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Wield(java.lang.Character)">Wield</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#Wield(java.lang.Character)">Wield</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Wield item at slot as a weapon.</div>
 </td>
 </tr>
@@ -404,23 +404,23 @@ extends java.lang.Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ZapWand(java.lang.Character)">ZapWand</a></strong>(java.lang.Character&nbsp;slot)</code>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ZapWand(java.lang.Character)">ZapWand</a></strong>(Character&nbsp;slot)</code>
 <div class="block">Zap a known non-directional wand.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ZapWandAt(java.lang.Character,%20bothack.bot.Direction)">ZapWandAt</a></strong>(java.lang.Character&nbsp;slot,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Actions.html#ZapWandAt(java.lang.Character,%20bothack.bot.Direction)">ZapWandAt</a></strong>(Character&nbsp;slot,
          <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</code>
 <div class="block">Zap a wand in the given direction (if prompted for a direction).</div>
 </td>
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<li class="blockList"><a name="methods_inherited_from_class_Object">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<h3>Methods inherited from class&nbsp;Object</h3>
 <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
 </ul>
 </li>
@@ -478,7 +478,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Search</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Search(java.lang.Long&nbsp;num)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Search(Long&nbsp;num)</pre>
 <div class="block">Shorthand for searching multiple times</div>
 </li>
 </ul>
@@ -569,8 +569,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>EngraveOverwriting</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;EngraveOverwriting(java.lang.Character&nbsp;slot,
-                         java.lang.String&nbsp;engraving)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;EngraveOverwriting(Character&nbsp;slot,
+                         String&nbsp;engraving)</pre>
 <div class="block">Engrave action appending to the current engraving (if prompted).</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>slot</code> - Inventory slot to engrave with.  Use '-' to engrave with fingers.</dd><dd><code>engraving</code> - String to engrave</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#canEngrave()"><code>IGame.canEngrave()</code></a>, 
 <a href="../../bothack/bot/dungeon/ITile.html#isEngravable()"><code>ITile.isEngravable()</code></a></dd></dl>
@@ -582,8 +582,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>EngraveAppending</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;EngraveAppending(java.lang.Character&nbsp;slot,
-                       java.lang.String&nbsp;engraving)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;EngraveAppending(Character&nbsp;slot,
+                       String&nbsp;engraving)</pre>
 <div class="block">Engrave action overwriting the current engraving (if prompted).</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>slot</code> - Inventory slot to engrave with.  Use '-' to engrave with fingers.</dd><dd><code>engraving</code> - String to engrave</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IGame.html#canEngrave()"><code>IGame.canEngrave()</code></a>, 
 <a href="../../bothack/bot/dungeon/ITile.html#isEngravable()"><code>ITile.isEngravable()</code></a></dd></dl>
@@ -595,7 +595,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Apply</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Apply(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Apply(Character&nbsp;slot)</pre>
 <div class="block">Apply item at given inventory slot.  For handling containers and direction prompts use TakeOut, PutIn or ApplyAt.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/IPlayer.html#hasHands()"><code>IPlayer.hasHands()</code></a>, 
 <a href="../../bothack/actions/Actions.html#TakeOut(java.lang.Character,%20java.lang.String)"><code>TakeOut(java.lang.Character, java.lang.String)</code></a>, 
@@ -610,8 +610,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>TakeOut</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOut(java.lang.Character&nbsp;bagSlot,
-              java.lang.String&nbsp;itemLabel)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOut(Character&nbsp;bagSlot,
+              String&nbsp;itemLabel)</pre>
 <div class="block">Take out all of item with label itemLabel from container at bagSlot.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>bagSlot</code> - can be '.' for looting containers on the ground.</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#unbag(bothack.bot.IGame,%20java.util.Map.Entry)"><code>ActionsComplex.unbag(IGame, java.util.Map.Entry)</code></a></dd></dl>
 </li>
@@ -622,9 +622,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>TakeOut</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOut(java.lang.Character&nbsp;bagSlot,
-              java.lang.String&nbsp;itemLabel,
-              java.lang.Long&nbsp;amount)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOut(Character&nbsp;bagSlot,
+              String&nbsp;itemLabel,
+              Long&nbsp;amount)</pre>
 <div class="block">Take out amount of item with label itemLabel from container at bagSlot.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>bagSlot</code> - can be '.' for looting containers on the ground.</dd><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#unbag(bothack.bot.IGame,%20java.util.Map.Entry)"><code>ActionsComplex.unbag(IGame, java.util.Map.Entry)</code></a></dd></dl>
 </li>
@@ -635,9 +635,9 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>PutIn</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutIn(java.lang.Character&nbsp;bagSlot,
-            java.lang.Character&nbsp;itemSlot,
-            java.lang.Long&nbsp;amount)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutIn(Character&nbsp;bagSlot,
+            Character&nbsp;itemSlot,
+            Long&nbsp;amount)</pre>
 <div class="block">Put amount of item at itemSlot into the container at bagSlot.</div>
 </li>
 </ul>
@@ -647,8 +647,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>PutIn</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutIn(java.lang.Character&nbsp;bagSlot,
-            java.lang.Character&nbsp;itemSlot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutIn(Character&nbsp;bagSlot,
+            Character&nbsp;itemSlot)</pre>
 <div class="block">Put all of item at itemSlot into the container at bagSlot.</div>
 </li>
 </ul>
@@ -658,7 +658,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>ApplyAt</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ApplyAt(java.lang.Character&nbsp;slot,
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ApplyAt(Character&nbsp;slot,
               <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</pre>
 <div class="block">Apply the item in the given direction (if prompted).  For use with a key, a pickaxe...
  With a pickaxe wielding it explicitly first is strongly recommended (anything can happen during the wielding).</div>
@@ -680,7 +680,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Unlock</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Unlock(java.lang.Character&nbsp;slot,
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Unlock(Character&nbsp;slot,
              <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</pre>
 <div class="block">Use key, lockpick or credit card at slot to unlock a door.</div>
 </li>
@@ -691,7 +691,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Wield</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Wield(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Wield(Character&nbsp;slot)</pre>
 <div class="block">Wield item at slot as a weapon.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#wield(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.wield(IGame, Character)</code></a></dd></dl>
 </li>
@@ -702,7 +702,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Wear</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Wear(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Wear(Character&nbsp;slot)</pre>
 <div class="block">Wear item at slot (for armor).</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#makeUse(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.makeUse(IGame, Character)</code></a></dd></dl>
 </li>
@@ -713,7 +713,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>PutOn</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutOn(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PutOn(Character&nbsp;slot)</pre>
 <div class="block">Put on item at slot (for jewelry).</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#makeUse(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.makeUse(IGame, Character)</code></a></dd></dl>
 </li>
@@ -724,7 +724,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>TakeOff</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOff(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;TakeOff(Character&nbsp;slot)</pre>
 <div class="block">Take off item at slot (for armor).</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#removeUse(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.removeUse(IGame, Character)</code></a></dd></dl>
 </li>
@@ -735,7 +735,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Remove</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Remove(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Remove(Character&nbsp;slot)</pre>
 <div class="block">Remove item at slot (for jewelry).</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/ActionsComplex.html#removeUse(bothack.bot.IGame,%20java.lang.Character)"><code>ActionsComplex.removeUse(IGame, Character)</code></a></dd></dl>
 </li>
@@ -746,7 +746,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Drop</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Drop(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Drop(Character&nbsp;slot)</pre>
 <div class="block">Drop one of item at slot.</div>
 </li>
 </ul>
@@ -756,8 +756,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Drop</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Drop(java.lang.Character&nbsp;slot,
-           java.lang.Long&nbsp;num)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Drop(Character&nbsp;slot,
+           Long&nbsp;num)</pre>
 <div class="block">Drop a specific amount of item at slot.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/items/IItem.html#quantity()"><code>IItem.quantity()</code></a></dd></dl>
 </li>
@@ -768,7 +768,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>PickUp</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PickUp(java.util.List&lt;java.lang.String&gt;&nbsp;labels)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PickUp(List&lt;String&gt;&nbsp;labels)</pre>
 <div class="block">Pick up all items in the list by label.
  It is currently not possible to pick up specific amounts (but you can
  drop any amount after pick up).</div>
@@ -781,7 +781,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>PickUp</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PickUp(java.lang.String&nbsp;label)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;PickUp(String&nbsp;label)</pre>
 <div class="block">Pick up all of item by label.
  It is currently not possible to pick up specific amounts (but you can
  drop any amount after pick up).</div>
@@ -808,7 +808,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Read</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Read(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Read(Character&nbsp;slot)</pre>
 <div class="block">Read scrolls or spellbooks.</div>
 </li>
 </ul>
@@ -829,7 +829,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Eat</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Eat(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Eat(Character&nbsp;slot)</pre>
 <div class="block">Eat item at slot.</div>
 </li>
 </ul>
@@ -839,7 +839,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Eat</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Eat(java.lang.String&nbsp;label)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Eat(String&nbsp;label)</pre>
 <div class="block">Eat item from the ground by label.</div>
 </li>
 </ul>
@@ -849,7 +849,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Quaff</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Quaff(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Quaff(Character&nbsp;slot)</pre>
 <div class="block">Drink a potion at slot.</div>
 </li>
 </ul>
@@ -859,7 +859,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Offer</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Offer(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Offer(Character&nbsp;slot)</pre>
 <div class="block">Offer item at slot as sacrifice.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/dungeon/ITile.html#feature()"><code>ITile.feature()</code></a></dd></dl>
 </li>
@@ -870,7 +870,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Offer</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Offer(java.lang.String&nbsp;label)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Offer(String&nbsp;label)</pre>
 <div class="block">Offer item from the ground by label.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/dungeon/ITile.html#feature()"><code>ITile.feature()</code></a></dd></dl>
 </li>
@@ -881,8 +881,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Dip</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Dip(java.lang.Character&nbsp;itemSlot,
-          java.lang.Character&nbsp;potionSlot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Dip(Character&nbsp;itemSlot,
+          Character&nbsp;potionSlot)</pre>
 <div class="block">Dip item at itemSlot into potion at potionSlot (or a fountain if it is '.')</div>
 </li>
 </ul>
@@ -892,7 +892,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Throw</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Throw(java.lang.Character&nbsp;slot,
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Throw(Character&nbsp;slot,
             <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</pre>
 <div class="block">Throw item at slot in direction dir.</div>
 </li>
@@ -915,7 +915,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>ZapWand</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ZapWand(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ZapWand(Character&nbsp;slot)</pre>
 <div class="block">Zap a known non-directional wand.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/Actions.html#ZapWandAt(java.lang.Character,%20bothack.bot.Direction)"><code>ZapWandAt(Character, Direction)</code></a></dd></dl>
 </li>
@@ -926,7 +926,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>ZapWandAt</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ZapWandAt(java.lang.Character&nbsp;slot,
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;ZapWandAt(Character&nbsp;slot,
                 <a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir)</pre>
 <div class="block">Zap a wand in the given direction (if prompted for a direction).</div>
 </li>
@@ -937,7 +937,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>Rub</h4>
-<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Rub(java.lang.Character&nbsp;slot)</pre>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Rub(Character&nbsp;slot)</pre>
 <div class="block">Rub a lamp at slot.</div>
 </li>
 </ul>
@@ -959,7 +959,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>Contribute</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;Contribute(<a href="../../bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a>&nbsp;dir,
-                 java.lang.Long&nbsp;amount)</pre>
+                 Long&nbsp;amount)</pre>
 <div class="block">Offer a donation to a priest at dir.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>amount</code> - Amount of gold to donate</dd></dl>
 </li>

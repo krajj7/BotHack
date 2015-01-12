@@ -89,7 +89,7 @@
 <pre>public interface <span class="strong">IPredicate&lt;T&gt;</span></pre>
 <div class="block">Custom filter function.  Implement this for use with
  <a href="../../bothack/bot/IGame.html#have(bothack.bot.IPredicate,%20bothack.bot.HaveOption...)"><code>IGame.have(bothack.bot.IPredicate&lt;bothack.bot.items.IItem&gt;, bothack.bot.HaveOption...)</code></a>,
- <a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20bothack.actions.NavOption...)"><code>Navigation.navigate(bothack.bot.IGame, bothack.bot.IPosition, bothack.actions.NavOption...)</code></a>, <a href="../../bothack/actions/Navigation.html#seek(bothack.bot.IGame,%20bothack.bot.IPosition,%20java.lang.Long,%20bothack.actions.NavOption...)"><code>Navigation.seek(bothack.bot.IGame, bothack.bot.IPosition, java.lang.Long, bothack.actions.NavOption...)</code></a> etc.</div>
+ <a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20bothack.actions.NavOption...)"><code>Navigation.navigate(bothack.bot.IGame, bothack.bot.IPosition, bothack.actions.NavOption...)</code></a>, <a href="../../bothack/actions/Navigation.html#seek(bothack.bot.IGame,%20bothack.bot.IPosition)"><code>Navigation.seek(bothack.bot.IGame, bothack.bot.IPosition)</code></a> etc.</div>
 </li>
 </ul>
 </div>
@@ -110,7 +110,9 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IPredicate.html#apply(T)">apply</a></strong>(<a href="../../bothack/bot/IPredicate.html" title="type parameter in IPredicate">T</a>&nbsp;input)</code>&nbsp;</td>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IPredicate.html#apply(T)">apply</a></strong>(<a href="../../bothack/bot/IPredicate.html" title="type parameter in IPredicate">T</a>&nbsp;input)</code>
+<div class="block">Return true for things you are interested in.</div>
+</td>
 </tr>
 </table>
 </li>
@@ -136,6 +138,8 @@
 <li class="blockList">
 <h4>apply</h4>
 <pre>boolean&nbsp;apply(<a href="../../bothack/bot/IPredicate.html" title="type parameter in IPredicate">T</a>&nbsp;input)</pre>
+<div class="block">Return true for things you are interested in.
+ This function may be run many times, don't do expensive computation here if you can avoid it.</div>
 </li>
 </ul>
 </li>

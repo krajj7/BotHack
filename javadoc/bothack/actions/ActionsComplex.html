@@ -82,10 +82,10 @@
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
-<li>java.lang.Object</li>
+<li>Object</li>
 <li>
 <ul class="inheritance">
-<li>bothack.actions.ActionsComplex</li>
+<li>ActionsComplex</li>
 </ul>
 </li>
 </ul>
@@ -95,7 +95,7 @@
 <hr>
 <br>
 <pre>public final class <span class="strong">ActionsComplex</span>
-extends java.lang.Object</pre>
+extends Object</pre>
 <div class="block">Factories for "smarter" actions with precondition checks and more complex behaviors.
  These generally return null whenever the action cannot be performed effectively.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/Actions.html" title="class in bothack.actions"><code>Actions</code></a></dd></dl>
@@ -147,7 +147,7 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/ActionsComplex.html#makeUse(bothack.bot.IGame,%20java.lang.Character)">makeUse</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-       java.lang.Character&nbsp;slot)</code>
+       Character&nbsp;slot)</code>
 <div class="block">If it is possible for the player, use the item at slot in the usual way:
  This means wearing armor (removing any blocking armor) or putting on jewelry.</div>
 </td>
@@ -161,14 +161,14 @@ extends java.lang.Object</pre>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/ActionsComplex.html#removeUse(bothack.bot.IGame,%20java.lang.Character)">removeUse</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-         java.lang.Character&nbsp;slot)</code>
+         Character&nbsp;slot)</code>
 <div class="block">If it is possible for the player, stop using the item at slot.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/ActionsComplex.html#unbag(bothack.bot.IGame,%20java.util.Map.Entry)">unbag</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-     java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;item)</code>
+     Map.Entry&lt;Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;item)</code>
 <div class="block">If the slot of the item MapEntry is a bag, take one of item out of the bag, otherwise returns null.</div>
 </td>
 </tr>
@@ -181,7 +181,7 @@ extends java.lang.Object</pre>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/ActionsComplex.html#wield(bothack.bot.IGame,%20java.lang.Character)">wield</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-     java.lang.Character&nbsp;slot)</code>
+     Character&nbsp;slot)</code>
 <div class="block">If it is possible for the player, wield item at slot as a weapon, otherwise returns null.</div>
 </td>
 </tr>
@@ -196,16 +196,16 @@ extends java.lang.Object</pre>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/ActionsComplex.html#withReason(bothack.actions.IAction,%20java.lang.String)">withReason</a></strong>(<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;action,
-          java.lang.String&nbsp;reason)</code>
+          String&nbsp;reason)</code>
 <div class="block">Action modifier – attach a human-understandable reason to the given action.</div>
 </td>
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<li class="blockList"><a name="methods_inherited_from_class_Object">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<h3>Methods inherited from class&nbsp;Object</h3>
 <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
 </ul>
 </li>
@@ -254,7 +254,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>unbag</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;unbag(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-            java.util.Map.Entry&lt;java.lang.Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;item)</pre>
+            Map.Entry&lt;Character,<a href="../../bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a>&gt;&nbsp;item)</pre>
 <div class="block">If the slot of the item MapEntry is a bag, take one of item out of the bag, otherwise returns null.
  Meant for use with entries returned by IGame#have or IGame#haveAll with the BAGGED option</div>
 </li>
@@ -266,7 +266,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>wield</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;wield(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-            java.lang.Character&nbsp;slot)</pre>
+            Character&nbsp;slot)</pre>
 <div class="block">If it is possible for the player, wield item at slot as a weapon, otherwise returns null.
  Removes any shield if the weapon is two-handed.</div>
 </li>
@@ -278,7 +278,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>makeUse</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;makeUse(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-              java.lang.Character&nbsp;slot)</pre>
+              Character&nbsp;slot)</pre>
 <div class="block">If it is possible for the player, use the item at slot in the usual way:
  This means wearing armor (removing any blocking armor) or putting on jewelry.</div>
 </li>
@@ -290,7 +290,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>removeUse</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;removeUse(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
-                java.lang.Character&nbsp;slot)</pre>
+                Character&nbsp;slot)</pre>
 <div class="block">If it is possible for the player, stop using the item at slot.
  This means removing armor (with blockers), unwielding a weapon or
  removing jewelry or accessories.</div>
@@ -371,7 +371,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>withReason</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;withReason(<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;action,
-                 java.lang.String&nbsp;reason)</pre>
+                 String&nbsp;reason)</pre>
 <div class="block">Action modifier – attach a human-understandable reason to the given action.
  This will be seen in the logs when the action is triggered and may help with debugging.
  If the action is null, returns null.

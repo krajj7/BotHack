@@ -87,7 +87,7 @@
 <hr>
 <br>
 <pre>public interface <span class="strong">IAction</span></pre>
-<div class="block">Interface representing a primitive BotHack action.
+<div class="block">Representation of a primitive BotHack action.
  This is not meant to be implemented by user code.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/Actions.html" title="class in bothack.actions"><code>Actions</code></a></dd></dl>
 </li>
@@ -109,7 +109,7 @@
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>java.lang.Object</code></td>
+<td class="colFirst"><code>Object</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/IAction.html#handler(bothack.bot.IBotHack)">handler</a></strong>(<a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a>&nbsp;bh)</code>
 <div class="block">Retuns null or an event/prompt handler that will be registered just
  before executing the action and deregistered when the next action is
@@ -117,7 +117,7 @@
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colFirst"><code>String</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/IAction.html#trigger()">trigger</a></strong>()</code>
 <div class="block">Returns the string to write to NetHack to trigger the action.</div>
 </td>
@@ -143,7 +143,7 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>handler</h4>
-<pre>java.lang.Object&nbsp;handler(<a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a>&nbsp;bh)</pre>
+<pre>Object&nbsp;handler(<a href="../../bothack/bot/IBotHack.html" title="interface in bothack.bot">IBotHack</a>&nbsp;bh)</pre>
 <div class="block">Retuns null or an event/prompt handler that will be registered just
  before executing the action and deregistered when the next action is
  chosen.  May also modify the game state immediately without returning
@@ -156,7 +156,7 @@
 <ul class="blockListLast">
 <li class="blockList">
 <h4>trigger</h4>
-<pre>java.lang.String&nbsp;trigger()</pre>
+<pre>String&nbsp;trigger()</pre>
 <div class="block">Returns the string to write to NetHack to trigger the action.</div>
 </li>
 </ul>

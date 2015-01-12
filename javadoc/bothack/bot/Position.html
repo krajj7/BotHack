@@ -82,10 +82,10 @@
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
-<li>java.lang.Object</li>
+<li>Object</li>
 <li>
 <ul class="inheritance">
-<li>bothack.bot.Position</li>
+<li>Position</li>
 </ul>
 </li>
 </ul>
@@ -95,7 +95,7 @@
 <hr>
 <br>
 <pre>public final class <span class="strong">Position</span>
-extends java.lang.Object</pre>
+extends Object</pre>
 <div class="block">Position factory and utility functions.</div>
 </li>
 </ul>
@@ -116,33 +116,33 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>static java.lang.Boolean</code></td>
+<td class="colFirst"><code>static Boolean</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#areAdjacent(bothack.bot.IPosition,%20bothack.bot.IPosition)">areAdjacent</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
            <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#create(java.lang.Long,%20java.lang.Long)">create</a></strong>(java.lang.Long&nbsp;x,
-      java.lang.Long&nbsp;y)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#create(java.lang.Long,%20java.lang.Long)">create</a></strong>(Long&nbsp;x,
+      Long&nbsp;y)</code>
 <div class="block">Make an IPosition with given coordinates.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>static java.lang.Long</code></td>
+<td class="colFirst"><code>static Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#distance(bothack.bot.IPosition,%20bothack.bot.IPosition)">distance</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
         <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</code>
 <div class="block">Uniform norm distance (steps allowing diagonals).</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>static java.lang.Long</code></td>
+<td class="colFirst"><code>static Long</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#distanceManhattan(bothack.bot.IPosition,%20bothack.bot.IPosition)">distanceManhattan</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
                  <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</code>
 <div class="block">Manhattan distance (not allowing diagonals).</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>static java.util.List&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&gt;</code></td>
+<td class="colFirst"><code>static List&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&gt;</code></td>
 <td class="colLast"><code><strong><a href="../../bothack/bot/Position.html#neighbors(bothack.bot.IPosition)">neighbors</a></strong>(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</code>
 <div class="block">Returns a list of valid adjacent positions.</div>
 </td>
@@ -155,10 +155,10 @@ extends java.lang.Object</pre>
 </tr>
 </table>
 <ul class="blockList">
-<li class="blockList"><a name="methods_inherited_from_class_java.lang.Object">
+<li class="blockList"><a name="methods_inherited_from_class_Object">
 <!--   -->
 </a>
-<h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+<h3>Methods inherited from class&nbsp;Object</h3>
 <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
 </ul>
 </li>
@@ -181,8 +181,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>create</h4>
-<pre>public static&nbsp;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;create(java.lang.Long&nbsp;x,
-               java.lang.Long&nbsp;y)</pre>
+<pre>public static&nbsp;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;create(Long&nbsp;x,
+               Long&nbsp;y)</pre>
 <div class="block">Make an IPosition with given coordinates.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>x</code> - 0 to 79 inclusive</dd><dd><code>y</code> - 0 to 23 inclusive, level tiles appear at 1 to 21 inclusive</dd></dl>
 </li>
@@ -204,8 +204,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>areAdjacent</h4>
-<pre>public static&nbsp;java.lang.Boolean&nbsp;areAdjacent(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
-                            <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
+<pre>public static&nbsp;Boolean&nbsp;areAdjacent(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
+                  <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
 </li>
 </ul>
 <a name="distance(bothack.bot.IPosition, bothack.bot.IPosition)">
@@ -214,8 +214,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>distance</h4>
-<pre>public static&nbsp;java.lang.Long&nbsp;distance(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
-                      <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
+<pre>public static&nbsp;Long&nbsp;distance(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
+            <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
 <div class="block">Uniform norm distance (steps allowing diagonals).</div>
 </li>
 </ul>
@@ -225,8 +225,8 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>distanceManhattan</h4>
-<pre>public static&nbsp;java.lang.Long&nbsp;distanceManhattan(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
-                               <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
+<pre>public static&nbsp;Long&nbsp;distanceManhattan(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos1,
+                     <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos2)</pre>
 <div class="block">Manhattan distance (not allowing diagonals).</div>
 </li>
 </ul>
@@ -236,7 +236,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>neighbors</h4>
-<pre>public static&nbsp;java.util.List&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&gt;&nbsp;neighbors(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
+<pre>public static&nbsp;List&lt;<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&gt;&nbsp;neighbors(<a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;pos)</pre>
 <div class="block">Returns a list of valid adjacent positions.</div>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/bot/dungeon/ILevel.html#neighbors(bothack.bot.IPosition)"><code>ILevel.neighbors(IPosition pos)</code></a></dd></dl>
 </li>

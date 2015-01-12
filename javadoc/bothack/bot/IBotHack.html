@@ -111,7 +111,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#deregisterHandler(java.lang.Object)">deregisterHandler</a></strong>(java.lang.Object&nbsp;handler)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#deregisterHandler(java.lang.Object)">deregisterHandler</a></strong>(Object&nbsp;handler)</code>
 <div class="block">Deregister a handler that was registered earlier.</div>
 </td>
 </tr>
@@ -123,21 +123,21 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Integer,%20java.lang.Object)">registerHandler</a></strong>(java.lang.Integer&nbsp;priority,
-               java.lang.Object&nbsp;handler)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Integer,%20java.lang.Object)">registerHandler</a></strong>(Integer&nbsp;priority,
+               Object&nbsp;handler)</code>
 <div class="block">Register a custom handler with the specified priority.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Object)">registerHandler</a></strong>(java.lang.Object&nbsp;handler)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#registerHandler(java.lang.Object)">registerHandler</a></strong>(Object&nbsp;handler)</code>
 <div class="block">Register a custom handler with the default priority.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#replaceHandler(java.lang.Object,%20java.lang.Object)">replaceHandler</a></strong>(java.lang.Object&nbsp;oldHandler,
-              java.lang.Object&nbsp;newHandler)</code>
+<td class="colLast"><code><strong><a href="../../bothack/bot/IBotHack.html#replaceHandler(java.lang.Object,%20java.lang.Object)">replaceHandler</a></strong>(Object&nbsp;oldHandler,
+              Object&nbsp;newHandler)</code>
 <div class="block">Replace a handler that was registered earlier (with the same priority).</div>
 </td>
 </tr>
@@ -162,7 +162,7 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>registerHandler</h4>
-<pre>void&nbsp;registerHandler(java.lang.Object&nbsp;handler)</pre>
+<pre>void&nbsp;registerHandler(Object&nbsp;handler)</pre>
 <div class="block">Register a custom handler with the default priority.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>handler</code> - The handler object should implement one or more interfaces
  from <a href="../../bothack/events/package-summary.html"><code>bothack.events</code></a> or <a href="../../bothack/prompts/package-summary.html"><code>bothack.prompts</code></a>.</dd></dl>
@@ -174,8 +174,8 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>registerHandler</h4>
-<pre>void&nbsp;registerHandler(java.lang.Integer&nbsp;priority,
-                   java.lang.Object&nbsp;handler)</pre>
+<pre>void&nbsp;registerHandler(Integer&nbsp;priority,
+                   Object&nbsp;handler)</pre>
 <div class="block">Register a custom handler with the specified priority.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>priority</code> - Lower number = processed earlier.</dd><dd><code>handler</code> - The handler object should implement one or more interfaces
  from <a href="../../bothack/events/package-summary.html"><code>bothack.events</code></a> or <a href="../../bothack/prompts/package-summary.html"><code>bothack.prompts</code></a>.</dd></dl>
@@ -187,7 +187,7 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>deregisterHandler</h4>
-<pre>void&nbsp;deregisterHandler(java.lang.Object&nbsp;handler)</pre>
+<pre>void&nbsp;deregisterHandler(Object&nbsp;handler)</pre>
 <div class="block">Deregister a handler that was registered earlier.
  Nothing happens if the handler is not registered.</div>
 </li>
@@ -198,11 +198,11 @@
 <ul class="blockList">
 <li class="blockList">
 <h4>replaceHandler</h4>
-<pre>void&nbsp;replaceHandler(java.lang.Object&nbsp;oldHandler,
-                  java.lang.Object&nbsp;newHandler)</pre>
+<pre>void&nbsp;replaceHandler(Object&nbsp;oldHandler,
+                  Object&nbsp;newHandler)</pre>
 <div class="block">Replace a handler that was registered earlier (with the same priority).</div>
 <dl><dt><span class="strong">Throws:</span></dt>
-<dd><code>java.lang.IllegalArgumentException</code> - if oldHandler is not registered.</dd></dl>
+<dd><code>IllegalArgumentException</code> - if oldHandler is not registered.</dd></dl>
 </li>
 </ul>
 <a name="game()">
