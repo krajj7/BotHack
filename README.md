@@ -5,15 +5,13 @@ BotHack – A Nethack Bot Framework
 
 An attempt at an implementation of a NetHack bot framework as a base for my master's thesis (at http://www.mff.cuni.cz/to.en).
 
-Written in Clojure but will also provide an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (like http://alt.org/nethack/).
+Written in Clojure but provides an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (like http://alt.org/nethack/).
 
 Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.github.io), [Saiph](https://github.com/canidae/saiph) and [Pogamut](http://pogamut.cuni.cz).
 
 **PLEASE NOTE**:  The project is in alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
 ## Documentation
-
-**WORK IN PROGRESS**
 
 [Running Java bots](https://github.com/krajj7/BotHack/blob/master/doc/running.md)
 

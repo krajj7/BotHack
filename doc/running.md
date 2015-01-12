@@ -2,14 +2,16 @@
 
 ### Prerequisites
 
-* Make sure you have Java 7 JDK and Maven installed (check `mvn -V`)
+Make sure you have Java 7 JDK and Maven installed (check `mvn -V`)
 
 ### Compiling the bot skeleton
 
 There is a working bot Maven project skeleton available here:
 https://github.com/krajj7/BotHack/blob/master/javabots/SimpleBot
 
-BotHack itself doesn't need to be compiled manually to run Java bots against public servers, a packaged version of the framework jar will be downloaded automatically by Maven.
+To compile it, run `mvn compile` in the project directory.
+
+BotHack itself doesn't need to be compiled manually to run Java bots against public servers, a packaged version of the framework jar and other dependencies will be downloaded automatically by Maven.
 
 ### Running against a public server
 
