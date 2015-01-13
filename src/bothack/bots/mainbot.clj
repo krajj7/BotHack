@@ -311,14 +311,14 @@
 
 (defn desired-throwables [game]
   (let [amt-daggers (have-sum game dagger? #{:noncursed})
-        amt-ammo (have-sum game (some-fn dart? ammo?) #{:noncursed})
+        amt-ammo (have-sum game dart? #{:noncursed})
         amt-rocks (have-sum game rocks? #{:noncursed})]
     (cond
       (< 3 amt-daggers) []
       (< 6 amt-ammo) daggers
       (and (< 6 amt-rocks)
-           (less-than? 35 (inventory game))) (concat daggers ammo)
-      (less-than? 35 (inventory game)) (concat daggers ammo ["rock"]))))
+           (less-than? 35 (inventory game))) (conj daggers "dart")
+      (less-than? 35 (inventory game)) (concat daggers ["dart" "rock"]))))
 
 (defn utility
   ([item]
@@ -352,32 +352,30 @@
 (defn- currently-desired
   "Returns the set of item names that the bot currently wants."
   [{:keys [player] :as game}]
-  (if (more-than 48 (inventory game))
-    #{"scroll of scare monster" "scroll of identify"}
-    (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
-                (rest desired-items) ; don't pick that pickaxe back up
-                desired-items)
-           res always-desired]
-      (if-let [c (first cs)]
-        (if-let [[slot i] (max-by (comp (partial utility game) val)
-                                  (have-all game c #{:bagged}))]
-          (recur (rest cs)
-                 (into (conj res (:name i))
-                       (take-while (partial not= (item-name game i)) c)))
-          (recur (rest cs) (into res c)))
-        (as-> res res
-          (into res (desired-food game))
-          (into res (desired-throwables game))
-          (if (farming? game)
-            (conj res "scroll of scare monster"))
-          (if-let [sanctum (get-level game :main :sanctum)]
-            (if (and (not (have game real-amulet?))
-                     (:seen (at sanctum 20 11)))
-              (conj res "Amulet of Yendor"))
-            res)
-          (cond-> res
-            (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
-            (want-gold? game) (conj "gold piece")))))))
+  (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
+              (rest desired-items) ; don't pick that pickaxe back up
+              desired-items)
+         res always-desired]
+    (if-let [c (first cs)]
+      (if-let [[slot i] (max-by (comp (partial utility game) val)
+                                (have-all game c #{:bagged}))]
+        (recur (rest cs)
+               (into (conj res (item-name game i))
+                     (take-while (partial not= (item-name game i)) c)))
+        (recur (rest cs) (into res c)))
+      (as-> res res
+        (into res (desired-food game))
+        (into res (desired-throwables game))
+        (if-let [sanctum (get-level game :main :sanctum)]
+          (if (and (not (have game real-amulet?))
+                   (:seen (at sanctum 20 11)))
+            (conj res "Amulet of Yendor"))
+          res)
+        (cond-> res
+          (and (sink? (at-player game))
+               (farming? game)) (conj res "scroll of scare monster")
+          (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
+          (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (and (has-hands? player)
@@ -404,14 +402,26 @@
 (defn- desired [game]
   (or @desired* (currently-desired game)))
 
+(defn- should-try?
+  [game item]
+  (and (not (:cost item))
+       (not (know-id? game item))
+       (or (and (wand? item)
+                ((some-fn (every-pred (complement :engrave)
+                                      (complement (partial tried? game)))
+                          (comp nil? :target)) (item-id game item)))
+           (and ((some-fn scroll? potion? ring? amulet? armor?) item)
+                (not (tried? game item))
+                (safe? game item)))))
+
 (defn- worthwhile? [game item]
   (let [id (item-name game item)]
     (and (not (> -1 (enchantment item)))
          (not (tin? item))
-         (not (and ((some-fn potion? scroll? wand? ring? amulet?) item)
-                   (know-id? game item)
-                   (not (desired-singular id))
-                   (not ((desired game) id))))
+         (or ((some-fn food? dart? dagger? gold? rocks? pick?) item)
+             ((desired game) id)
+             (should-try? game item)
+             (some (desired game) (possible-names game item)))
          (not= "bag of tricks" id)
          (not (and (have-intrinsic? (:player game) :speed)
                    (= "wand of speed monster" id)))
@@ -425,18 +435,6 @@
            (want-buy? game item)
            true))))
 
-(defn- should-try?
-  [game item]
-  (and (not (:cost item))
-       (not (know-id? game item))
-       (or (and (wand? item)
-                ((some-fn (every-pred (complement :engrave)
-                                      (complement (partial tried? game)))
-                          (comp nil? :target)) (item-id game item)))
-           (and ((some-fn scroll? potion? ring? amulet? armor?) item)
-                (not (tried? game item))
-                (safe? game item)))))
-
 (defn- have-spare [game itemname]
   (or (have game itemname #{:can-remove :bagged})
       (have game itemname {:can-remove false})))
@@ -446,6 +444,17 @@
     (or (real-amulet? item)
         (and (can-take? item)
              (worthwhile? game item)
+             (if (and (farming? game)
+                      (not (have game "scroll of identify")))
+               ((some-fn food? scroll? ring?) item)
+               true)
+             (if (more-than? 48 (inventory game))
+               (if (more-than? 51 (inventory game))
+                 false
+                 ((cond-> #{"scroll of scare monster" "scroll of identify"}
+                   (not (have game food?)) (conj "food ration"))
+                  (:name item)))
+               true)
              (let [id (item-name game item)]
                (and (or (> 16 (:qty item)) (not (rocks? item)))
                     (or (not (candle? item)) (= 7 (:qty item)))
@@ -553,7 +562,7 @@
                                       (:items (at-player game))))]
         (->PickUp (:label excal)))
       (if-let [[slot weapon] (some (partial have-usable game) desired-weapons)]
-        (if-not (or (:wielded weapon) (= :rub (typekw (:last-action game))))
+        (if-not (or (:wielded weapon) (#{:rub :wield} (typekw (:last-action game))))
           (or (uncurse-weapon game)
               (with-reason "wielding better weapon -" (:label weapon)
                 (make-use game slot)))))))
@@ -607,7 +616,7 @@
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
-                (or (if-not (cursed? (val (wielding game)))
+                (or (if-not (some-> (wielding game) val cursed?)
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
@@ -660,7 +669,7 @@
         (with-reason "dropping junk"
           (or (remove-use game slot)
               (unbag game slot item)
-              (->Drop slot))))
+              (->Drop slot (:qty item)))))
       (loop [[cat & more] desired-items]
         (let [cat-items (have-all game cat #{:bagged})
               stuck? (fn [[stuck-slot stuck-item]]
@@ -678,6 +687,10 @@
                       (->Drop slot)))))
             (if (seq more)
               (recur more)))))
+      (if-let [[slot item] (and (more-than? 44 (inventory game))
+                                (have game dart?))]
+        (with-reason "dropping ammo - low on inventory slots"
+          (->Drop slot (:qty item))))
       (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
         (with-reason "dropping rock excess"
           (->Drop slot (- (:qty item) 7))))))
@@ -794,6 +807,7 @@
            (#{"black pudding" "brown pudding" "dwarf" "mumak"}
                      (typename monster))
            (mobile? game monster)
+           (< -7 (:ac player))
            (pos? (rand-int 20))
            (not (:just-moved monster)))
     (with-reason "kite"
@@ -1414,17 +1428,20 @@
   (and (sink? tile) (not (blocked? tile)) (empty? (:items tile))
        (not (:ring (:tags tile)))))
 
+(defn- sinkid-ring [game]
+  (if-let [[slot ring] (have game #(and (not (know-id? game %))
+                                        (ring? %)) #{:can-remove})]
+    (with-reason "drop ring in sink"
+      (if-let [{:keys [step]} (navigate game sink?)]
+        (or step (remove-use game slot) (->Drop slot))))))
+
 (defn use-features [{:keys [player] :as game}]
   (or (if-let [wow (and (:castle (curlvl-tags game))
                         (not-any? perma-e? (wow-spot game))
                         (find-first (complement :walked) (wow-spot game)))]
         (with-reason "getting WoW"
           (:step (navigate game wow #{:no-traps :no-levitation}))))
-      (if-let [[slot ring] (have game #(and (not (know-id? game %))
-                                            (ring? %)) #{:can-remove})]
-        (with-reason "drop ring in sink"
-          (if-let [{:keys [step]} (navigate game sink?)]
-            (or step (remove-use game slot) (->Drop slot)))))
+      (sinkid-ring game)
       (if (have game "Excalibur" #{:can-use})
         ; TODO remove items from tile
         (if-let [{:keys [step target]} (navigate game kickable-sink?
@@ -1577,6 +1594,8 @@
       (and (not know?)
            (could-be? game "scroll of genocide" item)) (+ 8)
       (and (not know?)
+           (could-be? game "speed boots" item)) (+ 8)
+      (and (not know?)
            (= 200 price)
            (or (could-be? game "ring of levitation" item)
                (could-be? game "ring of regeneration" item))) (+ 8)
@@ -1634,14 +1653,14 @@
             (or (unbag game slot geno)
                 (bless game slot)
                 (->Read slot))))
-        (if-let [[slot wow] (have game "wand of wishing" #{:bagged})]
+        (if-let [[slot wow] (and (less-than? 50 (inventory game))
+                                 (have game "wand of wishing" #{:bagged}))]
           (with-reason "wish"
             (or (unbag game slot wow)
                 (recharge game slot)
                 (if (charged? wow)
                   (->ZapWand slot)))))
-        (if-let [[slot item] (have game "scroll of identify"
-                                   #{:bagged :noncursed})]
+        (if-let [[slot item] (have game "scroll of identify" #{:bagged})]
           (when-let [want (seq (want-id game :bagged))]
             (if (< 6 (id-priority game (val (first want))))
               (or (keep-first (fn [[slot item]]
@@ -1742,12 +1761,18 @@
 (defn farming? [game]
   (some? (farm-spot game)))
 
-(defn farm-wield [game]
-  (if-let [[slot item] (have-key game)]
+(defn farm-wield [game splits]
+  (if-let [[slot item] (if (or (and (not (have game food?))
+                                    (not (can-pray? game)))
+                               (and (< 160 splits)
+                                    (> 150 (mod (:turn game) 1000))))
+                         (have game "Excalibur")
+                         (have-key game))]
     (if-not (:wielded item)
       (->Wield slot))))
 
-(defn farm-spot-move [game {:keys [kills splits] :as state}]
+(defn farm-spot-move [{:keys [player] :as game}
+                      {:keys [kills splits] :as state}]
   (or (if-let [m (some (partial monster-at game)
                        (neighbors (curlvl game) (:player game)))]
         (if-not (pudding? m)
@@ -1757,23 +1782,32 @@
       (or (handle-impairment game)
           (use-items game)
           (reequip game)
-          (if (and (< 400 (- (:turn game) (or (:walked (farm-sink game)) 0)))
+          (if (and (< 200 (- (:turn game) (or (:walked (farm-sink game)) 0)))
+                   (hungry? player)
                    (not (monster-at game (farm-sink game))))
-            (->Move (towards (:player game) (farm-sink game))))
-          (farm-wield game)
-          (if (or (<= splits 3) (<= 30 splits) (zero? (rand-int 6)))
-            (if (and (<= 50 splits)
-                     (not= :farmattack (typekw (:last-action game))))
-              (->FarmAttack (towards (:player game) (farm-sink game)) 12)
-              (->Attack (towards (:player game) (farm-sink game))))
-            (with-reason "letting pudding heal" ->Search)))))
+            (->Move (towards player (farm-sink game))))
+          (farm-wield game splits)
+          (cond
+            (> splits 150) (if-not (and (hungry? player)
+                                        (not (have game food?)))
+                             (->FarmAttack (towards player (farm-sink game)) 12)
+                             (->Attack (towards player (farm-sink game))))
+            (and (zero? (rand-int 6))
+                 (<= 50 splits)) (->Attack (towards player (farm-sink game)))
+            (->> (if (< 50 splits) 8 4)
+                 rand-int zero?) (->Attack (towards player (farm-sink game)))
+            (<= splits 2) (->Attack (towards player (farm-sink game)))
+            :else (with-reason "letting puddings heal" ->Search)))))
 
-(defn farm-sink-move [game]
+(defn farm-sink-move [{:keys [player] :as game}]
   (or ;(and (not (e? (at-player game))) (engrave-e game))
-      (consider-items-here game)
       (if-let [m (monster-at game (farm-spot game))]
         (or (wield-weapon game)
             (hit game (curlvl game) m)))
+      (if (> 2/3 (/ (:hp player) (:maxhp player)))
+        (:step (navigate game farm-spot?)))
+      (consider-items-here game)
+      (sinkid-ring game)
       (:step (navigate game farm-spot?))))
 
 (defn farm-action [game state]

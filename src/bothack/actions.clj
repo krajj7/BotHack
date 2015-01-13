@@ -1592,7 +1592,7 @@
 (defn wield [game slot]
   (if-let [item (and (has-hands? (:player game))
                      (inventory-slot game slot))]
-    (if-not (or (:in-use item) (cursed? (val (wielding game))))
+    (if-not (or (:in-use item) (some-> (wielding game) val cursed?))
       (if-let [[shield _] (and (two-handed? item) (have game shield? #{:worn}))]
         (remove-use game shield)
         (->Wield slot)))))
