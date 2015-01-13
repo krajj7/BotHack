@@ -82,7 +82,7 @@
 
 (def monster-types [
   (MonsterType. "giant ant", \a, :brown, 2, 18, 3, 0, 0, #{:genocidable :sgroup}, [(MonsterAttack. :bite :physical 1 4)], 10, 10, :silent, :tiny, #{}, #{}, #{:animal :nohands :oviparous :carnivore :hostile})
-  (MonsterType. "killer bee", \a, :yellow, 1, 18, -1, 0, 0, #{:genocidable :lgroup}, [(MonsterAttack. :sting :poison 1 3)], 1, 5, :buzz, :tiny, #{:poison}, #{:poison}, #{:animal :fly :nohands :poisonous :hostile :female})
+  (MonsterType. "killer bee", \a, :yellow, 1, 18, -1, 0, 0, #{:genocidable :lgroup}, [(MonsterAttack. :sting :poison 1 3)], 1, 5, :buzz, :tiny, #{:poison}, #{:poison}, #{:animal :fly :nohands :poisonous :hostile :female :oviparous})
   (MonsterType. "soldier ant", \a, :blue, 3, 18, 3, 0, 0, #{:genocidable :sgroup}, [(MonsterAttack. :bite :physical 2 4) (MonsterAttack. :sting :poison 3 4)], 20, 5, :silent, :tiny, #{:poison}, #{:poison}, #{:animal :nohands :oviparous :poisonous :carnivore :hostile})
   (MonsterType. "fire ant", \a, :red, 3, 18, 3, 10, 0, #{:genocidable :sgroup}, [(MonsterAttack. :bite :physical 2 4) (MonsterAttack. :bite :fire 2 4)], 30, 10, :silent, :tiny, #{:fire}, #{:fire}, #{:animal :nohands :oviparous :carnivore :hostile :infravisible})
   (MonsterType. "giant beetle", \a, :blue, 5, 6, 4, 0, 0, #{:genocidable}, [(MonsterAttack. :bite :physical 3 6)], 10, 10, :silent, :large, #{:poison}, #{:poison}, #{:animal :nohands :poisonous :carnivore :hostile})
