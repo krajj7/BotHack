@@ -451,7 +451,8 @@
                (log/debug "sink discarding redraw"))
              (initial [frame]
                (or (log/debug "initial scraper, prev =" @prev)
-                   (= @prev (topline+ frame))
+                   (and (= @prev (topline+ frame))
+                        (not (.contains @prev "; eat it?" )))
                    (ref-set prev nil)
                    (handle-game-start frame)
                    (handle-game-end frame)
