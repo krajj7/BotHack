@@ -99,6 +99,12 @@
                                             (assoc % :pushed true)))
             (swap! game remove-monster target)))))))
 
+(defaction FarmAttack [dir cnt]
+  (trigger [_]
+    (str (apply str (repeat cnt (str esc esc \F (direction-trigger dir))))
+         esc esc "##'"))
+  (handler [_ _]))
+
 (defn mark-trap-here [bh]
   (update-at-player-when-known bh update :feature #(if (traps %) % :trap)))
 

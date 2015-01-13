@@ -25,6 +25,8 @@
 
 (defn medusa? [m] (= "Medusa" (typename m)))
 
+(defn pudding? [m] (#{"black pudding" "brown pudding"} (typename m)))
+
 (defn unique? [m] (get-in m [:type :gen-flags :unique]))
 
 (defn priest? [m] (some-> (typename m) (.contains "priest")))

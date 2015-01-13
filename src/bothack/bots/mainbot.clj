@@ -314,10 +314,11 @@
         amt-ammo (have-sum game (some-fn dart? ammo?) #{:noncursed})
         amt-rocks (have-sum game rocks? #{:noncursed})]
     (cond
-      (< 5 amt-daggers) []
+      (< 3 amt-daggers) []
       (< 6 amt-ammo) daggers
-      (< 6 amt-rocks) (concat daggers ammo)
-      :else (concat daggers ammo ["rock"]))))
+      (and (< 6 amt-rocks)
+           (less-than? 35 (inventory game))) (concat daggers ammo)
+      (less-than? 35 (inventory game)) (concat daggers ammo ["rock"]))))
 
 (defn utility
   ([item]
@@ -346,31 +347,37 @@
   (and (want-protection? game)
        (< (gold game) (* 400 (inc (:xplvl (:player game)))))))
 
+(declare farming?)
+
 (defn- currently-desired
   "Returns the set of item names that the bot currently wants."
   [{:keys [player] :as game}]
-  (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
-              (rest desired-items) ; don't pick that pickaxe back up
-              desired-items)
-         res always-desired]
-    (if-let [c (first cs)]
-      (if-let [[slot i] (max-by (comp (partial utility game) val)
-                                (have-all game c #{:bagged}))]
-        (recur (rest cs)
-               (into (conj res (:name i))
-                     (take-while (partial not= (item-name game i)) c)))
-        (recur (rest cs) (into res c)))
-      (as-> res res
-        (into res (desired-food game))
-        (into res (desired-throwables game))
-        (if-let [sanctum (get-level game :main :sanctum)]
-          (if (and (not (have game real-amulet?))
-                   (:seen (at sanctum 20 11)))
-            (conj res "Amulet of Yendor"))
-          res)
-        (cond-> res
-          (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
-          (want-gold? game) (conj "gold piece"))))))
+  (if (more-than 48 (inventory game))
+    #{"scroll of scare monster" "scroll of identify"}
+    (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
+                (rest desired-items) ; don't pick that pickaxe back up
+                desired-items)
+           res always-desired]
+      (if-let [c (first cs)]
+        (if-let [[slot i] (max-by (comp (partial utility game) val)
+                                  (have-all game c #{:bagged}))]
+          (recur (rest cs)
+                 (into (conj res (:name i))
+                       (take-while (partial not= (item-name game i)) c)))
+          (recur (rest cs) (into res c)))
+        (as-> res res
+          (into res (desired-food game))
+          (into res (desired-throwables game))
+          (if (farming? game)
+            (conj res "scroll of scare monster"))
+          (if-let [sanctum (get-level game :main :sanctum)]
+            (if (and (not (have game real-amulet?))
+                     (:seen (at sanctum 20 11)))
+              (conj res "Amulet of Yendor"))
+            res)
+          (cond-> res
+            (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
+            (want-gold? game) (conj "gold piece")))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
   (or (if (and (has-hands? player)
@@ -717,9 +724,7 @@
                                     (have game real-amulet?))]
             (if-not (:in-use item)
               (with-reason "using amulet to search for portal"
-                (make-use game slot)))
-            (with-reason "reequip - weapon"
-              (wield-weapon game))))
+                (make-use game slot)))))
         (use-light game level)
         (remove-levi game tile-path))))
 
@@ -1624,8 +1629,7 @@
             (or (unbag game slot item)
                 (bless game slot)
                 (->Rub slot))))
-        (if-let [[slot geno] (have game "scroll of genocide"
-                                #{:bagged :noncursed})]
+        (if-let [[slot geno] (have game "scroll of genocide" #{:bagged :safe})]
           (with-reason "geno"
             (or (unbag game slot geno)
                 (bless game slot)
@@ -1725,6 +1729,73 @@
                 (->ZapWandAt slot (towards player drowner)))
               (engrave-e game)))))))
 
+(defn farm-spot? [tile]
+  (= "Elbereth*" (:engraving tile)))
+
+(defn farm-sink [game]
+  (find-first sink? (neighbors (curlvl game) (:player game))))
+
+(defn farm-spot [game]
+  (find-first farm-spot?
+              (including-origin neighbors (curlvl game) (:player game))))
+
+(defn farming? [game]
+  (some? (farm-spot game)))
+
+(defn farm-wield [game]
+  (if-let [[slot item] (have-key game)]
+    (if-not (:wielded item)
+      (->Wield slot))))
+
+(defn farm-spot-move [game {:keys [kills splits] :as state}]
+  (or (if-let [m (some (partial monster-at game)
+                       (neighbors (curlvl game) (:player game)))]
+        (if-not (pudding? m)
+          (with-reason "killing non-pudding"
+            (or (wield-weapon game)
+                (hit game (curlvl game) m)))))
+      (or (handle-impairment game)
+          (use-items game)
+          (reequip game)
+          (if (and (< 400 (- (:turn game) (or (:walked (farm-sink game)) 0)))
+                   (not (monster-at game (farm-sink game))))
+            (->Move (towards (:player game) (farm-sink game))))
+          (farm-wield game)
+          (if (or (<= splits 3) (<= 30 splits) (zero? (rand-int 6)))
+            (if (and (<= 50 splits)
+                     (not= :farmattack (typekw (:last-action game))))
+              (->FarmAttack (towards (:player game) (farm-sink game)) 12)
+              (->Attack (towards (:player game) (farm-sink game))))
+            (with-reason "letting pudding heal" ->Search)))))
+
+(defn farm-sink-move [game]
+  (or ;(and (not (e? (at-player game))) (engrave-e game))
+      (consider-items-here game)
+      (if-let [m (monster-at game (farm-spot game))]
+        (or (wield-weapon game)
+            (hit game (curlvl game) m)))
+      (:step (navigate game farm-spot?))))
+
+(defn farm-action [game state]
+  (with-reason "FARM STATE" state
+    (if (farming? game)
+      (if (farm-spot? (at-player game))
+        (farm-spot-move game state)
+        (farm-sink-move game)))))
+
+(defn farm [{:keys [game] :as bh}]
+  (let [state (atom {:splits 0 :kills 0})]
+    (reify
+      ActionHandler
+      (choose-action [_ game]
+        (farm-action game @state))
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"You kill.*(brown|black) pudding" (swap! state update :kills inc)
+          #"divides as you" (swap! state update :splits inc)
+          nil)))))
+
 (defn init [{:keys [game] :as bh}]
   (-> bh
       (register-handler priority-bottom (pause-handler bh))
@@ -1762,36 +1833,40 @@
       (register-handler -99 (reify ActionHandler
                               (choose-action [_ game]
                                 (offer-amulet game))))
-      (register-handler -15 (reify ActionHandler
+      (register-handler -16 (reify ActionHandler
                               (choose-action [_ game]
                                 (enhance game))))
-      (register-handler -14 (name-first-amulet bh))
-      (register-handler -12 (reify ActionHandler
+      (register-handler -15 (name-first-amulet bh))
+      (register-handler -13 (reify ActionHandler
                               (choose-action [_ game]
                                 (handle-drowning game))))
-      (register-handler -10 (reify ActionHandler
+      (register-handler -11 (reify ActionHandler
                               (choose-action [_ game]
                                 (handle-starvation game))))
-      (register-handler -8 (detect-portal bh))
-      (register-handler -7 (reify ActionHandler
+      (register-handler -10 (detect-portal bh))
+      (register-handler -9 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-illness game))))
-      (register-handler -6 (reify ActionHandler
+      (register-handler -8 (farm bh))
+      (register-handler -7 (reify ActionHandler
                              (choose-action [_ game]
                                (retreat game))))
-      (register-handler -4 (reify ActionHandler
+      (register-handler -6 (reify ActionHandler
                              (choose-action [_ game]
                                (fight game))))
-      (register-handler -3 (reify ActionHandler
+      (register-handler -5 (reify ActionHandler
                              (choose-action [_ game]
                                (cursed-levi game))))
-      (register-handler -2 (kill-medusa bh))
-      (register-handler -1 (reify ActionHandler
+      (register-handler -4 (kill-medusa bh))
+      (register-handler -3 (reify ActionHandler
                              (choose-action [_ game]
                                (handle-impairment game))))
-      (register-handler 0 (reify ActionHandler
+      (register-handler -2 (reify ActionHandler
                             (choose-action [_ game]
                               (reequip game))))
+      (register-handler 0 (reify ActionHandler
+                            (choose-action [_ game]
+                              (wield-weapon game))))
       (register-handler 1 (reify ActionHandler
                             (choose-action [_ game]
                               (feed game))))

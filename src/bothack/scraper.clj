@@ -524,10 +524,17 @@
                      (flush-more-list delegator items)
                      (send delegator full-frame frame)
                      sink)
-                   (log/debug "lastmsg expecting further redraw")))]
-       (if no-mark-prompt
-         no-mark
-         initial)))))
+                   (log/debug "lastmsg expecting further redraw")))
+             (farm [frame]
+               (or (when (and (zero? (-> frame :cursor :y))
+                              (before-cursor? frame "# #'"))
+                     (send delegator write (str backspace \newline \newline))
+                     lastmsg-clear)
+                   (log/debug "farm expecting further redraw")))]
+       (cond
+         (false? no-mark-prompt) farm
+         no-mark-prompt no-mark
+         :else initial)))))
 
 (defn- apply-scraper
   "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
@@ -555,9 +562,10 @@
       ActionChosenHandler
       (action-chosen [_ action]
         (dosync
-          (if (#{:autotravel :pay} (typekw action))
-            (no-mark "")
-            (ref-set scraper nil)) ; escape sink
+          (cond
+            (#{:autotravel :pay} (typekw action)) (no-mark "")
+            (= :farmattack (typekw action)) (no-mark false)
+            :else (ref-set scraper nil)) ; escape sink
           (log/debug "reset scraper for" (type action))))
       RedrawHandler
       (redraw [_ frame]
