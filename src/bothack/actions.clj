@@ -303,7 +303,7 @@
         (if-let [no (->> (:branch-id @game) name
                          (re-first-group #"unknown-([0-9]+)")
                          parse-int)]
-          (swap! game assoc :last-branch-no no))))))
+          (swap! game update :last-branch-no #(max no %)))))))
 
 (defaction Ascend []
   (trigger [_] "<")
@@ -1120,7 +1120,9 @@
   (with-reason "removing blockers of" slot
     (if-let [[[blocker-slot blocker] & _ :as blockers]
              (blockers game (inventory-slot game slot))]
-      (if (and blocker (not-any? cursed? (vals blockers)))
+      (if (and blocker
+               (not-any? cursed? (vals blockers))
+               (not (:wielded blocker)))
         ((remove-action blocker) blocker-slot)))))
 
 (defn make-use [game slot]

@@ -395,7 +395,7 @@
               (update-at-player-when-known bh assoc :feature :lava)
               #"You turn into a| slips from your"
               (-> bh update-inventory update-tile)
-              #"You are almost hit|The altar glows |power of .*increase"
+              #"You are almost hit|The altar glows |power of .*increase|can't go .*here"
               (update-tile bh)
               #" activated a magic portal!"
               (do (reset! portal true)
