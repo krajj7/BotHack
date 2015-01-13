@@ -303,7 +303,7 @@
         (if-let [no (->> (:branch-id @game) name
                          (re-first-group #"unknown-([0-9]+)")
                          parse-int)]
-          (swap! game update :last-branch-no #(max no %)))))))
+          (swap! game update :last-branch-no #((fnil max 0) % no)))))))
 
 (defaction Ascend []
   (trigger [_] "<")
