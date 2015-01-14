@@ -307,6 +307,7 @@
 (defn- autonav-target [game from level path opts]
   (if (and (not (:no-autonav opts))
            (not (shop? (at level from)))
+           (not (some-> (wielding game) val pick?))
            (not= :autotravel (some-> game :last-action typekw)))
     (let [path-tiles (map (partial at level) path)
           steps (->> path-tiles
