@@ -323,7 +323,7 @@
   ([item]
    (cond-> 0
      (artifact? item) (+ 50)
-     (:erosion item) (- (:erosion item))
+     (and (:erosion item) (not (key? item))) (- (:erosion item))
      (:enchantment item) (+ (:enchantment item))
      (and (wand? item) (not (:charges item))) (+ 3)
      (:charges item) (+ (:charges item))
@@ -371,10 +371,9 @@
             (conj res "Amulet of Yendor"))
           res)
         (cond-> res
-          (and (sink? (at-player game))
-               (farming? game)) (conj res "scroll of scare monster")
           (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
-          (farming? game) (conj "ring of slow digestion")
+          (farming? game) (conj "ring of slow digestion"
+                                "scroll of scare monster")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -394,7 +393,7 @@
           (untrap-move game)))))
 
 (defn- take-cursed? [game item]
-  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify"} (item-name game item))
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify" "skeleton key"} (item-name game item))
       ((some-fn ring? amulet? tool? artifact?) item)))
 
 (defn want-buy? [game item]
@@ -733,6 +732,9 @@
         (if-let [[slot item] (and (farming? game)
                                   (have game "ring of slow digestion"))]
           (make-use game slot))
+        (if-let [[slot item] (and (farming? game)
+                                  (have game "gauntlets of power"))]
+          (remove-use game slot))
         (if-let [[slot i] (and (not (have-intrinsic? game :speed))
                                (have game "wand of speed monster" #{:bagged}))]
           (with-reason "zapping self with /oSpeed"
@@ -1612,7 +1614,8 @@
            (= 200 price)
            (or (could-be? game "ring of levitation" item)
                (could-be? game "ring of regeneration" item))) (+ 8)
-      (and (wand? item) (not= 150 price)) (+ 5)
+      (and (not know?)
+           (wand? item) (not= 150 price)) (+ 5)
       (and (not know?)
            ((some-fn ring? amulet?) item)) (+ 5))))
 
@@ -1631,7 +1634,9 @@
                                :label) val) (want-id game :bagged)))
 
 (defn- recharge [game slot]
-  (if-not (charged? (inventory-slot game slot))
+  (if-not (or (charged? (inventory-slot game slot))
+              (and (= "wand of wishing" (item-name game (inventory-slot game)))
+                   (recharged? (inventory-slot game slot))))
     (if-let [[s item] (or (have game "scroll of charging" #{:blessed :bagged})
                           (have game "scroll of charging" #{:wished :bagged}))]
       (with-reason "recharge"
@@ -1803,10 +1808,12 @@
       (or (handle-impairment game)
           (use-items game)
           (reequip game)
+          (if-let [[slot item] (have game "scroll of scare monster")]
+            (->Throw slot (opposite (towards player (farm-sink game)))))
           (if (and (or (and (< 200 (- (:turn game)
                                       (or (:walked (farm-sink game)) 0)))
                             (hungry? player))
-                       (< 1800 (- (:turn game)
+                       (< 1500 (- (:turn game)
                                   (or (:walked (farm-sink game)) 0))))
                    (not (monster-at game (farm-sink game))))
             (:step (navigate game (farm-sink game))))
