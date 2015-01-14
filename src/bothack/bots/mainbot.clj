@@ -378,17 +378,20 @@
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
-  (or (if (and (has-hands? player)
-               (:ext-blind (:state player)))
-        (with-reason "fixing external blindness" ->Wipe))
-      (if-let [[slot _] (and (unihorn-recoverable? game)
-                             (have-unihorn game))]
-        (with-reason "applying unihorn to recover" (->Apply slot)))
-      (if-let [[slot _] (have game blind-tool #{:worn :noncursed})]
-        (with-reason "unblinding self"
-          (->Remove slot)))
-      (if (or (impaired? player) (:polymorphed player))
-        (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))))
+  (with-reason "impairment"
+    (or (if (and (has-hands? player)
+                 (:ext-blind (:state player)))
+          (with-reason "fixing external blindness" ->Wipe))
+        (if-let [[slot _] (and (unihorn-recoverable? game)
+                               (have-unihorn game))]
+          (with-reason "applying unihorn to recover" (->Apply slot)))
+        (if-let [[slot _] (have game blind-tool #{:worn :noncursed})]
+          (with-reason "unblinding self"
+            (->Remove slot)))
+        (if (or (impaired? player) (:polymorphed player))
+          (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))
+        (if (:trapped player)
+          (untrap-move game)))))
 
 (defn- take-cursed? [game item]
   (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify"} (item-name game item))

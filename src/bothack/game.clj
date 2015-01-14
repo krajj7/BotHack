@@ -391,7 +391,7 @@
               (swap! game assoc-in [:player :leg-hurt] false)
               #"It's a wall\."
               (swap! game assoc-in [:player :trapped] false)
-              #"Your.* is trapped"
+              #"Your.* is trapped|bear trap prevents you"
               (swap! game assoc-in [:player :trapped] true)
               #"You sink into the lava"
               (update-at-player-when-known bh assoc :feature :lava)
