@@ -123,6 +123,9 @@
   (let [player (or (:player game-or-player) game-or-player)]
     (find-first (comp :wielded val) (inventory player))))
 
+(defn wielded-item [game]
+  (some-> (wielding game) val))
+
 (defn free-finger?
   "Does the player have a free ring-finger?"
   [player]
@@ -140,17 +143,20 @@
                                                      (:worn %)))]
                       :when blocker]
                   blocker) res
-            (if (and (= :gloves subtype) (some-> (wielding game) val cursed?))
+            (if (and (= :gloves subtype) (cursed? (wielded-item game)))
               (conj res (wielding game))
               res)
             (if (and (= :shield subtype) (wielding game)
-                     (some-> (wielding game) val two-handed?))
+                     (two-handed? (wielded-item game)))
               (conj res (wielding game))
               res))))
       (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
         (as-> [] res
           (if-let [weapon (wielding game)]
-            (conj res weapon)
+            (if (or (weapon? (val weapon))
+                    (= :weapon (item-subtype (val weapon))))
+              (conj res weapon)
+              res)
             res)
           (if-let [shield (and (two-handed? item)
                                (have game shield? #{:worn}))]

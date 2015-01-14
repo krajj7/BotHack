@@ -496,8 +496,9 @@
           (with-reason "unlock chest"
             (or (if-let [[slot _] (have-key game)]
                   (->Unlock slot :.))
-                (if-let [[slot _] (or (have game dagger? #{:safe})
-                                      (have game dagger? #{:noncursed}))]
+                (if-let [[slot _]
+                         (or (have game dagger? #{:safe :can-use})
+                             (have game dagger? #{:noncursed :can-use}))]
                   (or (make-use game slot)
                       ->ForceLock))))))))
 
@@ -620,7 +621,7 @@
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
-                (or (if-not (some-> (wielding game) val cursed?)
+                (or (if-not (cursed? (wielded-item game))
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
