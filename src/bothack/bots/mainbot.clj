@@ -590,8 +590,8 @@
                          desired-suit desired-cloak desired-helmet
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
-               :when (not (and (farming? game) (gloves? armor)))
                :when (and armor (not (:worn armor))
+                          (not (and (farming? game) (gloves? armor)))
                           (or (not= "cloak of invisibility"
                                     (item-name game armor))
                               (not (shop? (at-player game))))
