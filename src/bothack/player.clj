@@ -157,7 +157,7 @@
             (conj res shield)
             res)))
       (if (ring? item)
-        (concat (have-all game #(= :gloves (item-subtype %)) #{:worn :cursed})
+        (concat (have-all game gloves? #{:worn :cursed})
                 (if-not (or (free-finger? player) (:in-use item))
                   (have-all game ring? #{:worn}))))
       (if (amulet? item)

@@ -1124,12 +1124,13 @@
 
 (defn remove-blockers [game slot]
   (with-reason "removing blockers of" slot
-    (if-let [[[blocker-slot blocker] & _ :as blockers]
-             (blockers game (inventory-slot game slot))]
-      (if (and blocker
-               (not-any? cursed? (vals blockers))
-               (not (:wielded blocker)))
-        ((remove-action blocker) blocker-slot)))))
+    (let [item (inventory-slot game slot)]
+      (if-let [[[blocker-slot blocker] & _ :as blockers]
+               (blockers game item)]
+        (if (and blocker
+                 (not-any? cursed? (vals blockers))
+                 (or (not (:wielded blocker)) (shield? item)))
+          ((remove-action blocker) blocker-slot))))))
 
 (defn make-use [game slot]
   (with-reason "making use of" slot

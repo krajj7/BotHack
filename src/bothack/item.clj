@@ -111,6 +111,9 @@
 (defn shield? [item]
   (= :shield (item-subtype item)))
 
+(defn gloves? [item]
+  (= :gloves (item-subtype item)))
+
 (defn container? [item]
   (some? (re-seq #"^bag\b|sack$|chest$|box$" (:name item))))
 
