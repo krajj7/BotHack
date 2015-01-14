@@ -685,7 +685,7 @@
                         (if-let [item (inventory-slot game slot)]
                           (if (not= name (:specific item))
                             (->Name slot name))
-                          (log/warn "naming nonexistent slot"))))))
+                          (log/warn "naming nonexistent slot" slot))))))
 
 (defn- identify-slot [game slot id]
   {:pre [(:discoveries game) (char? slot) (string? id)]}

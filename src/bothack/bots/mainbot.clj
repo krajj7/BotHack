@@ -262,7 +262,6 @@
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
    (ordered-set "skeleton key" "lock pick" "credit card")
    (ordered-set "ring of levitation" "boots of levitation")
-   ;#{"ring of slow digestion"}
    #{"ring of conflict"}
    #{"ring of regeneration"}
    #{"ring of invisibility"}
@@ -375,6 +374,7 @@
           (and (sink? (at-player game))
                (farming? game)) (conj res "scroll of scare monster")
           (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
+          (farming? game) (conj "ring of slow digestion")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -586,6 +586,7 @@
                          desired-suit desired-cloak desired-helmet
                          desired-gloves]
                :let [[slot armor] (some (partial have-usable game) category)]
+               :when (not (and (farming? game) (gloves? armor)))
                :when (and armor (not (:worn armor))
                           (or (not= "cloak of invisibility"
                                     (item-name game armor))
@@ -725,6 +726,9 @@
         (wear-armor game)
         (remove-unsafe game)
         (remove-rings game)
+        (if-let [[slot item] (and (farming? game)
+                                  (have game "ring of slow digestion"))]
+          (make-use game slot))
         (if-let [[slot i] (and (not (have-intrinsic? game :speed))
                                (have game "wand of speed monster" #{:bagged}))]
           (with-reason "zapping self with /oSpeed"
@@ -740,6 +744,11 @@
                 (make-use game slot)))))
         (use-light game level)
         (remove-levi game tile-path))))
+
+(defn reequip-weapon [game]
+  (if (and (not= :apply (typekw (:last-action game)))
+           (not (dug? (at-player game))))
+    (wield-weapon game)))
 
 (defn- bait-wizard [game level monster]
   (if (and (= :magenta (:color monster)) (= \@ (:glyph monster))
@@ -1643,12 +1652,15 @@
           (with-reason "helpful potion"
             (or (unbag game slot item)
                 (->Quaff slot))))
-        (if-let [[slot item] (have game "magic lamp" #{:noncursed :bagged})]
+        (if-let [[slot item] (and (less-than? 50 (inventory game))
+                                  (have game "magic lamp"
+                                        #{:noncursed :bagged}))]
           (with-reason "rubbing lamp"
             (or (unbag game slot item)
                 (bless game slot)
                 (->Rub slot))))
-        (if-let [[slot geno] (have game "scroll of genocide" #{:bagged :safe})]
+        (if-let [[slot geno] (have game "scroll of genocide"
+                                   #{:bagged :safe-buc})]
           (with-reason "geno"
             (or (unbag game slot geno)
                 (bless game slot)
@@ -1662,7 +1674,8 @@
                   (->ZapWand slot)))))
         (if-let [[slot item] (have game "scroll of identify" #{:bagged})]
           (when-let [want (seq (want-id game :bagged))]
-            (if (< 6 (id-priority game (val (first want))))
+            (if (or (< 6 (id-priority game (val (first want))))
+                    (more-than? 45 (inventory game)))
               (or (keep-first (fn [[slot item]]
                                 (unbag game slot item)) want)
                   (with-reason "identify" (first want)
@@ -1752,20 +1765,24 @@
   (= "Elbereth*" (:engraving tile)))
 
 (defn farm-sink [game]
-  (find-first sink? (neighbors (curlvl game) (:player game))))
+  (find-first sink? (including-origin neighbors (curlvl game) (:player game))))
 
 (defn farm-spot [game]
   (find-first farm-spot?
               (including-origin neighbors (curlvl game) (:player game))))
 
+; TODO sink with boulder fort
 (defn farming? [game]
-  (some? (farm-spot game)))
+  (and (some? (:x (:player game))) (some? (farm-spot game))))
+
+(defn- reap-turn? [turn]
+  (-> turn (mod 1000) (quot 100) (mod 4) zero?))
 
 (defn farm-wield [game splits]
   (if-let [[slot item] (if (or (and (not (have game food?))
                                     (not (can-pray? game)))
-                               (and (< 160 splits)
-                                    (> 150 (mod (:turn game) 1000))))
+                               (and (< 500000 (:score game))
+                                    (reap-turn? (:turn game))))
                          (have game "Excalibur")
                          (have-key game))]
     (if-not (:wielded item)
@@ -1782,10 +1799,13 @@
       (or (handle-impairment game)
           (use-items game)
           (reequip game)
-          (if (and (< 200 (- (:turn game) (or (:walked (farm-sink game)) 0)))
-                   (hungry? player)
+          (if (and (or (and (< 200 (- (:turn game)
+                                      (or (:walked (farm-sink game)) 0)))
+                            (hungry? player))
+                       (< 1800 (- (:turn game)
+                                  (or (:walked (farm-sink game)) 0))))
                    (not (monster-at game (farm-sink game))))
-            (->Move (towards player (farm-sink game))))
+            (:step (navigate game (farm-sink game))))
           (farm-wield game splits)
           (cond
             (> splits 150) (if-not (and (hungry? player)
@@ -1811,7 +1831,7 @@
       (:step (navigate game farm-spot?))))
 
 (defn farm-action [game state]
-  (with-reason "FARM STATE" state
+  (with-reason "FARM STATE" "items" (count (inventory game)) ";" state
     (if (farming? game)
       (if (farm-spot? (at-player game))
         (farm-spot-move game state)
@@ -1825,10 +1845,11 @@
         (farm-action game @state))
       ToplineMessageHandler
       (message [_ msg]
-        (condp re-seq msg
-          #"You kill.*(brown|black) pudding" (swap! state update :kills inc)
-          #"divides as you" (swap! state update :splits inc)
-          nil)))))
+        (if (farming? @game)
+          (condp re-seq msg
+            #"You kill.*(brown|black) pudding" (swap! state update :kills inc)
+            #"divides as you" (swap! state update :splits inc)
+            nil))))))
 
 (defn init [{:keys [game] :as bh}]
   (-> bh
@@ -1900,7 +1921,7 @@
                               (reequip game))))
       (register-handler 0 (reify ActionHandler
                             (choose-action [_ game]
-                              (wield-weapon game))))
+                              (reequip-weapon game))))
       (register-handler 1 (reify ActionHandler
                             (choose-action [_ game]
                               (feed game))))

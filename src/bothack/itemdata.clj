@@ -1,5 +1,6 @@
 (ns bothack.itemdata
-  (:require [clojure.string :as string]
+  (:require [clojure.tools.logging :as log]
+            [clojure.string :as string]
             [bothack.montype :refer [monster-types]]))
 
 (def scroll-appearances
@@ -3432,7 +3433,11 @@
          :ink 10}
         {:name "scroll of stinking cloud"
          :price 300
-         :ink 20}]))
+         :ink 20}
+        {:name "scroll of spare appearance"
+         :price 0
+         :safe true
+         :ink 0}]))
 
 (def ring-appearances
   (map (partial format "%s ring")
