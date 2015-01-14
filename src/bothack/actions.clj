@@ -415,7 +415,7 @@
           (if (re-seq things-re (first lines))
             (let [items (mapv label->item (subvec lines 1))
                   top-item (firstv items)]
-              (log/debug "Items here:" (log/spy items))
+              ;(log/debug "Items here:" (log/spy items))
               (reset! has-item true)
               (swap! game #(update-at-player %
                              assoc :items items

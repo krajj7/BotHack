@@ -106,10 +106,13 @@
             (log/info "Topline message:" text))
           MultilineMessageHandler
           (message-lines [_ lines]
-            (log/info "Multiline message:" (with-out-str (pprint lines))))
+            (log/info "Multiline message:"
+                      (with-out-str (pprint (take 10 lines))
+                                    (if (more-than? 10 lines)
+                                      (print "[...]")))))
           FoundItemsHandler
           (found-items [_ items]
-            (log/info "Found items:" items))
+            (log/info "Found items:" (take 5 items) "[...]"))
           AboutToChooseActionHandler
           (about-to-choose [_ game]
             (log-state game))

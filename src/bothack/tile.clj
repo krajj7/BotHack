@@ -385,3 +385,9 @@
               :deaths []
               :new-items false
               :tags #{}}))
+
+(defmethod print-method Tile [tile w]
+  (.write w (str "#bothack.game.Tile"
+                 (assoc (-> tile (.without :items) (.without :deaths))
+                        :deaths-trimmed (take 20 (:deaths tile))
+                        :items-trimmed (take 20 (:items tile))))))

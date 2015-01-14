@@ -3434,7 +3434,7 @@
         {:name "scroll of stinking cloud"
          :price 300
          :ink 20}
-        {:name "scroll of spare appearance"
+        {:name "scroll of spare appearance" ; doesn't exist in-game, prevents itemid from pairing nonexistent appearances by elimination
          :price 0
          :safe true
          :ink 0}]))
