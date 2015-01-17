@@ -257,6 +257,7 @@
         (update-feature new-glyph new-color)
         (mark-dug-tile tile)
         (assoc :glyph new-glyph :color new-color)
+        (assoc :thump nil)
         mark-seen-features)
     tile))
 

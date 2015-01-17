@@ -157,14 +157,16 @@
     4000
     1300))
 
+(defn prayer-interval [game]
+  (- (:turn game) (or (:last-prayer game) -1100)))
+
 (defn can-pray? [game]
   {:pre [(:player game)]}
   (and (not (in-gehennom? game))
        (let [tile (at-player game)]
          (not (and (altar? tile) (not= (:alignment (:player game))
                                        (:alignment tile)))))
-       (< (prayer-timeout game)
-          (- (:turn game) (or (:last-prayer game) -1100)))))
+       (< (prayer-timeout game) (prayer-interval game))))
 
 (def ^:private welcome-re #"welcome to NetHack!  You are a.* (\w+ \w+)\.|.* (\w+ \w+), welcome back to NetHack!")
 
