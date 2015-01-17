@@ -1335,7 +1335,7 @@
                      (put-something-in [_ _] true)
                      PutInWhatHandler
                      (put-in-what [_ _]
-                       (set (map #(str %2 %1) amt-map)))))]
+                       (set (map #(str (val %) (key %)) amt-map)))))]
      (with-reason "putting" slot-or-amt-map "into bag at" bag-slot
        (with-handler (dec priority-top) handler
          (if (= \. bag-slot)
@@ -1374,7 +1374,9 @@
   ([game maybe-bag-slot item qty]
    (if (not= item (inventory-slot game maybe-bag-slot))
      (with-reason "preparing item -" (:name item)
-       (take-out maybe-bag-slot (:label item) qty)))))
+       (if (more-than? 51 (inventory game))
+         (log/warn "tried unbagging with full inventory - doing nothing")
+         (take-out maybe-bag-slot (:label item) qty))))))
 
 (defaction Dip [item-slot potion-slot]
   (trigger [_] "#dip\n")

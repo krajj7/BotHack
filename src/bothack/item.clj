@@ -117,6 +117,9 @@
 (defn container? [item]
   (some? (re-seq #"^bag\b|sack$|chest$|box$" (:name item))))
 
+(defn bag? [item]
+  (some? (re-seq #"^bag\b|sack$" (:name item))))
+
 (defn know-contents? [item]
   (or (not (container? item))
       (= "bag of tricks" (:name item))

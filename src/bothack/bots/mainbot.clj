@@ -256,7 +256,9 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle"})
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle" "amulet of life saving"})
+
+(def desired-bag #{"oilskin sack" "sack"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -285,7 +287,6 @@
    #{"scroll of earth"}
    #{"scroll of teleportation"}
    #{"amulet of reflection"}
-   #{"amulet of life saving"}
    #{"amulet of ESP"}
    #{"wand of fire"}
    #{"wand of cold"}
@@ -293,7 +294,8 @@
    #{"wand of teleportation"}
    #{"wand of striking"}
    ;#{"wand of digging"}
-   desired-weapons])
+   desired-weapons
+   desired-bag])
 
 (def desired-singular (set (apply concat desired-items)))
 
@@ -1585,9 +1587,15 @@
         (with-reason "visit shop for items"
           (:step (navigate game #(some want? (:items %))))))))
 
+(defn- baggable? [item]
+  (or (scroll? item)
+      (potion? item)))
+
 (defn bag-items [game]
-  ; TODO
-  )
+  (with-reason "bag items"
+    (if-let [[bag-slot bag] (have game bag?)]
+      (if-let [baggables (keys (have-all game baggable?))]
+        (put-in bag-slot (zipmap baggables (repeat nil)))))))
 
 (defn- id-priority [game item]
   (let [know? (know-id? game item)
@@ -1633,10 +1641,10 @@
                          (juxt (partial id-priority game)
                                :label) val) (want-id game :bagged)))
 
-(defn- recharge [game slot]
-  (if-not (or (charged? (inventory-slot game slot))
-              (and (= "wand of wishing" (item-name game (inventory-slot game)))
-                   (recharged? (inventory-slot game slot))))
+(defn- recharge [game slot wand]
+  (if-not (or (charged? wand)
+              (and (= "wand of wishing" (item-name game wand))
+                   (recharged? wand)))
     (if-let [[s item] (or (have game "scroll of charging" #{:blessed :bagged})
                           (have game "scroll of charging" #{:wished :bagged}))]
       (with-reason "recharge"
@@ -1683,13 +1691,13 @@
                   (->ZapWand slot)))))
         (if-let [[slot item] (have game "scroll of identify" #{:bagged})]
           (when-let [want (seq (want-id game :bagged))]
-            (if (or (< 6 (id-priority game (val (first want))))
-                    (more-than? 45 (inventory game)))
-              (or (keep-first (fn [[slot item]]
-                                (unbag game slot item)) want)
-                  (with-reason "identify" (first want)
-                    (or (unbag game slot item)
-                        (->Read slot)))))))
+            (with-reason "identify" (first want)
+              (if (or (< 6 (id-priority game (val (first want))))
+                      (more-than? 45 (inventory game)))
+                (or (unbag game slot item)
+                    (keep-first (fn [[slot item]]
+                                  (unbag game slot item)) want)
+                    (->Read slot))))))
         (if-let [[slot item] (have game #{"potion of extra healing"
                                           "potion of full healing"} #{:bagged})]
           (if (= (:hp player) (:maxhp player))
