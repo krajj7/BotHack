@@ -291,9 +291,9 @@
    blind-tool
    (ordered-set "oil lamp" "brass lantern")
    #{"unicorn horn"}
-   #{"Candelabrum of Invocation"}
-   #{"Bell of Opening"}
-   #{"Book of the Dead"}
+   #{candelabrum}
+   #{bell}
+   #{book}
    #{"lizard corpse"}
    #{"sprig of wolfsbane"}
    ;#{"bag of holding"}
@@ -1658,6 +1658,8 @@
       (not know?) (+ 2)
       (nil? (:buc item)) inc
       (some (desired game) (possible-names game item)) (+ 5)
+      (and (#{book candelabrum} (item-name game item))
+           (nil? (:buc item))) (+ 5)
       (and (not know?)
            (not (#{100 200} price))
            (scroll? item)) (+ 10)
