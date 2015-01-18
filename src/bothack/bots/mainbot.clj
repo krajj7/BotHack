@@ -50,7 +50,7 @@
                                          (complement tin?)) #{:bagged}))
       (have game "lizard corpse" #{:bagged})))
 
-(declare farming?)
+(declare farming? farm-done?)
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (and (weak? player)
@@ -193,13 +193,15 @@
                          (:seen (at minetown 48 5)))
                      (or (< -7 (:ac player)) (not (have-pick game))))
               (explore game :mines)))
-          (explore game :main "Dlvl:20")
+          (if-not (farm-done? game)
+            (explore game :main "Dlvl:20"))
           (castle-plan-b game)
           (if (or (> -7 (:ac player))
                   (not (have-dsm game))
                   (not (some (:genocided game) #{";" "electric eel"})))
             (explore-level game :main :castle))
-          (if (and (have-levi game) (<= 14 (:xplvl (:player game)))
+          (if (and (have-levi game)
+                   (<= 14 (:xplvl (:player game)))
                    (have-dsm game))
             (explore-level game :quest :end))
           ;(explore game :main :castle :exclusive)
@@ -267,7 +269,7 @@
 (def always-desired #{"magic lamp" "wand of wishing" "scroll of genocide" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle"})
 
 (def limited-desired
-  {"wand of death" 4
+  {"wand of death" 5
    "scroll of identify" 5
    "scroll of remove curse" 10
    "scroll of enchant armor" 5
@@ -392,8 +394,9 @@
           res)
         (cond-> res
           (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
-          (farming? game) (conj "ring of slow digestion"
-                                "scroll of scare monster")
+          (and (farming? game)
+               (not (farm-done? game))) (conj "ring of slow digestion"
+                                              "scroll of scare monster")
           (get-level game :main :votd) (disj "scroll of earth")
           (want-gold? game) (conj "gold piece"))))))
 
@@ -464,38 +467,38 @@
       (have game itemname {:can-remove false})))
 
 (defn take-selector [{:keys [player] :as game}]
-  (fn [item]
-    (or (real-amulet? item)
-        (and (can-take? item)
-             (worthwhile? game item)
-             (if (and (farming? game)
-                      (not (have game "scroll of identify" #{:bagged})))
-               ((some-fn food? scroll? ring?) item)
-               true)
-             (if (more-than? 48 (inventory game))
-               (if (more-than? 51 (inventory game))
-                 false
-                 ((cond-> #{"scroll of scare monster" "scroll of identify"}
-                   (not (have game food?)) (conj "food ration"))
-                  (:name item)))
-               true)
-             (let [id (item-name game item)]
-               (and (or (> 16 (:qty item)) (not (rocks? item)))
-                    (or (not (candle? item)) (= 7 (:qty item)))
-                    (or ((desired game) item)
-                        (should-try? game item)
-                        (and (if-let [wanted (some (desired game)
+  (let [farm? (and (farming? game) (not (farm-done? game)))]
+    (fn [item]
+      (or (real-amulet? item)
+          (and (can-take? item)
+               (worthwhile? game item)
+               (if (and farm? (not (have game "scroll of identify" #{:bagged})))
+                 ((some-fn food? scroll? ring?) item)
+                 true)
+               (if (more-than? 48 (inventory game))
+                 (if (more-than? 51 (inventory game))
+                   false
+                   ((cond-> #{"scroll of scare monster" "scroll of identify"}
+                      (not (have game food?)) (conj "food ration"))
+                    (:name item)))
+                 true)
+               (let [id (item-name game item)]
+                 (and (or (> 16 (:qty item)) (not (rocks? item)))
+                      (or (not (candle? item)) (= 7 (:qty item)))
+                      (or ((desired game) item)
+                          (should-try? game item)
+                          (and (if-let [want (some (desired game)
                                                    (possible-names game item))]
-                               (if-let [[_ o] (and (desired-singular wanted)
-                                                   (have-spare game
-                                                               (:name item)))]
-                                 (> (utility item) (utility o))
-                                 true))
-                             (not (potion? item))))
-                    (if-let [[_ o] (and (desired-singular id)
-                                        (have-spare game id))]
-                      (> (utility item) (utility o))
-                      true)))))))
+                                 (if-let [[_ o] (and (desired-singular want)
+                                                     (have-spare game
+                                                                 (:name item)))]
+                                   (> (utility item) (utility o))
+                                   true))
+                               (not (potion? item))))
+                      (if-let [[_ o] (and (desired-singular id)
+                                          (have-spare game id))]
+                        (> (utility item) (utility o))
+                        true))))))))
 
 (defn examine-containers [game]
   (if-let [[slot item] (have game explorable-container?)]
@@ -509,7 +512,8 @@
            (have game dagger? #{:noncursed}))))
 
 (defn examine-containers-here [game]
-  (or (if (some explorable-container? (:items (at-player game)))
+  (or (if (and (some explorable-container? (:items (at-player game)))
+               (not (sink? (at-player game))))
         (with-reason "learning contents of containers on ground"
           (without-levitation game ->Loot)))
       (if (unlockable-chest? game (at-player game))
@@ -562,8 +566,10 @@
   (let [to-take? (take-selector game)]
     (if-let [{:keys [step target]}
              (navigate game #(or (:new-items %)
-                                 (some explorable-container? (:items %))
-                                 (unlockable-chest? game %)
+                                 (and (or (some explorable-container?
+                                                (:items %))
+                                          (unlockable-chest? game %))
+                                      (not (sink? %)))
                                  (some to-take? (concat (:items %)
                                                         (lootable-items %))))
                        #{:no-fight :no-levitation})]
@@ -756,7 +762,7 @@
         (if-let [[slot item] (and (farming? game)
                                   (have game "ring of slow digestion"))]
           (make-use game slot))
-        (if-let [[slot item] (and (farming? game)
+        (if-let [[slot item] (and (farming? game) (not (farm-done? game))
                                   (have game "gauntlets of power"))]
           (remove-use game slot))
         (if-let [[slot i] (and (not (have-intrinsic? game :speed))
@@ -1106,6 +1112,13 @@
                (not (monster-at level 10 13)))
         (without-levitation game (->Move :W))))))
 
+(defn clear-farm [{:keys [player] :as game}]
+  (with-reason "clear farm"
+    (if-let [t (and (= "Elbereth*" (:engraving (at-player game)))
+                    (farm-done? game)
+                    (find-first boulder? (neighbors (curlvl game) player)))]
+      (:step (navigate game t)))))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -1172,6 +1185,7 @@
                                    (find-first hits-hard? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
+              (clear-farm game)
               (if-let [m (min-by (partial distance player)
                                  (filter (every-pred (partial keep-away? game)
                                                      (complement :fleeing)
@@ -1460,9 +1474,9 @@
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    (not (have game "wand of death"))
-    "blessed wand of death"
-    :else "3 blessed scrolls of enchant armor"))
+    :else (if (odd? (:wishes game))
+            "blessed wand of death"
+            "3 blessed scrolls of enchant armor")))
 
 (defn- want-buc? [game item]
   (and (nil? (:buc item))
@@ -1860,12 +1874,13 @@
 (defn farm-done? [game]
   (and (< 4000000 (:score game))
        (or (< 3 (:wishes game))
-           (and (have game "speed boots")
+           (and (have-levi game)
+                (have game "scroll of identify" #{:bagged})
                 (reflection? game)
-                (> -15 (:ac (:player game)))
+                (> -10 (:ac (:player game)))
                 (or (have-mr? game)
-                    (< 55000 (:turn game)))
-                (< 40000 (:turn game))))))
+                    (< 65000 (:turn game)))
+                (< 35000 (:turn game))))))
 
 (defn init-farm? [game]
   (and (not (farm-done? game))
@@ -1955,6 +1970,8 @@
       (farm-init-move game)
       (use-items game)
       (reequip game)
+      (examine-containers game)
+      (examine-containers-here game)
       (if-let [[slot item] (have game "scroll of scare monster")]
         (->Throw slot (opposite (towards player (farm-sink game)))))
       (bag-items game)
@@ -2148,7 +2165,7 @@
       (register-handler 17 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      #_(register-handler 18 (reify
+      (register-handler 18 (reify
                              AboutToChooseActionHandler
                              (about-to-choose [this game]
                                (when (farming? game)

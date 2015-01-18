@@ -157,7 +157,7 @@
     1300))
 
 (defn prayer-interval [game]
-  (- (:turn game) (or (:last-prayer game) -1100)))
+  (- (:turn game) (or (:last-prayer game) -900)))
 
 (defn can-pray? [game]
   {:pre [(:player game)]}
