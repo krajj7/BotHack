@@ -264,7 +264,17 @@
 
 (def farm-tool (ordered-set "skeleton key" "lock pick"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle" "amulet of life saving" "scroll of earth" "scroll of enchant weapon"})
+(def always-desired #{"magic lamp" "wand of wishing" "scroll of genocide" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle"})
+
+(def limited-desired
+  {"wand of death" 4
+   "scroll of identify" 5
+   "scroll of remove curse" 10
+   "scroll of enchant armor" 5
+   "scroll of earth" 3
+   "scroll of charging" 5
+   "scroll of enchant weapon" 4
+   "amulet of life saving" 5})
 
 (def desired-bag #{"oilskin sack" "sack"})
 
@@ -292,7 +302,6 @@
    desired-boots
    desired-helmet
    desired-gloves
-   #{"scroll of charging"}
    #{"scroll of teleportation"}
    #{"amulet of reflection"}
    #{"amulet of ESP"}
@@ -362,7 +371,10 @@
   (loop [cs (if (or (entering-shop? game) (shop? (at-player game)))
               (rest desired-items) ; don't pick that pickaxe back up
               desired-items)
-         res always-desired]
+         res (into always-desired
+                   (for [[item amt] limited-desired
+                         :when (> amt (have-sum game item #{:bagged}))]
+                     item))]
     (if-let [c (first cs)]
       (if-let [[slot i] (max-by (comp (partial utility game) val)
                                 (have-all game c #{:bagged}))]
@@ -429,6 +441,7 @@
          (not (tin? item))
          (or ((some-fn food? dart? dagger? gold? rocks? pick?) item)
              ((desired game) id)
+             (limited-desired id)
              (should-try? game item)
              (some (desired game) (possible-names game item)))
          (not= "bag of tricks" id)
@@ -469,7 +482,6 @@
                     (or (not (candle? item)) (= 7 (:qty item)))
                     (or ((desired game) item)
                         (should-try? game item)
-                        (scroll? item)
                         (and (if-let [wanted (some (desired game)
                                                    (possible-names game item))]
                                (if-let [[_ o] (and (desired-singular wanted)
