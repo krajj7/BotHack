@@ -840,10 +840,16 @@
                        {:max-steps 1 :no-traps true
                         :no-fight true :walking true})))))
 
-(defn hit-surtur [game monster]
-  (if-let [[slot item] (and (= "Lord Surtur" (:name monster))
+(defn hit-surtur [{:keys [player] :as game} monster]
+  (if-let [[slot item] (and (= "Lord Surtur" (typename monster))
                             (have game "wand of cold"))]
-    (->ZapWandAt slot (towards (:player game) monster))))
+    (->ZapWandAt slot (towards player monster))))
+
+(defn hit-wizard [{:keys [player] :as game} monster]
+  (if-let [[slot item] (and (#{"Wizard of Yendor"
+                               "Famine" "Pestilence"} (typename monster))
+                            (have game "wand of death" #{:can-use}))]
+    (->ZapWandAt slot (towards player monster))))
 
 (defn hit-leprechaun [game monster]
   (if-let [qty (and (leprechaun? monster)
@@ -860,7 +866,8 @@
           (with-reason "levitation for :air"
             (make-use game slot)))
         (if (adjacent? player monster)
-          (or (hit-leprechaun game monster)
+          (or (hit-wizard game monster)
+              (hit-leprechaun game monster)
               (hit-surtur game monster)
               (hit-floating-eye game monster)
               (kite game monster)
