@@ -1727,8 +1727,7 @@
             (with-reason "wish"
               (or (unbag game slot wow)
                   (recharge game slot wow)
-                  (if (charged? wow)
-                    (->ZapWand slot)))))
+                  (->ZapWand slot))))
           (if-let [[slot wod] (have game "wand of death" {:can-use false})]
             (with-reason "recharge WoD"
               (recharge game slot wod)))
