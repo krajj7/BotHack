@@ -1575,7 +1575,14 @@
     :target false
     :autoid true
     :engrave :id
-    :zaptype :nodir}])
+    :zaptype :nodir}
+   {:name "wand of spare appearance" ; doesn't exist in-game, prevents itemid from pairing nonexistent appearances by elimination
+    :price 1
+    :max-charges 0
+    :target true
+    :autoid true
+    :engrave :id
+    :zaptype :ray}])
 
 (def wands-appearances
   (map (partial format "%s wand")
