@@ -1132,19 +1132,25 @@
                  (or (not (:wielded blocker)) (shield? item)))
           ((remove-action blocker) blocker-slot))))))
 
+(declare untrap-move)
+
 (defn make-use [game slot]
   (with-reason "making use of" slot
     (let [item (inventory-slot game slot)]
       (if-not (or (:in-use item) (cursed-blockers game slot)
                   (not (has-hands? (:player game))))
-        (or (remove-blockers game slot)
+        (or (if (:trapped (:player game))
+              (untrap-move game))
+            (remove-blockers game slot)
             ((use-action item) slot))))))
 
 (defn remove-use [game slot]
   (with-reason "removing use of" slot
     (let [item (inventory-slot game slot)]
       (if (:in-use item)
-        (or (remove-blockers game slot)
+        (or (if (:trapped (:player game))
+              (untrap-move game))
+            (remove-blockers game slot)
             (if (can-remove? game slot)
               ((remove-action item) slot)))))))
 

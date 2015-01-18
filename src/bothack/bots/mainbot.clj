@@ -394,9 +394,7 @@
           (with-reason "unblinding self"
             (->Remove slot)))
         (if (or (impaired? player) (:polymorphed player))
-          (with-reason "waiting out impairment" (->Repeated (->Wait) 10)))
-        (if (:trapped player)
-          (untrap-move game)))))
+          (with-reason "waiting out impairment" (->Repeated (->Wait) 10))))))
 
 (defn- take-cursed? [game item]
   (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify" "skeleton key"} (item-name game item))
