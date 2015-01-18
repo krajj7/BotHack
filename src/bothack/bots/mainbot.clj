@@ -2129,7 +2129,7 @@
       (register-handler 17 (reify ActionHandler
                             (choose-action [this game]
                               (rob-peacefuls game))))
-      (register-handler 18 (reify
+      #_(register-handler 18 (reify
                              AboutToChooseActionHandler
                              (about-to-choose [this game]
                                (when (farming? game)
