@@ -277,13 +277,15 @@
                              (if (and (kickable-door? level to-tile opts)
                                       (walkable? from-tile))
                                (kick-door game level to-tile dir)))))))
-                 (if (and (:pick opts) (diggable? to-tile) (not monster)
+                 (if (and (:pick opts) (diggable? to-tile)
                           (or (boulder? to-tile) (diggable-walls? game level))
                           (dare-destroy? level to-tile))
-                   (if (or (not (:thick (:player game)))
-                           (not (narrow? game level from-tile to-tile)))
-                     [8 (dig (:pick opts) dir)]
-                     [16 (dig (:pick opts) dir)])))
+                   (if monster
+                     (pass-monster game level to-tile dir monster opts)
+                     (if (or (not (:thick (:player game)))
+                             (not (narrow? game level from-tile to-tile)))
+                       [8 (dig (:pick opts) dir)]
+                       [16 (dig (:pick opts) dir)]))))
              (update 0 + (base-cost level dir to-tile opts))))))
 
 (defrecord Path
