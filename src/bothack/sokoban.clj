@@ -354,7 +354,7 @@
           (explore game)
           (if (:end (curlvl-tags game))
             (:step (navigate game #(and ((some soko-items (curlvl-tags game))
-                                         (position %))
+                                         (position-map %))
                                         (not (:walked %))))))
           (seek-level game :sokoban :end)
           (search-level game 1)))))
@@ -411,7 +411,8 @@
     (action-chosen [_ action]
       (if-let [bohname (and (:soko-4a (curlvl-tags @game))
                             (= :call (typekw action))
-                            ((:soko-4a soko-items) (position (:player @game)))
+                            ((:soko-4a soko-items)
+                             (position-map (:player @game)))
                             (:name action))]
         (swap! game add-discovery bohname "bag of holding")))
     FoundItemsHandler
@@ -419,7 +420,7 @@
       (if-let [tile (and (= :sokoban (branch-key @game)) (at-player @game))]
         (if-let [items (and (= (:turn @game) (:first-walked tile))
                             (some soko-items (curlvl-tags @game)))]
-          (if-let [id (items (position (:player @game)))]
+          (if-let [id (items (position-map (:player @game)))]
             (if-let [matching (->> (:items tile)
                                    (filter #(= (item-type (name->item id))
                                                (item-type %)))
