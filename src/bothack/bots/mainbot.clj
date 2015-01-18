@@ -447,7 +447,9 @@
          (not= "bag of tricks" id)
          (not (and (have-intrinsic? (:player game) :speed)
                    (= "wand of speed monster" id)))
-         (or (charged? item) (= "wand of wishing" id)
+         (or (charged? item)
+             (= "wand of death" id)
+             (= "wand of wishing" id)
              (and (:castle (curlvl-tags game)) (= "wand of striking" id)))
          (or (and (not= :cursed (:buc item))
                   (> 2 (:erosion item)))
@@ -1458,6 +1460,8 @@
     "blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
+    (not (have game "wand of death"))
+    "blessed wand of death"
     :else "3 blessed scrolls of enchant armor"))
 
 (defn- want-buc? [game item]
@@ -1725,6 +1729,9 @@
                   (recharge game slot wow)
                   (if (charged? wow)
                     (->ZapWand slot)))))
+          (if-let [[slot wod] (have game "wand of death" {:can-use false})]
+            (with-reason "recharge WoD"
+              (recharge game slot wod)))
           (if-let [[slot item] (have game "scroll of identify" #{bagged?})]
             (when-let [want (seq (want-id game bagged?))]
               (with-reason "identify" (first want)
