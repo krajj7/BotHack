@@ -1268,7 +1268,12 @@
           edible? #(every-pred
                      (partial fresh-corpse? game %)
                      (partial edible? player))]
-      (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
+      (or (if (= :astral (branch-key game))
+            (if-let [[slot food] (choose-food game)]
+              (with-reason "eating against Famine" food
+                (or (unbag game slot food)
+                    (->Eat slot)))))
+          (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
             (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
                   (->> (at-player game) :items
