@@ -327,7 +327,7 @@
       (< 6 amt-ammo) daggers
       (and (< 6 amt-rocks)
            (less-than? 35 (inventory game))) (conj daggers "dart")
-      (less-than? 35 (inventory game)) (concat daggers ["dart" "rock"]))))
+      (less-than? 30 (inventory game)) (concat daggers ["dart" "rock"]))))
 
 (defn utility
   ([item]
@@ -454,7 +454,7 @@
         (and (can-take? item)
              (worthwhile? game item)
              (if (and (farming? game)
-                      (not (have game "scroll of identify")))
+                      (not (have game "scroll of identify" #{:bagged})))
                ((some-fn food? scroll? ring?) item)
                true)
              (if (more-than? 48 (inventory game))
@@ -649,7 +649,6 @@
 
 (defn- want-light? [game level]
   (not (or (explored? game)
-           (farming? game)
            (:minetown (:tags level))
            (#{:air :water} (branch-key game))
            (lit-mines? game level))))
@@ -700,8 +699,10 @@
                       (->Drop slot)))))
             (if (seq more)
               (recur more)))))
-      (if-let [[slot item] (and (more-than? 44 (inventory game))
-                                (have game dart?))]
+      (if-let [[slot item] (or (and (more-than? 35 (inventory game))
+                                    (have game rocks?))
+                               (and (more-than? 44 (inventory game))
+                                    (have game dart?)))]
         (with-reason "dropping ammo - low on inventory slots"
           (->Drop slot (:qty item))))
       (if-let [[slot item] (have game #(and (rocks? %) (< 7 (:qty %))))]
@@ -1618,7 +1619,7 @@
       ((some-fn food? rocks? gold?) item) (- 10)
       (not know?) (+ 2)
       (nil? (:buc item)) inc
-      (some (desired game) (possible-ids game item)) (+ 5)
+      (some (desired game) (possible-names game item)) (+ 5)
       (and (not know?)
            (not (#{100 200} price))
            (scroll? item)) (+ 10)
@@ -1831,12 +1832,14 @@
                      (more-than? 3))))))
 
 (defn farm-done? [game]
-  (and (< 2000000 (:score game))
+  (and (< 4000000 (:score game))
        (or (< 3 (:wishes game))
            (and (have game "speed boots")
-                (have-dsm game)
-                (> -20 (:ac (:player game)))
-                (< 50000 (:turn game))))))
+                (reflection? game)
+                (> -15 (:ac (:player game)))
+                (or (have-mr? game)
+                    (< 55000 (:turn game)))
+                (< 40000 (:turn game))))))
 
 (defn init-farm? [game]
   (and (not (farm-done? game))
@@ -1895,7 +1898,7 @@
       (and (< 150 splits)
            (< 600000 (:score game))
            (-> turn (mod 1000) (quot 100) (mod 4) zero?)
-           (-> turn (mod 100) (> 25)))
+           (-> turn (mod 100) (> 15)))
       (and (< 80 splits)
            (-> turn (mod 1000) (quot 100) (mod 8) zero?)
            (-> turn (mod 100) (> 60)))))
@@ -1977,6 +1980,12 @@
         (farm-spot-move game state)
         (farm-sink-move game)))))
 
+(defn end-farm? [game]
+  (and (farm-done? game)
+       (not-any? (every-pred pudding? (complement :remembered)
+                             #(> 5 (distance % (:player game))))
+                 (curlvl-monsters game))))
+
 (defn farm [{:keys [game] :as bh}]
   (let [state (atom {:splits 0 :kills 0})]
     (reify
@@ -1986,11 +1995,10 @@
       (really-attack [_ _] (farming? @game))
       ActionHandler
       (choose-action [this game]
-        (if (and (farm-done? game) (not-any? (every-pred pudding? :known)
-                                             (curlvl-monsters game)))
-          (do (deregister-handler bh this)
-              (log/warn "done farming"))
-          (farm-action game @state)))
+        (when (end-farm? game)
+          (deregister-handler bh this)
+          (log/warn "done farming"))
+        (farm-action game @state))
       ToplineMessageHandler
       (message [_ msg]
         (if (farming? @game)

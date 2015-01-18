@@ -229,7 +229,7 @@
 
 (defn recharged? [item]
   (or (= "recharged" (:specific item))
-      (not ((fnil zero? 1) (:recharges item)))))
+      (not ((fnil zero? 0) (:recharges item)))))
 
 (defn pick? [item]
   (#{"pick-axe" "dwarvish mattock"} (:name item)))
