@@ -149,7 +149,6 @@
   ">95% confidence"
   [game]
   {:pre [(:player game)]}
-  ; TODO wishes
   ; TODO crowning
   (if (or (planes (branch-key game))
           (:sanctum (curlvl-tags game))
@@ -324,6 +323,7 @@
                   (= genocide-monster method))
           (swap! game update :genocided conj res))
         (when (and (= make-wish method) (not= "nothing" res))
+          (swap! game adjust-prayer-timeout)
           (swap! game update :wishes inc)))
       MultilineMessageHandler
       (message-lines [_ lines]
