@@ -235,10 +235,11 @@
   (#{"pick-axe" "dwarvish mattock"} (:name item)))
 
 (defn safe-enchant? [item]
-  (case (item-type item)
-    :weapon (> 6 (enchantment item))
-    :armor (> 4 (enchantment item))
-    nil))
+  (and (some? (:enchantment item))
+       (case (item-type item)
+         :weapon (> 6 (enchantment item))
+         :armor (> 4 (enchantment item))
+         nil)))
 
 (defn two-handed? [item]
   (= 2 (:hands (item-id item))))

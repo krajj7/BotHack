@@ -150,10 +150,10 @@
               (if-not (some stairs-up? (tile-seq level))
                 (seek game stairs-up?)))
             (if-let [[slot scroll] (have game "scroll of earth"
-                                         #{:noncursed})]
+                                         #{:noncursed :bagged})]
               (with-reason "using scroll of earth"
                 (if-let [{:keys [step]} (navigate game (position 12 13))]
-                  (or step (->Read slot)))))
+                  (or step (unbag game slot scroll) (->Read slot)))))
             (if-let [[slot _] (have game "wand of cold")]
               (with-reason "using wand of cold"
                 (if-let [pool (find-first pool? (for [y [11 12 13]]
@@ -262,7 +262,9 @@
 
 (def blind-tool (ordered-set "blindfold" "towel"))
 
-(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "scroll of enchant weapon" "scroll of charging" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle" "amulet of life saving"})
+(def farm-tool (ordered-set "skeleton key" "lock pick"))
+
+(def always-desired #{"magic lamp" "wand of wishing" "wand of death" "scroll of genocide" "scroll of identify" "scroll of remove curse" "scroll of enchant armor" "potion of gain level" "potion of full healing" "potion of extra healing" "potion of see invisible" "tallow candle" "wax candle" "amulet of life saving" "scroll of earth" "scroll of enchant weapon"})
 
 (def desired-bag #{"oilskin sack" "sack"})
 
@@ -290,7 +292,7 @@
    desired-boots
    desired-helmet
    desired-gloves
-   #{"scroll of earth"}
+   #{"scroll of charging"}
    #{"scroll of teleportation"}
    #{"amulet of reflection"}
    #{"amulet of ESP"}
@@ -380,6 +382,7 @@
           (not (have-intrinsic? player :speed)) (conj "wand of speed monster")
           (farming? game) (conj "ring of slow digestion"
                                 "scroll of scare monster")
+          (get-level game :main :votd) (disj "scroll of earth")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -646,6 +649,7 @@
 
 (defn- want-light? [game level]
   (not (or (explored? game)
+           (farming? game)
            (:minetown (:tags level))
            (#{:air :water} (branch-key game))
            (lit-mines? game level))))
@@ -1707,12 +1711,15 @@
                              (less-than? 50 (inventory game)))
                          (or (< 6 (id-priority game (val (first want))))
                              (and (< 0 (id-priority game (val (first want))))
-                                  (more-than? 45 (inventory game))
-                                  (less-than? 51 (inventory game)))))
+                                  (or (more-than? 45 (inventory game))
+                                      (< 5 (have-sum game "scroll of identify"
+                                                     #{:bagged}))
+                                      (burdened? player)))))
                   (or (unbag game slot item)
-                      (keep-first (fn [[slot item]]
-                                    (if (< 0 (id-priority game item))
-                                      (unbag game slot item))) want)
+                      (if (less-than? 51 (inventory game))
+                        (keep-first (fn [[slot item]]
+                                      (if (< 0 (id-priority game item))
+                                        (unbag game slot item))) want))
                       (->Read slot))))))
           (if-let [[slot item] (have game #{"potion of extra healing"
                                             "potion of full healing"}
@@ -1823,19 +1830,23 @@
                      (filter boulder?)
                      (more-than? 3))))))
 
-(defn done-farming? [game]
-  ; score > 1,000,000 + 4 wishes
-  false) ; XXX
+(defn farm-done? [game]
+  (and (< 2000000 (:score game))
+       (or (< 3 (:wishes game))
+           (and (have game "speed boots")
+                (have-dsm game)
+                (> -20 (:ac (:player game)))
+                (< 50000 (:turn game))))))
 
 (defn init-farm? [game]
-  (and (not (done-farming? game))
+  (and (not (farm-done? game))
        (know-appearance? game "scroll of identify")
        (have-pick game)
        (have-unihorn game)
-       (have game "skeleton key")
+       (have game farm-tool)
        (have game #{"wand of lightning" "wand of fire"})
        (< 2001 (nutrition-sum game))
-       (have game "scroll of earth")))
+       (have game "scroll of earth" #{:bagged})))
 
 (defn farm-rect [game sink]
   (rectangle (position (- (:x sink) 2)
@@ -1880,13 +1891,18 @@
             (kick game (towards player sink)))))))
 
 (defn- reap-turn? [{:keys [turn] :as game} splits]
-  (or (done-farming? game)
+  (or (farm-done? game)
       (and (< 150 splits)
            (< 600000 (:score game))
-           (-> turn (mod 1000) (quot 100) (mod 4) zero?))
+           (-> turn (mod 1000) (quot 100) (mod 4) zero?)
+           (-> turn (mod 100) (> 25)))
       (and (< 80 splits)
            (-> turn (mod 1000) (quot 100) (mod 8) zero?)
            (-> turn (mod 100) (> 60)))))
+
+(defn- heal-turn? [{:keys [turn] :as game} splits]
+  (and (< 30 splits)
+       (-> turn (mod 1000) (quot 100) (mod 5) zero?)))
 
 (defn farm-wield [game splits]
   (if-let [[slot item] (if (or (and (hungry? (:player game))
@@ -1918,13 +1934,16 @@
                              75)
                            (- (:turn game)
                               (or (:walked (farm-sink game)) 0)))
-                        (hungry? player))
+                        (or (hungry? player)
+                            (= \? (:glyph (farm-sink game)))))
                    (< 1500 (- (:turn game)
                               (or (:walked (farm-sink game)) 0))))
                (not (monster-at game (farm-sink game))))
         (:step (navigate game (farm-sink game))))
       (farm-wield game splits)
       (cond
+        (heal-turn? game splits) (with-reason "letting puddings heal"
+                                         (search 8))
         (> splits 150) (if-not (and (hungry? player)
                                     (not (have game food?)))
                          (->FarmAttack (towards player (farm-sink game)) 8)
@@ -1946,11 +1965,13 @@
       (if (> 2/3 (/ (:hp player) (:maxhp player)))
         (:step (navigate game (partial farm-spot? game))))
       (consider-items-here game)
-      (sinkid-ring game)
+      (if (or (know-appearance? game "ring of hunger")
+              (< 3000 (nutrition-sum game)))
+        (sinkid-ring game))
       (:step (navigate game (partial farm-spot? game)))))
 
 (defn farm-action [game state]
-  (with-reason "FARM STATE" "items" (count (inventory game)) "; bagged" (- (count (inventory game :bagged)) (count (inventory game))) "; food" (nutrition-sum game) "; prayer" (- (prayer-interval game) 1300) ";" state
+  (with-reason "FARM STATE" "items" (count (inventory game)) "; bagged" (- (count (inventory game :bagged)) (count (inventory game))) "; at sink" (count (:items (farm-sink game))) "; food" (nutrition-sum game) "; prayer" (- (prayer-interval game) 1300) ";" state "; wishes" (:wishes game)
     (if (farming? game)
       (if (farm-spot? game (at-player game))
         (farm-spot-move game state)
@@ -1959,12 +1980,17 @@
 (defn farm [{:keys [game] :as bh}]
   (let [state (atom {:splits 0 :kills 0})]
     (reify
+      ForceGodHandler
+      (force-god [_ _] false)
       ReallyAttackHandler
       (really-attack [_ _] (farming? @game))
       ActionHandler
-      (choose-action [_ game]
-        ; XXX > 20 splits and no puddings in sight -> abort (possibly done)
-        (farm-action game @state))
+      (choose-action [this game]
+        (if (and (farm-done? game) (not-any? (every-pred pudding? :known)
+                                             (curlvl-monsters game)))
+          (do (deregister-handler bh this)
+              (log/warn "done farming"))
+          (farm-action game @state)))
       ToplineMessageHandler
       (message [_ msg]
         (if (farming? @game)
