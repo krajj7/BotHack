@@ -452,7 +452,7 @@
              (initial [frame]
                (or (log/debug "initial scraper, prev =" @prev)
                    (and (= @prev (topline+ frame))
-                        (not (.contains @prev "; eat it?" )))
+                        (not (.contains @prev "; eat " )))
                    (ref-set prev nil)
                    (handle-game-start frame)
                    (handle-game-end frame)
