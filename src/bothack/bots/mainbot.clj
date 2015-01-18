@@ -1627,7 +1627,8 @@
 
 (defn bag-items [game]
   (with-reason "bag items"
-    (if-let [[bag-slot bag] (have game bag?)]
+    (if-let [[bag-slot bag] (and (not= :apply (typekw (:last-action game)))
+                                 (have game bag?))]
       (if-let [baggables (keys (have-all game baggable?))]
         (put-in bag-slot (zipmap baggables (repeat nil)))))))
 
