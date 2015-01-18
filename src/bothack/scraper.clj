@@ -82,7 +82,7 @@
 (defn- multi-menu?
   "Do we need to confirm menu selections (=> true), or does single selection close the menu? (=> false)"
   [head]
-  (not (re-seq #"What do you wish to do\?" head)))
+  (not (re-seq #"What do you wish to do\?|Pick a skill" head)))
 
 (defn- merge-menu?
   "Present all options as on one page?"
@@ -473,7 +473,7 @@
                (log/debug "no-mark maybe direction/location prompt, prev ="
                           @prev)
                (or (and (= @prev (topline frame))
-                        (or (not (re-seq #"What do you want to zap\?" @prev))
+                        (or (not (re-seq #"What do you want to (?:zap|use or apply)\?" @prev))
                             (zero? (:y (:cursor frame)))))
                    (ref-set prev nil)
                    (log/debug "no-mark - new topline:" (topline frame))
