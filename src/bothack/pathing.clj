@@ -250,7 +250,9 @@
                          [cost (with-reason "assuming levitation" move)]
                          [(+ 2 cost) (with-reason "need levi for next move"
                                        (make-use game slot))]))))
-                 (if (and (door? to-tile) (not (:walking opts)))
+                 (if (and (door? to-tile)
+                          (not (:walking opts))
+                          (not (:no-kick opts)))
                    (or (if monster
                          (pass-monster game level to-tile dir monster opts))
                        (if (door-secret? to-tile)
@@ -363,6 +365,7 @@
     :max-steps <num> - don't navigate further than given number of steps
     :no-traps - more trap avoidance
     :no-dig - don't use the pickaxe or mattock
+    :no-kick - don't kick down doors
     :no-levitation - when navigating deliberately into a hole/trapdoor
     :prefer-items - walk over unknown items preferably (useful for exploration but possibly dangerous when low on health - items could be corpses on a dangerous trap)
     :no-autonav - don't use _ autotravel (when fighting monsters)

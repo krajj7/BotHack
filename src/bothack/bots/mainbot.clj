@@ -805,7 +805,8 @@
     (with-reason "baiting possible wizard away from water/lava"
       ; don't let the book fall into water/lava
       (or (:step (navigate game #(every? (not-any-fn? lava? pool?)
-                                         (neighbors level %))))
+                                         (neighbors level %)))
+                 #{:explored :no-dig})
           (->Wait)))))
 
 (defn- bait-giant [game level monster]
@@ -928,6 +929,12 @@
       (#{"grid bug" "newt" "leprechaun"} (typename monster))
       (and (mimic? monster) (not (adjacent? player monster)))))
 
+(defn pushover? [{:keys [player] :as game} monster]
+  (or (can-ignore? game monster)
+      (and (>= -14 (:ac player))
+           (or (#{\a \b \s \S \B} (:glyph monster))
+               (= "gremlin" (:name monster))))))
+
 (defn can-handle? [{:keys [player] :as game} monster]
   (cond
     (and (drowner? monster) (pool? (at-curlvl game monster))) false
@@ -975,7 +982,7 @@
        (more-than? 2)))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
-  (>= (/ hp maxhp) 9/10))
+  (or (>= (/ hp maxhp) 9/10) (< 175 hp)))
 
 (defn- recover
   ([game]
@@ -1141,7 +1148,6 @@
                   :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
         (castle-move game level)
-        ; TODO special handling of uniques
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
                            set)
@@ -1172,15 +1178,17 @@
                        (and (exposed? game level player)
                             (seq (filter (partial mobile? game) adjacent))
                             (or (more-than? 1 (filter ignores-e? threats))
-                                (more-than? 2 (filter #(and (mobile? game %)
-                                                            (not (slow? %)))
-                                                      threats)))
+                                (more-than? 2 (filter
+                                                #(and (mobile? game %)
+                                                      (not (pushover? game %))
+                                                      (not (slow? %)))
+                                                threats)))
                             (navigate game stairs-up? {:max-steps 40
                                                        :no-autonav true
                                                        :walking true
                                                        :explored true}))]
                 (if (and (not-any? #(if-let [monster (monster-at level %)]
-                                      (and (not (can-ignore? game monster))
+                                      (and (not (pushover? game monster))
                                            (< 20 (- (:turn game)
                                                     (:known monster)))))
                                    (for [tile path
@@ -1229,9 +1237,12 @@
                             (if (pos? (rand-int 13))
                               ->Search)))
                         (if-let [m (find-first #(and (= 2 (distance player %))
+                                                     (not (pushover? game %))
                                                      (mobile? game %))
                                                threats)]
                           (if (and (pos? (rand-int (if (slow? m) 30 10)))
+                                   (not (passive? m))
+                                   (not (:fleeing m))
                                    (not (spellcaster? m)))
                             (with-reason "baiting monsters" ->Search)))
                         step))))))
@@ -1239,7 +1250,9 @@
                              (filter (partial can-ignore? game))
                              (filter (partial can-handle? game))
                              set)]
-          (when-let [{:keys [step target]} (navigate game leftovers nav-opts)]
+          (when-let [{:keys [step target]} (navigate game leftovers
+                                                     (assoc nav-opts
+                                                            :explored true))]
             (let [monster (monster-at level target)]
               (with-reason "targetting leftover enemy" monster
                 (or (hit game level monster)
