@@ -169,6 +169,8 @@
 
 (defn- choice-fn [msg]
   (condp re-first-groups msg
+    #"^In what direction" (throw (IllegalStateException. ; should recover itself
+                                   (str "Unexpected direction prompt: " msg)))
     #"^What do you want to charge" charge-what
     #"^\"Shall I remove|^\"Take off your |let me run my fingers" seduced-remove
     #"Would you wear it for me" seduced-puton
@@ -459,7 +461,6 @@
                    (handle-more frame)
                    (handle-menu frame)
                    (handle-choice-prompt frame)
-                   ;(handle-direction frame)
                    ;(handle-location frame)
                    ; pokud je vykresleny status, nic z predchoziho nesmi invazivne reagovat na "##"
                    (when (status-drawn? frame)
@@ -493,6 +494,10 @@
                    (handle-menu frame)
                    (handle-choice-prompt frame)
                    (handle-prompt frame)
+                   (when (and (zero? (-> frame :cursor :y))
+                              (before-cursor? frame "# '"))
+                     (send delegator write (str esc esc))
+                     initial)
                    (when (and (zero? (-> frame :cursor :y))
                               (before-cursor? frame "# #'"))
                      (send delegator write (str backspace \newline \newline))
