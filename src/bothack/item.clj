@@ -48,8 +48,10 @@
         (update res :candles #(if (= % "no") 0 (parse-int %)))
         res)
       (reduce #(update %1 %2 str->kw) res [:buc :proof])
-      (if (or (and (:enchantment raw) (not (:buc res)))
-              (and (:charges raw) (not (:buc res))))
+      (if (and (not (:buc res))
+               (or (:charges raw)
+                   (:enchantment raw)
+                   (= "Amulet of Yendor" (:name res))))
         (assoc res :buc :uncursed)
         res)
       (reduce #(update %1 %2 parse-int) res

@@ -72,6 +72,9 @@
 
 (def-tag-preds)
 
+(defn spellcaster? [m]
+  (some #(= :magic (:type %)) (:attacks m)))
+
 (defn passive? [m] (passive-type? (:type m)))
 
 (defn corrosive? [m] (corrosive-type? (:type m)))

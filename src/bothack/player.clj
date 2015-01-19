@@ -216,9 +216,10 @@
                               (not (and (or (false? (:can-use opts))
                                             (:no-can-use opts))
                                         (or (:in-use item)
-                                            (not (cursed-blockers game slot))
-                                            (and (wand? item)
-                                                 (charged? item)))))
+                                            (if (wand? item)
+                                              (charged? item)
+                                              (not (cursed-blockers game
+                                                                    slot))))))
                               (not (and (or (false? (:can-remove opts))
                                             (:no-can-remove opts))
                                         (or (not (:in-use item))
@@ -467,7 +468,7 @@
   "Return the amount of gold the player has in main inventory"
   [game]
   {:pre [(:player game)]}
-  (get-in game [:player :inventory \$ :qty]))
+  (get-in game [:player :inventory \$ :qty] 0))
 
 (defn gold
   "Return the amount of gold the player has including bagged gold"

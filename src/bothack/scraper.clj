@@ -206,7 +206,7 @@
     #"^What do you want to eat\?" eat-what
     #"^Do you wish to teleport" do-teleport
     #"^What do you want to sacrifice\?" sacrifice-what
-    #"^Attach the .*to the candelabrum\?" attach-candelabrum-candles
+    #"^Attach the .*to .*\?" attach-candelabrum-candles
     #"^Beware, there will be no return! Still climb\?" still-climb
     #"^You have a little trouble lifting ([^.]+)\. Continue\?"
     :>> (partial apply list lift-burden :light)
