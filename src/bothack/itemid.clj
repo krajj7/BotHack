@@ -259,16 +259,20 @@
         initial-merge) (possible-ids game item))))
 
 (defn item-type [item]
-  (typekw (first (initial-ids item 1))))
+  (if item
+    (typekw (first (initial-ids item 1)))))
 
 (defn item-subtype [item]
-  (:subtype (first (initial-ids item 1))))
+  (if item
+    (:subtype (first (initial-ids item 1)))))
 
 (defn item-weight [item]
-  (:weight (first (initial-ids item 1))))
+  (if item
+    (:weight (first (initial-ids item 1)))))
 
 (defn item-name [game item]
-  (:name (item-id game item)))
+  (if item
+    (:name (item-id game item))))
 
 (defn know-id?
   "Can the item be unambiguously identified?"
@@ -276,7 +280,8 @@
   (some? (item-name game item)))
 
 (defn possible-names [game item]
-  (map :name (possible-ids game item)))
+  (if item
+    (map :name (possible-ids game item))))
 
 (defn add-prop-discovery [game appearance prop propval]
   {:pre [(string? appearance) (observable-props prop) (:discoveries game)]}
