@@ -142,7 +142,7 @@
       (and (#{:rock :wall :door-closed :door-locked :door-secret}
                     (:feature tile))
            (< 0 (:x tile) 79)
-           (< 0 (:y tile) 20)
+           (< 0 (:y tile) 21)
            (not (:undiggable tile)))))
 
 (defn searched [level tile]
