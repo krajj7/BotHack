@@ -1475,13 +1475,22 @@
     "blessed greased fixed +3 helm of telepathy"
     (not (have-candles? game))
     "7 blessed wax candles"
-    (not (have game "gauntlets of power"))
-    "blessed fixed +3 gauntlets of power"
+    ;(not (have game "gauntlets of power"))
+    ;"blessed fixed +3 gauntlets of power"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    :else (if (odd? (:wishes game))
-            "blessed wand of death"
-            "3 blessed scrolls of enchant armor")))
+    (< -20 (:ac (:player game)))
+    "3 blessed scrolls of enchant armor"
+    (not (have game "wand of death" #{:bagged}))
+    "blessed wand of death"
+    (and (not (have game "amulet of life saving" #{:bagged}))
+         (not (have game "amulet of reflection" #{:in-use})))
+    "amulet of life saving"
+    :else (case (mod (:wishes game)
+                     (if (>= -25 (:ac (:player game))) 3 2))
+            0 "blessed amulet of life saving"
+            1 "blessed wand of death"
+            2 "3 blessed scrolls of enchant armor")))
 
 (defn- want-buc? [game item]
   (and (nil? (:buc item))
