@@ -172,7 +172,10 @@
     \space current
     \. (if (traps current)
          current
-         (if (= new-color :cyan) :ice :floor))
+         (case new-color
+           :cyan :ice
+           :brown :drawbridge-lowered
+           :floor))
     \< :stairs-up
     \> :stairs-down
     \\ (if (= new-color :yellow) :throne :grave)
@@ -186,7 +189,6 @@
          (or (log/warn "unknown } feature color:" new-color) current))
     \# (cond (traps current) current
              (= :cloud current) :cloud
-             (= :brown new-color) :drawbridge-lowered
              :else :corridor)
     \_ (if (nil? new-color) :altar current)
     \~ :pool

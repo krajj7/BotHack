@@ -1139,6 +1139,16 @@
                     (find-first boulder? (neighbors (curlvl game) player)))]
       (:step (navigate game t)))))
 
+(defn- destroy-drawbridges [{:keys [player] :as game} level]
+  (if-let [drawbridge (and (= :quest (branch-key game))
+                           (find-first drawbridge? (neighbors level player)))]
+    (with-reason "destroy drawbridge"
+      (if-let [[slot _] (and (have-levi game)
+                             (not (drawbridge? (at level player)))
+                             (not-any? wall? (neighbors level player))
+                             (have game "wand of striking"))]
+        (->ZapWandAt slot (towards player drawbridge))))))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -1148,6 +1158,7 @@
                   :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
         (castle-move game level)
+        (destroy-drawbridges game level)
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
                            set)
