@@ -103,7 +103,8 @@
 (defaction FarmAttack [dir cnt]
   (trigger [_]
     (str (apply str (repeat cnt (str esc esc \F (direction-trigger dir))))
-         esc esc "##'"))
+         (apply str (repeat 15 esc))
+         "##'"))
   (handler [_ _]))
 
 (defn mark-trap-here [bh]
@@ -1558,8 +1559,10 @@
         (message [_ msg]
           (when (re-seq #"Nothing happens" msg)
             (reset! charged false)
-            (if (not= "recharged" (:specific (inventory-slot @game slot)))
-              (name-item bh slot "empty"))))))))
+            (let [item (inventory-slot @game slot)]
+              (if (or (not= "recharged" (:specific item))
+                      (not= "wand of wishing" (item-name @game item)))
+                (name-item bh slot "empty")))))))))
 
 (defn ->ZapWandAt [slot dir]
   (with-handler (inc priority-bottom)

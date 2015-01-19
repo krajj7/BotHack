@@ -695,6 +695,9 @@
                  (and (< 64 (:x player)) (< 8 (:y player) 16))
                  (and (<= 60 (:x player)) (= 12 (:y player))))))))
 
+(defn at-planes? [game]
+  (planes (branch-key game)))
+
 (defn in-gehennom?
   "Your god won't help you here (includes VoTD)"
   [game]

@@ -150,7 +150,7 @@
   [game]
   {:pre [(:player game)]}
   ; TODO crowning
-  (if (or (planes (branch-key game))
+  (if (or (at-planes? game)
           (:sanctum (curlvl-tags game))
           (have game #{"Amulet of Yendor" "Book of the Dead"}))
     4000
@@ -403,7 +403,7 @@
               (update-tile bh)
               #" activated a magic portal!"
               (do (reset! portal true)
-                  (if (planes (branch-key @game))
+                  (if (at-planes? @game)
                     (swap! game (comp ensure-curlvl
                                       #(assoc % :branch-id (next-plane %))))
                     (update-at-player-when-known bh assoc :feature :portal)))

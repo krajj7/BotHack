@@ -372,7 +372,7 @@
                                                  {:adjacent true :no-traps true
                                                   :walking true :no-autonav true
                                                   :max-steps
-                                                  (if (planes (branch-key game))
+                                                  (if (at-planes? game)
                                                     1
                                                     hostile-dist-thresh)})]
         (let [level (curlvl game)

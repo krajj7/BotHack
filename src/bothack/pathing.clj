@@ -197,8 +197,9 @@
         [8 (with-reason "displace friendly" monster
               (->Move dir))])
       (if-not (:no-fight opts)
-        [12 (with-reason "pathing through hostiles" monster
-              (->Move dir))]))))
+        [(if (at-planes? game) 3 12)
+         (with-reason "pathing through hostiles" monster
+           (->Move dir))]))))
 
 (defn move
   "Returns [cost Action] for a move, if it is possible"
@@ -723,12 +724,16 @@
                                           (< 44 (:x %)))))))
           (if (= :water (branch-key game))
             (with-reason "seeking :water portal"
-              (:step (navigate game #(and (< 250 (- (:turn game)
-                                                    (or (:walked %) 0)))
-                                          (< 3 (:y %) 17)
-                                          (if (< 49 (mod (:turn game) 100))
-                                            (< 40 (:x %) 74)
-                                            (< 5 (:x %) 40)))))))
+              (letfn [(portal-spot? [tile]
+                        (and (< 250 (- (:turn game)
+                                       (or (:walked tile) 0)))
+                             (< 3 (:y tile) 17)
+                             (if (< 49 (mod (:turn game) 100))
+                               (< 40 (:x tile) 74)
+                               (< 5 (:x tile) 40))))]
+                (or (:step (navigate game #(and (not= \} (:glyph %))
+                                                (portal-spot? %))))
+                    (:step (navigate game portal-spot?))))))
           (if (> (dlvl game) 35)
             (if-not (:walked (at level fake-wiztower-portal))
               (with-reason "seeking fake wiztower portal"
