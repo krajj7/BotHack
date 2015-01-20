@@ -129,7 +129,7 @@
   (if-not (have game real-amulet?)
     (with-reason "searching for the amulet"
       (or (explore game)
-          (search-level game 1) ; if Rodney leaves the level with it we're screwed
+          (search-level game 1)
           (seek game stairs-up?)))))
 
 (defn have-throwable [game]
@@ -1452,6 +1452,17 @@
                  (select-keys % [:specific :proof :name :enchantment])))
         found))
 
+(defn- amulet-escape [game [turn dlvl branch item :as entry]]
+  (if (and (real-amulet? item)
+           (= dlvl (:dlvl game))
+           (= :main branch (branch-key game)))
+    (if (= "Dlvl:1" dlvl)
+      (do (log/warn "assuming amulet is downstairs")
+          [(+ 5000 turn) (get-dlvl game :main :sanctum) :main item])
+      (do (log/warn "assuming amulet is upstairs")
+          [(+ 500 turn) (prev-dlvl dlvl) branch item]))
+    entry))
+
 (defn hunt [{:keys [game] :as bh}]
   (let [robbed-of (atom [])] ; [turn dlvl branch item]
     (reify
@@ -1464,10 +1475,11 @@
                   (swap! robbed-of (partial removev #(< 3000 (- (:turn game)
                                                                 (first %))))))
           (log/debug "forgetting about stolen items, now missing" @robbed-of))
-        (if (and (blind? player)
-                 (have-intrinsic? player :telepathy)
-                 (not-any? steals? (curlvl-monsters game)))
-          (swap! robbed-of (partial removev (fn same-level? [[_ dlvl branch _]]
+        (when (and (blind? player)
+                   (have-intrinsic? player :telepathy)
+                   (not-any? steals? (curlvl-monsters game)))
+          (swap! robbed-of (partial mapv (partial amulet-escape game)))
+          (swap! robbed-of (partial removev (fn at-level? [[_ dlvl branch item]]
                                               (and (= dlvl (:dlvl game))
                                                    (= (branch-key game branch)
                                                       (branch-key game))))))))
