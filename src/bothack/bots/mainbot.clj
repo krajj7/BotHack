@@ -422,7 +422,7 @@
 
 (defn- take-cursed? [game item]
   (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify" "skeleton key"} (item-name game item))
-      ((some-fn ring? amulet? tool? artifact?) item)))
+      ((some-fn ring? amulet? tool? artifact? wand?) item)))
 
 (defn want-buy? [game item]
   false) ; TODO
