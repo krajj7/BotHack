@@ -1423,7 +1423,7 @@
           player (:player @game)
           to-update (loop [prev-tile (at level player)
                            tile (in-direction level player dir)]
-                      (if-not ((some-fn water? lava?) tile)
+                      (if-not ((some-fn pool? lava?) tile)
                         (if (or (not tile)
                                 (monster-at level tile)
                                 (not (walkable? tile)))

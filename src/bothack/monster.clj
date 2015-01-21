@@ -84,6 +84,12 @@
 (defn leprechaun? [m]
   (= "leprechaun" (typename m)))
 
+(defn titan? [m]
+  (= "titan" (typename m)))
+
+(defn rodney? [m]
+  (= "Wizard of Yendor" (typename m)))
+
 (defrecord Monster
   [x y
    known ; last turn observed

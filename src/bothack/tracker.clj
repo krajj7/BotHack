@@ -44,7 +44,9 @@
     (reduce remove-monster game
             (for [m monsters
                   :when ((every-pred unique? (complement :remembered)) m)
-                  n (filter #(and (= (typename m) (typename %)) (:remembered %))
+                  n (filter #(and (= (typename m) (typename %))
+                                  (not (rodney? %))
+                                  (:remembered %))
                             monsters)]
               (position n)))))
 

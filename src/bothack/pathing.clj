@@ -558,7 +558,8 @@
                                            (filter firetrap?) count (= 1))
              :else (not (shop? tile)))
        (not (wall-end? level tile))
-       (->> (straight-neighbors level tile) (remove :seen) seq)))
+       (or (<= 45 howmuch)
+           (->> (straight-neighbors level tile) (remove :seen) seq))))
 
 (defn- search-walls [game level howmuch]
   (let [searchable? (partial searchable-wall? level howmuch)]

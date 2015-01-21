@@ -51,7 +51,7 @@
                                          (complement tin?)) #{:bagged}))
       (have game "lizard corpse" #{:bagged})))
 
-(declare farming? farm-done? farm-level?)
+(declare farming? farm-done? farm-level? farm-sink)
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (and (weak? player)
@@ -285,7 +285,7 @@
    "scroll of enchant weapon" 4
    "amulet of life saving" 5})
 
-(def desired-bag #{"oilskin sack" "sack"})
+(def desired-bag #{"bag of holding" "oilskin sack" "sack"})
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -404,6 +404,7 @@
           (not (fast? player)) (conj "wand of speed monster")
           (and (get-level game :main :votd)
                (farm-done? game)) (disj "scroll of earth")
+          (endgame? game) (disj "scroll of enchant armor")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -421,8 +422,9 @@
           (with-reason "waiting out impairment" (->Repeated (->Wait) 10))))))
 
 (defn- take-cursed? [game item]
-  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "bag of holding" "unicorn horn" "scroll of identify" "skeleton key"} (item-name game item))
-      ((some-fn ring? amulet? tool? artifact? wand?) item)))
+  (or (#{"levitation boots" "speed boots" "water walking boots" "cloak of displacement" "cloak of invisibility" "cloak of magic resistance" "cloak of protection" "elven cloak" "gauntlets of dexterity" "gauntlets of power" "helm of brilliance" "helm of opposite alignment" "helm of telepathy" "shield of reflection" "long sword" "unicorn horn" "scroll of identify" "skeleton key"} (item-name game item))
+      (and (not (could-be? game "bag of holding" item))
+           ((some-fn ring? amulet? tool? artifact? wand?) item))))
 
 (defn want-buy? [game item]
   false) ; TODO
@@ -471,22 +473,26 @@
       (have game itemname {:can-remove false})))
 
 (defn take-selector [{:keys [player] :as game}]
-  (let [farm? (and (farming? game) (sink? (at-player game)))]
+  (let [farm? (and (farming? game) (sink? (at-player game)))
+        need-bag? (and (not (have game bag?)) (have game scroll?))]
     (fn [item]
       (or (real-amulet? item)
           (and (can-take? item)
                (or (worthwhile? game item)
                    (and farm? (could-be? game "scroll of scare monster" item)))
-               (if (and farm? (not (have game "scroll of identify" #{:bagged})))
-                 ((some-fn food? scroll? ring?) item)
-                 true)
-               (if (more-than? 48 (inventory game))
-                 (if (more-than? 51 (inventory game))
-                   false
-                   ((cond-> #{"scroll of scare monster" "scroll of identify"}
-                      (not (have game food?)) (conj "food ration"))
-                    (:name item)))
-                 true)
+               (or (not (farm-level? game))
+                   (not (:pudding (:tags (farm-sink game))))
+                   (have game "scroll of identify" #{:bagged})
+                   (and (bag? item) need-bag?)
+                   (food? item)
+                   (scroll? item))
+               (or (less-than? 49 (inventory game))
+                   (and (less-than? 52 (inventory game))
+                        (some (cond-> #{"scroll of scare monster"
+                                        "scroll of identify"}
+                                need-bag? (conj "sack" "oilskin sack")
+                                (not (have game food?)) (conj "food ration"))
+                              (possible-names game item))))
                (let [id (item-name game item)]
                  (and (or (> 16 (:qty item)) (not (rocks? item)))
                       (or (not (candle? item)) (= 7 (:qty item)))
@@ -752,7 +758,7 @@
       (remove-use game slot))))
 
 (defn- enchant-gear [{:keys [player] :as game}]
-  (if-let [[slot item] (and (not (at-planes? game))
+  (if-let [[slot item] (and (not (endgame? game))
                             (have game "scroll of enchant armor"
                                   #{:bagged :noncursed}))]
     (with-reason "enchant armor"
@@ -987,7 +993,7 @@
 
 (defn exposed? [game level pos]
   (->> (neighbors level pos)
-       (filter (some-fn walkable? water?))
+       (filter (some-fn walkable? pool?))
        (more-than? 2)))
 
 (defn- safe-hp? [{:keys [hp maxhp] :as player}]
@@ -1070,14 +1076,14 @@
             (log/debug "retreat failed"))))))
 
 (defn keep-away? [{:keys [player] :as game} m]
-  (if (and (pool? (at-curlvl game m))
+  (or (and (pool? (at-curlvl game m))
+           (or (drowner? m) (not (typename m)))
            (not (have game "oilskin cloak" #{:worn})))
-    true
-    (if-let [montype (typename m)]
-      (or (some #(.contains montype %)
-                ["nymph" "rust monster" "disenchanter" "mind flayer"])
-          (and (= "homunculus" montype)
-               (not (have-intrinsic? player :sleep)))))))
+      (if-let [montype (typename m)]
+        (or (some #(.contains montype %)
+                  ["nymph" "rust monster" "disenchanter" "mind flayer"])
+            (and (= "homunculus" montype)
+                 (not (have-intrinsic? player :sleep)))))))
 
 (defn targettable
   "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there seems to be no risk of hitting non-hostiles or water/lava for non-rays."
@@ -1219,7 +1225,8 @@
                          (pos? (rand-int 20)))
                   (with-reason "moving towards the upstairs" step)))
               (if-let [monster (or (find-first rider? adjacent)
-                                   (find-first unique? adjacent)
+                                   (find-first (some-fn unique?
+                                                        titan?) adjacent)
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
                                    (find-first ignores-e? adjacent)
@@ -1656,7 +1663,7 @@
 
 (defn safe-zap? [game dir]
   (let [level (curlvl game)]
-    (every? #(and ((some-fn corridor? floor? water? door-open?) %)
+    (every? #(and ((some-fn corridor? floor? pool? door-open?) %)
                   (not (and (= :sokoban (:branch-id game)) (boulder? %)))
                   (not (monster-at level %)))
             (->> (in-direction level (:player game) dir)
@@ -1730,7 +1737,7 @@
   (let [know? (know-id? game item)
         price (:price (item-id game item))]
     (cond-> 0
-      ((some-fn food? rocks? gold?) item) (- 10)
+      ((some-fn food? rocks? gold? candle?) item) (- 10)
       (not know?) (+ 2)
       (nil? (:buc item)) inc
       (and (or (not know?)
@@ -2043,7 +2050,8 @@
   (and (not (farm-done? game))
        (< 25 splits)
        (-> turn (mod 1000) (quot 100) (mod 3) zero?)
-       (or (< score 2000000) (> 120 kills) (-> turn (mod 100) (< 60)))))
+       (or (and (< score 2000000) (< kills 130))
+           (-> turn (mod 100) (< 40)))))
 
 (defn farm-wield [{:keys [player] :as game} splits]
   (if-let [[slot item] (if (or (and (hungry? player)
@@ -2069,6 +2077,7 @@
       (reequip game)
       (examine-containers game)
       (examine-containers-here game)
+      (consider-items-here game)
       (bag-items game)
       (if (and (or (and (< (if (have game food?)
                              200
@@ -2088,11 +2097,11 @@
         (> splits 160) (if-not (and (hungry? player) (not (have game food?)))
                          (->FarmAttack (towards player (farm-sink game)) 8)
                          (->Attack (towards player (farm-sink game))))
-        (and (<= 2 splits)
-             (not (e? (at-player game)))) (engrave-e game :perma :farm)
         (< splits 2) (->Attack (towards player (farm-sink game)))
         (->> (if (< 50 splits) 5 16)
              rand-int zero?) (->Attack (towards player (farm-sink game)))
+        (and (<= 2 splits)
+             (not (e? (at-player game)))) (engrave-e game :perma :farm)
         :else (with-reason "letting puddings heal" ->Search))))
 
 (defn farm-sink-move [{:keys [player] :as game}]
@@ -2111,11 +2120,10 @@
       (:step (navigate game (partial farm-spot? game)))))
 
 (defn farm-action [game state]
-  (with-reason "FARM STATE" "items" (count (inventory game)) "; bagged" (- (count (inventory game :bagged)) (count (inventory game))) "; at sink" (count (:items (farm-sink game))) "; food" (nutrition-sum game) "; prayer" (- (prayer-interval game) 1300) ";" state "; wishes" (:wishes game)
-    (if (farming? game)
-      (if (farm-spot? game (at-player game))
-        (farm-spot-move game state)
-        (farm-sink-move game)))))
+  (with-reason "FARM STATE" "items" (count (inventory game)) "; bagged" (- (count (inventory game :bagged)) (count (inventory game))) "; at sink" (count (:items (farm-sink game))) "; food" (nutrition-sum game) "; prayer" (- (prayer-interval game) 1300) ";" state "; wishes" (:wishes game) "; done?" (farm-done? game)
+    (if (farm-spot? game (at-player game))
+      (farm-spot-move game state)
+      (farm-sink-move game))))
 
 (defn end-farm? [game]
   (and (farm-done? game)
@@ -2123,8 +2131,13 @@
                              #(> 5 (distance % (:player game))))
                  (curlvl-monsters game))))
 
+(defn botched-farm? [game {:keys [last-seen] :as state}]
+  (and last-seen
+       (not (farm-done? game))
+       (< 500 (- (:turn game) last-seen))))
+
 (defn farm [{:keys [game] :as bh}]
-  (let [state (atom {:splits 0 :kills 0})]
+  (let [state (atom {:splits 0 :kills 0 :last-seen nil})]
     (reify
       ForceGodHandler
       (force-god [_ _] false)
@@ -2132,11 +2145,17 @@
       (really-attack [_ _] (farming? @game))
       ActionHandler
       (choose-action [this game]
-        (if (end-farm? game)
-          (do (deregister-handler bh this)
-              (log/warn "done farming")
-              (enhance-all))
-          (farm-action game @state)))
+        (when (farming? game)
+          (if (some (every-pred pudding? (complement :remembered))
+                    (curlvl-monsters game))
+            (swap! state assoc :last-seen (:turn game)))
+          (if (or (end-farm? game) (botched-farm? game @state))
+            (do (if (botched-farm? game @state)
+                  (log/warn "farm messed up - abandoning")
+                  (log/warn "done farming"))
+                (deregister-handler bh this)
+                (enhance-all))
+            (farm-action game @state))))
       ToplineMessageHandler
       (message [_ msg]
         (if (farming? @game)
