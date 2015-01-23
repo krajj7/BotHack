@@ -664,11 +664,11 @@
                 (make-use game s)))
             (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
-                (or (if-not (cursed? (wielded-item game))
+                (or (unbag game slot scroll)
+                    (if-not (cursed? (wielded-item game))
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
-                    (unbag game slot scroll)
                     (->Read slot))))
             (if-let [[uslot _] (have game #{"unicorn horn"
                                             "Orb of Fate"} #{:cursed})]
