@@ -25,7 +25,7 @@
 (defn- hostile-dist-thresh [game]
   (cond
     (at-planes? game) 1
-    (= :sokoban (branch-key game)) 50
+    (= :sokoban (branch-key game)) 500
     :else 5))
 
 (defn- hostile-threats [{:keys [player] :as game}]
@@ -34,7 +34,8 @@
                      (or (adjacent? player %)
                          (covetous? %)
                          (and (not (and (blind? player) (:remembered %)))
-                              (> 10 (- (:turn game) (:known %)))
+                              (> (+ 5 (hostile-dist-thresh game))
+                                 (- (:turn game) (:known %)))
                               (< (distance player %) (hostile-dist-thresh game))
                               (not (blind? player))
                               (not (hallu? player))))))
