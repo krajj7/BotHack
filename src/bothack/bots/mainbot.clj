@@ -58,7 +58,9 @@
   (or (if (and (weak? player)
                (or (not (can-pray? game))
                    (< 1200 (nutrition-sum game)))
-               (not (overtaxed? player)))
+               (not (overtaxed? player))
+               (or (not (farming? game))
+                   (farm-spot? game player)))
         (if-let [[slot food] (choose-food game)]
           (with-reason "weak or worse, eating" food
             (or (unbag game slot food)
@@ -1941,8 +1943,8 @@
 
 (defn farm-spot?
   ([game tile]
-   (or (farm-spot? tile)
-       (let [level (curlvl game)]
+   (let [level (curlvl game)]
+     (or (farm-spot? (at level tile))
          (->> (neighbors level tile)
               (filter (partial maybe-boulder? level))
               (more-than? 6)))))
