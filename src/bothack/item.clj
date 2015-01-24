@@ -87,9 +87,6 @@
 (defn corpse->monster [item]
   (:monster (name->item (:name item))))
 
-(defn tin? [item]
-  (re-seq #"\btins?\b" (:name item)))
-
 (defn can-take? [item]
   (not (:cost item)))
 
@@ -109,6 +106,10 @@
            `(def-itemtype-pred ~kw))))
 
 (def-itemtype-preds)
+
+(defn tin? [item]
+  (and (food? item)
+       (re-seq #"\btins?\b" (:name item))))
 
 (defn shield? [item]
   (= :shield (item-subtype item)))
