@@ -52,7 +52,7 @@
                                          (complement tin?)) #{:bagged}))
       (have game "lizard corpse" #{:bagged})))
 
-(declare farming? farm-done? farm-level? farm-sink)
+(declare farming? farm-done? farm-level? farm-spot? farm-sink)
 
 (defn- handle-starvation [{:keys [player] :as game}]
   (or (if (and (weak? player)
