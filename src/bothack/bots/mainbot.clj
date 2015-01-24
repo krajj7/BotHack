@@ -2001,10 +2001,10 @@
        (have game "scroll of earth" #{:bagged :noncursed})))
 
 (defn farm-rect [game sink]
-  (filter #(< (:y %) 21)
-          (rectangle (position (- (:x sink) 5)
+  (filter #(< 2 (:y %) 21)
+          (rectangle (position (- (:x sink) 4)
                                (- (:y sink) 4))
-                     (position (+ (:x sink) 5)
+                     (position (+ (:x sink) 4)
                                (+ (:y sink) 4)))))
 
 (defn farm-clear? [tile]
