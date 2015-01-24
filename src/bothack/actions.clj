@@ -494,6 +494,7 @@
                       "You succeed in picking the lock." :door-closed
                       "You succeed in unlocking the door." :door-closed
                       "You succeed in locking the door." :door-locked
+                      "You can't lock a door with a credit card." :door-closed
                       :nil)]
     (if (not= :nil new-feature)
       (swap! game update-at door assoc :feature new-feature))))
