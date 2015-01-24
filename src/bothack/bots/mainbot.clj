@@ -286,7 +286,7 @@
    "scroll of enchant weapon" 4
    "amulet of life saving" 5})
 
-(def desired-bag #{"bag of holding" "oilskin sack" "sack"})
+(def desired-bag (ordered-set "oilskin sack" "sack" "bag of holding"))
 
 (def desired-items
   [(ordered-set "pick-axe" #_"dwarvish mattock") ; currenty-desired presumes this is the first category
@@ -1557,7 +1557,7 @@
     "blessed wand of death"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
-    "amulet of life saving"
+    "blessed amulet of life saving"
     :else (case (mod (:wishes game)
                      (if (>= -25 (:ac (:player game))) 3 2))
             0 "blessed amulet of life saving"
