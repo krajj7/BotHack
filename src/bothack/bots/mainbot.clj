@@ -1999,10 +1999,11 @@
        (have game "scroll of earth" #{:bagged :noncursed})))
 
 (defn farm-rect [game sink]
-  (rectangle (position (- (:x sink) 5)
-                       (- (:y sink) 4))
-             (position (+ (:x sink) 5)
-                       (+ (:y sink) 4))))
+  (filter #(< (:y %) 21)
+          (rectangle (position (- (:x sink) 5)
+                               (- (:y sink) 4))
+                     (position (+ (:x sink) 5)
+                               (+ (:y sink) 4)))))
 
 (defn farm-clear? [tile]
   ((not-any-fn? :walked :undiggable shop? trap? pool?) tile))
@@ -2068,13 +2069,14 @@
 
 (defn farm-spot-move [{:keys [player] :as game}
                       {:keys [kills splits] :as state}]
-  (or (handle-impairment game)
-      (if-let [m (some #(if-let [m (monster-at game %)]
-                          (if-not (pudding? m) m))
-                       (neighbors player))]
+  (or (if-let [m (and (not (unihorn-recoverable? game))
+                      (some #(if-let [m (monster-at game %)]
+                               (if-not (pudding? m) m))
+                            (neighbors player)))]
         (with-reason "killing non-pudding"
           (or (wield-weapon game)
               (hit game (curlvl game) m))))
+      (handle-impairment game)
       (farm-init-move game)
       (use-items game)
       (reequip game)
