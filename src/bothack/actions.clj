@@ -103,7 +103,7 @@
 (defaction FarmAttack [dir cnt]
   (trigger [_]
     (str (apply str (repeat cnt (str esc esc \F (direction-trigger dir))))
-         (apply str (repeat 15 esc))
+         (apply str (repeat 30 esc))
          "##'"))
   (handler [_ _]))
 
