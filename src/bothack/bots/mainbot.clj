@@ -1560,7 +1560,7 @@
          (not (have game "amulet of reflection" #{:in-use})))
     "blessed amulet of life saving"
     :else (case (mod (:wishes game)
-                     (if (>= -25 (:ac (:player game))) 3 2))
+                     (if (<= -25 (:ac (:player game))) 3 2))
             0 "blessed amulet of life saving"
             1 "blessed wand of death"
             2 "3 blessed scrolls of enchant armor")))
