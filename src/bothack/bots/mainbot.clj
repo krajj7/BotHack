@@ -893,7 +893,7 @@
 
 (defn hit-surtur [{:keys [player] :as game} monster]
   (if-let [[slot item] (and (= "Lord Surtur" (typename monster))
-                            (have game "wand of cold"))]
+                            (have game "wand of cold" #{:can-use}))]
     (->ZapWandAt slot (towards player monster))))
 
 (defn hit-wizard [{:keys [player] :as game} monster]
