@@ -176,7 +176,8 @@
           level (curlvl old-game)
           target (in-direction level old-pos dir)]
       (update-trapped-status bh old-pos)
-      (if (and (not (:trapped old-player)) (diagonal dir) (item? target))
+      (if (and (not (:trapped old-player)) (diagonal dir)
+               (or (item? target) (blind? old-player)))
         (update-on-known-position bh
           #(if (and (= (position (:player %)) old-pos)
                     (not (monster-at % target))
@@ -185,8 +186,7 @@
              (if (and (= :move (typekw (:last-action old-game)))
                       (= dir (:dir (:last-action old-game))))
                (do ;(log/warn "stuck twice on diagonal movement => possibly door at" target)
-                   (update-at % (in-direction old-pos dir)
-                                     assoc :feature :door-open))
+                   (update-at % target assoc :feature :door-open))
                (do ;(log/warn "retry diagonal move towards" target)
                    %)) ; NH actually seems to ignore a move in some cases
              %)))
