@@ -1276,10 +1276,7 @@
                                    (not (:fleeing m))
                                    (not (spellcaster? m)))
                             (with-reason "baiting monsters" ->Search)))
-                        step))))
-              (if-let [m (find-first covetous? threats)]
-                (with-reason "going to kill" (typename m)
-                  (:step (navigate game m))))))
+                        step))))))
         (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
                              (filter (partial can-handle? game))
@@ -1302,6 +1299,12 @@
                 (with-reason "ranged attack soko blocker"
                   (ranged game monster))))))
         (castle-fort game level))))
+
+(defn fight-covetous [game]
+  (if-let [m (find-first (every-pred covetous? hostile?)
+                         (curlvl-monsters game))]
+    (with-reason "going to kill" (typename m)
+      (:step (navigate game m)))))
 
 (defn- bribe-demon [prompt]
   (->> prompt ; TODO parse amount and pass as arg in the scraper, not in bot logic
@@ -2237,6 +2240,9 @@
                              (choose-action [_ game]
                                (handle-impairment game))))
       (register-handler -2 (reify ActionHandler
+                            (choose-action [_ game]
+                              (fight-covetous game))))
+      (register-handler -1 (reify ActionHandler
                             (choose-action [_ game]
                               (reequip game))))
       (register-handler 0 (reify ActionHandler
