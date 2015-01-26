@@ -1563,7 +1563,8 @@
          (not (have game "amulet of reflection" #{:in-use})))
     "blessed amulet of life saving"
     :else (case (mod (:wishes game)
-                     (if (<= -25 (:ac (:player game))) 3 2))
+                     (if (and (<= -25 (:ac (:player game)))
+                              (not (endgame? game))) 3 2))
             0 "blessed amulet of life saving"
             1 "blessed wand of death"
             2 "3 blessed scrolls of enchant armor")))
@@ -1976,20 +1977,21 @@
                        (more-than? 3)))))))
 
 (defn farm-done? [game]
-  (and (< 4000000 (:score game))
-       (or (<= 3 (:wishes game))
-           (and (or (have-levi game)
-                    (have game "speed boots")
-                    (< 65000 (:turn game)))
-                (or (have-mr? game)
-                    ((:genocided game) "L")
-                    (< 65000 (:turn game)))
-                (reflection? game)
-                (> -10 (:ac (:player game)))))
-       (have game bag?)
-       (<= 6 (have-sum game "scroll of remove curse" #{:bagged}))
-       (have game "scroll of identify" #{:bagged})
-       (or (have-candles? game) (not (get-level game :main :castle)))))
+  (or (get-branch game :wiztower)
+      (and (< 4000000 (:score game))
+           (or (<= 3 (:wishes game))
+               (and (or (have-levi game)
+                        (have game "speed boots")
+                        (< 65000 (:turn game)))
+                    (or (have-mr? game)
+                        ((:genocided game) "L")
+                        (< 65000 (:turn game)))
+                    (reflection? game)
+                    (> -10 (:ac (:player game)))))
+           (have game bag?)
+           (<= 6 (have-sum game "scroll of remove curse" #{:bagged}))
+           (have game "scroll of identify" #{:bagged})
+           (or (have-candles? game) (not (get-level game :main :castle))))))
 
 (defn init-farm? [game]
   (and (not (farm-done? game))
