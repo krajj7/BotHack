@@ -21,6 +21,8 @@ The DGL (dgamelaunch) menubot set by default in the config files should work wit
 
 Network latency may make the bot play very slowly (and not be CPU-bound), if that is the case consider setting up a local instalation of NetHack (which also allows you to do testing in wizard mode).
 
+Increasing the JVM heap size limits (:jvm-opts ["-Xms4g" "-Xmx4g"] in project.clj) might improve performance.
+
 ### Running against a local NetHack installation
 
 The only supported version of NetHack is 3.4.3 with the nethack.alt.org patchset, available here: http://alt.org/nethack/naonh.php
