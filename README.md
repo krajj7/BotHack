@@ -85,6 +85,8 @@ Special thanks goes to kerio and stenno, admins of the acehack.de public server,
 
 **11.1.2015**: A first fully documented version of the Java API is ready, making most of the functionality of the framework available for consumption from Java.  The framework itself is available at [the Clojars public Maven repository](https://clojars.org/bothack).  See links on top of this page for the docs.
 
-**25.1.2015**: Pudding farming was implemented for the bot and after all sorts of farming accidents it has finally managed to win the game without wizmode cheating!
+**25.1.2015**: Pudding farming was implemented and the bot has finally managed to win the game without wizmode cheating!
 
 Ascension dumplog: https://acehack.de/notable/first-nethack-bot-ascension/smartbot3.1422171652
+
+Youtube video: https://www.youtube.com/watch?v=unCQHAbGsAA
