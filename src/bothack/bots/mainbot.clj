@@ -789,6 +789,7 @@
         (remove-rings game)
         (if-let [[slot item] (and (or farm? (endgame? game))
                                   (free-finger? (:player game))
+                                  (not= :remove (typekw (:last-action game)))
                                   (have game "ring of slow digestion"))]
           (make-use game slot))
         (if-let [[slot item] (and farm? (not (farm-done? game))
