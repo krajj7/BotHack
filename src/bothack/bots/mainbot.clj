@@ -819,6 +819,7 @@
 
 (defn- bait-wizard [game level monster]
   (if (and (= :magenta (:color monster)) (= \@ (:glyph monster))
+           (or (not (typename monster)) (rodney? monster))
            (not= :water (branch-key game))
            ((some-fn pool? lava? unknown?) (at level monster)))
     (with-reason "baiting possible wizard away from water/lava"
