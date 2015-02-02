@@ -6,7 +6,7 @@ if [ $(basename `pwd`) = "scripts" ]; then
     cd ..
 fi
 
-trap 'kill $(jobs -pr); exit 0' EXIT
+trap 'kill 0; exit' EXIT
 
 tail -F bothack.log 2>/dev/null | egrep --color=auto 'ERROR|WARN' & # barf any errors over the output
 last=$(ls -1 *.ttyrec | tail -n 1)
