@@ -80,14 +80,17 @@
            dist 0]
       (if (and (> 4 dist) (seq old-monsters))
         (if-let [[p m] (first new-monsters)]
-          (if-let [[[cp cm] & more] (seq (filter
-                                           (fn candidate? [[_ n]]
-                                             (and (= (:glyph m) (:glyph n))
-                                                  (= (:color m) (:color n))
-                                                  (= (:friendly m)
-                                                     (:friendly n))
-                                                  (= dist (distance m n))))
-                                           old-monsters))]
+          (if-let [[[cp cm] & more]
+                   (seq (filter (fn candidate? [[_ n]]
+                                  (or (and (= \5 (:glyph m))
+                                           (= \& (:glyph n))
+                                           (covetous? n)
+                                           (zero? (distance m n)))
+                                      (and (= (:glyph m) (:glyph n))
+                                           (= (:color m) (:color n))
+                                           (= (:friendly m) (:friendly n))
+                                           (= dist (distance m n)))))
+                                old-monsters))]
             (if more ; ignore ambiguous cases
               (recur pairs old-monsters (dissoc new-monsters p) dist)
               (recur (assoc pairs p [cm m])
