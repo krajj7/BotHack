@@ -407,7 +407,7 @@
           (not (fast? player)) (conj "wand of speed monster")
           (and (get-level game :main :votd)
                (farm-done? game)) (disj "scroll of earth")
-          (endgame? game) (disj "scroll of enchant armor")
+          (endgame? game) (disj "scroll of enchant armor" candelabrum bell book)
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
