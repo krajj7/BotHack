@@ -1998,6 +1998,7 @@
 (defn init-farm? [game]
   (and (not (farm-done? game))
        (<= 7 (:xplvl (:player game)))
+       (soko-done? game)
        (know-appearance? game "scroll of identify")
        (have-pick game)
        (have-unihorn game)
