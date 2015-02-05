@@ -378,6 +378,12 @@
 (def etype-re #"Something is (written|engraved) here (?:in|on) the (?:.*)\.|Some text has been (burned|melted) into the|There's some (graffiti) on the|You see a message (scrawled) in blood here")
 (def etext-re #"You read: \"(.*)\"\.")
 
+(defn unparseable-item?
+  "Items with labels that may not fit the terminal size are ignored.
+  This is only a problem with thoroughly rusty thoroughly corroded long-named items."
+  [item]
+  (more-than? 72 (:label item)))
+
 (defaction Look []
   (trigger [this] ":")
   (handler [_ {:keys [game delegator] :as bh}]
@@ -420,7 +426,8 @@
               ;(log/debug "Items here:" (log/spy items))
               (reset! has-item true)
               (swap! game #(update-at-player %
-                             assoc :items items
+                             assoc :items (remove unparseable-item?
+                                                  items)
                                    :item-glyph (item-glyph % top-item)
                                    :item-color nil)))))
         ToplineMessageHandler
@@ -434,7 +441,9 @@
               (log/debug "Single item here:" item)
               (reset! has-item true)
               (swap! game #(update-at-player %
-                             assoc :items [item]
+                             assoc :items (if-not (unparseable-item? item)
+                                            [item]
+                                            [])
                                    :item-glyph (item-glyph % item)
                                    :item-color nil)))
             (when-let [etype (re-any-group etype-re text)]
@@ -511,8 +520,15 @@
   [inventory [old-slot old-item]]
   (if (inventory old-slot)
     (update inventory old-slot
-            #(into % (select-keys old-item [:items :locked (if (nil? (:buc %))
-                                                             :buc)])))
+            #(into % (select-keys old-item
+                                  (as-> [:items :locked] ks
+                                    (if (nil? (:buc %))
+                                      (conj ks :buc)
+                                      ks)
+                                    (if (and (more-than? 72 (:label %))
+                                             (:in-use old-item))
+                                      (conj ks :in-use :worn)
+                                      ks)))))
     inventory)) ; item gone
 
 (defaction Inventory []
@@ -881,9 +897,17 @@
 
 (defaction TakeOff [slot]
   (trigger [_] "T")
-  (handler [_ bh]
+  (handler [_ {:keys [game] :as bh}]
     (update-inventory bh)
-    (reify TakeOffItemHandler
+    (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"Not wearing any armor|not wearing that"
+          (swap! game update-in [:player :inventory slot]
+                 assoc :worn false :in-use false)
+          nil))
+      TakeOffItemHandler
       (take-off-what [_ _]
         (mark-use bh slot)
         slot))))
@@ -930,7 +954,10 @@
       ToplineMessageHandler
       (message [_ msg]
         (if-let [id (ring-msg msg)]
-          (swap! game identify-slot slot id)))
+          (swap! game identify-slot slot id)
+          (if (= msg "You cannot drop something you are wearing.")
+            (swap! game update-in [:player :inventory slot]
+                   assoc :worn true :in-use true))))
       SellItHandler
       (sell-it [_ bid _]
         (let [item (inventory-slot @game slot)]
@@ -1123,7 +1150,8 @@
       :amulet ->Remove
       :tool ->Remove
       :weapon ->UnWield
-      :armor ->TakeOff)))
+      :armor ->TakeOff
+      ->TakeOff)))
 
 (defn remove-blockers [game slot]
   (with-reason "removing blockers of" slot
