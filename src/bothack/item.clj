@@ -202,6 +202,7 @@
         (not (know-price? game item))))
   ([item]
    (and (not (artifact? item))
+        (not (candle? item))
         (not (container? item))
         (knowable-appearance? (appearance-of item))
         ((some-fn tool? ring? scroll? wand? potion? armor?) item))))
