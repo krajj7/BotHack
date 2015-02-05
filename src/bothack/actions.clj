@@ -426,8 +426,8 @@
               ;(log/debug "Items here:" (log/spy items))
               (reset! has-item true)
               (swap! game #(update-at-player %
-                             assoc :items (remove unparseable-item?
-                                                  items)
+                             assoc :items (removev unparseable-item?
+                                                   items)
                                    :item-glyph (item-glyph % top-item)
                                    :item-color nil)))))
         ToplineMessageHandler
@@ -525,7 +525,7 @@
                                     (if (nil? (:buc %))
                                       (conj ks :buc)
                                       ks)
-                                    (if (and (more-than? 72 (:label %))
+                                    (if (and (unparseable-item? %)
                                              (:in-use old-item))
                                       (conj ks :in-use :worn)
                                       ks)))))
