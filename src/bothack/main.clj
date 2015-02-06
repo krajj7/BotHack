@@ -75,80 +75,91 @@
 
 (defn- q [] (do (w (str esc esc esc esc "#quit\nyq")) (System/exit 0)))
 
-(defn- quit-when-stuck [bh]
+(defn- quit-when-looping []
+  (let [actions-this-turn (atom 0)]
+    (reify ActionHandler
+      (choose-action [_ game]
+        (if (= (:turn game) (:turn (:last-state game)))
+          (swap! actions-this-turn inc)
+          (reset! actions-this-turn 0))
+        (when (< 1000 @actions-this-turn)
+          (log/error "stuck: too many actions within one game turn - quitting")
+          (q))))))
+
+(defn- quit-when-stuck []
   (reify ActionHandler
     (choose-action [_ game]
-      (when-not (config-get (:config bh) :no-exit false)
-        (log/error "No action chosen - quitting")
-        (q)))))
+      (log/error "No action chosen - quitting")
+      (q))))
 
 (defn- init-ui [{:keys [config] :as bh}]
-  (-> bh
-      (register-handler (inc priority-bottom) (quit-when-stuck bh))
-      (register-handler (dec priority-top)
-        (reify
-          ActionHandler
-          (choose-action [_ game]
-            (when (and (< 100 (:turn game)) (> 50 (:turn* game))
-                       (config-get config :quit-resumed false))
-              (log/error "Resumed game with :quit-resumed in config - quitting")
-              (q)))
-          GameStateHandler
-          (ended [_]
-            (log/info "Game ended")
-            (when-not (config-get config :no-exit false)
-              (log/info "Exiting")
-              (System/exit 0)))
-          (started [_]
-            (log/info "Game started"))
-          ToplineMessageHandler
-          (message [_ text]
-            (log/info "Topline message:" text))
-          MultilineMessageHandler
-          (message-lines [_ lines]
-            (log/info "Multiline message:"
-                      (with-out-str (pprint (take 10 lines))
-                                    (if (more-than? 10 lines)
-                                      (print "[...]")))))
-          FoundItemsHandler
-          (found-items [_ items]
-            (log/info "Found items:" (take 5 items) "[...]"))
-          AboutToChooseActionHandler
-          (about-to-choose [_ game]
-            (log-state game))
-          ActionChosenHandler
-          (action-chosen [_ action]
-            (if (= :pray (typekw action))
-              (log/warn "praying"))
-            (log/info "Performing action:" (dissoc action :reason)
-                      "\n reasons:\n" (with-out-str (pprint (:reason action)))))
-          InventoryHandler
-          (inventory-list [_ inventory]
-            (log/spy inventory))
-          KnowPositionHandler
-          (know-position [_ frame]
-            (log/info "current player position:" (:cursor frame)))
-          BOTLHandler
-          (botl [_ status]
-            (log/info "new botl status:" status))
-          DlvlChangeHandler
-          (dlvl-changed [_ old-dlvl new-dlvl]
-            (log/info "dlvl changed from" old-dlvl "to" new-dlvl))
-          ConnectionStatusHandler
-          (online [_]
-            (log/info "Connection status: online"))
-          (offline [_]
-            (log/info "Connection status: offline"))
-          PromptResponseHandler
-          (response-chosen [_ method res]
-            (when (or (= genocide-class method)
-                      (= genocide-monster method))
-              (log/warn "genocided" res))
-            (when (= make-wish method)
-              (log/warn "wished for" res)))
-          RedrawHandler
-          (redraw [_ frame]
-            (println frame))))))
+  (when-not (config-get (:config bh) :no-exit false)
+    (register-handler bh (dec priority-top) (quit-when-looping))
+    (register-handler bh (inc priority-bottom) (quit-when-stuck)))
+  (register-handler bh (dec priority-top)
+    (reify
+      ActionHandler
+      (choose-action [_ game]
+        (when (and (< 100 (:turn game)) (> 50 (:turn* game))
+                   (config-get config :quit-resumed false))
+          (log/error "Resumed game with :quit-resumed in config - quitting")
+          (q)))
+      GameStateHandler
+      (ended [_]
+        (log/info "Game ended")
+        (when-not (config-get config :no-exit false)
+          (log/info "Exiting")
+          (System/exit 0)))
+      (started [_]
+        (log/info "Game started"))
+      ToplineMessageHandler
+      (message [_ text]
+        (log/info "Topline message:" text))
+      MultilineMessageHandler
+      (message-lines [_ lines]
+        (log/info "Multiline message:"
+                  (with-out-str (pprint (take 10 lines))
+                                (if (more-than? 10 lines)
+                                  (print "[...]")))))
+      FoundItemsHandler
+      (found-items [_ items]
+        (log/info "Found items:" (take 5 items) "[...]"))
+      AboutToChooseActionHandler
+      (about-to-choose [_ game]
+        (log-state game))
+      ActionChosenHandler
+      (action-chosen [_ action]
+        (if (= :pray (typekw action))
+          (log/warn "praying"))
+        (log/info "Performing action:" (dissoc action :reason)
+                  "\n reasons:\n" (with-out-str (pprint (:reason action)))))
+      InventoryHandler
+      (inventory-list [_ inventory]
+        (log/spy inventory))
+      KnowPositionHandler
+      (know-position [_ frame]
+        (log/info "current player position:" (:cursor frame)))
+      BOTLHandler
+      (botl [_ status]
+        (log/info "new botl status:" status))
+      DlvlChangeHandler
+      (dlvl-changed [_ old-dlvl new-dlvl]
+        (log/info "dlvl changed from" old-dlvl "to" new-dlvl))
+      ConnectionStatusHandler
+      (online [_]
+        (log/info "Connection status: online"))
+      (offline [_]
+        (log/info "Connection status: offline"))
+      PromptResponseHandler
+      (response-chosen [_ method res]
+        (when (or (= genocide-class method)
+                  (= genocide-monster method))
+          (log/warn "genocided" res))
+        (when (= make-wish method)
+          (log/warn "wished for" res)))
+      RedrawHandler
+      (redraw [_ frame]
+        (println frame)))))
 
 (defn print-tiles
   "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
