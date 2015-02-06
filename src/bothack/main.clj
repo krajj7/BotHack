@@ -73,7 +73,7 @@
                 (log/debug "making initial game state")
                 (new-game)))
 
-(defn- q [] (do (w (str esc esc esc esc "#quit\nyq")) (System/exit 0)))
+(defn- q [] (w (str esc esc esc esc "#quit\nyq") (System/exit 0)))
 
 (defn- quit-when-looping []
   (let [actions-this-turn (atom 0)]
@@ -92,8 +92,19 @@
       (log/error "No action chosen - quitting")
       (q))))
 
+(defn- quit-when-idle []
+  (let [fut (atom (future nil))]
+    (reify ActionChosenHandler
+      (action-chosen [_ _]
+        (future-cancel @fut)
+        (reset! fut (future (Thread/sleep (* 5 60 1000))
+                            (when-not (:inhibited @(:delegator a))
+                              (log/error "5 min idle - quitting")
+                              (q))))))))
+
 (defn- init-ui [{:keys [config] :as bh}]
   (when-not (config-get (:config bh) :no-exit false)
+    (register-handler bh (dec priority-top) (quit-when-idle))
     (register-handler bh (dec priority-top) (quit-when-looping))
     (register-handler bh (inc priority-bottom) (quit-when-stuck)))
   (register-handler bh (dec priority-top)
