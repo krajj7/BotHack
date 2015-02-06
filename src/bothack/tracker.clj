@@ -83,7 +83,6 @@
           (if-let [[[cp cm] & more]
                    (seq (filter (fn candidate? [[_ n]]
                                   (or (and (= \5 (:glyph m))
-                                           (= \& (:glyph n))
                                            (covetous? n)
                                            (zero? (distance m n)))
                                       (and (= (:glyph m) (:glyph n))
