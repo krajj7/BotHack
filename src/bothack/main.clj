@@ -73,7 +73,9 @@
                 (log/debug "making initial game state")
                 (new-game)))
 
-(defn- q [] (w (str esc esc esc esc "#quit\nyq") (System/exit 0)))
+(defn- q []
+  (w (str esc esc esc esc "#quit\nyq"))
+  (System/exit 0))
 
 (defn- quit-when-looping []
   (let [actions-this-turn (atom 0)]
