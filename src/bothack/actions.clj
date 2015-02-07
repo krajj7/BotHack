@@ -875,7 +875,7 @@
       ToplineMessageHandler
       (message [_ msg]
         (condp re-seq msg
-          #"You don't have anything else to wear"
+          #"You don't have anything else to wear|already wearing that"
           (swap! game update-in [:player :inventory slot]
                  assoc :worn true :in-use true)
           nil))
