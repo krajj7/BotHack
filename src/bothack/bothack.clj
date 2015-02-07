@@ -123,7 +123,7 @@
     (ref-set (:scraper bh) nil)
     (-> (:delegator bh)
         (send set-inhibition false)
-        (send write (str esc esc))))
+        (send write (str esc esc esc esc))))
   bh)
 
 (def ^:private prompt-escape "Default responses for unhandled prompts"
