@@ -871,7 +871,15 @@
   (handler [_ {:keys [game] :as bh}]
     (update-inventory bh)
     (possible-autoid bh slot)
-    (reify WearItemHandler
+    (reify
+      ToplineMessageHandler
+      (message [_ msg]
+        (condp re-seq msg
+          #"You don't have anything else to wear"
+          (swap! game update-in [:player :inventory slot]
+                 assoc :worn true :in-use true)
+          nil))
+      WearItemHandler
       (wear-what [_ _]
         (mark-use bh slot)
         slot))))

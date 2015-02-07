@@ -34,6 +34,7 @@
                :name "potion of water"
                :buc (if (= buc "holy") "blessed" "cursed"))
         res)
+      (update res :name (partial re-first-group #"([^(]*)( \(.*)?$"))
       (update res :name #(get jap->eng % %))
       (update res :name #(get plural->singular % %))
       (assoc res :lit (or (:lit res)
