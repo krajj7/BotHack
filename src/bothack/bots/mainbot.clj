@@ -1188,13 +1188,13 @@
                             (keep (partial monster-at level))
                             (filter hostile?)
                             (remove (partial can-ignore? game)))]
-          (or ; TODO if standing on ice without levi move away, also drawbridge
-              (if (and (not (e? (at-player game)))
+          (or (if (and (not (e? (at-player game)))
                        (or (more-than? 1 (remove (some-fn :fleeing
                                                           ignores-e?) adjacent))
-                           (some (every-pred (partial keep-away? game)
-                                             (complement :fleeing))
-                                 adjacent)))
+                           (and (some (every-pred (partial keep-away? game)
+                                                  (complement :fleeing))
+                                      adjacent)
+                                (pos? (rand-int 4)))))
                 (with-reason "fight engrave"
                   (engrave-e game)))
               (if (and (exposed? game level player)
