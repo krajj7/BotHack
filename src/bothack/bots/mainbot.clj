@@ -1929,7 +1929,9 @@
   (if (and (:grabbed player) (some pool? (neighbors (curlvl game) player)))
     (let [level (curlvl game)
           [drowner & _ :as drowners] (filter #(and (pool? %)
-                                                   (monster-at level %))
+                                                   (if-let [m (monster-at level %)]
+                                                     (or (not (typename m))
+                                                         (drowner? m))))
                                              (neighbors level player))]
       (with-reason "grabbed - avoid drowning"
         (if (and drowner (pos? (rand-int 60)))
