@@ -1049,6 +1049,7 @@
                   (engrave-e game (not-any? ignores-e? (vals threats))))
                 (if-let [t (find-first #(and (engravable? %)
                                              (not (monster-at level %))
+                                             (passable-walking? game level tile %)
                                              (less-than?
                                                (count adjacent)
                                                (filter threats (neighbors %))))
