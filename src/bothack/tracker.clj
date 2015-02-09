@@ -82,8 +82,7 @@
         (if-let [[p m] (first new-monsters)]
           (if-let [[[cp cm] & more]
                    (seq (filter (fn candidate? [[_ n]]
-                                  (or (and (= \5 (:glyph m))
-                                           (covetous? n)
+                                  (or (and (#{\5 \4 \3 \2 \1} (:glyph m))
                                            (zero? (distance m n)))
                                       (and (= (:glyph m) (:glyph n))
                                            (= (:color m) (:color n))

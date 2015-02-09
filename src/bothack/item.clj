@@ -132,8 +132,11 @@
       (= "bag of tricks" (:name item))
       (some? (:items item))))
 
-(defn boh? [game item]
-  (= "bag of holding" (item-name game item)))
+(defn boh?
+  ([item]
+   (= "bag of holding" (:name item)))
+  ([game item]
+   (= "bag of holding" (item-name game item))))
 
 (defn water? [item]
   (= "potion of water" (:name item)))

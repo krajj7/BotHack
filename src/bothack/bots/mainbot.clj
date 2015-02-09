@@ -1240,7 +1240,8 @@
                                    (find-first ignores-e? adjacent)
                                    (find-first #(#{\I \5} (:glyph %)) adjacent)
                                    (find-first hits-hard? adjacent)
-                                   (find-first nasty? adjacent))]
+                                   (find-first nasty? adjacent)
+                                   (find-first #(#{\4 \3 \2} (:glyph %)) adjacent))]
                 (hit game level monster))
               (clear-farm game)
               (if-let [m (min-by (partial distance player)
