@@ -249,10 +249,10 @@
   ))
 
 (def desired-weapons
-  (ordered-set "Excalibur" "long sword"))
+  (ordered-set "Excalibur" "long sword" "katana"))
 
 (def desired-suit
-  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail"))
+  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail" "splint mail"))
 
 (def desired-shirt
   (ordered-set "T-shirt" "Hawaiian shirt"))
