@@ -1043,6 +1043,7 @@
             (if (and (some (every-pred (complement :fleeing)
                                        (complement passive?)) adjacent)
                      (not-any? ignores-e? adjacent)
+                     (not (perma-e? tile))
                      (can-engrave? game))
               (if (engravable? tile)
                 (with-reason "retreat engrave"
@@ -1237,7 +1238,7 @@
                                    (find-first priest? adjacent)
                                    (find-first werecreature? adjacent)
                                    (find-first ignores-e? adjacent)
-                                   (find-first #(= \I (:glyph %)) adjacent)
+                                   (find-first #(#{\I \5} (:glyph %)) adjacent)
                                    (find-first hits-hard? adjacent)
                                    (find-first nasty? adjacent))]
                 (hit game level monster))
