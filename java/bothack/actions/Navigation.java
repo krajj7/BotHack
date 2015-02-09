@@ -167,6 +167,16 @@ public final class Navigation {
 	public static IAction exploreCurrentLevel(IGame game) {
 		return (IAction) Clojure.var("bothack.pathing", "explore").invoke(game);
 	}
+
+	/** Returns an action to explore the dungeon up to and including the specified level. */
+	public static IAction explore(IGame game, Branch branch, LevelTag tag) {
+		return (IAction) Clojure.var("bothack.pathing", "explore").invoke(game, branch.getKeyword(), tag.getKeyword());
+	}
+
+	/** Returns an action to explore the dungeon up to and including end of the given branch. */
+	public static IAction explore(IGame game, Branch branch) {
+		return (IAction) Clojure.var("bothack.pathing", "explore").invoke(game, branch.getKeyword());
+	}
 	
 	/**
 	 * Returns an action to explore or search the current level repeatedly.

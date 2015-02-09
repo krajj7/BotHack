@@ -509,6 +509,7 @@
   (neighbors [level pos] (vec (neighbors level pos)))
   (at [level pos] (at level pos))
   (monsterAt [level pos] (get-in level [:monsters (position pos)]))
+  (monsters [level] (:monsters level))
   (branch [level] (:branch-id level))
   (dlvl [level] (:dlvl level)))
 

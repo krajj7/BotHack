@@ -31,7 +31,17 @@ public enum LevelTag {
 	/** Branch end (for MAIN branch this is the level with the vibrating square). */
 	END(Keyword.intern(null, "end")),
 	/** Moloch's sanctum.  Deepest level of the game. */
-	SANCTUM(Keyword.intern(null, "sanctum"));
+	SANCTUM(Keyword.intern(null, "sanctum")),
+    /** Entrance to the gnomish mines. */
+    MINES(Keyword.intern(null, "mines")),
+    /** Entrance to sokoban. */
+    SOKOBAN(Keyword.intern(null, "sokoban")),
+    /** Entrance to the quest. */
+    QUEST(Keyword.intern(null, "quest")),
+    /** Entrance to fort ludios. */
+    LUDIOS(Keyword.intern(null, "ludios")),
+    /** Entrance to Vlad's tower. */
+    VLAD(Keyword.intern(null, "vlad"));
 
 	private final Keyword kw;
 

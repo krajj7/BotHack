@@ -1,5 +1,6 @@
 package bothack.bot;
 
+import clojure.java.api.Clojure;
 import clojure.lang.Keyword;
 
 public enum Direction {
@@ -15,12 +16,21 @@ public enum Direction {
     UP(Keyword.intern(null, "<")),
     HERE(Keyword.intern(null, "."));
 
-    private final Keyword kw;
-    private Direction(Keyword kw) {
-        this.kw = kw;
-    }
+	static {
+		Clojure.var("clojure.core", "require").invoke(Clojure.read("bothack.position"));
+	}
 
-    public Keyword getKeyword() {
-        return kw;
-    }
+	private final Keyword kw;
+
+	private Direction(Keyword kw) {
+		this.kw = kw;
+	}
+
+	public Keyword getKeyword() {
+		return kw;
+	}
+
+	public static Direction towards(IPosition p1, IPosition p2) {
+		return Direction.valueOf(((Keyword) Clojure.var("bothack.position", "towards").invoke(p1, p2)).getName());
+	}
 }
