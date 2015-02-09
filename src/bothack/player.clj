@@ -64,12 +64,16 @@
   (not (:thick player)))
 
 (defn has-hands? [player]
-  ; TODO two handed weapon with shield ...
-  (if-let [poly (:polymorphed player)]
-    (and (not (:nohands (:tags poly)))
-         (not (:nolimbs (:tags poly)))
-         (not (:were (:tags poly))))
-    true))
+  (and (not (if-let [poly (:polymorphed player)]
+              (or (:nohands (:tags poly))
+                  (:nolimbs (:tags poly))
+                  (:were (:tags poly)))))
+       (not (if-let [[_ item] (find-first (comp :wielded val)
+                                          (:inventory player))]
+              (and (cursed? item)
+                   (or (two-handed? item)
+                       (find-first (comp (every-pred shield? cursed? :worn) val)
+                                   (:inventory player))))))))
 
 (defn light-radius [game]
   1) ; TODO check for lit lamp/candelabrum/sunsword/burning oil

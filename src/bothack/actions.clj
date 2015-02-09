@@ -1356,14 +1356,15 @@
   (register-handler bh priority-top
                     (reify ActionHandler
                       (choose-action [this game]
-                        (deregister-handler bh this)
-                        (with-reason "updating content of container at" slot
-                          (if (= \. slot)
-                            (->Loot)
-                            (if (inventory-slot game slot)
-                              (->Apply slot)
-                              (log/warn "container at" slot
-                                        "disappeared - exploded BoH?"))))))))
+                        (when (has-hands? (:player game))
+                          (deregister-handler bh this)
+                          (with-reason "updating content of container at" slot
+                            (if (= \. slot)
+                              (->Loot)
+                              (if (inventory-slot game slot)
+                                (->Apply slot)
+                                (log/warn "container at" slot
+                                          "disappeared - exploded BoH?")))))))))
 
 (defn put-in
   ([bag-slot slot amt] (put-in bag-slot {slot amt}))
