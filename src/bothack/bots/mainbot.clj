@@ -1434,7 +1434,9 @@
              (navigate game #(if-let [monster (monster-at level %)]
                                (and (not (unicorn? monster))
                                     (not (shop? %))
-                                    (or (blocked? %) (rob? monster))))
+                                    (not= "Home 1" (:dlvl game))
+                                    (or (blocked? %)
+                                        (rob? monster))))
                        #{:adjacent})]
       (with-reason "robbing a poor peaceful dorf"
         (or step (->Attack (towards player target)))))))
