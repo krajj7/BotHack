@@ -202,7 +202,7 @@
                          (not (have-pick game))
                          (not (have-key game))))
               (explore game :mines)))
-          (if-not (farm-done? game)
+          (if-not (or (farm-done? game) (below-medusa? game))
             (explore game :main "Dlvl:20"))
           (castle-plan-b game)
           (if (and (or (> -7 (:ac player))
@@ -1558,12 +1558,12 @@
     "blessed greased fixed +3 helm of telepathy"
     ;(not (have game "gauntlets of power"))
     ;"blessed fixed +3 gauntlets of power"
+    (not (have game "wand of death" #{:bagged}))
+    "blessed wand of death"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
     (< -20 (:ac (:player game)))
     "3 blessed scrolls of enchant armor"
-    (not (have game "wand of death" #{:bagged}))
-    "blessed wand of death"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
     "blessed amulet of life saving"
@@ -1879,7 +1879,7 @@
   (let [geno-classes (atom (list ";" "L" "R" "c" "n" "m" "N" "q" "T" "U"))
         geno-types (atom (list "master mind flayer" "mind flayer"
                                "electric eel" "disenchanter" "minotaur"
-                               "green slime" "golden naga" "gremlin"))
+                               "giant eel" "green slime" "golden naga" "gremlin"))
         throne-geno (atom (list "minotaur" "disenchanter" "green slime"
                                 "golden naga" "gremlin"))
         next! (fn [g]
