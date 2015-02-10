@@ -95,10 +95,11 @@
    (inventory game-or-player false)))
 
 (defn- base-selector [game name-or-set-or-fn]
-  (cond ((some-fn keyword? fn?) name-or-set-or-fn) name-or-set-or-fn
-        (set? name-or-set-or-fn) (some-fn (comp name-or-set-or-fn
+  (cond (set? name-or-set-or-fn) (some-fn (comp name-or-set-or-fn
                                                 (partial item-name game))
                                           (comp name-or-set-or-fn :name))
+        (and (ifn? name-or-set-or-fn)
+             (not (coll? name-or-set-or-fn))) name-or-set-or-fn
         :else (some-fn (comp (partial = name-or-set-or-fn) :name)
                        (comp (partial = name-or-set-or-fn)
                              (partial item-name game)))))

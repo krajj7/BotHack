@@ -88,7 +88,7 @@ public final class Navigation {
 	 * @param maxSteps Maximum number of steps
 	 * @param opts Additional modifiers
 	 */
-	public static IPath navigate(IGame game, IPosition target, Long maxSteps, NavOption... opts) {
+	public static IPath navigate(IGame game, IPosition target, long maxSteps, NavOption... opts) {
 		return (IPath) NAVIGATE.invoke(game, target, NAVOPTS.invoke(opts, maxSteps));
 	}
 
@@ -107,7 +107,7 @@ public final class Navigation {
 	 * @param maxSteps Maximum number of steps
 	 * @param opts Additional modifiers
 	 */
-	public static IPath navigate(IGame game, IPredicate<ITile> target, Long maxSteps, NavOption... opts) {
+	public static IPath navigate(IGame game, IPredicate<ITile> target, long maxSteps, NavOption... opts) {
 		return (IPath) NAVIGATE.invoke(game, new Predicate(target), NAVOPTS.invoke(opts, maxSteps));
 	}
 
@@ -233,7 +233,7 @@ public final class Navigation {
 	 * otherwise assumes all levels are passable and unit distance.  Only runs tile-based navigation on the current level.
 	 * @param maxDelta limits the number of traversed levels
 	 */
-	public static IAction seekInterlevel(IGame game, IPredicate<ITile> target, Long maxDelta) {
+	public static IAction seekInterlevel(IGame game, IPredicate<ITile> target, long maxDelta) {
 		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {}, maxDelta));
 	}
 	
@@ -260,7 +260,7 @@ public final class Navigation {
 	 * upwards and avoid subbranches.
 	 * @param maxDelta limits the number of traversed levels
 	 */
-	public static IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target, Long maxDelta) {
+	public static IAction seekInterlevelUpwards(IGame game, IPredicate<ITile> target, long maxDelta) {
 		return (IAction) Clojure.var("bothack.pathing", "seek-tile").invoke(game, new Predicate(target), NAVOPTS.invoke(new NavOption[] {NavOption.UP}, maxDelta));
 	}
 

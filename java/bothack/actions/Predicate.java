@@ -2,7 +2,8 @@ package bothack.actions;
 
 import bothack.bot.IPredicate;
 
-/** Makes IPredicate callable natively from clojure (by implementing IFn via AFn) */
+/** Makes IPredicate callable natively from clojure (by implementing IFn via AFn).
+ * IPredicates are wrapped automatically – bots don't need to use this. */
 class Predicate extends clojure.lang.AFn {
 	final IPredicate p;
 

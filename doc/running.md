@@ -9,7 +9,10 @@ Make sure you have Java 7 JDK and Maven installed (check `mvn -V`)
 There is a working bot Maven project skeleton available here:
 https://github.com/krajj7/BotHack/blob/master/javabots/SimpleBot
 
-To compile it, run `mvn compile` in the project directory.
+Or a more expanded, but still fairly basic bot example here:
+https://github.com/krajj7/BotHack/blob/master/javabots/JavaBot
+
+To compile these, run `mvn compile` in the project directory.
 
 BotHack itself doesn't need to be compiled manually to run Java bots against public servers, a packaged version of the framework jar and other dependencies will be downloaded automatically by Maven.
 
@@ -19,14 +22,14 @@ The framework should work with any server running the nethack.alt.org version of
 
 * Register an account on your chosen server.
 * Replace the default nethackrc for the account with [the one provided](https://github.com/krajj7/BotHack/blob/master/bothack.nethackrc).
-* Edit `config/simplebot-ssh-config.edn` or `config/simplebot-telnet-config.edn` in the SimpleBot project, change the server address, your username and password.
+* Edit `config/simplebot-ssh-config.edn` or `config/simplebot-telnet-config.edn` in the SimpleBot project (or the JavaBot equivalents), change the server address, your username and password.
 * Run `mvn test -Prun-ssh` or `mvn test -Prun-telnet`
 
 The DGL (dgamelaunch) menubot set by default in the config files should work with nethack.alt.org and acehack.de servers, it may need tweaking for other servers.
 
 Network latency may make the bot play very slowly (and not be CPU-bound), if that is the case consider setting up a local instalation of NetHack (which also allows you to do testing in wizard mode).
 
-Increasing the JVM heap size limits (:jvm-opts ["-Xms4g" "-Xmx4g"] in project.clj) might improve performance.
+Increasing the JVM heap size limits (`:jvm-opts ["-Xms4g" "-Xmx4g"]` in project.clj) might improve performance.
 
 ### Running against a local NetHack installation (on Linux)
 

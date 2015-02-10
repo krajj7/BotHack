@@ -10,13 +10,10 @@ import bothack.prompts.IActionHandler;
 class ProgressHandler implements IActionHandler {
 	public IAction chooseAction(IGame game) {
 		IAction res = null;
+		res = Navigation.explore(game, Branch.MAIN, LevelTag.ORACLE);
+		if (res != null)
+			return res;
 		res = Navigation.explore(game, Branch.MINES, LevelTag.MINETOWN);
-		if (res != null)
-			return res;
-		res = Navigation.explore(game, Branch.MAIN, LevelTag.SOKOBAN);
-		if (res != null)
-			return res;
-		res = doSoko();
 		if (res != null)
 			return res;
 		res = Navigation.explore(game, Branch.MAIN, LevelTag.QUEST);
@@ -27,9 +24,5 @@ class ProgressHandler implements IActionHandler {
 			return res;
 		res = Navigation.explore(game, Branch.MAIN);
 		return res;
-	}
-
-	private IAction doSoko() {
-		return null; //TODO
 	}
 }

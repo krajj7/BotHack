@@ -516,7 +516,7 @@
   (weightSum [game] (weight-sum game))
   (gold [game] (gold game))
   (goldAvailable [game] (available-gold game))
-  (isCorpseFresh [game pos corpse] (fresh-corpse? game pos corpse))
+  (isCorpseFresh [game pos corpse] (boolean (fresh-corpse? game pos corpse)))
   (turn [game] (:turn game))
   (actionTurn [game] (:turn* game))
   (score [game] (:score game))
