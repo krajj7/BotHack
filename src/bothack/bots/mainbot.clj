@@ -581,12 +581,14 @@
   (if-not (and (have game real-amulet?)
                (have game desired-weapons)
                (at-planes? game))
-    (let [to-take? (take-selector game)]
+    (let [to-take? (take-selector game)
+          sanctum? (:sanctum (curlvl-tags game))]
       (if-let [{:keys [step target]}
                (navigate game #(or (:new-items %)
                                    (and (or (some explorable-container?
                                                   (:items %))
                                             (unlockable-chest? game %))
+                                        (not sanctum?)
                                         (not (sink? %)))
                                    (some to-take? (concat (:items %)
                                                           (lootable-items %))))

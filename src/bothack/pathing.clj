@@ -467,7 +467,7 @@
               (> 2 (count (remove (some-fn rock? wall?) snbr)))))))
 
 (defn- has-dead-ends? [game level]
-  (and (not-any? #{:bigroom :juiblex} (:tags level))
+  (and (not-any? #{:bigroom :juiblex :sanctum} (:tags level))
        (not (in-gehennom? game))
        (or (not (subbranches (branch-key game level)))
            (:minetown (:tags level)))))
@@ -1063,6 +1063,10 @@
         branch (branch-key game level)
         player-tile (at-player game)]
     (or (search-dead-end game 20)
+        (if (and (:sanctum (:tags level))
+                 (not (:walked (at-curlvl game 20 10))))
+          (with-reason "searching sanctum"
+            (seek game {:x 20 :y 10} {:no-explore true})))
         (if-let [path (navigate game (partial explorable-tile? level)
                                 #{:prefer-items})]
           (with-reason "exploring" (at level (:target path))
@@ -1082,10 +1086,6 @@
               (or (:step path)
                   (->> (pushable-from game level player) first
                        (towards player) ->Move (without-levitation game))))))
-        (if (and (:sanctum (:tags level))
-                 (not (:walked (at-curlvl game 20 10))))
-          (with-reason "searching sanctum"
-            (seek game {:x 20 :y 10} {:no-explore true})))
         (if (and (= :wiztower branch)
                  (:end (curlvl-tags game))
                  (unknown? (at-curlvl game 40 11)))
