@@ -1309,7 +1309,8 @@
         (castle-fort game level))))
 
 (defn fight-covetous [game]
-  (if-let [m (find-first (every-pred covetous? hostile? mobile?)
+  (if-let [m (find-first (every-pred covetous? hostile?
+                                     (partial mobile? game))
                          (curlvl-monsters game))]
     (with-reason "going to kill" (typename m)
       (:step (navigate game m)))))
