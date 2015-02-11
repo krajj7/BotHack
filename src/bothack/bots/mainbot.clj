@@ -1136,7 +1136,7 @@
           (make-use game slot)))))
 
 (defn hits-hard? [m]
-  (= "winged gargoyle" (typename m)))
+  (#{"winged gargoyle" "Olog-hai"} (typename m)))
 
 (defn castle-fort [game level]
   (if (and (:castle (:tags level))
@@ -1201,6 +1201,7 @@
                 (with-reason "fight engrave"
                   (engrave-e game)))
               (if (and (exposed? game level player)
+                       (pos? (rand-int 6))
                        (more-than? 1 (filter (partial mobile? game) adjacent)))
                 (with-reason "moving to non-exposed position"
                   (:step (navigate game #(and (not (exposed? game level %))
