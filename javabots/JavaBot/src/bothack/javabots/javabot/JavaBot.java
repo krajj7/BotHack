@@ -4,7 +4,9 @@ import bothack.bot.IBotHack;
 
 /** This is an example of a bot using the Java API.
  * It is a very basic bot, doing only minimal things to demonstrate and test
- * basic functionality of the API.  You can expect it to die fairly quickly. */
+ * basic functionality of the API.  You can expect it to die fairly quickly.
+ * See {@link https://github.com/krajj7/BotHack/blob/master/doc/running.md}
+ * for how to run it. */
 public class JavaBot {
 	IBotHack bothack;
 	

@@ -21,6 +21,10 @@ Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.g
 
 [Compiling BotHack from source and running Clojure bots](https://github.com/krajj7/BotHack/blob/master/doc/compiling.md)
 
+## Video
+
+![First NetHack bot ascension (YouTube)](https://www.youtube.com/watch?v=unCQHAbGsAA)
+
 ## Screenshot
 
 ![screenshot](http://krajj7.github.com/BotHack/bothack-repl.png)
@@ -65,7 +69,7 @@ Item handling is still missing so bots can't cross Medusa's yet, but in wizmode 
 
 **23.10.2014**: The framework now finally has at least the features and robustness needed to allow a bot pre-equipped with overpowered gear in wizard mode to beat the game full-auto.  The bot gathers all the invocation artifacts manually, not harming any peacefuls along the way and not using any wizard mode commands itself.  A lot of functionality that will be necessary for a non-wizmode bot to play sucessfully is however still missing.  Progress toward that end will hopefully be swift on the current foundation.
 
-Video of wizmode ascension (6x speedup):  https://www.youtube.com/watch?v=fpCGivGrUVw
+Video of a wizmode ascension (6x speedup):  https://www.youtube.com/watch?v=fpCGivGrUVw
 
 Source ttyrec: https://github.com/krajj7/BotHack/raw/master/ttyrec/wizmode-fullauto-asc.ttyrec [31MB, realtime duration 1h42m]
 
