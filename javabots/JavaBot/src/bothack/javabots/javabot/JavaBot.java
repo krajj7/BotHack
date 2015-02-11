@@ -2,6 +2,9 @@ package bothack.javabots.javabot;
 
 import bothack.bot.IBotHack;
 
+/** This is an example of a bot using the Java API.
+ * It is a very basic bot, doing only minimal things to demonstrate and test
+ * basic functionality of the API.  You can expect it to die fairly quickly. */
 public class JavaBot {
 	IBotHack bothack;
 	
@@ -15,6 +18,7 @@ public class JavaBot {
 		bothack.registerHandler(-3, new MinorTroubleHandler());
 		bothack.registerHandler(1, new FeedHandler());
 		bothack.registerHandler(3, new RecoverHandler());
+		bothack.registerHandler(6, new GatherItems());
 		bothack.registerHandler(19, new ProgressHandler());
 		System.out.println("bot initialized");
 	}

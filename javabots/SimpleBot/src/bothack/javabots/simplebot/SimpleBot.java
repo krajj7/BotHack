@@ -4,7 +4,9 @@ import bothack.actions.*;
 import bothack.bot.*;
 import bothack.prompts.*;
 
-/** A dumb example bot.  Equivalent to simplebot.clj */
+/** A dumb example bot.  Equivalent to simplebot.clj
+ * All the bot does is run in a circle until it dies.
+ * See the JavaBot project for a slightly more advanced example bot. */
 public class SimpleBot {
 	IBotHack bothack;
 	
