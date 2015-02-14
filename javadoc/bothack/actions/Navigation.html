@@ -179,6 +179,21 @@ extends Object</pre>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#explore(bothack.bot.IGame,%20bothack.bot.dungeon.Branch)">explore</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+       <a href="../../bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon">Branch</a>&nbsp;branch)</code>
+<div class="block">Returns an action to explore the dungeon up to and including end of the given branch.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#explore(bothack.bot.IGame,%20bothack.bot.dungeon.Branch,%20bothack.bot.dungeon.LevelTag)">explore</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+       <a href="../../bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon">Branch</a>&nbsp;branch,
+       <a href="../../bothack/bot/dungeon/LevelTag.html" title="enum in bothack.bot.dungeon">LevelTag</a>&nbsp;tag)</code>
+<div class="block">Returns an action to explore the dungeon up to and including the specified level.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
 <td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#exploreCurrentLevel(bothack.bot.IGame)">exploreCurrentLevel</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game)</code>
 <div class="block">Returns an action to explore the current level and items or null if it seems fully explored.</div>
 </td>
@@ -216,9 +231,9 @@ extends Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/Navigation.IPath.html" title="interface in bothack.actions">Navigation.IPath</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20java.lang.Long,%20bothack.actions.NavOption...)">navigate</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20long,%20bothack.actions.NavOption...)">navigate</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
         <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;target,
-        Long&nbsp;maxSteps,
+        long&nbsp;maxSteps,
         <a href="../../bothack/actions/NavOption.html" title="enum in bothack.actions">NavOption</a>...&nbsp;opts)</code>
 <div class="block">Returns the shortest path to the given target and an action to perform to move along it.</div>
 </td>
@@ -233,9 +248,9 @@ extends Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/Navigation.IPath.html" title="interface in bothack.actions">Navigation.IPath</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long,%20bothack.actions.NavOption...)">navigate</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long,%20bothack.actions.NavOption...)">navigate</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
         <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-        Long&nbsp;maxSteps,
+        long&nbsp;maxSteps,
         <a href="../../bothack/actions/NavOption.html" title="enum in bothack.actions">NavOption</a>...&nbsp;opts)</code>
 <div class="block">Returns the shortest path to a matching target and an action to perform to move along it.</div>
 </td>
@@ -293,9 +308,9 @@ extends Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long)">seekInterlevel</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long)">seekInterlevel</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
               <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-              Long&nbsp;maxDelta)</code>
+              long&nbsp;maxDelta)</code>
 <div class="block">Intralevel navigation to the nearest matching tile.</div>
 </td>
 </tr>
@@ -309,9 +324,9 @@ extends Object</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static <a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></code></td>
-<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#seekInterlevelUpwards(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long)">seekInterlevelUpwards</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+<td class="colLast"><code><strong><a href="../../bothack/actions/Navigation.html#seekInterlevelUpwards(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long)">seekInterlevelUpwards</a></strong>(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
                      <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-                     Long&nbsp;maxDelta)</code>
+                     long&nbsp;maxDelta)</code>
 <div class="block">Like <a href="../../bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate)"><code>seekInterlevel(IGame, IPredicate)</code></a> but will only change levels
  upwards and avoid subbranches.</div>
 </td>
@@ -392,7 +407,7 @@ extends Object</pre>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>opts</code> - Additional modifiers</dd></dl>
 </li>
 </ul>
-<a name="navigate(bothack.bot.IGame, bothack.bot.IPosition, java.lang.Long, bothack.actions.NavOption...)">
+<a name="navigate(bothack.bot.IGame, bothack.bot.IPosition, long, bothack.actions.NavOption...)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -400,7 +415,7 @@ extends Object</pre>
 <h4>navigate</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/Navigation.IPath.html" title="interface in bothack.actions">Navigation.IPath</a>&nbsp;navigate(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
                         <a href="../../bothack/bot/IPosition.html" title="interface in bothack.bot">IPosition</a>&nbsp;target,
-                        Long&nbsp;maxSteps,
+                        long&nbsp;maxSteps,
                         <a href="../../bothack/actions/NavOption.html" title="enum in bothack.actions">NavOption</a>...&nbsp;opts)</pre>
 <div class="block">Returns the shortest path to the given target and an action to perform to move along it.
  Returns null if the target is not reachable.</div>
@@ -421,7 +436,7 @@ extends Object</pre>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>opts</code> - Additional modifiers</dd></dl>
 </li>
 </ul>
-<a name="navigate(bothack.bot.IGame, bothack.bot.IPredicate, java.lang.Long, bothack.actions.NavOption...)">
+<a name="navigate(bothack.bot.IGame, bothack.bot.IPredicate, long, bothack.actions.NavOption...)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -429,7 +444,7 @@ extends Object</pre>
 <h4>navigate</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/Navigation.IPath.html" title="interface in bothack.actions">Navigation.IPath</a>&nbsp;navigate(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
                         <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-                        Long&nbsp;maxSteps,
+                        long&nbsp;maxSteps,
                         <a href="../../bothack/actions/NavOption.html" title="enum in bothack.actions">NavOption</a>...&nbsp;opts)</pre>
 <div class="block">Returns the shortest path to a matching target and an action to perform to move along it.
  Returns null if no target is reachable.</div>
@@ -538,6 +553,29 @@ extends Object</pre>
 <dl><dt><span class="strong">See Also:</span></dt><dd><a href="../../bothack/actions/Navigation.html#searchCurrentLevel(bothack.bot.IGame)"><code>searchCurrentLevel(IGame)</code></a></dd></dl>
 </li>
 </ul>
+<a name="explore(bothack.bot.IGame, bothack.bot.dungeon.Branch, bothack.bot.dungeon.LevelTag)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>explore</h4>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;explore(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+              <a href="../../bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon">Branch</a>&nbsp;branch,
+              <a href="../../bothack/bot/dungeon/LevelTag.html" title="enum in bothack.bot.dungeon">LevelTag</a>&nbsp;tag)</pre>
+<div class="block">Returns an action to explore the dungeon up to and including the specified level.</div>
+</li>
+</ul>
+<a name="explore(bothack.bot.IGame, bothack.bot.dungeon.Branch)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>explore</h4>
+<pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;explore(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
+              <a href="../../bothack/bot/dungeon/Branch.html" title="enum in bothack.bot.dungeon">Branch</a>&nbsp;branch)</pre>
+<div class="block">Returns an action to explore the dungeon up to and including end of the given branch.</div>
+</li>
+</ul>
 <a name="searchCurrentLevelRepeatedly(bothack.bot.IGame)">
 <!--   -->
 </a>
@@ -619,7 +657,7 @@ extends Object</pre>
 <div class="block">Return Dlvl of <a href="../../bothack/bot/dungeon/Branch.html#MAIN"><code>Branch.MAIN</code></a> containing the entrance to branch, if static or already visited</div>
 </li>
 </ul>
-<a name="seekInterlevel(bothack.bot.IGame, bothack.bot.IPredicate, java.lang.Long)">
+<a name="seekInterlevel(bothack.bot.IGame, bothack.bot.IPredicate, long)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -627,7 +665,7 @@ extends Object</pre>
 <h4>seekInterlevel</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;seekInterlevel(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
                      <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-                     Long&nbsp;maxDelta)</pre>
+                     long&nbsp;maxDelta)</pre>
 <div class="block">Intralevel navigation to the nearest matching tile.
  Will not traverse the castle or medusa's if the player is lacking safe levitation source,
  otherwise assumes all levels are passable and unit distance.  Only runs tile-based navigation on the current level.</div>
@@ -660,7 +698,7 @@ extends Object</pre>
  upwards and avoid subbranches.</div>
 </li>
 </ul>
-<a name="seekInterlevelUpwards(bothack.bot.IGame, bothack.bot.IPredicate, java.lang.Long)">
+<a name="seekInterlevelUpwards(bothack.bot.IGame, bothack.bot.IPredicate, long)">
 <!--   -->
 </a>
 <ul class="blockList">
@@ -668,7 +706,7 @@ extends Object</pre>
 <h4>seekInterlevelUpwards</h4>
 <pre>public static&nbsp;<a href="../../bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a>&nbsp;seekInterlevelUpwards(<a href="../../bothack/bot/IGame.html" title="interface in bothack.bot">IGame</a>&nbsp;game,
                             <a href="../../bothack/bot/IPredicate.html" title="interface in bothack.bot">IPredicate</a>&lt;<a href="../../bothack/bot/dungeon/ITile.html" title="interface in bothack.bot.dungeon">ITile</a>&gt;&nbsp;target,
-                            Long&nbsp;maxDelta)</pre>
+                            long&nbsp;maxDelta)</pre>
 <div class="block">Like <a href="../../bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate)"><code>seekInterlevel(IGame, IPredicate)</code></a> but will only change levels
  upwards and avoid subbranches.</div>
 <dl><dt><span class="strong">Parameters:</span></dt><dd><code>maxDelta</code> - limits the number of traversed levels</dd></dl>

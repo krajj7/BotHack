@@ -430,6 +430,14 @@
 <dd>
 <div class="block">The player's level.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#explore(bothack.bot.IGame,%20bothack.bot.dungeon.Branch,%20bothack.bot.dungeon.LevelTag)">explore(IGame, Branch, LevelTag)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dd>
+<div class="block">Returns an action to explore the dungeon up to and including the specified level.</div>
+</dd>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#explore(bothack.bot.IGame,%20bothack.bot.dungeon.Branch)">explore(IGame, Branch)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dd>
+<div class="block">Returns an action to explore the dungeon up to and including end of the given branch.</div>
+</dd>
 <dt><span class="strong"><a href="./bothack/actions/Navigation.html#exploreCurrentLevel(bothack.bot.IGame)">exploreCurrentLevel(IGame)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
 <dd>
 <div class="block">Returns an action to explore the current level and items or null if it seems fully explored.</div>
@@ -918,11 +926,6 @@
 <dd>
 <div class="block">Returns true if the player is just about to enter a shop and should not pick up pickaxes.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/bot/dungeon/ILevel.html#isExplored()">isExplored()</a></span> - Method in interface <a href="./bothack/bot/dungeon/ILevel.html" title="interface in bothack.bot.dungeon">ILevel</a></dt>
-<dd>
-<div class="block">True if the level has no reachable explorable tiles (or had none
- when it was left).</div>
-</dd>
 <dt><span class="strong"><a href="./bothack/bot/items/IItem.html#isFixed()">isFixed()</a></span> - Method in interface <a href="./bothack/bot/items/IItem.html" title="interface in bothack.bot.items">IItem</a></dt>
 <dd>
 <div class="block">True for rustproof/fireproof/fixed items.</div>
@@ -1277,7 +1280,7 @@
 <dd>
 <div class="block">Returns the shortest path to the given target and an action to perform to move along it.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20java.lang.Long,%20bothack.actions.NavOption...)">navigate(IGame, IPosition, Long, NavOption...)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPosition,%20long,%20bothack.actions.NavOption...)">navigate(IGame, IPosition, long, NavOption...)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
 <dd>
 <div class="block">Returns the shortest path to the given target and an action to perform to move along it.</div>
 </dd>
@@ -1285,7 +1288,7 @@
 <dd>
 <div class="block">Returns the shortest path to a matching target and an action to perform to move along it.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long,%20bothack.actions.NavOption...)">navigate(IGame, IPredicate&lt;ITile&gt;, Long, NavOption...)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#navigate(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long,%20bothack.actions.NavOption...)">navigate(IGame, IPredicate&lt;ITile&gt;, long, NavOption...)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
 <dd>
 <div class="block">Returns the shortest path to a matching target and an action to perform to move along it.</div>
 </dd>
@@ -1542,7 +1545,7 @@
 <dd>
 <div class="block">Returns an action to look for the specified branch or null if already there.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long)">seekInterlevel(IGame, IPredicate&lt;ITile&gt;, Long)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long)">seekInterlevel(IGame, IPredicate&lt;ITile&gt;, long)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
 <dd>
 <div class="block">Intralevel navigation to the nearest matching tile.</div>
 </dd>
@@ -1555,7 +1558,7 @@
 <div class="block">Like <a href="./bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate)"><code>Navigation.seekInterlevel(IGame, IPredicate)</code></a> but will only change levels
  upwards and avoid subbranches.</div>
 </dd>
-<dt><span class="strong"><a href="./bothack/actions/Navigation.html#seekInterlevelUpwards(bothack.bot.IGame,%20bothack.bot.IPredicate,%20java.lang.Long)">seekInterlevelUpwards(IGame, IPredicate&lt;ITile&gt;, Long)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
+<dt><span class="strong"><a href="./bothack/actions/Navigation.html#seekInterlevelUpwards(bothack.bot.IGame,%20bothack.bot.IPredicate,%20long)">seekInterlevelUpwards(IGame, IPredicate&lt;ITile&gt;, long)</a></span> - Static method in class <a href="./bothack/actions/Navigation.html" title="class in bothack.actions">Navigation</a></dt>
 <dd>
 <div class="block">Like <a href="./bothack/actions/Navigation.html#seekInterlevel(bothack.bot.IGame,%20bothack.bot.IPredicate)"><code>Navigation.seekInterlevel(IGame, IPredicate)</code></a> but will only change levels
  upwards and avoid subbranches.</div>
@@ -1647,6 +1650,8 @@
 <dd>
 <div class="block">Title displayed on the status line.</div>
 </dd>
+<dt><span class="strong"><a href="./bothack/bot/Direction.html#towards(bothack.bot.IPosition,%20bothack.bot.IPosition)">towards(IPosition, IPosition)</a></span> - Static method in enum <a href="./bothack/bot/Direction.html" title="enum in bothack.bot">Direction</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="strong"><a href="./bothack/actions/IAction.html#trigger()">trigger()</a></span> - Method in interface <a href="./bothack/actions/IAction.html" title="interface in bothack.actions">IAction</a></dt>
 <dd>
 <div class="block">Returns the string to write to NetHack to trigger the action.</div>
