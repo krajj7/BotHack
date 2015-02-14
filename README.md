@@ -23,7 +23,7 @@ Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.g
 
 ## Video
 
-![First NetHack bot ascension (YouTube)](https://www.youtube.com/watch?v=unCQHAbGsAA)
+[First NetHack bot ascension (YouTube)](https://www.youtube.com/watch?v=unCQHAbGsAA)
 
 ## Screenshot
 
