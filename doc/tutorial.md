@@ -1,4 +1,4 @@
-**Table of Contents**  <!-- *generated with [DocToc](http://doctoc.herokuapp.com/)* -->
+**Table of Contents**  
 
 - [Programming BotHack bots in Java](#)
     - [Compiling and running BotHack bots](#)
@@ -6,20 +6,18 @@
     - [NetHack world representation](#)
     - [Actions](#)
     - [Navigation, exploration](#)
-    - [Attacking monsters](#)
-    - [Items and inventory management](#)
+    - [Fighting monsters](#)
+    - [Items: identification and inventory management](#)
     - [Food](#)
     - [Advanced: accessing Clojure functionality and data directly](#)
 
 # Programming BotHack bots in Java
 
-**WORK IN PROGRESS**
-
 This tutorial provides a high-level overview of the BotHack Java API functionality.
 
 For low-level documentation of individual classes and methods, see the [BotHack Java API reference (JavaDoc)](http://krajj7.github.io/BotHack/javadoc/).
 
-A word of warning: the Java API has not been tested very extensively.  The underlying Clojure functions should generally work as advertised (and have been tested by advanced bots), but the Java facades may need some tweaking or extension if you wanted to write a serious bot.  Java is also an extremely cumbersome language to develop and debug bots in.  Many things that are trivial in Clojure require significant boilerplate ceremony in Java and you may find the type system to be more of a burden than an advantage.  I can only recommend using a more dynamic JVM-based language (like Clojure) with the possibility to debug and reload code on the fly – this tutorial will still apply.
+A word of warning: You may find Java a cumbersome language to develop and debug bots in.  Many things that are trivial in Clojure require significant boilerplate in Java.  I can only recommend using a more dynamic JVM-based language (like Clojure) with the possibility to easily debug and reload code on the fly – this tutorial will still apply.
 
 <!-- - compiling, running NH, bot skeleton -->
 ## Compiling and running BotHack bots
@@ -103,13 +101,37 @@ A player will not get very far in NetHack without having to deal with the variou
 
 BotHack doesn't provide any pre-programmed combat tactics, so you will have to use the navigation facilities in combination with [Move](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Move(bothack.bot.Direction)), [Attack](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Attack(bothack.bot.Direction)) and other primitive actions to fight monsters.
 
-BotHack provides a simple tracker which will remember the presence and properties of monsters that were seen but went out of the line of sight.  Monsters with ambiguous appearance or peacefulness status are automatically examined by the FarLook command (which costs no game turns), so you can always know the actual type and state of the monsters the bot is facing.
+BotHack provides a simple tracker which will remember the presence and properties of monsters that were seen but went out of the line of sight, or moved within it.  Monsters with ambiguous appearance or peacefulness status are automatically examined by the FarLook command (which costs no game turns), so you can always know the actual type and state of the monsters the bot is facing.
 
 <!-- - items & inventory mgmt: pickup, drop, identification, weight, all other actions -->
-## Items, identification and inventory management
+## Items: identification and inventory management
+
+BotHack maintains a representation of items in the player's inventory and on the floors of the dungeon.  There are two interfaces for this: [IItem](http://krajj7.github.io/BotHack/javadoc/bothack/bot/items/IItem.html) and [IItemType](http://krajj7.github.io/BotHack/javadoc/bothack/bot/items/ItemType.html).  IItemType represents the identified "prototype" (eg. a wand of wishing) for an IItem (eg. a tin wand).  Until fully identified an IItem may have multiple possibilities for an IItemType.
+
+Another neat feature of BotHack is smart identification of items.  BotHack maintains a database of facts about object identities (eg. which potion is a potion of healing, how much a red potion costs, what is the engrave effect of a wand) and uses this automatically to determine possible identities of random item appearances.  Simply walking through a shop will trigger price-identification, and the bot will then be presented only with the non-eliminated possibilities, or the actual fully-identified types even for items that are not really identified in-game.  Zapping or engraving with wands, dropping rings into sinks and trying to sell items in shops will also help identification.
+
+This functionality is available from the [IGame](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html) interface by methods [identifyType](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#identifyType(bothack.bot.items.IItem)), [identifyPossibilities](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#identifyPossibilities(bothack.bot.items.IItem)) and a few others.
+
+Representation of the player's inventory and carrying capacity is accessible from the [IPlayer](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IPlayer.html) interface, and there are some nice helper methods for querying the inventory in IGame (since they also need the item fact DB), namely the [have](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#have) and [haveAll](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#haveAll) methods, through which you can easily check for available items matching an item type and various criteria (not cursed, safe to use, possible to use etc.) without having to iterate over the inventory and containers manually.
+
+Primitive actions for interacting with items like [PickUp](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#PickUp(java.lang.String)), [Apply](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Apply(java.lang.Character)), [Read](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Read(java.lang.Character)) etc. are available in the [Actions](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html) factory.
+
+There are also some more high-level functions for item usage in [ActionsComplex](http://krajj7.github.io/BotHack/javadoc/bothack/actions/ActionsComplex.html), for example [makeUse](http://krajj7.github.io/BotHack/javadoc/bothack/actions/ActionsComplex.html#makeUse(bothack.bot.IGame,%20java.lang.Character)) and [removeUse](http://krajj7.github.io/BotHack/javadoc/bothack/actions/ActionsComplex.html#removeUse(bothack.bot.IGame,%20java.lang.Character)), which will handle wearing and removing armor including handling possible blockers when possible – for example removing a cloak to wear a suit of armor.
+
+Unfortunately, there is no automatic inventory management (picking up and dropping items) in BotHack, so bots have to deal with this themselves.  It would be very nice to have a declarative way to specify what the bot should gather and maintain in what quantities, letting the framework deal with deciding on when to drop or pick something up, but this currently remains as possible future work.
 
 <!-- - feeding, corpse tracker -->
 ## Food
+
+A specific important kind of items is food.  The bot needs to get nutrition to stay alive, usually also by eating corpses of edible monsters.  
+
+You can check hunger status from the IPlayer interface and BotHack also provides a tracker of corpse freshness ([isCorpseFresh](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#isCorpseFresh(bothack.bot.IPosition,%20bothack.bot.items.IItem))) which can help you to only eat safe food and not get fatally poisoned by eating old or unsafe corpses.  This works by remembering which monsters were killed by the bot at what time for each tile, considering unknown corpses unsafe by default.
+
+You can check for edibility ([canEat](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IPlayer.html#canEat(bothack.bot.items.IItem))) or possible beneficial effects (gaining intrinsics) of corpses and food items, taking into account the player's known intrinsics ([canEatWithBenefit](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IPlayer.html#canEatWithBenefit(bothack.bot.items.IItem))).
+
+The [Eat](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Eat) action can then be used to eat food from the inventory or from the ground.
+
+You can look at the [JavaBot FeedHandler](https://github.com/krajj7/BotHack/blob/master/javabots/JavaBot/src/bothack/javabots/javabot/FeedHandler.java) for example usage of this functionality.
 
 <!-- - calling clojure directly (non-wrapped fns), nonpublic data, menubots -->
 ## Advanced: accessing Clojure functionality and data directly

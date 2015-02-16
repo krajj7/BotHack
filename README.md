@@ -9,17 +9,21 @@ Written in Clojure but provides an API for bots in Java or other JVM-based langu
 
 Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.github.io), [Saiph](https://github.com/canidae/saiph) and [Pogamut](http://pogamut.cuni.cz).
 
-**PLEASE NOTE**:  The project is in alpha stage, it is currently lacking in both documentation and functionality.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
+**PLEASE NOTE**:  The project is not yet finished.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
 ## Documentation
 
-[Running Java bots](https://github.com/krajj7/BotHack/blob/master/doc/running.md)
-
 [BotHack Java API reference (JavaDoc)](http://krajj7.github.io/BotHack/javadoc/)
+
+[Tutorial for programming bots in Java](https://github.com/krajj7/BotHack/blob/master/doc/tutorial.md)
+
+[Running Java bots](https://github.com/krajj7/BotHack/blob/master/doc/running.md)
 
 [Configuration options, logging](https://github.com/krajj7/BotHack/blob/master/doc/config.md)
 
 [Compiling BotHack from source and running Clojure bots](https://github.com/krajj7/BotHack/blob/master/doc/compiling.md)
+
+[Known issues](https://github.com/krajj7/BotHack/blob/master/doc/issues.md)
 
 ## Video
 
@@ -94,3 +98,5 @@ Special thanks goes to kerio and stenno, admins of the acehack.de public server,
 Ascension dumplog: https://acehack.de/notable/first-nethack-bot-ascension/smartbot3.1422171652
 
 Youtube video: https://www.youtube.com/watch?v=unCQHAbGsAA
+
+**15.2.2015**: More documentation is now available: [tutorial](https://github.com/krajj7/BotHack/blob/master/doc/tutorial.md) and [known issues](https://github.com/krajj7/BotHack/blob/master/doc/issues.md)
