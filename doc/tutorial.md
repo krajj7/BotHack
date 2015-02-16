@@ -9,6 +9,7 @@
     - [Fighting monsters](#)
     - [Items: identification and inventory management](#)
     - [Food](#)
+    - [Shopping and special rooms](#)
     - [Advanced: accessing Clojure functionality and data directly](#)
 
 # Programming BotHack bots in Java
@@ -65,6 +66,10 @@ Various properties of the bot's avatar are available via the [IPlayer](http://kr
 The layout of the dungeon and its branches is available via the [IDungeon](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/IDungeon.html) interface.  Sometimes the bot may not be able to tell which branch it is currently in, for example if it descends into a completely dark room from Dlvl:3, it may not be possible to tell immediately if it ended up in the gnomish mines.  The branch ID for these levels will be set to a placeholder value (like [UNKNOWN\_1](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/Branch.html#UNKNOWN_1)) which will be recognized as the actual branch once it is identified.  The branch ID and Dlvl combination always uniquely and permanently identifies a level in the dungeon.
 
 The current level and monsters that the bot knows about are represented in the [ILevel](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/ILevel.html) interface.  The current level can be obtained by calling [currentLevel](http://krajj7.github.io/BotHack/javadoc/bothack/bot/IGame.html#currentLevel()) on IGame.
+
+Most of the special levels of NetHack that are not completely randomly generated (Medusa's island, demon lairs, quest...) have their layouts partially pre-mapped in BotHack.  Once the level is recognized, static information about the level layout is automatically added to the world representation, which makes navigation much easier.
+
+Individual level tiles are represented by the [ITile](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/ITile.html) interface, from which you can find out whether the tile was stepped on by the player, the [dungeon feature](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/Feature.html), list of items laying on the tile and various other properties.
 
 ## Actions
 
@@ -132,6 +137,12 @@ You can check for edibility ([canEat](http://krajj7.github.io/BotHack/javadoc/bo
 The [Eat](http://krajj7.github.io/BotHack/javadoc/bothack/actions/Actions.html#Eat) action can then be used to eat food from the inventory or from the ground.
 
 You can look at the [JavaBot FeedHandler](https://github.com/krajj7/BotHack/blob/master/javabots/JavaBot/src/bothack/javabots/javabot/FeedHandler.java) for example usage of this functionality.
+
+## Shopping and special rooms
+
+When your bot picks up items from a shop, you can simply navigate outside of it and the Pay command will automatically be used.  Everything will be paid for by default, assuming you have enough gold.  If not, you should drop items you can't afford or the bot will get stuck in the shop.
+
+Use the [ITile.room](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/ITile.html#room()) function to find out if the tile belongs to a shop and the type of the shop.  Besides shops, BotHack also marks temple tiles around the altar with [RoomType.TEMPLE](http://krajj7.github.io/BotHack/javadoc/bothack/bot/dungeon/RoomType.html#TEMPLE).  Other kinds of special rooms (barracks, graveyards etc.) don't have great significance for bots so they are not marked.
 
 <!-- - calling clojure directly (non-wrapped fns), nonpublic data, menubots -->
 ## Advanced: accessing Clojure functionality and data directly
