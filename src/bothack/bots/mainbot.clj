@@ -901,7 +901,7 @@
     (->ZapWandAt slot (towards player monster))))
 
 (defn hit-wizard [{:keys [player] :as game} monster]
-  (if-let [[slot item] (and (#{"Wizard of Yendor"
+  (if-let [[slot item] (and (#{"Wizard of Yendor" "Ashikaga Takauji"
                                "Famine" "Pestilence"} (typename monster))
                             (have game "wand of death" #{:can-use}))]
     (->ZapWandAt slot (towards player monster))))
@@ -1201,7 +1201,7 @@
                 (with-reason "fight engrave"
                   (engrave-e game)))
               (if (and (exposed? game level player)
-                       (pos? (rand-int 6))
+                       (pos? (rand-int 10))
                        (more-than? 1 (filter (partial mobile? game) adjacent)))
                 (with-reason "moving to non-exposed position"
                   (:step (navigate game #(and (not (exposed? game level %))
