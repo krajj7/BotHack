@@ -2,6 +2,8 @@
   "A dumb example bot.  Equivalent to SimpleBot.java"
   (:require [clojure.tools.logging :as log]
             [bothack.bothack :refer :all]
+            [bothack.handlers :refer :all]
+            [bothack.player :refer :all]
             [bothack.delegator :refer :all]
             [bothack.actions :refer :all]))
 

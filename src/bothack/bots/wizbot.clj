@@ -173,9 +173,6 @@
    #{"amulet of unchanging"}
    desired-weapons])
 
-(defn entering-shop? [game]
-  (some->> (:last-path game) firstv (at-curlvl game) shop?))
-
 (defn currently-desired
   "Returns the set of item names that the bot currently wants.
   Assumes the bot has at most 1 item of each category."
