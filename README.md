@@ -23,6 +23,8 @@ Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.g
 
 [Compiling BotHack from source and running Clojure bots](https://github.com/krajj7/BotHack/blob/master/doc/compiling.md)
 
+[HTML reference for the Clojure code](http://krajj7.github.io/BotHack/cljdoc/)
+
 [Known issues](https://github.com/krajj7/BotHack/blob/master/doc/issues.md)
 
 ## Video

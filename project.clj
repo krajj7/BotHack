@@ -4,7 +4,11 @@
   :license {:name "GPLv2"}
   :java-source-paths ["jta26/de/mud" "java"]
   :javac-options ["-target" "1.7" "-source" "1.7"]
-  :plugins [[lein-javadoc "0.1.1"]]
+  :plugins [[lein-javadoc "0.1.1"]
+            [codox "0.8.10"]]
+  :codox {:output-dir "cljdoc"
+          :src-dir-uri "https://github.com/krajj7/BotHack/tree/master/"
+          :src-linenum-anchor-prefix "L"}
   :javadoc-opts {:package-names ["bothack.actions"
                                  "bothack.bot"
                                  "bothack.events"
