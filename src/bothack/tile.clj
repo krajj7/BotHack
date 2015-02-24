@@ -308,7 +308,8 @@
   (and (e? tile) (= :permanent (:engraving-type tile))))
 
 (defn engravable?
-  "Is the tile safely dust-engravable?  Considers water/air plane tiles engravable (can-engrave? catches this case)"
+  "Is the tile safely dust-engravable?  Considers water/air plane tiles
+  engravable (can-engrave? catches this case)"
   [tile]
   (and (walkable? tile)
        ((not-any-fn? pool? lava? fountain? altar? grave?) tile)

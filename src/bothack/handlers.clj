@@ -20,7 +20,8 @@
   bh)
 
 (defn update-before-action
-  "Before the next action is chosen call (apply swap! game f args).  This happens when game state is updated and player position is known."
+  "Before the next action is chosen call (apply swap! game f args).  This
+  happens when game state is updated and player position is known."
   [bh f & args]
   {:pre [(:game bh)]}
   (register-handler bh priority-top
@@ -30,7 +31,8 @@
         (deregister-handler bh this)))))
 
 (defn update-on-known-position
-  "When player position on map is known call (apply swap! game f args).  Game state may not be fully updated yet for the turn."
+  "When player position on map is known call (apply swap! game f args).  Game
+  state may not be fully updated yet for the turn."
   [bh f & args]
   {:pre [(:game bh)]}
   (register-handler bh priority-top
@@ -45,6 +47,7 @@
         (deregister-handler bh this)))))
 
 (defn update-at-player-when-known
-  "Update the tile at player's next known position by applying update-fn to its current value and args"
+  "Update the tile at player's next known position by applying update-fn to its
+  current value and args"
   [bh update-fn & args]
   (update-on-known-position bh #(apply update-at-player % update-fn args)))

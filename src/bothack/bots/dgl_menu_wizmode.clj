@@ -1,5 +1,6 @@
 (ns bothack.bots.dgl-menu-wizmode
-  "Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and start the game in wizmode."
+  "Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and
+  start the game in wizmode."
   (:require [bothack.bothack :refer :all]
             [bothack.util :refer :all]
             [bothack.frame :refer :all]

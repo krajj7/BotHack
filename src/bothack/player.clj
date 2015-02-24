@@ -139,7 +139,8 @@
                         (vals (:inventory player)))))
 
 (defn blockers
-  "Return a seq of [slot item] of stuff that needs to be removed before item can be used (in possible order of removal)"
+  "Return a seq of [slot item] of stuff that needs to be removed before item
+  can be used (in possible order of removal)"
   [{:keys [player] :as game} item]
   (or (if-let [subtype (item-subtype item)]
         (if (not= :weapon subtype)
@@ -198,7 +199,8 @@
                        (if (:in-use opts) :in-use)])))
 
 (defn have-all
-  "Returns a lazy seq of all matching [slot item] pairs in inventory, options same as 'have'"
+  "Returns a lazy seq of all matching [slot item] pairs in inventory, options
+  same as 'have'"
   ([game name-or-set-or-fn]
    (have-all game name-or-set-or-fn {}))
   ([{:keys [player] :as game} name-or-set-or-fn opts]

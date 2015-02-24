@@ -299,7 +299,8 @@
   (map->Item (parse-label label)))
 
 (defn slot-item
-  "Turns a string 'h - an octagonal amulet (being worn)' or [char String] pair into a [char Item] pair"
+  "Turns a string 'h - an octagonal amulet (being worn)' or [char String] pair
+  into a [char Item] pair"
   ([s]
    (if-let [[slot label] (re-first-groups #"\s*(.)  ?[-+#] (.*)\s*$" s)]
      (slot-item (.charAt slot 0) label)))

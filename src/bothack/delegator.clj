@@ -1,5 +1,9 @@
 (ns bothack.delegator
-  "The delegator delegates event and prompt invocations to all registered handlers which implement the protocol for the given event type, or the first handler that implements the prompt protocol.  For prompts it writes responses back to the terminal.  Handlers are invoked in order of their priority, for handlers of the same priority order of invocation is not specified. "
+  "The delegator delegates event and prompt invocations to all registered
+  handlers which implement the protocol for the given event type, or the first
+  handler that implements the prompt protocol.  For prompts it writes responses
+  back to the terminal.  Handlers are invoked in order of their priority, for
+  handlers of the same priority order of invocation is not specified. "
   (:require [clojure.data.priority-map :refer [priority-map]]
             [clojure.pprint :refer [pprint]]
             [bothack.action :refer :all]
@@ -23,7 +27,8 @@
   (Delegator. writer (priority-map) false))
 
 (defn set-inhibition
-  "When inhibited the delegator keeps delegating events but doesn't delegate any prompts or writes."
+  "When inhibited the delegator keeps delegating events but doesn't delegate
+  any prompts or writes."
   [delegator state]
   (assoc delegator :inhibited state))
 

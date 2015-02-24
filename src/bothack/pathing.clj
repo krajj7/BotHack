@@ -34,7 +34,8 @@
     (and (not (:walked tile)) (floor? tile)) (+ 0.5)))
 
 (defn- a*
-  "Move-fn must always return non-negative cost values, target tile may not be passable, but will always be included in the path"
+  "Move-fn must always return non-negative cost values, target tile may not be
+  passable, but will always be included in the path"
   ([from to move-fn] (a* from to move-fn nil))
   ([from to move-fn max-steps]
    (log/debug "a*")
@@ -117,7 +118,9 @@
            (->Search))))))
 
 (defn safe-from-guards?
-  "Only just enough to handle the most usual corner-case where the only door in the stair-room of minetown is locked.  Potentially dangerous without infravision."
+  "Only just enough to handle the most usual corner-case where the only door in
+  the stair-room of minetown is locked.  Potentially dangerous without
+  infravision."
   [level]
   (not-any? guard? (vals (:monsters level))))
 
@@ -128,7 +131,8 @@
            (not (shop? tile)))))
 
 (defn likely-walkable?
-  "Less optimistic about unexplored tiles than walkable?, but still returns true for item in an (unknown) wall."
+  "Less optimistic about unexplored tiles than walkable?, but still returns
+  true for item in an (unknown) wall."
   [level tile]
   (and (walkable? tile)
        (or (if-let [m (monster-at level tile)]
@@ -142,7 +146,8 @@
          ((not-any-fn? trap? ice? drawbridge-lowered?) tile))))
 
 (defn- blocked-door
-  "If this is a kickable door blocked from one side, return direction from which to kick it"
+  "If this is a kickable door blocked from one side, return direction from
+  which to kick it"
   [level pos]
   (if-let [ws (seq (filter (every-pred walkable? (complement trap?))
                            (straight-neighbors level pos)))]
@@ -358,7 +363,10 @@
      steps (assoc :max-steps steps :max-delta steps))))
 
 (defn navigate
-  "Return shortest Path for given target position or predicate (a set of positions or any fn that takes a tile and returns boolean), will use A* or Dijkstra's algorithm as appropriate.
+  "Return shortest Path for given target position or predicate (a set of
+  positions or any fn that takes a tile and returns boolean), will use A* or
+  Dijkstra's algorithm as appropriate.
+
   Supported options (a map or a set if all vals of the map would be true):
     :walking - don't use actions except Move (no door opening etc.)
     :adjacent - path to closest adjacent tile instead of the target directly
@@ -608,7 +616,8 @@
           (recur (rest cols)))))))
 
 (defn- unsearched-extremities
-  "Returns a set of tiles that are facing a large blank vertical space on the map – good candidates for searching."
+  "Returns a set of tiles that are facing a large blank vertical space on the
+  map – good candidates for searching."
   [game level howmuch]
   (if-let [col (unexplored-column game level)]
     (as-> #{} res
@@ -631,7 +640,8 @@
       (->> (tile-seq (curlvl game)) (map :searched) (reduce + 1))))
 
 (defn exploration-index
-  "Measures how much the level was explored/searched.  Zero means obviously not fully explored, larger number means more searching was done."
+  "Measures how much the level was explored/searched.  Zero means obviously not
+  fully explored, larger number means more searching was done."
   ([game] (if (or (nil? (:explore-cache game))
                   (not (number? @(:explore-cache game))))
             0
@@ -644,7 +654,8 @@
      0)))
 
 (defn reset-exploration
-  "Performance optimization - to know if the level is explored or not we need to run expensive navigation, might as well cache the result"
+  "Performance optimization - to know if the level is explored or not we need
+  to run expensive navigation, might as well cache the result"
   [bh]
   (let [loc (atom nil)
         save (atom false)]
@@ -788,7 +799,9 @@
                (recur (inc mul)))))))))
 
 (defn seek
-  "Like explore but also searches and always tries to return an action until the target is found
+  "Like explore but also searches and always tries to return an action until
+  the target is found
+
    options: same as navigate and the following:
      :no-explore - directly skips to searching"
   ([game smth]
@@ -989,7 +1002,8 @@
           (enter-branch game new-branch))))))
 
 (defn seek-level
-  "Navigate to a branch or dlvl/tagged level within one, neither needs to be found previously."
+  "Navigate to a branch or dlvl/tagged level within one, neither needs to be
+  found previously."
   [game new-branch-id tag-or-dlvl]
   (with-reason "seeking level" new-branch-id tag-or-dlvl
     (let [level (curlvl game)

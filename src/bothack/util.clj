@@ -34,7 +34,8 @@
 (def backspace (str (char 8)))
 
 (defn config-get
-  "Get a configuration key from the config map or return the default, without a default throw an exception if the key is not present."
+  "Get a configuration key from the config map or return the default, without a
+  default throw an exception if the key is not present."
   ([config key default]
    (get config key default))
   ([config key]
@@ -59,7 +60,8 @@
       m)))
 
 (defn re-first-group
-  "Return the first capturing group of the first match or whole first match if no groups"
+  "Return the first capturing group of the first match or whole first match if
+  no groups"
   [re text]
   (if-let [m (first (re-seq re text))]
     (if (vector? m)
@@ -131,7 +133,8 @@
   (map vector (range) coll))
 
 (defmacro condp-all
-  "Like condp but doesn't short-circuit (evaluates all matching clauses incl. the default)"
+  "Like condp but doesn't short-circuit (evaluates all matching clauses incl.
+  the default)"
   [pred expr & clauses]
   (let [gpred (gensym "pred__")
         gexpr (gensym "expr__")

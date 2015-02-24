@@ -1094,7 +1094,9 @@
                  (not (have-intrinsic? player :sleep)))))))
 
 (defn targettable
-  "Returns a list of first hostile monster for each direction (that can be targetted by throw, zap etc.) and there seems to be no risk of hitting non-hostiles or water/lava for non-rays."
+  "Returns a list of first hostile monster for each direction (that can be
+  targetted by throw, zap etc.) and there seems to be no risk of hitting
+  non-hostiles or water/lava for non-rays."
   ([game] (targettable game 6 false))
   ([game ray?] (targettable game 5))
   ([{:keys [player] :as game} max-dist ray?]

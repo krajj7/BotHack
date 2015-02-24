@@ -1,5 +1,7 @@
 (ns bothack.scraper
-  "The screen scraper handles redraw events, tries to determine when the frame is completely drawn and sends off higher-level events.  It looks for prompts and menus and triggers appropriate action selection prompts."
+  "The screen scraper handles redraw events, tries to determine when the frame
+  is completely drawn and sends off higher-level events.  It looks for prompts
+  and menus and triggers appropriate action selection prompts."
   (:require [clojure.tools.logging :as log]
             [clojure.string :as string]
             [bothack.util :refer :all]
@@ -80,7 +82,8 @@
     (throw (UnsupportedOperationException. (str "Unknown menu " head)))))
 
 (defn- multi-menu?
-  "Do we need to confirm menu selections (=> true), or does single selection close the menu? (=> false)"
+  "Do we need to confirm menu selections (=> true), or does single selection
+  close the menu? (=> false)"
   [head]
   (not (re-seq #"What do you wish to do\?|Pick a skill" head)))
 
@@ -542,7 +545,9 @@
          :else initial)))))
 
 (defn- apply-scraper
-  "If the current scraper returns a function when applied to the frame, the function becomes the new scraper, otherwise the current scraper remains.  A fresh scraper is created and applied if the current scraper is nil."
+  "If the current scraper returns a function when applied to the frame, the
+  function becomes the new scraper, otherwise the current scraper remains.  A
+  fresh scraper is created and applied if the current scraper is nil."
   [orig-scraper delegator frame]
   (let [current-scraper (or orig-scraper (new-scraper delegator))
         next-scraper (current-scraper frame)]

@@ -1,5 +1,7 @@
 (ns bothack.jta
-  "This is the interface to NetHack.  The JTA library (http://www.javatelnet.org) is used for shell/SSH/Telnet implementation and terminal emulation."
+  "This is the interface to NetHack.  The JTA library
+  (http://www.javatelnet.org) is used for shell/SSH/Telnet implementation and
+  terminal emulation."
   (:require [bothack.delegator :refer :all]
             [bothack.util :refer :all]
             [bothack.term :refer [set-delegator]])

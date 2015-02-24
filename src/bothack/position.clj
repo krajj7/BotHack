@@ -12,7 +12,8 @@
   (.write w (str "#Position{:x " (:x pos) ", :y " (:y pos) "}")))
 
 (defn position-map
-  "When an actual map is desired (position records are not completely equal to {:x X :y Y})"
+  "When an actual map is desired (position records are not completely equal to
+  {:x X :y Y})"
   [of]
   (select-keys of [:x :y]))
 

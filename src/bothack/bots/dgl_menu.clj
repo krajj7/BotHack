@@ -1,5 +1,6 @@
 (ns bothack.bots.dgl-menu
-  "Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and start the game."
+  "Navigation for nethack.alt.org/acehack.de dgamelaunch menu - to log in and
+  start the game."
   (:require [bothack.bothack :refer :all]
             [bothack.util :refer :all]
             [bothack.frame :refer :all]

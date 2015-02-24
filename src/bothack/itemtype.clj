@@ -29,7 +29,8 @@
     (nutrition [i] (:nutrition i))])
 
 (defmacro ^:private defitemtype
-  "Defines a record for the item type and a var with a list of all possible items of the type according to the data map with defaults filled in"
+  "Defines a record for the item type and a var with a list of all possible
+  items of the type according to the data map with defaults filled in"
   ([recname varname recfields datamap]
    `(defitemtype ~recname ~varname ~recfields ~datamap {}))
   ([recname varname recfields datamap defaults]

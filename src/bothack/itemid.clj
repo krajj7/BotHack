@@ -96,7 +96,8 @@
       [succeed])))
 
 (defn- merge-records-fn
-  "Presumes same type of all items, returns possibly partial ItemType with common properties to all of the records"
+  "Presumes same type of all items, returns possibly partial ItemType with
+  common properties to all of the records"
   []
   (memoize
     (fn [recs]
@@ -141,7 +142,8 @@
       [succeed])))
 
 (defn knowable-appearance?
-  "Does it make sense to know anything about this appearance?  Not true for unnamed lamps and other non-exclusive appearances"
+  "Does it make sense to know anything about this appearance?  Not true for
+  unnamed lamps and other non-exclusive appearances"
   [appearance]
   {:pre [(string? appearance)]}
   (not (or (blind-appearances appearance)
@@ -234,7 +236,8 @@
        initial-possibilities) appearance n))
 
 (defn possible-ids
-  "Return n or all possible ItemTypes for the given item, taking current discoveries into consideration"
+  "Return n or all possible ItemTypes for the given item, taking current
+  discoveries into consideration"
   ([game item]
    (possible-ids game item false))
   ([game item n]
@@ -242,7 +245,8 @@
    (possibilities game (appearance-of item) n)))
 
 (defn initial-ids
-  "Return n or all possible ItemTypes for the given item without taking discoveries into consideration"
+  "Return n or all possible ItemTypes for the given item without taking
+  discoveries into consideration"
   ([item]
    (initial-ids item false))
   ([item n]
@@ -250,7 +254,9 @@
    (initial-possibilities (appearance-of item) n)))
 
 (defn item-id
-  "Returns the common properties of all possible ItemTypes for the given item (or simply the full record if unambiguous) optionally taking current discoveries into consideration"
+  "Returns the common properties of all possible ItemTypes for the given item
+  (or simply the full record if unambiguous) optionally taking current
+  discoveries into consideration"
   ([item]
    (item-id {:discoveries (new-discoveries)} item))
   ([game item]

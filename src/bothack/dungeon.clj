@@ -57,14 +57,16 @@
             level))
 
 (defn change-dlvl
-  "Apply function to dlvl number if there is one, otherwise no change.  The result dlvl may not actually exist."
+  "Apply function to dlvl number if there is one, otherwise no change.  The
+  result dlvl may not actually exist."
   [f dlvl]
   (if-let [n (dlvl-number dlvl)]
     (string/replace dlvl #"\d+" (str (f n)))
     dlvl))
 
 (defn prev-dlvl
-  "Dlvl closer to branch entry (for dlvl within the branch), no change for unnumbered dlvls.  Single arg variant assumes :main branch."
+  "Dlvl closer to branch entry (for dlvl within the branch), no change for
+  unnumbered dlvls.  Single arg variant assumes :main branch."
   ([dlvl] (prev-dlvl :main dlvl))
   ([branch dlvl]
    (if (upwards? branch)
@@ -72,7 +74,8 @@
      (change-dlvl dec dlvl))))
 
 (defn next-dlvl
-  "Dlvl further from branch entry (for dlvl within the branch), no change for unnumbered dlvls.  Single arg variant assumes :main branch."
+  "Dlvl further from branch entry (for dlvl within the branch), no change for
+  unnumbered dlvls.  Single arg variant assumes :main branch."
   ([dlvl] (next-dlvl :main dlvl))
   ([branch dlvl]
    (if (upwards? branch)
@@ -128,7 +131,8 @@
     (assoc-in game-or-level [:monsters (position monster)] monster)))
 
 (defn update-monster
-  "Update the monster on current level at given position (if there is one) by applying update-fn to its current value and args."
+  "Update the monster on current level at given position (if there is one) by
+  applying update-fn to its current value and args."
   [game pos update-fn & args]
   (if ((:monsters (curlvl game)) (position pos))
     (apply update-curlvl game update-in [:monsters (position pos)]
@@ -147,7 +151,8 @@
   (and (boulder? (at level pos)) (not (mimic? (monster-at level pos)))))
 
 (defn update-at
-  "Update the Tile on current or given level at given position by applying update-fn to its current value and args"
+  "Update the Tile on current or given level at given position by applying
+  update-fn to its current value and args"
   [game-or-level pos update-fn & args]
   (if (:dungeon game-or-level)
     (apply update-curlvl game-or-level update-at pos update-fn args)
@@ -155,13 +160,15 @@
            update-fn args)))
 
 (defn update-at-player
-  "Update the Tile at player's position by applying update-fn to its current value and args"
+  "Update the Tile at player's position by applying update-fn to its current
+  value and args"
   [game update-fn & args]
   {:pre [(:dungeon game)]}
   (apply update-at game (:player game) update-fn args))
 
 (defn update-from-player
-  "Update the Tile one move from player's position in given direction by applying update-fn to its current value and args"
+  "Update the Tile one move from player's position in given direction by
+  applying update-fn to its current value and args"
   [game dir update-fn & args]
   {:pre [(:dungeon game)]}
   (apply update-at game (in-direction (:player game) dir) update-fn args))
@@ -170,7 +177,8 @@
   (apply update-at-player game update-in [:items idx] update-fn args))
 
 (defn update-around
-  "Update the Tiles around (not including) given position by applying update-fn to their current value and args"
+  "Update the Tiles around (not including) given position by applying update-fn
+  to their current value and args"
   [game pos update-fn & args]
   {:pre [(:dungeon game)]}
   (reduce #(apply update-at %1 %2 update-fn args)
@@ -178,7 +186,8 @@
           (neighbors pos)))
 
 (defn update-around-player
-  "Update the Tiles around player's position by applying update-fn to their current value and args"
+  "Update the Tiles around player's position by applying update-fn to their
+  current value and args"
   [game update-fn & args]
   (apply update-around game (:player game) update-fn args))
 
@@ -203,7 +212,8 @@
    (get-in game [:dungeon :levels (branch-key game branch-id)])))
 
 (defn get-level
-  "Return Level in the given branch with the given tag or dlvl, if such was visited already"
+  "Return Level in the given branch with the given tag or dlvl, if such was
+  visited already"
   [game branch dlvl-or-tag]
   {:pre [(:dungeon game)]}
   (if-let [levels (get-branch game branch)]
@@ -215,7 +225,8 @@
   (:dlvl (get-level game branch dlvl-or-tag)))
 
 (defn lit?
-  "Actual lit-ness is hard to determine and not that important, this is a pessimistic guess."
+  "Actual lit-ness is hard to determine and not that important, this is a
+  pessimistic guess."
   [player level pos]
   {:pre [(:hp player)]}
   (let [tile (at level pos)]
@@ -224,7 +235,8 @@
         (and (= \# (:glyph tile)) (= :white (:color tile))))))
 
 (defn map-tiles
-  "Call f on each tile (or each tuple of tiles if there are more args) in 21x80 vector structures to again produce 21x80 vector of vectors"
+  "Call f on each tile (or each tuple of tiles if there are more args) in 21x80
+  vector structures to again produce 21x80 vector of vectors"
   [f & tile-colls]
   (apply (partial mapv (fn [& rows]
                          (apply (partial mapv #(apply f %&)) rows)))
@@ -296,7 +308,8 @@
       (update :tiles (partial map-tiles merge-tile) (:tiles old-level))))
 
 (defn merge-branch-id
-  "When a branch identity is determined, associate the temporary ID to its real ID (returned by branch-key)"
+  "When a branch identity is determined, associate the temporary ID to its real
+  ID (returned by branch-key)"
   [{:keys [dungeon] :as game} branch-id branch]
   {:pre [dungeon]}
   (log/debug "merging branch-id" branch-id "to branch" branch)
@@ -614,7 +627,8 @@
         res)))
 
 (defn- match-level
-  "Returns true if the level matches the blueprint's :dlvl, :branch and :tag (if present)"
+  "Returns true if the level matches the blueprint's :dlvl, :branch and :tag
+  (if present)"
   [game level blueprint]
   (and (or (not (:role blueprint))
            (= (:role (:player game)) (:role blueprint)))
@@ -737,7 +751,8 @@
                (not (narrow? game level from-tile to-tile))))))
 
 (defn passable-walking?
-  "Only needs Move action, no door opening etc., will path through monsters and unexplored tiles"
+  "Only needs Move action, no door opening etc., will path through monsters and
+  unexplored tiles"
   [game level from-tile to-tile]
   (and (walkable? to-tile)
        (edge-passable-walking? game level from-tile to-tile)))

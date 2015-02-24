@@ -64,7 +64,8 @@
       (bless game slot))))
 
 (defn invocation
-  "prerequisites: have non-cursed book, non-cursed candelabrum, non-cursed bell, 7 candles in main inventory"
+  "prerequisites: have non-cursed book, non-cursed candelabrum, non-cursed
+  bell, 7 candles in main inventory"
   [game]
   (if-not (get-level game :main :sanctum)
     (or (seek-level game :main :end)

@@ -43,7 +43,8 @@
 
 (defn -main [& args] []
   (register-javabot-jars)
-  (->> (take 1 args) (apply new-bh) init-ui start (def a)))
+  (->> (take 1 args) (apply new-bh) init-ui start
+       (def a "the BotHack instance (REPL helper)")))
 
 ; shorthand functions for REPL use
 (defn- w "raw write" [ch] (raw-write (:jta a) ch))
@@ -180,7 +181,8 @@
         (println frame)))))
 
 (defn print-tiles
-  "Print map, with pred overlayed with X where pred is not true for the tile. If f is supplied print (f tile) for matching tiles, else the glyph."
+  "Print map, with pred overlayed with X where pred is not true for the tile.
+  If f is supplied print (f tile) for matching tiles, else the glyph."
   ([level]
    (print-tiles (constantly true) level))
   ([pred level]

@@ -1,5 +1,10 @@
 (ns bothack.term
-  "An implementation of a Terminal plugin for JTA without a GUI.  It interprets terminal escape sequences, cursor movement etc. using the vt320 emulation in JTA, keeps a representation of the screen in memory for querying and publishes redraw events for a higher-level interpretation elsewhere.  Similar in structure to the JTA Terminal.java except it doesn't have the GUI-related stuff."
+  "An implementation of a Terminal plugin for JTA without a GUI.  It interprets
+  terminal escape sequences, cursor movement etc. using the vt320 emulation in
+  JTA, keeps a representation of the screen in memory for querying and
+  publishes redraw events for a higher-level interpretation elsewhere.  Similar
+  in structure to the JTA Terminal.java except it doesn't have the GUI-related
+  stuff."
   (:require [bothack.delegator :refer :all]
             [bothack.frame :refer :all]
             [bothack.util :refer :all]
@@ -57,12 +62,14 @@
        (take 80 attrs)))
 
 (defn- unpack-line
-  "Turns char[] of possibly null values into a String where the nulls are replaced by spaces."
+  "Turns char[] of possibly null values into a String where the nulls are
+  replaced by spaces."
   [line]
   (string/join (replace {(char 0) \space} line)))
 
 (defn- frame-from-buffer
-  "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only last 24 lines)."
+  "Makes an immutable snapshot (Frame) of a JTA terminal buffer (takes only
+  last 24 lines)."
   [buf]
   ;(println "Terminal: drawing whole new frame")
   (->Frame (mapv unpack-line ; turns char[][] into a vector of Strings
@@ -73,14 +80,17 @@
                      (long (.getCursorRow ^vt320 buf)))))
 
 (defn- changed-rows
-  "Returns a lazy sequence of index numbers of updated rows in the buffer according to a JTA byte[] of booleans, assuming update[0] is false (only some rows need to update)"
+  "Returns a lazy sequence of index numbers of updated rows in the buffer
+  according to a JTA byte[] of booleans, assuming update[0] is false
+  (only some rows need to update)"
   [update]
   (if-not (firstv update)
     (filter #(->> % inc (nth update) true?)
             (range 24))))
 
 (defn- update-frame
-  "Returns an updated frame snapshot as modified by a redraw (only some rows may need to update, as specified by update[])."
+  "Returns an updated frame snapshot as modified by a redraw (only some rows
+  may need to update, as specified by update[])."
   [f newbuf updated-rows]
   (if (firstv (.update ^vt320 newbuf)) ; if update[0] == true, all rows need to update
     (frame-from-buffer newbuf)

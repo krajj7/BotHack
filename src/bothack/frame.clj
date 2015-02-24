@@ -41,7 +41,8 @@
        (pos? (-> frame :cursor :y))))
 
 (defn cursor-line
-  "Returns the line of text where the cursor is on the frame, or the previous one if it is on the start of the next line."
+  "Returns the line of text where the cursor is on the frame, or the previous
+  one if it is on the start of the next line."
   [frame]
   (nth-line frame (if (wrapped-cursor? frame)
                     (dec (-> frame :cursor :y))

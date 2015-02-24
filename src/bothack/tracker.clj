@@ -1,5 +1,6 @@
 (ns bothack.tracker
-  "Tracking and pairing monsters frame-to-frame and their deaths and corpses turn-by-turn"
+  "Tracking and pairing monsters frame-to-frame and their deaths and corpses
+  turn-by-turn"
   (:require [bothack.position :refer :all]
             [bothack.dungeon :refer :all]
             [bothack.delegator :refer :all]
@@ -38,7 +39,8 @@
           monster)))))
 
 (defn filter-visible-uniques
-  "If a unique monster was remembered and now is visible, remove all remembered instances"
+  "If a unique monster was remembered and now is visible, remove all remembered
+  instances"
   [game]
   (let [monsters (curlvl-monsters game)]
     (reduce remove-monster game
@@ -65,7 +67,8 @@
       game)))
 
 (defn track-monsters
-  "Try to transfer monster properties greedily from the old game snapshot to the new, even if the monsters moved slightly."
+  "Try to transfer monster properties greedily from the old game snapshot to
+  the new, even if the monsters moved slightly."
   [new-game old-game]
   (if (or (not= (:dlvl old-game) (:dlvl new-game))
           (hallu? (:player new-game)))

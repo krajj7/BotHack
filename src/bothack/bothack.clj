@@ -51,7 +51,8 @@
                                          bot-ns)))))
 
 (defn- start-java-bot
-  "Loads a Java bot class and runs its constructor that accepts bothack.bot.IBotHack as the only parameter."
+  "Loads a Java bot class and runs its constructor that accepts
+  bothack.bot.IBotHack as the only parameter."
   [bh bot-class]
   (.newInstance (.getConstructor (resolve bot-class)
                                  (into-array [bothack.bot.IBotHack]))
@@ -66,7 +67,9 @@
                "Missing :bot or :javabot in configuration.")))))
 
 (defn- start-menubot
-  "The menubot is responsible for starting the game and letting the delegator know about it by calling 'started' on it when done.  If there is no menubot configured, the game is presumed to be started directly."
+  "The menubot is responsible for starting the game and letting the delegator
+  know about it by calling 'started' on it when done.  If there is no menubot
+  configured, the game is presumed to be started directly."
   [bh]
   (when-let [menubot-ns (config-get (:config bh) :menubot nil)]
     (start-clj-bot bh (symbol menubot-ns))
