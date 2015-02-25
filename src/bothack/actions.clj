@@ -695,8 +695,8 @@
       (what-name [_ _] name))))
 
 (defn name-item [bh slot name]
-  {:pre [(:game bh) (char? slot) (string? name)]}
   "Name an item on the next action"
+  {:pre [(:game bh) (char? slot) (string? name)]}
   (register-handler bh priority-top
                     (reify ActionHandler
                       (choose-action [this game]
@@ -755,7 +755,9 @@
 
 (defn ->ApplyAt
   "Apply something in the given direction (eg. pickaxe, key...).
-  Assumes the thing is already wielded (if it has to be like a pickaxe), otherwise resulting direction prompt may be misparsed after auto-wield if something happens during the wielding"
+  Assumes the thing is already wielded (if it has to be like a pickaxe),
+  otherwise resulting direction prompt may be misparsed after auto-wield if
+  something happens during the wielding"
   [slot dir]
   (->> (->Apply slot)
        (with-handler priority-top
