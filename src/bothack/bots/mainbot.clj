@@ -1556,7 +1556,7 @@
     "2 blessed scrolls of remove curse"
     (not (every? (:genocided game) #{"L" ";"}))
     "2 blessed scrolls of genocide"
-    (not (have-candles? game))
+    (and (not (have-candles? game)) (below-medusa? game))
     "7 blessed wax candles"
     (not (have game "speed boots"))
     "blessed greased fixed +3 speed boots"
