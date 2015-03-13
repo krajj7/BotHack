@@ -2,12 +2,13 @@
  :bot "bothack.bots.mainbot"
  :interface :ssh
  :menubot "bothack.bots.dgl-menu"
- :host "acehack.de"
+ :host "nethack.xd.cm"
  :port 22
- :ssh-user "acehack"
+ :ssh-user "nethack"
  :ssh-pass ""
  :dgl-login "dumbbot"
  :dgl-pass "tops3cr3t"
  :ttyrec true
- :no-exit true
+ :no-exit false
+ :quit-resumed true
 }
