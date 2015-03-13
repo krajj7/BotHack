@@ -1571,13 +1571,13 @@
     "blessed wand of death"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    (< -20 (:ac (:player game)))
+    (< -24 (:ac (:player game)))
     "3 blessed scrolls of enchant armor"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
     "blessed amulet of life saving"
     :else (case (mod (:wishes game)
-                     (if (and (<= -25 (:ac (:player game)))
+                     (if (and (<= -30 (:ac (:player game)))
                               (not (endgame? game))) 3 2))
             0 "blessed amulet of life saving"
             1 "blessed wand of death"
