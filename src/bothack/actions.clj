@@ -1340,6 +1340,8 @@
           (if (.startsWith msg "You carefully open")
             (swap! n inc)) ; may occur on same line with "... is empty"
           (condp re-seq msg
+            #"You don't find anything here to loot"
+            (update-tile bh)
             #"It develops a huge set of teeth and bites you!"
             (swap! game #(update-item-at-player % (nth-container-index % @n)
                                                 assoc :name "bag of tricks"))
