@@ -1366,8 +1366,8 @@
                          (without-levitation game))))))))))
 
 (defn offer-amulet [game]
-  (let [tile (and (= :astral (:branch-id game))
-                  (at-player game))]
+  (if-let [tile (and (= :astral (:branch-id game))
+                     (at-player game))]
     (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
       (some-> (have game real-amulet?) key ->Offer))))
 
