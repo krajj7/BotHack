@@ -1571,7 +1571,10 @@
     "blessed wand of death"
     (not-any? (:genocided game) #{"R" "disenchanter"})
     "2 blessed scrolls of genocide"
-    (< -24 (:ac (:player game)))
+    (not (have game #{"silver dragon scale mail"
+                      "shield of reflection"}))
+    "blessed greased fixed +3 shield of reflection"
+    (< -22 (:ac (:player game)))
     "3 blessed scrolls of enchant armor"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
