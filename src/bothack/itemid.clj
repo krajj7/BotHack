@@ -35,7 +35,7 @@
 
 (def ^:private cost-data
   (for [cost #_[60 300] (range 501)
-        [cha charge] [[6 #(* 2 %)]
+        [cha charge] [[5 #(* 2 %)]
                       [7 #(+ % (quot % 2))]
                       [10 #(+ % (quot % 3))]
                       [15 identity]
@@ -118,7 +118,7 @@
 (defn- cha-group [cha]
   (condp > cha
     3 0 ; sell price
-    6 6 ; cha<6
+    6 5 ; cha<6
     8 7 ; cha 6-7
     11 10 ; cha 8-10
     16 15 ; cha 11-15
@@ -417,7 +417,7 @@
       ((partial map :name)))
 
 #_(-> (#'bothack.game/new-game)
-      (assoc-in [:player :stats :cha] 9)
+      (assoc-in [:player :stats :cha] 5)
       (add-observed-cost "sky blue potion" 400)
       (add-observed-cost "sky blue potion" 533)
       (possible-ids {:name "sky blue potion"})
