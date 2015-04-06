@@ -443,15 +443,15 @@
                                           (send write \space)
                                           (send ended))))
              (handle-location [frame]
-               (or (when-let [ev (location-prompt frame)]
-                     (log/debug "Handling location")
-                     (emit-botl delegator frame)
-                     (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
-                       (send delegator know-position frame))
-                     (flush-more-list delegator items)
-                     (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple prompts; this may cause "Can't find dungeon feature" errors on Juiblex's or the planes, but they are unimportant
-                     (send delegator ev)
-                     initial)))
+               (when-let [ev (location-prompt frame)]
+                 (log/debug "Handling location")
+                 (emit-botl delegator frame)
+                 (if-not (.contains (topline frame) "travel to?") ; autotravel may jump to preivously selected position
+                   (send delegator know-position frame))
+                 (flush-more-list delegator items)
+                 (send delegator write \-) ; nuke topline for next redraw to stop repeated botl/map updates while the prompt is active causing multiple prompts; this may cause "Can't find dungeon feature" errors on Juiblex's or the planes, but they are unimportant
+                 (send delegator ev)
+                 initial))
              (sink [frame] ; for hallu corner-case, discard insignificant extra redraws (cursor stopped on player while the bottom of the map isn't hallu-updated)
                (log/debug "sink discarding redraw"))
              (initial [frame]

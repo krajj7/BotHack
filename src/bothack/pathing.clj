@@ -383,8 +383,8 @@
    (navigate game pos-or-goal-fn {}))
   ([{:keys [player] :as game} pos-or-goal-fn
     {:keys [max-steps walking adjacent no-dig no-levitation] :as opts}]
-   [{:pre [((some-fn ifn? position) pos-or-goal-fn)
-           ((some-fn map? set?) opts)]}]
+   {:pre [((some-fn ifn? position) pos-or-goal-fn)
+          ((some-fn map? set? nil?) opts)]}
    (log/debug "navigating" pos-or-goal-fn opts)
    (let [level (curlvl game)
          branch (branch-key game level)
@@ -461,13 +461,13 @@
        (not (trap? tile))
        (not (:dug tile))
        ; isolated diagonal corridors - probably dug:
-       (not (and (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
-                                 (and (seq (:items %))
-                                      (every? rocks? (:items %)))
-                                 (corridor? %) (boulder? %))
-                             (not-any? (partial likely-walkable? level)
-                                       (straight-neighbors level %)))
-                       (diagonal-neighbors level tile))))
+       (not (some #(and (or (and (= \* (:glyph %)) (nil? (:color %)))
+                            (and (seq (:items %))
+                                 (every? rocks? (:items %)))
+                            (corridor? %) (boulder? %))
+                        (not-any? (partial likely-walkable? level)
+                                  (straight-neighbors level %)))
+                  (diagonal-neighbors level tile)))
        (not (in-maze-corridor? level tile))
        (let [snbr (straight-neighbors level tile)]
          (and (or (some walkable? snbr)
@@ -878,10 +878,10 @@
 
 (defn- possibly-oracle? [game dlvl]
   (if-let [level (get-level game :main dlvl)]
-    (and (not-any? corridor?
-                   (for [y [7 8 14 15]
-                         x (range 34 45)]
-                     (at level x y))))
+    (not-any? corridor?
+              (for [y [7 8 14 15]
+                    x (range 34 45)]
+                (at level x y)))
     true))
 
 (defn- possibly-wiztower? [game dlvl]

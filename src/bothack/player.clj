@@ -295,8 +295,8 @@
   (have game #{"boots of levitation" "ring of levitation"} #{:worn}))
 
 (defn have-levi [game]
-  (have game #(and (#{"boots of levitation" "ring of levitation"}
-                             (item-name game %))) #{:noncursed :can-use}))
+  (have game #(#{"boots of levitation" "ring of levitation"}
+                        (item-name game %)) #{:noncursed :can-use}))
 
 (defn reflection? [game]
   (have game #{"amulet of reflection" "shield of reflection"

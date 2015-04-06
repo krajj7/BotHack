@@ -1349,7 +1349,7 @@
               (with-reason "eating against Famine" food
                 (or (unbag game slot food)
                     (->Eat slot)))))
-          (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
+          (if-let [p (navigate game #(some (beneficial? %) (:items %)))]
             (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
                   (->> (at-player game) :items
@@ -1357,7 +1357,7 @@
                        ->Eat
                        (without-levitation game)))))
           (if (eat-all? game)
-            (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
+            (if-let [p (navigate game #(some (edible? %) (:items %)))]
               (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
                     (->> (at-player game) :items
@@ -1476,8 +1476,8 @@
             (wander game))))))
 
 (defn- found-item? [found [_ _ _ item]]
-  (some #(and (= (select-keys item [:specific :proof :name :enchantment])
-                 (select-keys % [:specific :proof :name :enchantment])))
+  (some #(= (select-keys item [:specific :proof :name :enchantment])
+            (select-keys % [:specific :proof :name :enchantment]))
         found))
 
 (defn- amulet-escape [game [turn dlvl branch item :as entry]]
@@ -1729,7 +1729,7 @@
               (remove-use game slot)
               (->Drop slot))))
       (if-let [shoptype (->> (have-all game #(price-id? game %) #{:bagged})
-                             (mapcat (comp (partial shops-taking) val))
+                             (mapcat (comp shops-taking val))
                              (some (curlvl-tags game)))]
         (with-reason "visit shop" shoptype "to price id items"
           (:step (navigate game #(and (= shoptype (:room %))

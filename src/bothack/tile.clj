@@ -145,8 +145,9 @@
            (< 0 (:y tile) 21)
            (not (:undiggable tile)))))
 
-(defn searched [level tile]
+(defn searched
   "How many times the tile has been searched directly (not by searching a neighbor)"
+  [level tile]
   (apply min (map :searched (neighbors level tile))))
 
 (defn walkable-by [{:keys [feature] :as tile} glyph]

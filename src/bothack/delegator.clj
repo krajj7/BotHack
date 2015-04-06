@@ -17,7 +17,7 @@
 
 (defrecord Delegator [writer handlers inhibited]
   NetHackWriter
-  (write [this cmd] "Write a string to the NetHack terminal as if typed."
+  (write [this cmd]
     (when-not (:inhibited this)
       (log/debug "writing to terminal:" (with-out-str (pprint cmd)))
       ((:writer this) cmd))
@@ -39,12 +39,14 @@
   ([delegator priority handler]
    (update delegator :handlers assoc handler priority)))
 
-(defn deregister [delegator handler]
+(defn deregister
   "Deregister a handler from the delegator."
+  [delegator handler]
   (update delegator :handlers dissoc handler))
 
-(defn switch [delegator handler-old handler-new]
+(defn switch
   "Replace a prompt handler with another, keep the priority."
+  [delegator handler-old handler-new]
   (if-let [priority (get (:handlers delegator) handler-old)]
     (-> delegator
         (deregister handler-old)

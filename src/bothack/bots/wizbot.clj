@@ -344,7 +344,7 @@
                                (have-levi game))]
           (with-reason "levitation for :air"
             (make-use game slot)))
-        (if (and (adjacent? player monster))
+        (if (adjacent? player monster)
           (if (or (not (monster? (at level monster)))
                   (#{\I \1 \2 \3 \4 \5} (:glyph monster)))
             (->Attack (towards player monster))
@@ -398,7 +398,7 @@
           edible? #(every-pred
                      (partial fresh-corpse? game %)
                      (partial edible? player))]
-      (or (if-let [p (navigate game #(and (some (beneficial? %) (:items %))))]
+      (or (if-let [p (navigate game #(some (beneficial? %) (:items %)))]
             (with-reason "want to eat corpse at" (:target p)
               (or (:step p)
                   (->> (at-player game) :items
@@ -406,7 +406,7 @@
                        ->Eat
                        (without-levitation game)))))
           (if true #_(hungry? player) ; TODO eat tins
-            (if-let [p (navigate game #(and (some (edible? %) (:items %))))]
+            (if-let [p (navigate game #(some (edible? %) (:items %)))]
               (with-reason "going to eat corpse at" (:target p)
                 (or (:step p)
                     (->> (at-player game) :items

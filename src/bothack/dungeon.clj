@@ -246,8 +246,8 @@
   #{:door-closed :door-open :door-locked :door-secret :altar :sink :fountain :throne})
 
 (defn- has-features? [level]
-  {:pre [(:tiles level)]}
   "checks for features not occuring in the mines (except town/end)"
+  {:pre [(:tiles level)]}
   (some (comp main-features :feature) (tile-seq level)))
 
 (defn- same-glyph-diag-walls
@@ -622,7 +622,7 @@
       (if-let [roomkeeper (and (shops kind) (closest-roomkeeper res))]
         (floodfill-room res roomkeeper kind)
         res)
-      (if (and (adjacent? (:last-position game) (:player game)))
+      (if (adjacent? (:last-position game) (:player game))
         (update-at res (:last-position game) assoc :room nil)
         res)))
 
@@ -700,8 +700,9 @@
        (or (:orcus (:tags level)) (not (:undiggable (:blueprint level))))
        (not (#{:vlad :astral :sokoban :quest} (branch-key game level)))))
 
-(defn below-castle? [{:keys [player] :as game}]
+(defn below-castle?
   "Being on the right side of the castle is also considered below"
+  [{:keys [player] :as game}]
   (if-let [castle (get-dlvl game :main :castle)]
     (or (pos? (dlvl-compare (:dlvl game) castle))
         (and (= (:dlvl game) castle)

@@ -248,8 +248,9 @@
   (trigger [_] ".")
   (handler [_ _]))
 
-(defn- mark-branch-entrance [game tile old-game origin-feature]
+(defn- mark-branch-entrance
   "Mark where we ended up on the new level as leading to the branch we came from.  Pets and followers might have displaced us from the stairs which may not be visible, so mark the surroundings too to be sure (but two sets of stairs may be next to each other and this breaks if that happens and there are some followers... too bad)"
+  [game tile old-game origin-feature]
   (if (or (= :ludios (branch-key game)) (= "Home 1" (:dlvl game)))
     (update-at game tile assoc :branch-id :main) ; mark portal
     (if (some (some-fn :friendly follower?)
@@ -694,8 +695,9 @@
       WhatNameHandler
       (what-name [_ _] name))))
 
-(defn name-item [bh slot name]
+(defn name-item
   "Name an item on the next action"
+  [bh slot name]
   {:pre [(:game bh) (char? slot) (string? name)]}
   (register-handler bh priority-top
                     (reify ActionHandler
@@ -1214,20 +1216,6 @@
   "Search once or n times"
   ([] (search 1))
   ([n] (->Repeated (->Search) n)))
-
-(defn arbitrary-move
-  ([game level] (arbitrary-move game level false))
-  ([{:keys [player] :as game} level diagonal?]
-   (some->> (if diagonal?
-              (diagonal-neighbors level player)
-              (neighbors level player))
-            (remove (some-fn trap? (partial monster-at level)))
-            (filterv #(or (passable-walking? game level (at level player) %)
-                          (unexplored? %)))
-            random-nth
-            (towards player)
-            ->Move
-            (with-reason "arbitrary direction"))))
 
 (defn arbitrary-move
   ([game level] (arbitrary-move game level false))

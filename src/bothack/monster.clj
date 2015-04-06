@@ -19,7 +19,7 @@
 
 (defn high-priest? [m] (= "high priest" (typename m)))
 
-(defn demon-lord? [m] (and (every? #{:demon :prince} (get-in m [:type :tags]))))
+(defn demon-lord? [m] (every? #{:demon :prince} (get-in m [:type :tags])))
 
 (defn oracle? [m] (= "Oracle" (typename m)))
 
