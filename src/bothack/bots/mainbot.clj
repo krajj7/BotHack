@@ -675,8 +675,12 @@
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
                     (->Read slot))))
-            (if-let [[uslot _] (have game #{"unicorn horn"
-                                            "Orb of Fate"} #{:cursed})]
+            (if-let [[uslot _] (or (and (have game book) ; rodney dead
+                                        (:end (curlvl-tags game))
+                                        (have game #{candelabrum book bell}
+                                              #{:cursed}))
+                                   (have game #{"unicorn horn"
+                                                "Orb of Fate"} #{:cursed}))]
               (with-reason "misc uncurse"
                 (or (unbag game slot scroll)
                     (wield game uslot))))))))
