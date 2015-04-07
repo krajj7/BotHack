@@ -1045,6 +1045,8 @@
                           (filter hostile?))]
         (or (pray-for-hp game)
             ; TODO escape items - teleportation, digging, perma-e
+            (if-not (have game amulet? #{:worn})
+              (wear-amulet game)) ; replace LS
             (kill-engulfer game)
             (if (and (some (every-pred (complement :fleeing)
                                        (complement passive?)) adjacent)
@@ -1188,8 +1190,6 @@
     (or (kill-engulfer game)
         (castle-move game level)
         (destroy-drawbridges game level)
-        (if-not (have game amulet? #{:worn})
-          (wear-amulet game)) ; replace LS
         (let [threats (->> (hostile-threats game)
                            (remove (partial can-ignore? game))
                            set)
