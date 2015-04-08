@@ -10,14 +10,14 @@ These instructions are for Linux systems.
 
 ### Running against a public server
 
-The framework should work with any server running the nethack.alt.org version of NetHack, for example those at http://alt.org/nethack (USA) and http://acehack.de (Germany).
+The framework should work with any server running the nethack.alt.org version of NetHack, for example those at http://alt.org/nethack (USA) and http://nethack.xd.cm (Germany).
 
 * Register an account on your chosen server.
 * Replace the default nethackrc for the account with [the one provided](https://github.com/krajj7/BotHack/blob/master/bothack.nethackrc).
 * Make a copy of `config/ssh-config.edn` or `config/telnet-config.edn`, set the server address, your username and password.
 * Run `lein run config/<your-config-file.edn>`
 
-The DGL (dgamelaunch) menubot set by default in the config files should work with nethack.alt.org and acehack.de servers, it may need tweaking for other servers.
+The DGL (dgamelaunch) menubot set by default in the config files should work with nethack.alt.org and nethack.xd.cm servers, it may need tweaking for other servers.
 
 Network latency may make the bot play very slowly (and not be CPU-bound), if that is the case consider setting up a local instalation of NetHack (which also allows you to do testing in wizard mode).
 

@@ -18,14 +18,14 @@ BotHack itself doesn't need to be compiled manually to run Java bots against pub
 
 ### Running against a public server
 
-The framework should work with any server running the nethack.alt.org version of NetHack, for example those at http://alt.org/nethack (USA) and http://acehack.de (Germany).
+The framework should work with any server running the nethack.alt.org version of NetHack, for example those at http://alt.org/nethack (USA) and http://nethack.xd.cm (Germany).
 
 * Register an account on your chosen server.
 * Replace the default nethackrc for the account with [the one provided](https://github.com/krajj7/BotHack/blob/master/bothack.nethackrc).
 * Edit `config/simplebot-ssh-config.edn` or `config/simplebot-telnet-config.edn` in the SimpleBot project (or the JavaBot equivalents), change the server address, your username and password.
 * Run `mvn test -Prun-ssh` or `mvn test -Prun-telnet`
 
-The DGL (dgamelaunch) menubot set by default in the config files should work with nethack.alt.org and acehack.de servers, it may need tweaking for other servers.
+The DGL (dgamelaunch) menubot set by default in the config files should work with nethack.alt.org and nethack.xd.cm servers, it may need tweaking for other servers.
 
 Network latency may make the bot play very slowly (and not be CPU-bound), if that is the case consider setting up a local instalation of NetHack (which also allows you to do testing in wizard mode).
 
