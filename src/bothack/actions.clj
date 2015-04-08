@@ -1521,7 +1521,9 @@
     (choose-action [_ game]
       (if-let [[slot item] (and (not (blind? (:player game)))
                                 (have game ambiguous-appearance?))]
-        (->Call slot (name-for game item))))))
+        (if-let [n (name-for game item)]
+          (with-reason "call item to disambiguate"
+            (->Call slot n)))))))
 
 (defn wish-id-handler
   "ID wished-for item"
