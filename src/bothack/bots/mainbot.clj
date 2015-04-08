@@ -970,6 +970,8 @@
                                               (have-throwable game)
                                               (have game blind-tool
                                                     #{:noncursed}))
+    (= "blue jelly" (typename monster)) (or (have-intrinsic? player :cold)
+                                            (> (:hp player) 60))
     (#{"spotted jelly"
        "ochre jelly"} (typename monster)) (and (have game corrodeproof-weapon?)
                                                (> (:hp player) 60))
