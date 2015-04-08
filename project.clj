@@ -1,4 +1,4 @@
-(defproject bothack "0.6.0-SNAPSHOT"
+(defproject bothack "1.0.0-SNAPSHOT"
   :description "BotHack – A NetHack Bot Framework"
   :url "https://github.com/krajj7/BotHack"
   :license {:name "GPLv2"}
