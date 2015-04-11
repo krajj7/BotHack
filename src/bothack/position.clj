@@ -19,7 +19,7 @@
 
 (defn position
   ([x y] (Position. x y))
-  ([of] {:post [(:x %) (:y %)]} (map->Position (position-map of))))
+  ([of] {:post [(:x %) (:y %)]} (->Position (:x of) (:y of))))
 
 (defn valid-position?
   ([x y] (and (<= 0 x 79) (<= 1 y 21)))

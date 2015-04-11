@@ -96,19 +96,22 @@
       (q))))
 
 (defn- quit-when-idle []
-  (let [fut (atom (future nil))]
+  (let [chosen (atom true)]
+    (future (while true
+              (Thread/sleep (- (* 3 60 1000) 50000))
+              (when-not (:inhibited @(:delegator a))
+                (if-not @chosen
+                  (do (log/warn "attempting to unstuck")
+                      (w "#")
+                      (unpause a)
+                      (Thread/sleep 50000)
+                      (when-not @chosen
+                        (log/error "3+ min idle - quitting")
+                        (q)))
+                  (reset! chosen false)))))
     (reify ActionChosenHandler
       (action-chosen [_ _]
-        (future-cancel @fut)
-        (reset! fut (future (Thread/sleep (- (* 3 60 1000) 50000))
-                            (when-not (:inhibited @(:delegator a))
-                              (log/warn "attempting to unstuck")
-                              (w "#")
-                              (unpause a))
-                            (Thread/sleep 50000)
-                            (when-not (:inhibited @(:delegator a))
-                              (log/error "3 min idle - quitting")
-                              (q))))))))
+        (reset! chosen true)))))
 
 (defn- init-ui [{:keys [config] :as bh}]
   (when-not (config-get (:config bh) :no-exit false)

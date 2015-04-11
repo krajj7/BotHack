@@ -42,7 +42,7 @@
      (dlvl-compare d2 d1)
      (dlvl-compare d1 d2)))
   ([d1 d2]
-   (if (every? #(.contains % ":") [d1 d2])
+   (if (every? #(.contains ^String % ":") [d1 d2])
      (compare (dlvl-number d1) (dlvl-number d2))
      (compare d1 d2))))
 

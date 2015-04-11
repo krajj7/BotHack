@@ -642,10 +642,9 @@
 (defn exploration-index
   "Measures how much the level was explored/searched.  Zero means obviously not
   fully explored, larger number means more searching was done."
-  ([game] (if (or (nil? (:explore-cache game))
-                  (not (number? @(:explore-cache game))))
-            0
-            @(:explore-cache game)))
+  ([game] (or (let [n (some-> game :explore-cache deref)]
+                (if (number? n) n))
+              0))
   ([game branch tag-or-dlvl]
    (if-let [level (get-level game branch tag-or-dlvl)]
      (if (at-level? game level)

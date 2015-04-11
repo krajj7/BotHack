@@ -19,7 +19,7 @@
   NetHackWriter
   (write [this cmd]
     (when-not (:inhibited this)
-      (log/debug "writing to terminal:" (with-out-str (pprint cmd)))
+      (log/debug "writing to terminal:" (with-out-str (pprint ^String cmd)))
       ((:writer this) cmd))
     this))
 
