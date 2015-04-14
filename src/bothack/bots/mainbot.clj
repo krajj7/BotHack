@@ -746,7 +746,7 @@
                     (unbag game slot item)
                     (if-not (:in-use item)
                       (->Drop slot)))))
-            (if (seq more)
+            (if more
               (recur more)))))
       (if-let [[slot item] (or (and (more-than? 35 (inventory game))
                                     (have game rocks?))

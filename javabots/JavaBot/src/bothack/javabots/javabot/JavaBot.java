@@ -8,10 +8,7 @@ import bothack.bot.IBotHack;
  * See {@link https://github.com/krajj7/BotHack/blob/master/doc/running.md}
  * for how to run it. */
 public class JavaBot {
-	IBotHack bothack;
-	
 	public JavaBot(IBotHack bothack) {
-		this.bothack = bothack;
 		// All of these implement IActionHandler and will be invoked in priority
 		// order until one of them returns a non-null value (the action to perform).
 		bothack.registerHandler(-16, new EnhanceHandler());

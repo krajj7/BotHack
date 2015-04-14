@@ -10,14 +10,17 @@ import bothack.bot.IPlayer;
 import bothack.bot.IPredicate;
 import bothack.bot.dungeon.ITile;
 import bothack.bot.items.IItem;
+import bothack.bot.items.IItemType;
 import bothack.bot.items.ItemType;
 import bothack.prompts.IActionHandler;
 
 public class GatherItems implements IActionHandler {
+	static IItemType GOLD = ItemType.byName("gold piece");
+	
 	IPredicate<ITile> hasGold = new IPredicate<ITile>() {
 		public boolean apply(ITile tile) {
 			for (IItem i : tile.items())
-				if (i.type().equals(ItemType.byName("gold piece")))
+				if (i.type().equals(GOLD))
 					return true;
 			return false;
 		}
@@ -40,7 +43,7 @@ public class GatherItems implements IActionHandler {
 			} else {
 				IItem gold = null;
 				for (IItem i : atPlayer.items()) {
-					if (i.type().equals(ItemType.byName("gold piece"))) {
+					if (i.type().equals(GOLD)) {
 						gold = i;
 						break;
 					}
