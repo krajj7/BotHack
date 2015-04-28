@@ -34,6 +34,6 @@
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
   ;:global-vars {*warn-on-reflection* true}
-  :aot [bothack.delegator bothack.actions bothack.term
-        bothack.ttyrec bothack.main]
+  :aot [clojure.tools.logging.impl bothack.delegator bothack.actions
+        bothack.term bothack.ttyrec bothack.main]
   :main bothack.main)
