@@ -621,14 +621,14 @@
   map – good candidates for searching."
   [game level howmuch]
   (if-let [col (unexplored-column game level)]
-    (as-> #{} res
-      (into res (for [y (range 1 21)]
+    (-> #{}
+      (into (for [y (range 1 21)]
                   (searchable-extremity level y (range col 80) howmuch)))
-      (into res (for [y (range 1 21)]
+      (into (for [y (range 1 21)]
                   (searchable-extremity level y (range col -1 -1) howmuch)))
-      (into res (corridor-extremities level (range col -1 -1) howmuch))
-      (into res (corridor-extremities level (range col 80) howmuch))
-      (disj res nil))))
+      (into (corridor-extremities level (range col -1 -1) howmuch))
+      (into (corridor-extremities level (range col 80) howmuch))
+      (disj nil))))
 
 (defn at-level? [game level]
   (and (= (:dlvl game) (:dlvl level))
