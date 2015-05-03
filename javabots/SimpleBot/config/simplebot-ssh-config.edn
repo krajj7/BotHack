@@ -2,9 +2,9 @@
  :bot "bothack.javabots.simplebot.SimpleBot"
  :interface :ssh
  :menubot "bothack.bots.dgl-menu"
- :host "acehack.de"
+ :host "nethack.xd.cm"
  :port 22
- :ssh-user "acehack"
+ :ssh-user "nethack"
  :ssh-pass ""
  :dgl-login "quitbot"
  :dgl-pass "tops3cr3t"
