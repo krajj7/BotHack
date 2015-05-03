@@ -27,7 +27,7 @@
                  [com.cemerick/pomegranate "0.3.0"]
                  [org.flatland/ordered "1.5.2"]
                  [org.clojars.achim/multiset "0.1.0-SNAPSHOT"]
-                 [com.jcraft/jsch "0.1.42"]
+                 [com.jcraft/jsch "0.1.52"]
                  [criterium "0.4.3"]
                  [log4j/log4j "1.2.17" :exclusions [javax.mail/mail
                                                     javax.jms/jms
