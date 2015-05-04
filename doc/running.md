@@ -20,6 +20,8 @@ BotHack itself doesn't need to be compiled manually to run Java bots against pub
 
 The framework should work with any server running the nethack.alt.org version of NetHack, for example those at http://alt.org/nethack (USA) and http://nethack.xd.cm (Germany).
 
+NOTE: Java 8 may be necessary to play on nethack.xd.cm due to [a JDK bug](http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6521495)
+
 * Register an account on your chosen server.
 * Replace the default nethackrc for the account with [the one provided](https://github.com/krajj7/BotHack/blob/master/bothack.nethackrc).
 * Edit `config/simplebot-ssh-config.edn` or `config/simplebot-telnet-config.edn` in the SimpleBot project (or the JavaBot equivalents), change the server address, your username and password.

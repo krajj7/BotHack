@@ -2,6 +2,7 @@
 
 ## Of the framework
 
+* Java 8 may be necessary to play on nethack.xd.cm due to [a JDK bug](http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6521495)
 * if monsters dig out parts of shops in minetown while the bot is entering, the entire level may be marked as a shop and the bot will likely loop trying to price-id things
 * amnesia may break item identification for named items and cause a loop (should forget facts about forgotten names but it doesn't always work)
 * very rarely the scraper gets stuck in unusual situations (eg. many potions breaking during farming).  should use [vt\_tiledata](http://nethackwiki.com/wiki/Vt_tiledata) instead.  the auto-unstuck mechanism after 3 idle minutes usually fixes the situation however.
