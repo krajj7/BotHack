@@ -669,7 +669,9 @@
                                    #{:noncursed :bagged})]
         (or (if-let [[s item] (and (not (at-planes? game))
                                    (have game #(and (wearable? %)
-                                                    (know-id? game %))
+                                                    (know-id? game %)
+                                                    (not= "helm of opposite alignment"
+                                                          (item-name game %)))
                                          {:can-use true :cursed true
                                           :in-use false}))]
               (with-reason "put on to uncurse" (:label item)
@@ -1601,13 +1603,13 @@
     (not (have game #{"silver dragon scale mail"
                       "shield of reflection"}))
     "blessed greased fixed +3 shield of reflection"
-    (< -22 (:ac (:player game)))
+    (< -21 (:ac (:player game)))
     "3 blessed scrolls of enchant armor"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
     "blessed amulet of life saving"
     :else (case (mod (:wishes game)
-                     (if (and (<= -30 (:ac (:player game)))
+                     (if (and (<= -25 (:ac (:player game)))
                               (not (endgame? game))) 3 2))
             0 "blessed amulet of life saving"
             1 "blessed wand of death"
@@ -2024,7 +2026,7 @@
 
 (defn farm-done? [game]
   (or (get-branch game :wiztower)
-      (and (< 4000000 (:score game))
+      (and (< 6000000 (:score game))
            (or (<= 3 (:wishes game))
                (and (or (have-levi game)
                         (have game "speed boots")

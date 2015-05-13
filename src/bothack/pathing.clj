@@ -772,7 +772,7 @@
 (defn search-level
   ([game] (or (search-level game 3)
               (unstuck game)
-              (search-level game 10)
+              (search-level game 6)
               (throw (IllegalStateException. "stuck :-("))))
   ([game max-iter]
    (with-reason "searching - max-iter =" max-iter
