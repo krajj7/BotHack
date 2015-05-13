@@ -279,14 +279,14 @@
 (def always-desired #{"magic lamp" "wand of wishing" "scroll of genocide" "potion of gain level" "potion of full healing" "potion of extra healing" "tallow candle" "wax candle"})
 
 (def limited-desired
-  {"wand of death" 5
+  {"wand of death" 6
    "scroll of identify" 5
    "scroll of remove curse" 18
    "scroll of enchant armor" 5
    "scroll of earth" 3
    "scroll of charging" 5
    "scroll of enchant weapon" 4
-   "amulet of life saving" 5})
+   "amulet of life saving" 8})
 
 (def desired-bag (ordered-set "oilskin sack" "sack" "bag of holding"))
 
@@ -331,9 +331,10 @@
 (def desired-singular (set (apply concat desired-items)))
 
 (defn desired-food [game]
-  (let [min-nw (if (< 2400 (nutrition-sum game))
-                 (nw-ratio-avg game)
-                 24)]
+  (let [min-nw (cond
+                 (< 2400 (nutrition-sum game)) (nw-ratio-avg game)
+                 (< 3500 (nutrition-sum game)) 50
+                 :else 24)]
     (for [food (:food item-kinds)
           :when (and (not (egg? food))
                      (not (tin? food))
@@ -496,7 +497,8 @@
                (or (less-than? 49 (inventory game))
                    (and (less-than? 52 (inventory game))
                         (some (cond-> #{"scroll of scare monster"
-                                        "scroll of identify"}
+                                        "scroll of identify"
+                                        candelabrum bell book}
                                 need-bag? (conj "sack" "oilskin sack")
                                 (not (have game food?)) (conj "food ration"))
                               (possible-names game item))))
@@ -1603,7 +1605,7 @@
     (not (have game #{"silver dragon scale mail"
                       "shield of reflection"}))
     "blessed greased fixed +3 shield of reflection"
-    (< -21 (:ac (:player game)))
+    (and (< -21 (:ac (:player game))) (not (endgame? game)))
     "3 blessed scrolls of enchant armor"
     (and (not (have game "amulet of life saving" #{:bagged}))
          (not (have game "amulet of reflection" #{:in-use})))
