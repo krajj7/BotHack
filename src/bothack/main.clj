@@ -119,13 +119,16 @@
     (register-handler bh (dec priority-top) (quit-when-looping))
     (register-handler bh (inc priority-bottom) (quit-when-stuck)))
   (register-handler bh (dec priority-top)
-    (reify
-      ActionHandler
-      (choose-action [_ game]
-        (when (and (< 100 (:turn game)) (> 50 (:turn* game))
+    (reify ActionHandler
+      (choose-action [this game]
+        (when (and (< 100 (:turn game))
                    (config-get config :quit-resumed false))
           (log/error "Resumed game with :quit-resumed in config - quitting")
-          (q)))
+          (q))
+        (deregister-handler bh this)
+        nil)))
+  (register-handler bh (dec priority-top)
+    (reify
       GameStateHandler
       (ended [_]
         (log/info "Game ended")
