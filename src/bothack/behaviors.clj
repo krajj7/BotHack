@@ -79,9 +79,14 @@
 
 (defn seek-high-altar [{:keys [player] :as game}]
   (with-reason "seeking high altar"
-    (seek game #(and (altar? %)
-                     (or (= (:alignment player) (:alignment %))
-                         (not (:walked %)))))))
+    (let [align (if (and (not= (:alignment player) :neutral)
+                         (have game "helm of opposite alignment"
+                               #{:bagged :can-use}))
+                  #{(:alignment player) (opposite-alignment (:alignment player))}
+                  #{(:alignment player)})]
+      (seek game #(and (altar? %)
+                       (or (align (:alignment %))
+                           (not (:walked %))))))))
 
 (defn pray [game]
   (with-reason "pray"

@@ -307,6 +307,7 @@
    #{"lizard corpse"}
    #{"ring of slow digestion"}
    #{"sprig of wolfsbane"}
+   #{"helm of opposite alignment"}
    ;#{"bag of holding"}
    desired-cloak
    desired-suit
@@ -407,7 +408,10 @@
           (not (fast? player)) (conj "wand of speed monster")
           (and (get-level game :main :votd)
                (farm-done? game)) (disj "scroll of earth")
-          (endgame? game) (disj "scroll of enchant armor" candelabrum bell book)
+          (not (endgame? game)) (disj "helm of opposite alignment")
+          (endgame? game) (disj "scroll of enchant armor" candelabrum bell book
+                                "wand of cold" "wand of striking"
+                                "amulet of ESP" "wand of teleportation")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
@@ -1374,8 +1378,15 @@
 (defn offer-amulet [game]
   (if-let [tile (and (= :astral (:branch-id game))
                      (at-player game))]
-    (if (and (altar? tile) (= (:alignment (:player game)) (:alignment tile)))
-      (some-> (have game real-amulet?) key ->Offer))))
+    (if (altar? tile)
+      (if-let [[slot item] (and (= (:alignment (:player game))
+                                   (opposite-alignment (:alignment tile)))
+                                (have game "helm of opposite alignment"
+                                      #{:can-use :bagged}))]
+        (or (unbag game slot item)
+            (make-use game slot))
+        (if (= (:alignment (:player game)) (:alignment tile))
+          (some-> (have game real-amulet?) key ->Offer))))))
 
 (defn detect-portal [bh]
   (reify ActionHandler

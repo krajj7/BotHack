@@ -501,6 +501,8 @@
 (defn can-eat? [player]
   (not (overtaxed? player)))
 
+(def opposite-alignment {:lawful :chaotic :chaotic :lawful :neutral :neutral})
+
 (defrecord Player
   [nickname
    title

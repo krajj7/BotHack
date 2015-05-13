@@ -475,8 +475,8 @@
     (reify ToplineMessageHandler
       (message [_ text]
         (or (when-let [align (re-first-group #"\(([^ ]*) altar\)$" text)]
-              (swap! game update-at pos assoc
-                     :alignment (str->kw align)))
+              (if (not= align "aligned")
+                (swap! game update-at pos assoc :alignment (str->kw align))))
             (when-let [trap (re-first-group farlook-trap-re text)]
               (swap! game update-at pos assoc :feature
                      (or (trap-names trap)
