@@ -1190,6 +1190,11 @@
                              (have game "wand of striking"))]
         (->ZapWandAt slot (towards player drawbridge))))))
 
+(defn replace-ls [{:keys [player] :as game}]
+  (if (and (not (have game amulet? #{:worn}))
+           (have game "amulet of life saving"))
+    (wear-amulet game)))
+
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -1198,6 +1203,7 @@
                   :walking true
                   :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
+        (replace-ls game)
         (castle-move game level)
         (destroy-drawbridges game level)
         (let [threats (->> (hostile-threats game)
