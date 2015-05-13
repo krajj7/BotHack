@@ -667,11 +667,15 @@
         (bless game slot))
       (if-let [[slot scroll] (have game "scroll of remove curse"
                                    #{:noncursed :bagged})]
-        (or (if-let [[s item] (have game #(and (wearable? %) (know-id? game %))
-                                    {:can-use true :cursed true :in-use false})]
+        (or (if-let [[s item] (and (not (at-planes? game))
+                                   (have game #(and (wearable? %)
+                                                    (know-id? game %))
+                                         {:can-use true :cursed true
+                                          :in-use false}))]
               (with-reason "put on to uncurse" (:label item)
                 (make-use game s)))
-            (if-let [[_ item] (have game (every-pred cursed? :in-use))]
+            (if-let [[_ item] (and (not (at-planes? game))
+                                   (have game (every-pred cursed? :in-use)))]
               (with-reason "uncursing" (:label item)
                 (or (unbag game slot scroll)
                     (if-not (cursed? (wielded-item game))
