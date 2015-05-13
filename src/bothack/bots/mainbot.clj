@@ -521,6 +521,11 @@
                         (> (utility item) (utility o))
                         true))))))))
 
+(defn- interesting-container? [game item]
+  (and (explorable-container? item)
+       (or (bag? item)
+           (not (in-gehennom? game)))))
+
 (defn examine-containers [game]
   (if-let [[slot item] (have game explorable-container?)]
     (with-reason "learning contents of" item
@@ -528,12 +533,13 @@
 
 (defn- unlockable-chest? [game tile]
   (and (not (shop? tile))
+       (not (in-gehennom? game))
        (some :locked (:items tile))
        (or (have-key game)
            (have game dagger? #{:noncursed}))))
 
 (defn examine-containers-here [game]
-  (or (if (and (some explorable-container? (:items (at-player game)))
+  (or (if (and (some #(interesting-container? game %) (:items (at-player game)))
                (not (sink? (at-player game))))
         (with-reason "learning contents of containers on ground"
           (without-levitation game ->Loot)))
@@ -591,7 +597,8 @@
           sanctum? (:sanctum (curlvl-tags game))]
       (if-let [{:keys [step target]}
                (navigate game #(or (:new-items %)
-                                   (and (or (some explorable-container?
+                                   (and (or (some (partial
+                                                    interesting-container? game)
                                                   (:items %))
                                             (unlockable-chest? game %))
                                         (not sanctum?)
@@ -1954,7 +1961,10 @@
                          (find-first (every-pred priest? :peaceful))
                          (navigate game) :step)
                 (:step (navigate game (every-pred altar? temple?)))))
-          (if-let [target (find-first (comp :temple :tags) (level-seq game))]
+          (if-let [target (find-first #(and (:temple (:tags %))
+                                            (or (not (:votd (:tags %)))
+                                                (in-gehennom? game)))
+                                      (level-seq game))]
             (seek-level game (:branch-id target) (:dlvl target)))))))
 
 #_(defn rub-id [{:keys [game] :as bh}]
