@@ -409,7 +409,7 @@
                     (update-at-player-when-known bh assoc :feature :portal)))
               #"The walls around you begin to bend and crumble!"
               (swap! game update-at-player assoc :feature :stairs-down)
-              #"You now wield|gloves vanish|boots disintegrate|shield crumbles away| falls apart|turns to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode[^d]|rot|smoulder)| snatches |Take off your|let me run my fingers|cloud of smoke.* emerges|A curse upon thee|murmurs in your ear|suddenly explores!|someone is helping you|feel as if you need some help"
+              #"You now wield|gloves vanish|boots disintegrate|shield crumbles away| falls apart|turns to dust|crumbles to dust|boils? and explode|freeze and shatter|breaks? apart and explode|catch(?:es)? fire and burn|Your.* goes out|Your.* has gone out|Your.* is consumed!|Your.* has burnt away| stole |You feel a malignant aura surround you|Your.* (?:rust|corrode[^d]|rot|smoulder)| snatches |Take off your|let me run my fingers|cloud of smoke.* emerges|A curse upon thee|murmurs in your ear|suddenly explores!|someone is helping you|feel as if you need some help"
               (update-inventory bh)
               #" reads a scroll | drinks a .*potion|Your brain is eaten!"
               (update-discoveries bh)
