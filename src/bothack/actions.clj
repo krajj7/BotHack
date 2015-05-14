@@ -1571,6 +1571,7 @@
 (defaction ZapWand [slot]
   (trigger [_] "z")
   (handler [_ {:keys [game] :as bh}]
+    (update-inventory bh)
     (let [target (atom false)
           charged (atom true)]
       (reify
