@@ -499,7 +499,8 @@
                 (not (door-open? to))))))
 
 (defn- pushable-from [game level pos]
-  (let [tile (at level pos)]
+  (if-let [tile (and (not= :earth (branch-key game))
+                     (at level pos))]
     (if (or (not (needs-levi? tile)) (ice? tile))
       (seq (filter #(if (boulder? %)
                       (let [dir (towards pos %)
