@@ -202,7 +202,7 @@
         [8 (with-reason "displace friendly" monster
               (->Move dir))])
       (if-not (:no-fight opts)
-        [(if (at-planes? game) 3 12)
+        [(if (at-planes? game) 2 12)
          (with-reason "pathing through hostiles" monster
            (->Move dir))]))))
 
