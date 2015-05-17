@@ -156,7 +156,7 @@
                      (two-handed? (wielded-item game)))
               (conj res (wielding game))
               res))))
-      (if (or (weapon? item) (pick? item)) ; TODO consider cursed two-hander...
+      (if (or (weapon? item) (pick? item))
         (as-> [] res
           (if-let [weapon (wielding game)]
             (if (or (weapon? (val weapon))

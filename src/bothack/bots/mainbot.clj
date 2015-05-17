@@ -685,11 +685,11 @@
                                           :in-use false}))]
               (with-reason "put on to uncurse" (:label item)
                 (make-use game s)))
-            (if-let [[_ item] (and (not (at-planes? game))
-                                   (have game (every-pred cursed? :in-use)))]
+            (if-let [[_ item] (have game (every-pred cursed? :in-use))]
               (with-reason "uncursing" (:label item)
                 (or (unbag game slot scroll)
-                    (if-not (cursed? (wielded-item game))
+                    (if-not (or (cursed? (wielded-item game))
+                                (at-planes? game))
                       (if-let [[slot item] (have game cursed? {:in-use false})]
                         (with-reason "wield for extra uncurse"
                           (wield game slot))))
@@ -698,6 +698,8 @@
                                         (:end (curlvl-tags game))
                                         (have game #{candelabrum book bell}
                                               #{:cursed}))
+                                   (and (at-planes? game)
+                                        (have game "pick-axe" #{:cursed}))
                                    (have game #{"unicorn horn"
                                                 "Orb of Fate"} #{:cursed}))]
               (with-reason "misc uncurse"
