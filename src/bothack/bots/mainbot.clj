@@ -548,7 +548,8 @@
 (defn- interesting-container? [game item]
   (and (explorable-container? item)
        (or (bag? item)
-           (not (in-gehennom? game)))))
+           (and (not= :vlad (branch-key game))
+                (not (in-gehennom? game))))))
 
 (defn examine-containers [game]
   (if-let [[slot item] (have game explorable-container?)]
@@ -558,6 +559,7 @@
 (defn- unlockable-chest? [game tile]
   (and (not (shop? tile))
        (not (in-gehennom? game))
+       (not= :vlad (branch-key game))
        (some :locked (:items tile))
        (or (have-key game)
            (have game dagger? #{:noncursed}))))
