@@ -299,7 +299,7 @@
 (def always-desired #{"magic lamp" "wand of wishing" "scroll of genocide" "potion of gain level" "potion of full healing" "potion of extra healing" "tallow candle" "wax candle"})
 
 (def limited-desired
-  {"wand of death" 6
+  {"wand of death" 5
    "scroll of identify" 5
    "scroll of remove curse" 18
    "scroll of enchant armor" 5
@@ -430,9 +430,13 @@
           (and (get-level game :main :votd)
                (farm-done? game)) (disj "scroll of earth")
           (not (endgame? game)) (disj "helm of opposite alignment")
-          (endgame? game) (disj "scroll of enchant armor" candelabrum bell book
-                                "wand of cold" "wand of striking"
-                                "amulet of ESP" "wand of teleportation")
+          (endgame? game) (disj candelabrum bell book
+                                "scroll of enchant armor"
+                                "scroll of enchant weapon"
+                                "wand of teleportation"
+                                "wand of fire" "wand of cold" "wand of striking"
+                                "ring of invisibility" "ring of slow digestion"
+                                "amulet of ESP")
           (want-gold? game) (conj "gold piece"))))))
 
 (defn- handle-impairment [{:keys [player] :as game}]
