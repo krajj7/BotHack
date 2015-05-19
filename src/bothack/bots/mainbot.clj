@@ -82,9 +82,29 @@
             (seek-level game :main :castle))
           (search 10)))))
 
+(defn- choose-amulet [{:keys [player] :as game}]
+  (or (and (not (have game #{"silver dragon scale mail"
+                             "shield of reflection"} #{:worn}))
+           (have game "amulet of reflection" #{:can-use :bagged}))
+      (have game "amulet of life saving" #{:can-use :bagged})
+      (have game "amulet of ESP" #{:can-use :bagged})))
+
+(defn- wear-amulet [game]
+  (with-reason "wear amulet"
+    (if-let [[slot item] (and (not= :remove (typekw (:last-action game)))
+                              (choose-amulet game))]
+      (or (unbag game slot item)
+          (make-use game slot)))))
+
+(defn replace-ls [{:keys [player] :as game}]
+  (if (and (not (have game amulet? #{:worn}))
+           (have game "amulet of life saving"))
+    (wear-amulet game)))
+
 (defn- handle-illness [{:keys [player] :as game}]
   (or (if (overtaxed? player)
         (with-reason "overtaxed" (search 10)))
+      (replace-ls game)
       (if (:stoning player)
         (with-reason "fix stoning"
           (if-let [[slot item] (have game "lizard corpse" #{:bagged})]
@@ -631,20 +651,6 @@
           (or (uncurse-weapon game)
               (with-reason "wielding better weapon -" (:label weapon)
                 (make-use game slot)))))))
-
-(defn- choose-amulet [{:keys [player] :as game}]
-  (or (and (not (have game #{"silver dragon scale mail"
-                             "shield of reflection"} #{:worn}))
-           (have game "amulet of reflection" #{:can-use :bagged}))
-      (have game "amulet of life saving" #{:can-use :bagged})
-      (have game "amulet of ESP" #{:can-use :bagged})))
-
-(defn- wear-amulet [game]
-  (with-reason "wear amulet"
-    (if-let [[slot item] (and (not= :remove (typekw (:last-action game)))
-                              (choose-amulet game))]
-      (or (unbag game slot item)
-          (make-use game slot)))))
 
 (defn- wear-armor [{:keys [player] :as game}]
   (first (for [category [desired-shield desired-boots desired-shirt
@@ -1203,11 +1209,6 @@
                              (have game "wand of striking"))]
         (->ZapWandAt slot (towards player drawbridge))))))
 
-(defn replace-ls [{:keys [player] :as game}]
-  (if (and (not (have game amulet? #{:worn}))
-           (have game "amulet of life saving"))
-    (wear-amulet game)))
-
 (defn fight [{:keys [player] :as game}]
   (let [level (curlvl game)
         nav-opts {:adjacent true
@@ -1216,7 +1217,6 @@
                   :walking true
                   :max-steps (hostile-dist-thresh game)}]
     (or (kill-engulfer game)
-        (replace-ls game)
         (castle-move game level)
         (destroy-drawbridges game level)
         (let [threats (->> (hostile-threats game)
