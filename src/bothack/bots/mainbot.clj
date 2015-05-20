@@ -435,7 +435,7 @@
                                 "scroll of enchant weapon"
                                 "wand of teleportation"
                                 "wand of fire" "wand of cold" "wand of striking"
-                                "ring of invisibility" "ring of slow digestion"
+                                "ring of invisibility"
                                 "amulet of ESP")
           (want-gold? game) (conj "gold piece"))))))
 
