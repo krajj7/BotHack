@@ -2046,6 +2046,7 @@
 
 (defn farm-done? [game]
   (or (get-branch game :wiztower)
+      (< 15000000 (:score game))
       (and (< 6000000 (:score game))
            (or (<= 3 (:wishes game))
                (and (or (have-levi game)
