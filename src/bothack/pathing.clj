@@ -195,8 +195,9 @@
   (if (or (:peaceful monster)
           (and (:friendly monster) (diagonal dir) (door? to-tile)))
     (if-not (blocked? to-tile)
-      [50 (with-reason "peaceful blocker" monster
-            (fidget game level to-tile))]) ; hopefully will move
+      [(if (at-planes? game) 4 50)
+       (with-reason "peaceful blocker" monster
+         (fidget game level to-tile))]) ; hopefully will move
     (if (:friendly monster)
       (if-not (:walking opts)
         [8 (with-reason "displace friendly" monster

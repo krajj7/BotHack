@@ -359,10 +359,12 @@
               :>> (partial swap! game update-fleeing)
               #"You step onto a level teleport trap!"
               (reset! levelport true)
-              #"The (.*) (?:hits|misses|just misses)[!.]"
-              :>> #(swap! game recheck-peaceful-status
-                          (every-pred (comp (partial = %) typename)
-                                      (partial adjacent? (:player @game))))
+              #"The (.*) (?:hits|misses|just misses|kicks|casts a spell)[!.]"
+              :>> #(if-let [{:keys [glyph color]} (name->monster %)]
+                     (swap! game recheck-peaceful-status
+                            (every-pred (comp (partial = glyph) :glyph)
+                                        (comp (partial = color) :color)
+                                        (partial adjacent? (:player @game)))))
               #"You've been warned"
               (swap! game recheck-peaceful-status guard?)
               #" appears before you\."
