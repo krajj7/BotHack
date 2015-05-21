@@ -1054,7 +1054,7 @@
                                       #{:noncursed}))]
            (with-reason "recover - regen"
              (make-use game slot)))
-         (if safe?
+         (if (and safe? (not (at-planes? game)))
            (with-reason "recovering - exploring nearby items"
              (if-let [{:keys [step]}
                       (navigate game :new-items
@@ -1062,6 +1062,9 @@
                                  :no-traps true :explored true
                                  :no-levitation true :max-steps 10})]
                (or step (remove-levi game)))))
+         (if (= :astral (branch-key game))
+           (with-reason "rush astral"
+             (seek-high-altar game)))
          (with-reason "moving to safer position"
            (:step (navigate game
                             (complement (partial exposed? game (curlvl game)))
@@ -1327,17 +1330,18 @@
                                    (not (spellcaster? m)))
                             (with-reason "baiting monsters" ->Search)))
                         step))))))
-        (let [leftovers (->> (hostile-threats game)
+        (if (not= :astral (branch-key game))
+          (let [leftovers (->> (hostile-threats game)
                              (filter (partial can-ignore? game))
                              (filter (partial can-handle? game))
                              set)]
-          (when-let [{:keys [step target]} (navigate game leftovers
-                                                     (assoc nav-opts
-                                                            :explored true))]
-            (let [monster (monster-at level target)]
-              (with-reason "targetting leftover enemy" monster
-                (or (hit game level monster)
-                    step)))))
+            (when-let [{:keys [step target]} (navigate game leftovers
+                                                       (assoc nav-opts
+                                                              :explored true))]
+              (let [monster (monster-at level target)]
+                (with-reason "targetting leftover enemy" monster
+                  (or (hit game level monster)
+                      step))))))
         (if-let [dir (and (= :sokoban (branch-key game))
                           (= :move (typekw (:last-action game)))
                           (:dir (:last-action game)))]
@@ -1682,7 +1686,8 @@
                 (remove-use game slot)
                 (->Drop slot (:qty item))))))
       ; TODO altars not on current level
-      (if (have game (partial want-buc? game) #{:can-remove :bagged})
+      (if (and (not= :astral (branch-key game))
+               (have game (partial want-buc? game) #{:can-remove :bagged}))
         (with-reason "going to altar" (:step (navigate game altar?))))
       (if-let [{:keys [step]}
                (and (or (not (:castle (curlvl-tags game)))
