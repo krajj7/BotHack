@@ -710,9 +710,8 @@
                                         (:end (curlvl-tags game))
                                         (have game #{candelabrum book bell}
                                               #{:cursed}))
-                                   (and (at-planes? game)
-                                        (have game "pick-axe" #{:cursed}))
                                    (have game #{"unicorn horn"
+                                                "pick-axe"
                                                 "Orb of Fate"} #{:cursed}))]
               (with-reason "misc uncurse"
                 (or (unbag game slot scroll)
