@@ -491,6 +491,7 @@
              (not= "bag of tricks" id)
              (not (and (fast? (:player game)) (= "wand of speed monster" id)))
              (or (charged? item)
+                 (= bell id)
                  (= "wand of death" id)
                  (= "wand of wishing" id)
                  (and (:castle (curlvl-tags game)) (= "wand of striking" id)))
