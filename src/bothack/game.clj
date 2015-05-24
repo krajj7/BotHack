@@ -285,10 +285,13 @@
       DlvlChangeHandler
       (dlvl-changed [_ old-dlvl new-dlvl]
         (swap! game assoc :gremlins-peaceful nil)
-        (if (and @levelport
-                 (= :mines (branch-key @game))
-                 (not (neg? (dlvl-compare (branch-entry @game :mines)
-                                          new-dlvl))))
+        (when (and (= "Dlvl:1" old-dlvl)
+                   (= "End Game" new-dlvl))
+          (swap! game assoc :branch-id :earth))
+        (when (and @levelport
+                   (= :mines (branch-key @game))
+                   (not (neg? (dlvl-compare (branch-entry @game :mines)
+                                            new-dlvl))))
           (swap! game assoc :branch-id :main))
         (when @portal
           (portal-handler bh (curlvl (:last-state @game)) new-dlvl)
