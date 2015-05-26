@@ -202,7 +202,7 @@
     #"^What do you want to drink\?" drink-what
     #"^Drink from .*\?" drink-here
     #"^What do you want to zap\?" zap-what
-    #"^Which ring-finger," which-finger
+    #"^Which .*, [Rr]ight or [Ll]eft\?" which-finger
     #"^\"Cad!  You did [0-9]+ zorkmids worth of damage!\"  Pay\?" pay-damage
     #"^There (?:is|are) ([^;]+) here; eat (?:it|one)\?"
     :>> (partial apply list eat-it)
