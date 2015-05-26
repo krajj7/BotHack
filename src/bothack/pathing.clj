@@ -101,7 +101,8 @@
        (if target
          (reify AboutToChooseActionHandler
            (about-to-choose [_ new-game]
-             (if-let [m (monster-at new-game target)]
+             (if-let [m (and (not (altar? (at level target)))
+                             (monster-at new-game target))]
                (when (:peaceful m) ; target did not move
                  (log/debug "blocked by peaceful" target)
                  (if-not (and (shopkeeper? m) ; shks may need more patience

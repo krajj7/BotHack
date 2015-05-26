@@ -549,13 +549,15 @@
                         (into {} (for [[c i] inventory] (slot-item c i)))))))))
 
 (defn- examine-tile [{:keys [player] :as game}]
-  (if-let [tile (and (not (blind? player)) (not (:engulfed player))
+  (if-let [tile (and (not (:engulfed player))
                      (at-player game))]
-    (if ((some-fn :new-items unknown? unknown-trap?
-                  (every-pred e? (complement perma-e?)
-                              (comp (partial not= (:turn game)) :examined))
-                  (every-pred altar? (complement :alignment))) tile)
-      (with-reason "examining tile" tile ->Look))))
+    (if (or (not (blind? player))
+            (and (altar? tile) (not (:alignment tile))))
+      (if ((some-fn :new-items unknown? unknown-trap?
+                    (every-pred e? (complement perma-e?)
+                                (comp (partial not= (:turn game)) :examined))
+                    (every-pred altar? (complement :alignment))) tile)
+        (with-reason "examining tile" tile ->Look)))))
 
 (defn- examine-features [game]
   (if-not (:engulfed (:player game))
