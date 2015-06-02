@@ -281,8 +281,8 @@
                     (status 7)
                     (status 0)))
       (log/error "failed to parse botl2 " botl2))
-    {:state (set (for [[substr state] {" Bl" :blind " Stun" :stun " Conf" :conf
-                                       " Foo" :ill " Ill" :ill " Hal" :hallu}
+    {:state (set (for [[substr state] {" Bl" :blind " Stu" :stun " Con" :conf
+                                       " Foo" :ill " Il" :ill " Ha" :hallu}
                        :when (.contains ^String botl2 substr)]
                    state))
      :encumbrance (condp #(.contains ^String %2 %1) botl2
