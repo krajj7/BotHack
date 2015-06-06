@@ -87,18 +87,20 @@ Source ttyrec: https://github.com/krajj7/BotHack/raw/master/ttyrec/wizmode-fulla
 
 **27.12.2014**: The main example bot can reach the castle fairly regularly now, it has finished the quest and cleared many levels of gehennom including Vlad's (without wizard mode or human intervetion), eventually dying to Orcus-spawned Demogorgon.  This makes it the most successful NetHack bot written as of yet.
 
-Dumplog of the bot's best game to date: https://acehack.de/userdata/smartbot/nethack/dumplog/1419682524
+Dumplog of the bot's best game to date: https://nethack.xd.cm/userdata/smartbot/nethack/dumplog/1419682524
 
 Listing of other bots for comparison: http://taeb.github.io/bots.html
 
-Special thanks goes to kerio and stenno, admins of the acehack.de public server, for their support and hosting an instance of the bot and to FIQ for running the bot on the nethack.alt.org server and trying out the framework even in the current unfinished state!
+Special thanks goes to kerio and stenno, admins of the nethack.xd.cm public server, for their support and hosting an instance of the bot and to FIQ for running the bot on the nethack.alt.org server and trying out the framework even in the current unfinished state!
 
 **11.1.2015**: A first fully documented version of the Java API is ready, making most of the functionality of the framework available for consumption from Java.  The framework itself is available at [the Clojars public Maven repository](https://clojars.org/bothack).  See links on top of this page for the docs.
 
 **25.1.2015**: Pudding farming was implemented and the bot has finally managed to win the game without wizmode cheating!
 
-Ascension dumplog: https://acehack.de/notable/first-nethack-bot-ascension/smartbot3.1422171652
+Ascension dumplog: https://nethack.xd.cm/notable/first-nethack-bot-ascension/smartbot3.1422171652
 
 Youtube video: https://www.youtube.com/watch?v=unCQHAbGsAA
 
 **15.2.2015**: More documentation is now available: [tutorial](https://github.com/krajj7/BotHack/blob/master/doc/tutorial.md) and [known issues](https://github.com/krajj7/BotHack/blob/master/doc/issues.md)
+
+**6.6.2015**: First non-valkyrie bot ascension (Samurai): https://nethack.xd.cm/userdata/sambot/nethack/dumplog/1433576107
