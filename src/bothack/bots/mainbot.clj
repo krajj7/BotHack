@@ -1182,7 +1182,7 @@
           (make-use game slot)))))
 
 (defn hits-hard? [m]
-  (#{"winged gargoyle" "Olog-hai"} (typename m)))
+  (#{"winged gargoyle" "Olog-hai" "salamander"} (typename m)))
 
 (defn castle-fort [game level]
   (if (and (:castle (:tags level))
