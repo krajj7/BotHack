@@ -2152,7 +2152,9 @@
                       {:keys [kills splits] :as state}]
   (or (if-let [m (and (not (unihorn-recoverable? game))
                       (some #(if-let [m (monster-at game %)]
-                               (if-not (pudding? m) m))
+                               (if (and (not (pudding? m))
+                                        (not (:friendly m)))
+                                 m))
                             (neighbors player)))]
         (with-reason "killing non-pudding"
           (or (wield-weapon game)
