@@ -1,7 +1,7 @@
 # slightly altered TAEB settings
 
-ROLE=valkyrie
-OPTIONS=race:dwarf
+ROLE=knight
+OPTIONS=gender:male
 
 OPTIONS=!bones
 OPTIONS=lit_corridor

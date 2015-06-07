@@ -272,7 +272,7 @@
   (ordered-set "Excalibur" "long sword" "katana"))
 
 (def desired-suit
-  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "scale mail" "splint mail"))
+  (ordered-set "gray dragon scale mail" "silver dragon scale mail" "dwarvish mithril-coat" "elven mithril-coat" "ring mail"))
 
 (def desired-shirt
   (ordered-set "T-shirt" "Hawaiian shirt"))
@@ -2053,8 +2053,8 @@
 
 (defn farm-done? [game]
   (or (get-branch game :wiztower)
-      (< 15000000 (:score game))
-      (and (< 6000000 (:score game))
+      (< 25000000 (:score game))
+      (and (< 12000000 (:score game))
            (or (<= 3 (:wishes game))
                (and (or (have-levi game)
                         (have game "speed boots")

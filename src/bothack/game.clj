@@ -143,6 +143,7 @@
     #"So be it\." :gehennom
     #"Through clouds of sulphurous gasses, you see a rock palisade|Once again, you stand in sight of Lord Surtur's lair" :end
     #"You feel your mentor's presence; perhaps .*is nearby.|You sense the presence of |In your mind, you hear the taunts of Ashikaga Takauji" :end
+    #"As you exit the swamps, you see before you a huge, gaping hole|Again, you stand at the entrance to Ixoth" :end
     nil))
 
 (defn prayer-timeout

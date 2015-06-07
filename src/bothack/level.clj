@@ -357,6 +357,17 @@
                {:x 38 :y 13} :squeaky
                {:x 38 :y 11} :squeaky}}
    {:branch :quest
+    :role :knight
+    :dlvl "Home 1"
+    :leader {:x 23 :y 12}
+    :monsters {{:x 23 :y 12} (name->monster "Lord Arthur")}
+    :cutoff-cols [79]}
+   {:branch :quest
+    :role :knight
+    :dlvl "Home 5"
+    :cutoff-rows [1]
+    :cutoff-cols [0 1 77 78 79]}
+   {:branch :quest
     :role :valkyrie
     :dlvl "Home 1"
     :leader {:x 37 :y 12}
