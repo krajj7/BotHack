@@ -231,7 +231,7 @@
     #"What do you want to write with" write-with-what
     #"What do you want to rub\?" rub-what
     #"Do you want to add to the current engraving" append-engraving
-    #".* offers ([0-9]+) gold pieces? for your ([^.]+)\.  ?Sell it\?"
+    #" offers ([0-9]+) gold pieces? for your ([^.]+)\.  ?Sell (?:it|them)\?"
     :>> #(list sell-it (parse-int (firstv %)) (secondv %))
     (throw (UnsupportedOperationException.
              (str "unimplemented choice prompt: " msg)))))
