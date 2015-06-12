@@ -13,9 +13,7 @@ pom.xml.asc
 /jta26/doc/source/
 *.log*
 /jta26/jni/linux/libjtapty.so
-/*.ttyrec
 video
 notes
 *.lo
-*.ttyrec
 .classpath
