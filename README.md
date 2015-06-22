@@ -3,13 +3,9 @@ BotHack
 
 BotHack – A Nethack Bot Framework
 
-An attempt at an implementation of a NetHack bot framework as a base for my master's thesis (at http://www.mff.cuni.cz/to.en).
-
 Written in Clojure but provides an API for bots in Java or other JVM-based languages.  No game modifications are relied upon to make the game more accessible for a bot, so bots can play on public servers (like http://alt.org/nethack/).
 
 Inspired by previous bots and bot frameworks, in particular [TAEB](http://taeb.github.io), [Saiph](https://github.com/canidae/saiph) and [Pogamut](http://pogamut.cuni.cz).
-
-**PLEASE NOTE**:  The project is not yet finished.  Feedback is welcome but I cannot accept any code contributions until my thesis is finished (ETA Q2 2015).
 
 ## Documentation
 
@@ -103,4 +99,4 @@ Youtube video: https://www.youtube.com/watch?v=unCQHAbGsAA
 
 **15.2.2015**: More documentation is now available: [tutorial](https://github.com/krajj7/BotHack/blob/master/doc/tutorial.md) and [known issues](https://github.com/krajj7/BotHack/blob/master/doc/issues.md)
 
-**6.6.2015**: First non-valkyrie bot ascension (Samurai): https://nethack.xd.cm/userdata/sambot/nethack/dumplog/1433576107
+**22.6.2015**: During the [Junethack tournament](https://junethack.net/clan/bothack) slightly modified versions of the bot managed to ascend a [Samurai](https://nethack.xd.cm/userdata/sambot/nethack/dumplog/1433576107) and a [Knight](https://nethack.xd.cm/userdata/kniggetbot/nethack/dumplog/1434913430).
