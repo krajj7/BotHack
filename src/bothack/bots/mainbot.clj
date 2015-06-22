@@ -1883,7 +1883,9 @@
                         (make-use game excal)
                         (->Read scroll))))))
           (if-let [[slot item] (have game #{"potion of gain level"}
-                                     #{(if (farming? game) :safe-buc bagged?)})]
+                                     #{(if (or (farming? game)
+                                               (:sanctum (curlvl-tags game)))
+                                         :safe-buc bagged?)})]
             (with-reason "helpful potion"
               (or (unbag game slot item)
                   (->Quaff slot))))
