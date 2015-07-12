@@ -162,7 +162,7 @@
          :dug (or (:dug tile)
                   (and (diggable? tile) (#{\U \p \h \r} glyph)))))
 
-(defn- door-or-wall [current new-glyph new-color]
+(defn- door-or-wall [current new-color]
   (cond
     (= new-color :brown) :door-open
     (= :door-secret current) :door-secret
@@ -187,7 +187,7 @@
          :cyan :bars
          :blue :pool
          :brown :drawbridge-raised
-         (or (log/warn "unknown } feature color:" new-color) current))
+         (do (log/warn "unknown } feature color:" new-color) current))
     \# (cond (traps current) current
              (= :cloud current) :cloud
              :else :corridor)
@@ -195,8 +195,8 @@
     \~ :pool
     \^ (if (traps current) current :trap)
     \] :door-closed
-    \| (door-or-wall current new-glyph new-color)
-    \- (door-or-wall current new-glyph new-color)))
+    \| (door-or-wall current new-color)
+    \- (door-or-wall current new-color)))
 
 ; they might not have actually been seen but there's usually not much to see in walls/water
 (defn- mark-seen-features [tile]
