@@ -1,5 +1,5 @@
 {
- :bot "bothack.javabots.simplebot.SimpleBot"
+ :javabot "bothack.javabots.simplebot.SimpleBot"
  :interface :ssh
  :menubot "bothack.bots.dgl-menu"
  :host "nethack.xd.cm"
