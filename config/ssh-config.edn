@@ -8,6 +8,7 @@
  :ssh-pass ""
  :dgl-login "dumbbot"
  :dgl-pass "tops3cr3t"
+ :dgl-game "3"
  :ttyrec true
  :no-exit false
  :quit-resumed true

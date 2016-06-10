@@ -6,5 +6,6 @@
  :port 23
  :dgl-login "quitbot"
  :dgl-pass "tops3cr3t"
+ :dgl-game "2"
  :ttyrec true
 }
