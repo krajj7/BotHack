@@ -31,8 +31,7 @@
                           (throw (IllegalStateException. "Failed to login")))
                         (log/info "DGL menubot finished")
                         (send delegator started)
-            ; the n is for acehack.de to select NetHack, for nao it does nothing
-                        (send delegator write "np")))) ; play!
+                        (send delegator write (config-get config :dgl-game))))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (user-prompt? frame)

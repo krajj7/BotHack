@@ -8,5 +8,6 @@
  :ssh-pass ""
  :dgl-login "quitbot"
  :dgl-pass "tops3cr3t"
+ :dgl-game "3"
  :ttyrec true
 }

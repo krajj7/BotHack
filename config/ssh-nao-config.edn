@@ -6,6 +6,7 @@
  :port 23
  :dgl-login "dumbbot"
  :dgl-pass "tops3cr3t"
+ :dgl-game "2"
  :ttyrec true
  :no-exit true
 }
