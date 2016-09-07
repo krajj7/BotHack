@@ -31,7 +31,8 @@
                           (throw (IllegalStateException. "Failed to login")))
                         (log/info "DGL menubot finished")
                         (send delegator started)
-                        (send delegator write (config-get config :dgl-game))))) ; play!
+                        (send delegator write (config-get config :dgl-game))
+                        (send delegator write "np")))) ; play!
         pass-prompt (reify RedrawHandler
                       (redraw [this frame]
                         (when (user-prompt? frame)
